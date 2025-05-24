@@ -1,29 +1,78 @@
 # playNano
 
-AFM video and time-series processor for `.h5-jpk` files.
+**AFM Video Reader for `.h5-jpk` Files**
 
-## Description
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 
-playNano is a Python package designed to read, process, and analyze atomic force microscopy (AFM) videos and time-series data stored in `.h5-jpk` file format. It provides tools to convert AFM data into video formats and perform time-based analyses.
+`playNano` is a lightweight Python library for reading and processing atomic force microscopy (AFM) as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data, enabling dynamic visualisation, analysis, and export.
+
+---
+
+## ✨ Features
+
+- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files.
+- 🔍 **Auto-detects** likely image channels (e.g., `/Height`) if not specified.
+- 🧠 Built for integration with analysis/visualisation pipelines and tools like `TopoStats`.
 
 ## Installation
 
-To install in editable mode:
+Clone the repository and install dependencies:
 
+```bash
+git clone https://github.com/your-username/playNano.git
+cd playNano
+```
+
+I suggest you then install the package in a virtual enviroment.
+
+Once in the virtual enviroment:
+
+```bash
 pip install -e .
-
-## Requirements
-
-- Python 3.10 or later  
-- numpy  
-- h5py  
-- imageio  
-- topostats
+```
 
 ## Usage
+###  Command Line
 
-*Usage instructions will be added soon.*
+```bash
+python src/playNano/main.py path/to/file.h5-jpk \
+    --channel height_trace \
+    --output-folder ./output \
+    --save-raw \
+    --make-gif \
+    --log-level DEBUG
+```
+
+### Options
+
+    `input_file` (positional): Path to your `.h5-jpk` file.
+
+    `--channel`: Channel name, e.g. `height_trace` (default).
+
+    `--save-raw`: Keep a copy of the unflattened image stack.
+
+    `--make-gif`: Export a GIF of the flattened stack.
+
+    `--output-folder`: Where to save outputs.
+
+    `--log-level`: Logging verbosity (`DEBUG`, `INFO`, etc.)
+
+### Output
+
+    Flattened image stack (planned: `.npy`, `.tiff`)
+
+    Optional animated GIF: `flattened.gif` with scale and timestamp
+
+### Project Structure
+
+    playNano/
+├── io/              # Input/output utilities (e.g., GIF export)
+├── loaders/         # File format-specific loaders
+├── processing/      # Image flattening, filtering, etc.
+├── stack/           # AFMImageStack class and metadata
+└── main.py          # CLI entry point
 
 ## License
 
-This project is licensed under the GPL-3.0-or-later license.
+This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html).
