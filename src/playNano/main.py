@@ -1,0 +1,72 @@
+import argparse
+import logging
+from pathlib import Path
+
+from playNano.io.loader import load_afm_stack
+from playNano.stack.image_stack import AFMImageStack
+
+def setup_logging(level=logging.INFO):
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Flatten an AFM .h5-jpk video stack.")
+    parser.add_argument("input_file", type=str, help="Path to AFM input file (.h5-jpk, etc.)")
+    parser.add_argument("--channel", type=str, default="height_trace", help="Channel to read (for .h5-jpk files)")
+    parser.add_argument("--save-raw", action="store_true", help="Keep a copy of the raw image stack")
+    parser.add_argument("--log-level", type=str, default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
+    parser.add_argument("--output-folder", type=str, help="Folder to save outputs")
+    parser.add_argument("--make-gif", action="store_true", help="Export flattened stack as animated GIF")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    setup_logging(getattr(logging, args.log_level.upper()))
+    logger = logging.getLogger(__name__)
+    logger.info("Starting AFM stack flattening...")
+
+    input_path = Path(args.input_file)
+    if not input_path.exists():
+        logger.error(f"File not found: {input_path}")
+        return
+
+    # Load data
+    logger.info(f"Loading AFM stack from {input_path}")
+    try:
+        afm_stack = load_afm_stack(input_path, channel=args.channel)
+    except Exception as e:
+        logger.exception(f"Failed to load AFM stack: {e}")
+        return
+
+    # Flatten stack
+    logger.info("Flattening AFM image stack...")
+    afm_stack.flatten_images(keep_raw=args.save_raw)
+
+    # Handle output folder
+    output_dir = None
+    if args.output_folder:
+        output_dir = Path(args.output_folder)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Saving outputs to: {output_dir}")
+    # TODO: add np.save, tifffile.imwrite, etc.
+
+    # Optional: Export as GIF
+    if args.make_gif:
+        if output_dir is None:
+            logger.error("GIF export requested but no output folder provided.")
+        else:
+            from playNano.io.gif_export import create_gif_with_scale_and_timestamp  # Ensure this function exists
+            gif_path = output_dir / "flattened.gif"
+            timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
+            create_gif_with_scale_and_timestamp(afm_stack.image_stack, afm_stack.pixel_size_nm, timestamps, output_path=gif_path)
+            logger.info(f"Exported GIF to {gif_path}")
+
+    logger.info("Processing complete.")
+
+
+if __name__ == "__main__":
+    main()

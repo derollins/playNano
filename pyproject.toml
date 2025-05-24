@@ -1,0 +1,28 @@
+# pyproject.toml
+
+[project]
+name = "playNano"
+version = "0.1.0"
+description = "AFM video and time-series processor for .h5-jpk files"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk", github= "derollins" }
+]
+license = {text = "GPL-3.0-or-later"}
+dependencies = [
+  "numpy",
+  "h5py",
+  "imageio",
+  "topostats"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-ambiguous-features = true
