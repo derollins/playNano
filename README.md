@@ -72,13 +72,14 @@ playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output --s
 
 ## 📁 Project Structure
 
+```text
 playNano/
 ├── io/              # Input/output utilities (e.g., GIF export)
 ├── loaders/         # File format-specific loaders
 ├── processing/      # Image flattening, filtering, etc.
 ├── stack/           # AFMImageStack class and metadata
 └── main.py          # CLI entry point
-
+```
 
 ## 🧩 Dependencies
 
