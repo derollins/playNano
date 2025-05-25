@@ -27,7 +27,7 @@
 Clone the repository into a new folder:
 
 ```bash
-git clone https://github.com/your-username/playNano.git
+git clone https://github.com/derollins/playNano.git
 cd playNano
 ```
 
