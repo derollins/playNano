@@ -1,4 +1,4 @@
-# playNano
+# 📽️ playNano
 
 **AFM Video Reader for `.h5-jpk` Files**
 
@@ -22,7 +22,7 @@
 
 ---
 
-## Installation
+## 📦 Installation
 
 Clone the repository into a new folder:
 
@@ -40,15 +40,14 @@ pip install -e .
 ```
 
 ## 🚀 Quickstart
-
+Generate a flattened AFM image stack and export a GIF in one command:
 ```bash
-python -m playNano.main "example_data/sample.h5-jpk" --make-gif
+playNano "example_data/sample.h5-jpk" --make-gif
 ```
-## Usage
-###  Command Line
+## 🛠️ CLI Usage
 
 ```bash
-python src/playNano/main.py path/to/file.h5-jpk --channel height_trace --output-folder ./output --save-raw --make-gif --log-level DEBUG
+playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output --save-raw --make-gif --log-level DEBUG
 ```
 
 ### Options
@@ -67,20 +66,21 @@ python src/playNano/main.py path/to/file.h5-jpk --channel height_trace --output-
 
 ### Output
 
-    Flattened image stack (planned: `.npy`, `.tiff`)
+    📂 Flattened image stack (planned: `.npy`, `.tiff`)
 
-    Optional animated GIF: `flattened.gif` with scale and timestamp
+    🎞️ Optional animated GIF: `flattened.gif` with scale and timestamp
 
-### Project Structure
+## 📁 Project Structure
 
-    playNano/
+playNano/
 ├── io/              # Input/output utilities (e.g., GIF export)
 ├── loaders/         # File format-specific loaders
 ├── processing/      # Image flattening, filtering, etc.
 ├── stack/           # AFMImageStack class and metadata
 └── main.py          # CLI entry point
 
-## Dependencies
+
+## 🧩 Dependencies
 
 This project requires the following Python packages:
 
@@ -90,6 +90,6 @@ This project requires the following Python packages:
 - `matplotlib`
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats/) — for AFM image flattening and processing
 
-## License
+## 📜 License
 
 This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html).
