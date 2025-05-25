@@ -42,18 +42,13 @@ pip install -e .
 ## 🚀 Quickstart
 
 ```bash
-python playNano.main "example_data/sample.h5-jpk" --make-gif
+python -m playNano.main "example_data/sample.h5-jpk" --make-gif
 ```
 ## Usage
 ###  Command Line
 
 ```bash
-python src/playNano/main.py path/to/file.h5-jpk \
-    --channel height_trace \
-    --output-folder ./output \
-    --save-raw \
-    --make-gif \
-    --log-level DEBUG
+python src/playNano/main.py path/to/file.h5-jpk --channel height_trace --output-folder ./output --save-raw --make-gif --log-level DEBUG
 ```
 
 ### Options

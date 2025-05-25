@@ -11,7 +11,7 @@ authors = [
 ]
 license = {text = "GPL-3.0-or-later"}
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Natural Language :: English",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
@@ -22,7 +22,10 @@ classifiers = [
 ]
 keywords = [
   "afm",
-  "image processing"
+  "atomic force microscopy",
+  "image processing",
+  "video analysis",
+  "scientific visualization"
 ]
 dependencies = [
   "numpy",
@@ -31,6 +34,9 @@ dependencies = [
   "matplotlib",
   "topostats"
 ]
+
+[project.scripts]
+playnano = "playNano.main:main"
 
 [project.urls]
 GitHub = "https://github.com/derollins/playNano"
