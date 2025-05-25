@@ -9,9 +9,8 @@ import h5py
 
 from playNano.stack.image_stack import AFMImageStack
 
-def hello():
-    print("Welcome to playNano!")
-
+import logging
+logger = logging.getLogger(__name__)
 
 def _decode_attr(attr: bytes | str) -> str:
     """

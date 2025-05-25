@@ -46,27 +46,25 @@ def main():
     logger.info("Flattening AFM image stack...")
     afm_stack.flatten_images(keep_raw=args.save_raw)
 
-    # Handle output folder
-    output_dir = None
-    if args.output_folder:
-        output_dir = Path(args.output_folder)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Saving outputs to: {output_dir}")
-    # TODO: add np.save, tifffile.imwrite, etc.
-
     # Optional: Export as GIF
     if args.make_gif:
-        if output_dir is None:
-            logger.error("GIF export requested but no output folder provided.")
-        else:
-            from playNano.io.gif_export import create_gif_with_scale_and_timestamp  # Ensure this function exists
-            gif_path = output_dir / "flattened.gif"
-            timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
-            create_gif_with_scale_and_timestamp(afm_stack.image_stack, afm_stack.pixel_size_nm, timestamps, output_path=gif_path)
-            logger.info(f"Exported GIF to {gif_path}")
+        # Determine and create output directory
+        output_dir = Path(args.output_folder) if args.output_folder else Path("output")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Saving outputs to: {output_dir}")
+
+        from playNano.io.gif_export import create_gif_with_scale_and_timestamp
+        gif_path = output_dir / "flattened.gif"
+        timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
+        create_gif_with_scale_and_timestamp(
+            afm_stack.image_stack,
+            afm_stack.pixel_size_nm,
+            timestamps,
+            output_path=gif_path
+        )
+        logger.info(f"Exported GIF to {gif_path}")
 
     logger.info("Processing complete.")
-
 
 if __name__ == "__main__":
     main()

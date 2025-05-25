@@ -2,8 +2,12 @@
 
 **AFM Video Reader for `.h5-jpk` Files**
 
+<div align="center">
+
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
+
+</div>
 
 `playNano` is a lightweight Python library for reading and processing atomic force microscopy (AFM) as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data, enabling dynamic visualisation, analysis, and export.
 
@@ -13,25 +17,33 @@
 
 - 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files.
 - 🔍 **Auto-detects** likely image channels (e.g., `/Height`) if not specified.
+- 🖼️ **Exports animated GIFs** of AFM image stacks for quick visualisation
 - 🧠 Built for integration with analysis/visualisation pipelines and tools like `TopoStats`.
+
+---
 
 ## Installation
 
-Clone the repository and install dependencies:
+Clone the repository into a new folder:
 
 ```bash
 git clone https://github.com/your-username/playNano.git
 cd playNano
 ```
 
-I suggest you then install the package in a virtual enviroment.
+It is recommended to install the package in a virtual environment.
 
-Once in the virtual enviroment:
+Once in the virtual environment:
 
 ```bash
 pip install -e .
 ```
 
+## 🚀 Quickstart
+
+```bash
+python playNano.main "example_data/sample.h5-jpk" --make-gif
+```
 ## Usage
 ###  Command Line
 
@@ -72,6 +84,16 @@ python src/playNano/main.py path/to/file.h5-jpk \
 ├── processing/      # Image flattening, filtering, etc.
 ├── stack/           # AFMImageStack class and metadata
 └── main.py          # CLI entry point
+
+## Dependencies
+
+This project requires the following Python packages:
+
+- `numpy` 
+- `h5py` 
+- `Pillow`
+- `matplotlib`
+- [`TopoStats`](https://github.com/AFM-SPM/TopoStats/) — for AFM image flattening and processing
 
 ## License
 

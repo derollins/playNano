@@ -3,19 +3,37 @@
 [project]
 name = "playNano"
 version = "0.1.0"
-description = "AFM video and time-series processor for .h5-jpk files"
+description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-  { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk", github= "derollins" }
+  { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk"}
 ]
 license = {text = "GPL-3.0-or-later"}
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
+    "Natural Language :: English",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = [
+  "afm",
+  "image processing"
+]
 dependencies = [
   "numpy",
   "h5py",
-  "imageio",
+  "Pillow",
+  "matplotlib",
   "topostats"
 ]
+
+[project.urls]
+GitHub = "https://github.com/derollins/playNano"
 
 [tool.setuptools.packages.find]
 where = ["src"]

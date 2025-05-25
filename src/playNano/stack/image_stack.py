@@ -4,6 +4,9 @@ from pathlib import Path
 
 from playNano.processing.image_processing import flatten_stack
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class AFMImageStack:
     def __init__(
@@ -78,9 +81,9 @@ class AFMImageStack:
         if keep_raw and self.raw_image_stack is None:
             self.raw_image_stack = self.image_stack.copy()
 
-        print("Flattening image stack...")
+        logger.info("Flattening image stack...")
         self.image_stack = flatten_stack(self.image_stack, pixel_to_nm=self.pixel_size_nm)
-        print("Flattening complete.")
+        logger.info("Flattening complete.")
 
     @property
     def num_frames(self) -> int:
