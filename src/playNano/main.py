@@ -6,6 +6,18 @@ from playNano.io.loader import load_afm_stack
 
 
 def setup_logging(level=logging.INFO):
+    """
+    Configure the logging format and level.
+
+    Parameters
+    ----------
+    level : int, optional
+        Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.
+
+    Returns
+    -------
+    None
+    """
     logging.basicConfig(
         level=level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -13,6 +25,15 @@ def setup_logging(level=logging.INFO):
 
 
 def parse_args():
+
+    """
+    Parse command-line arguments for AFM stack processing.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments.
+    """
     parser = argparse.ArgumentParser(
         description="Flatten an AFM .h5-jpk video stack or folder of .jpk video frames."
     )
@@ -41,6 +62,23 @@ def parse_args():
 
 
 def main():
+    """
+    Main function to process an AFM image stack:
+    - Loads the input file or folder.
+    - Flattens the AFM image stack using TopoStats.
+    - Optionally saves the raw stack and exports a GIF with timestamps and scale bar.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    - Input can be a `.h5-jpk` file or a folder of `.jpk` files.
+    - Uses `playNano.io.loader.load_afm_stack` to load data.
+    - Uses `playNano.io.gif_export.create_gif_with_scale_and_timestamp` to export GIFs.
+    """
+
     args = parse_args()
     setup_logging(getattr(logging, args.log_level.upper()))
     logger = logging.getLogger(__name__)

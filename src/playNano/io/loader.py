@@ -1,3 +1,7 @@
+"""
+Common loader for various high speed AFM video formats,
+returns an AFMImageStack object
+"""
 from pathlib import Path
 
 from playNano.loaders.read_asd_folder import load_asd_folder
@@ -15,7 +19,7 @@ def get_loader_for_folder(
     folder_path: Path, folder_loaders: dict
 ) -> tuple[str, callable]:
     """
-    Determines the appropriate loader for a folder containing AFM data.
+    Determine the appropriate loader for a folder containing AFM data.
 
     Parameters
     ----------
@@ -55,7 +59,7 @@ def get_loader_for_file(
     file_path: Path, file_loaders: dict, folder_loaders: dict
 ) -> callable:
     """
-    Determines the appropriate loader for a single multi-frame AFM file.
+    Determine the appropriate loader for a single multi-frame AFM file.
 
     Parameters
     ----------
@@ -81,7 +85,8 @@ def get_loader_for_file(
         return file_loaders[ext]
     elif ext in folder_loaders:
         raise ValueError(
-            f"The {ext} file type is typically a single-frame export. To load HS-AFM video, pass the full folder instead."
+            f"The {ext} file type is typically a single-frame export."
+            "To load HS-AFM video, pass the full folder instead."
         )
     else:
         raise ValueError(f"Unsupported file type: {ext}")
@@ -93,8 +98,10 @@ def load_afm_stack(
     """
     Unified interface to load AFM stacks from various file formats.
 
-    High speed AFM videos can be saved as either individual frames within a folder or as multiple frames within a single file.
-    This loader splits these two approaches and loads both into the common AFMImageStack object for processing.
+    High speed AFM videos can be saved as either individual frames
+    within a folder or as multiple frames within a single file.
+    This loader splits these two approaches and loads both into
+    the common AFMImageStack object for processing.
 
     Parameters
     ----------

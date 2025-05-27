@@ -9,8 +9,9 @@
 
 </div>
 
-`playNano` is a lightweight Python library for reading and processing atomic force microscopy (AFM) as **video/image stacks**.
-`playNano` focuses on extracting and reshaping time-series AFM data, enabling dynamic visualisation, analysis, and export.
+`playNano` is a lightweight Python library for reading and processing atomic force microscopy (AFM)
+as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data,
+enabling dynamic visualisation, analysis, and export.
 
 ---
 
@@ -51,7 +52,8 @@ playNano "example_data/sample.h5-jpk" --make-gif
 ## 🛠️ CLI Usage
 
 ```bash
-playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output --save-raw --make-gif --log-level DEBUG
+playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output 
+--save-raw --make-gif --log-level DEBUG
 ```
 
 ### Options
@@ -93,7 +95,8 @@ This project requires the following Python packages:
 - `h5py`
 - `Pillow`
 - `matplotlib`
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files (also planned for use in future `.asd` and `.spm` loading).
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files 
+    (also planned for use in future `.asd` and `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
 
 ## 🤝 Related Software
@@ -102,14 +105,14 @@ These are some software packages that have helped and inspired this project:
 
 ### [Topostats](https://github.com/AFM-SPM/TopoStats)
 
-A general AFM image processing programme written in Python that batch processes AFM images. 
-Topostats is able to flatten raw AFM images, mask objects and provides advanced ananlysis tools including U-net based masking. 
-playNano leverages the `filters` module to flatten loaded AFM frames.
+A general AFM image processing programme written in Python that batch processes AFM images.
+Topostats is able to flatten raw AFM images, mask objects and provides advanced ananlysis tools
+including U-net based masking. playNano leverages the `filters` module to flatten loaded AFM frames.
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
 Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens 
-each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion 
+each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion
 factor. Within playNano this library is used to open the folder-based AFM video formats.  
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
@@ -120,4 +123,4 @@ intergrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-0
 
 ## 📜 License
 
-This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html).
+This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html)

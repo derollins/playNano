@@ -112,7 +112,8 @@ def _get_channel_info(f: h5py.File, channel: str):
     channel_map = _discover_available_channels(f)
     if channel not in channel_map:
         raise ValueError(
-            f"Channel '{channel}' not found in file. Available channels: {list(channel_map)}"
+            f"Channel '{channel}' not found in file."
+            f"Available channels: {list(channel_map)}"
         )
     channel_path = channel_map[channel]
     channel_group = f[channel_path]
@@ -129,7 +130,8 @@ def _get_z_scaling_h5(channel_group: h5py.Group) -> tuple[float, float]:
     Parameters
     ----------
     channel_group : h5py.Group
-        The HDF5 group corresponding to a specific channel (e.g. /Measurement_000/Channel_001).
+        The HDF5 group corresponding to a specific channel
+        (e.g. /Measurement_000/Channel_001).
 
     Returns
     -------
@@ -150,8 +152,8 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
     """
     Extract pixel-to-nanometre scaling from an HDF5 JPK measurement group.
 
-    This uses the fast scan axis (u/i) and converts the physical scan size to nanometres
-    per pixel based on the scan length and pixel count.
+    This uses the fast scan axis (u/i) and converts the physical scan size to
+    nanometres per pixel based on the scan length and pixel count.
 
     Parameters
     ----------
@@ -190,7 +192,8 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
 
 def _get_image_shape(measurement_group: h5py.Group) -> float:
     """
-    Extract pixel width and hight from an HDF5 JPK measurement group to determine image shape.
+    Extract pixel width and hight from an HDF5 JPK measurement group
+    to determine image shape.
 
     Parameters
     ----------
@@ -227,8 +230,8 @@ def _get_image_shape(measurement_group: h5py.Group) -> float:
 
 def _get_line_rate(measurement_group: h5py.Group) -> float:
     """
-    Extract image line rate from an HDF5 JPK measurement group, this is the rate of scan in terms
-    of lines.
+    Extract image line rate from an HDF5 JPK measurement group, this is the rate of
+    scan in terms of lines.
 
     This gives the speed of imaging in fast scan lines / second.
 
@@ -265,7 +268,8 @@ def load_h5jpk(
     file_path: Path | str, channel: str, flip_image: bool = True
 ) -> AFMImageStack:
     """
-    Load image stack from a JPK .h5-jpk file, reshape into frames, and generate timestamps.
+    Load image stack from a JPK .h5-jpk file, reshape into frames,
+    and generate timestamps.
 
     Parameters
     ----------
@@ -297,7 +301,7 @@ def load_h5jpk(
         height_px, width_px = _get_image_shape(measurement_group)
         num_frames = images.shape[1]
 
-        # Reshape each column vector to (height, width) to get (num_frames, height, width)
+        # Reshape each column vector (height, width) to get (num_frames, height, width)
         image_stack = np.empty((num_frames, height_px, width_px), dtype=images.dtype)
         for i in range(num_frames):
             frame = images[:, i].reshape((height_px, width_px))

@@ -1,3 +1,4 @@
+"Initializes the AFMImageStack class"
 import logging
 from typing import Any, Dict, List
 
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class AFMImageStack:
+    """Class for managing AFM image stacks."""
     def __init__(
         self,
         image_stack: np.ndarray,
@@ -20,7 +22,7 @@ class AFMImageStack:
         frame_metadata: List[Dict[str, Any]] = None,
     ):
         """
-        Represents a stack of AFM images and associated metadata.
+        Represent a stack of AFM images and associated metadata.
 
         Parameters
         ----------
@@ -60,9 +62,7 @@ class AFMImageStack:
             raise IndexError(f"Frame metadata index {index} out of range")
 
     def frames_with_metadata(self):
-        """
-        Generator that yields (frame_index, image_frame, metadata_dict) tuples.
-        """
+        """Yield (frame_index, image_frame, metadata_dict) tuples."""
         for idx, (image, meta) in enumerate(zip(self.image_stack, self.frame_metadata)):
             if image is not None:
                 yield idx, image, meta
@@ -74,7 +74,8 @@ class AFMImageStack:
         Flatten the AFM image stack using TopoStats flattening filters.
 
         Parameters:
-        - keep_raw (bool): If True, keep a copy of the original raw images in self.raw_image_stack
+        - keep_raw (bool): If True, keep a copy of the original
+        raw images in self.raw_image_stack
         """
         if keep_raw and self.raw_image_stack is None:
             self.raw_image_stack = self.image_stack.copy()
