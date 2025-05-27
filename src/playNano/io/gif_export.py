@@ -3,7 +3,9 @@ from PIL import Image, ImageDraw, ImageFont
 import matplotlib.cm as cm
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     """Normalize a float image to uint8 [0, 255] range, handling NaNs/Infs."""
@@ -23,7 +25,7 @@ def create_gif_with_scale_and_timestamp(
     scale_bar_length_nm=100,
     output_path="output.gif",
     duration=0.5,
-    cmap_name="afmhot"
+    cmap_name="afmhot",
 ):
     frames = []
     height_px, width_px = image_stack.shape[1:]
@@ -55,14 +57,10 @@ def create_gif_with_scale_and_timestamp(
         bar_x = int(width_px * 0.05)
         bar_y = int(height_px * 0.95)
         draw.line(
-            [(bar_x, bar_y), (bar_x + scale_bar_px, bar_y)],
-            fill="white", width=4
+            [(bar_x, bar_y), (bar_x + scale_bar_px, bar_y)], fill="white", width=4
         )
         draw.text(
-            (bar_x, bar_y - 20),
-            f"{scale_bar_length_nm} nm",
-            fill="white",
-            font=font
+            (bar_x, bar_y - 20), f"{scale_bar_length_nm} nm", fill="white", font=font
         )
 
         # Timestamp or frame fallback
@@ -83,6 +81,6 @@ def create_gif_with_scale_and_timestamp(
         save_all=True,
         append_images=frames[1:],
         duration=int(duration * 500),
-        loop=0
+        loop=0,
     )
     logger.info(f"GIF saved to {output_path}")

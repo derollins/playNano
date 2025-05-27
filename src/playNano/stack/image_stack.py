@@ -5,6 +5,7 @@ from pathlib import Path
 from playNano.processing.image_processing import flatten_stack
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,7 +59,7 @@ class AFMImageStack:
             return self.frame_metadata[index]
         else:
             raise IndexError(f"Frame metadata index {index} out of range")
-            
+
     def frames_with_metadata(self):
         """
         Generator that yields (frame_index, image_frame, metadata_dict) tuples.
@@ -68,8 +69,6 @@ class AFMImageStack:
                 yield idx, image, meta
             else:
                 print(f"Warning: Frame {idx} is None and skipped")
-
-
 
     def flatten_images(self, keep_raw=True):
         """
@@ -82,11 +81,12 @@ class AFMImageStack:
             self.raw_image_stack = self.image_stack.copy()
 
         logger.info("Flattening image stack...")
-        self.image_stack = flatten_stack(self.image_stack, pixel_to_nm=self.pixel_size_nm)
+        self.image_stack = flatten_stack(
+            self.image_stack, pixel_to_nm=self.pixel_size_nm
+        )
         logger.info("Flattening complete.")
 
     @property
     def num_frames(self) -> int:
         """Return number of frames in the stack."""
         return self.image_stack.shape[0]
-

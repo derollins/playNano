@@ -15,7 +15,7 @@
 
 ## ✨ Features
 
-- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files.
+- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files and folders of `.jpk` files.
 - 🔍 **Auto-detects** likely image channels (e.g., `/Height`) if not specified.
 - 🖼️ **Exports animated GIFs** of AFM image stacks for quick visualisation
 - 🧠 Built for integration with analysis/visualisation pipelines and tools like `TopoStats`.
@@ -52,7 +52,7 @@ playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output --s
 
 ### Options
 
-    `input_file` (positional): Path to your `.h5-jpk` file.
+    `input_file` (positional): Path to your `.h5-jpk` file or folder of `.jpk` files.
 
     `--channel`: Channel name, e.g. `height_trace` (default).
 
@@ -74,9 +74,9 @@ playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output --s
 
 ```text
 playNano/
-├── io/              # Input/output utilities (e.g., GIF export)
+├── io/              # Input/output utilities (e.g. the common file loader and GIF export)
 ├── loaders/         # File format-specific loaders
-├── processing/      # Image flattening, filtering, etc.
+├── processing/      # Image flattening, filtering, analysis etc.
 ├── stack/           # AFMImageStack class and metadata
 └── main.py          # CLI entry point
 ```
@@ -89,7 +89,8 @@ This project requires the following Python packages:
 - `h5py` 
 - `Pillow`
 - `matplotlib`
-- [`TopoStats`](https://github.com/AFM-SPM/TopoStats/) — for AFM image flattening and processing
+- [`AFMReader'](https://github.com/AFM-SPM/AFMReader) — for reading '.jpk' files (also planned for use in future `.asd` and `.spm` loading).
+- [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
 
 ## 📜 License
 

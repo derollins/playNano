@@ -32,7 +32,8 @@ dependencies = [
   "h5py",
   "Pillow",
   "matplotlib",
-  "topostats"
+  "topostats",
+  "afmreader"
 ]
 
 [project.scripts]

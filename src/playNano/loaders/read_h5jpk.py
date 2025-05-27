@@ -1,4 +1,4 @@
-""" 
+"""
 Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.
 Files containing multiple image frames are read together.
 """
@@ -10,7 +10,9 @@ import h5py
 from playNano.stack.image_stack import AFMImageStack
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def _decode_attr(attr: bytes | str) -> str:
     """
@@ -109,7 +111,9 @@ def _get_channel_info(f: h5py.File, channel: str):
     """
     channel_map = _discover_available_channels(f)
     if channel not in channel_map:
-        raise ValueError(f"Channel '{channel}' not found in file. Available channels: {list(channel_map)}")
+        raise ValueError(
+            f"Channel '{channel}' not found in file. Available channels: {list(channel_map)}"
+        )
     channel_path = channel_map[channel]
     channel_group = f[channel_path]
     measurement_key = channel_path.split("/")[0]
@@ -165,8 +169,12 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
         If required attributes are missing in the measurement group.
     """
     try:
-        ulength = measurement_group.attrs["position-pattern.grid.ulength"]  # physical length in meters
-        ilength = measurement_group.attrs["position-pattern.grid.ilength"]  # number of pixels
+        ulength = measurement_group.attrs[
+            "position-pattern.grid.ulength"
+        ]  # physical length in meters
+        ilength = measurement_group.attrs[
+            "position-pattern.grid.ilength"
+        ]  # number of pixels
 
         if ilength == 0:
             raise ValueError("Pixel count (ilength) is zero; cannot compute scaling.")
@@ -175,7 +183,9 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
 
     except KeyError as e:
         missing = e.args[0]
-        raise KeyError(f"Missing required attribute '{missing}' in HDF5 measurement group.") from e
+        raise KeyError(
+            f"Missing required attribute '{missing}' in HDF5 measurement group."
+        ) from e
 
 
 def _get_image_shape(measurement_group: h5py.Group) -> float:
@@ -197,20 +207,27 @@ def _get_image_shape(measurement_group: h5py.Group) -> float:
     ------
     KeyError
         If required attributes are missing in the measurement group.
-    """  
-    try:    
-        width_px = measurement_group.attrs["position-pattern.grid.ilength"]  # number of pixels
-        height_px = measurement_group.attrs["position-pattern.grid.jlength"]  # number of pixels
+    """
+    try:
+        width_px = measurement_group.attrs[
+            "position-pattern.grid.ilength"
+        ]  # number of pixels
+        height_px = measurement_group.attrs[
+            "position-pattern.grid.jlength"
+        ]  # number of pixels
 
-        return(height_px, width_px)
+        return (height_px, width_px)
 
     except KeyError as e:
         missing = e.args[0]
-        raise KeyError(f"Missing required attribute '{missing}' in HDF5 measurement group.") from e
+        raise KeyError(
+            f"Missing required attribute '{missing}' in HDF5 measurement group."
+        ) from e
+
 
 def _get_line_rate(measurement_group: h5py.Group) -> float:
     """
-    Extract image line rate from an HDF5 JPK measurement group, this is the rate of scan in terms 
+    Extract image line rate from an HDF5 JPK measurement group, this is the rate of scan in terms
     of lines.
 
     This gives the speed of imaging in fast scan lines / second.
@@ -223,7 +240,7 @@ def _get_line_rate(measurement_group: h5py.Group) -> float:
     Returns
     -------
     float
-        The line rate of imaging in lines per second. 
+        The line rate of imaging in lines per second.
 
     Raises
     ------
@@ -231,16 +248,22 @@ def _get_line_rate(measurement_group: h5py.Group) -> float:
         If required attributes are missing in the measurement group.
     """
     try:
-        line_rate = measurement_group.attrs["timing-settings.scanRate"]  # scan lines per second
-        
+        line_rate = measurement_group.attrs[
+            "timing-settings.scanRate"
+        ]  # scan lines per second
+
         return line_rate
 
     except KeyError as e:
         missing = e.args[0]
-        raise KeyError(f"Missing required attribute '{missing}' in HDF5 measurement group.") from e
+        raise KeyError(
+            f"Missing required attribute '{missing}' in HDF5 measurement group."
+        ) from e
 
 
-def load_h5jpk(file_path: Path | str, channel: str, flip_image: bool = True) -> AFMImageStack:
+def load_h5jpk(
+    file_path: Path | str, channel: str, flip_image: bool = True
+) -> AFMImageStack:
     """
     Load image stack from a JPK .h5-jpk file, reshape into frames, and generate timestamps.
 
@@ -284,7 +307,9 @@ def load_h5jpk(file_path: Path | str, channel: str, flip_image: bool = True) -> 
 
         # Generate timestamps per frame from line_rate
         line_rate = _get_line_rate(measurement_group)
-        frame_interval = (height_px / line_rate)  # seconds per frame (height lines / lines per second)
+        frame_interval = (
+            height_px / line_rate
+        )  # seconds per frame (height lines / lines per second)
         timestamps = np.arange(num_frames) * frame_interval
 
         # Compose per-frame metadata list
