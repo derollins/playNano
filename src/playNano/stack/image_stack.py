@@ -1,4 +1,4 @@
-"Initializes the AFMImageStack class"
+"""Initializes the AFMImageStack class."""
 
 import logging
 from typing import Any, Dict, List

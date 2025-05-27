@@ -1,7 +1,4 @@
-"""
-Placeholder for a functional script to load a folder containing .spm frames
-of a high speed AFM video.
-"""
+"""Placeholder for a functional script to load a folder containing .spm frames."""
 
 import logging
 from pathlib import Path

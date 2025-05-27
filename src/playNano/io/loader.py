@@ -1,6 +1,7 @@
 """
-Common loader for various high speed AFM video formats,
-returns an AFMImageStack object
+Common loader for various high speed AFM video formats.
+
+Returns an AFMImageStack object
 """
 
 from pathlib import Path

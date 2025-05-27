@@ -1,5 +1,6 @@
 """
 Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.
+
 Files containing multiple image frames are read together.
 """
 
@@ -192,8 +193,9 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
 
 def _get_image_shape(measurement_group: h5py.Group) -> float:
     """
-    Extract pixel width and hight from an HDF5 JPK measurement group
-    to determine image shape.
+    Extract pixel width and hight from an HDF5 JPK measurement group.
+
+    The pixel dimensions are used to determine image shape.
 
     Parameters
     ----------
@@ -230,10 +232,10 @@ def _get_image_shape(measurement_group: h5py.Group) -> float:
 
 def _get_line_rate(measurement_group: h5py.Group) -> float:
     """
-    Extract image line rate from an HDF5 JPK measurement group, this is the rate of
-    scan in terms of lines.
+    Extract image line rate from an HDF5 JPK measurement group.
 
-    This gives the speed of imaging in fast scan lines / second.
+    The line rate is the scan speed in terms of lines per second,
+    i.e. the speed of imaging in fast scan lines / second.
 
     Parameters
     ----------
@@ -268,8 +270,9 @@ def load_h5jpk(
     file_path: Path | str, channel: str, flip_image: bool = True
 ) -> AFMImageStack:
     """
-    Load image stack from a JPK .h5-jpk file, reshape into frames,
-    and generate timestamps.
+    Load image stack from a JPK .h5-jpk file.
+
+    The images are loaded, reshaped into frames, and have timestamps generated.
 
     Parameters
     ----------

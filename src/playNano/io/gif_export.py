@@ -1,4 +1,4 @@
-"""Module for exporting a AFM image stack as a GIF"""
+"""Module for exporting a AFM image stack as a GIF."""
 
 import logging
 
@@ -47,8 +47,10 @@ def create_gif_with_scale_and_timestamp(
     cmap_name="afmhot",
 ):
     """
-    Create an animated GIF from a stack of images with a scale bar
-    and optional timestamps.
+    Create a GIF from a stack of images with a scale bar and optional timestamps.
+
+    This function normalises image frames, applies a colormap, adds a scale bar and
+    timestamps (if provided), and compiles the frames into an animated GIF.
 
     Parameters
     ----------

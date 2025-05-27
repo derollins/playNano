@@ -13,8 +13,8 @@
 as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data,
 enabling dynamic visualisation, analysis, and export.
 
-This project is in development and not fully stable. If you find any issues please open an issue at: 
-https://github.com/jlopezalo/PyFMReader/issues
+This project is in development and not fully stable. If you find any issues please open an issue at:
+<https://github.com/derollins/playNano/issues>
 
 If you have any questions please get in touch: <d.e.rollins@leeds.ac.uk>
 
@@ -63,23 +63,23 @@ playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output
 
 ### Options
 
-    `input_file` (positional): Path to your `.h5-jpk` file or folder of `.jpk` files.
+`input_file` (positional): Path to your `.h5-jpk` file or folder of `.jpk` files.
 
-    `--channel`: Channel name, e.g. `height_trace` (default).
+`--channel`: Channel name, e.g. `height_trace` (default).
 
-    `--save-raw`: Keep a copy of the unflattened image stack.
+`--save-raw`: Keep a copy of the unflattened image stack.
 
-    `--make-gif`: Export a GIF of the flattened stack.
+`--make-gif`: Export a GIF of the flattened stack.
 
-    `--output-folder`: Where to save outputs.
+`--output-folder`: Where to save outputs.
 
-    `--log-level`: Logging verbosity (`DEBUG`, `INFO`, etc.)
+`--log-level`: Logging verbosity (`DEBUG`, `INFO`, etc.)
 
 ### Output
 
-    📂 Flattened image stack (planned: `.npy`, `.tiff`)
+📂 Flattened image stack (planned: `.npy`, `.tiff`)
 
-    🎞️ Optional animated GIF: `flattened.gif` with scale and timestamp
+🎞️ Optional animated GIF: `flattened.gif` with scale and timestamp
 
 ## 📁 Project Structure
 
@@ -100,7 +100,7 @@ This project requires the following Python packages:
 - `h5py`
 - `Pillow`
 - `matplotlib`
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files 
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files
     (also planned for use in future `.asd` and `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
 
@@ -116,14 +116,14 @@ including U-net based masking. playNano leverages the `filters` module to flatte
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
-Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens 
+Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens
 each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion
 factor. Within playNano this library is used to open the folder-based AFM video formats.  
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
 
-A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and 
-high- speed AFM videos. Faeturing mask analysis, particle detection and tracking, it also 
+A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and
+high- speed AFM videos. Faeturing mask analysis, particle detection and tracking, it also
 intergrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
 
 ## 📜 License

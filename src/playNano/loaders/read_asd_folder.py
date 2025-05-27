@@ -1,8 +1,4 @@
-"""
-Placeholder for a functional script to load a folder containing .asd frames
-of a high speed AFM video.
-"""
-
+"""Placeholder for a functional script to load a folder containing .asd frames."""
 import logging
 from pathlib import Path
 

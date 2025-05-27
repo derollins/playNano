@@ -1,5 +1,6 @@
 """
 Module to load .jpk AFM data files from a folder into Python NumPy arrays.
+
 Files contained within the same folder are read together.
 """
 

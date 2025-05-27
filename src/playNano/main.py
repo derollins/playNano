@@ -1,3 +1,5 @@
+"""Main script implimenting CLI for playNano."""
+
 import argparse
 import logging
 from pathlib import Path
@@ -62,7 +64,9 @@ def parse_args():
 
 def main():
     """
-    Main function to process an AFM image stack:
+    Process an AFM image stack.
+
+    Workflow:
     - Loads the input file or folder.
     - Flattens the AFM image stack using TopoStats.
     - Optionally saves the raw stack and exports a GIF with timestamps and scale bar.
@@ -77,7 +81,6 @@ def main():
     - Uses `playNano.io.loader.load_afm_stack` to load data.
     - Uses `playNano.io.gif_export.create_gif_with_scale_and_timestamp` to export GIFs.
     """
-
     args = parse_args()
     setup_logging(getattr(logging, args.log_level.upper()))
     logger = logging.getLogger(__name__)
