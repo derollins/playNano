@@ -6,6 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
+![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
 
 </div>
 
