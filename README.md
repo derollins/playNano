@@ -13,6 +13,11 @@
 as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data,
 enabling dynamic visualisation, analysis, and export.
 
+This project is in development and not fully stable. If you find any issues please open an issue at: 
+https://github.com/jlopezalo/PyFMReader/issues
+
+If you have any questions please get in touch: <d.e.rollins@leeds.ac.uk>
+
 ---
 
 ## ✨ Features

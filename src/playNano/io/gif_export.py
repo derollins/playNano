@@ -1,4 +1,5 @@
 """Module for exporting a AFM image stack as a GIF"""
+
 import logging
 
 import matplotlib.cm as cm

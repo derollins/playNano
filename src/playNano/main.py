@@ -25,7 +25,6 @@ def setup_logging(level=logging.INFO):
 
 
 def parse_args():
-
     """
     Parse command-line arguments for AFM stack processing.
 

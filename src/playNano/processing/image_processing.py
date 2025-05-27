@@ -1,4 +1,5 @@
 """Module for applying flattening to AFM images in Numpy arrays"""
+
 import logging
 
 import numpy as np
@@ -14,33 +15,34 @@ def flatten_afm_frame(
     filter_config: dict = None,
 ) -> np.ndarray:
     """
-    Apply a filtering pipeline to flatten an AFM image frame using TopoStats filters.
+        Apply a filtering pipeline to flatten an AFM image frame using
+        TopoStats filters.
 
-    Parameters
-    ----------
+        Parameters
+        ----------
 
-frame : np.ndarray
-        2D NumPy array representing the AFM image frame.
-    filename : str, optional
-        Name of the frame, used for logging and identification. Default is "frame".
-    pixel_to_nm : float, optional
-        Scaling factor to convert pixels to nanometers. Default is 1.0.
-    filter_config : dict, optional
-        Dictionary of filter configuration parameters.
-        If None, a default configuration is used.
+    frame : np.ndarray
+            2D NumPy array representing the AFM image frame.
+        filename : str, optional
+            Name of the frame, used for logging and identification. Default is "frame".
+        pixel_to_nm : float, optional
+            Scaling factor to convert pixels to nanometers. Default is 1.0.
+        filter_config : dict, optional
+            Dictionary of filter configuration parameters.
+            If None, a default configuration is used.
 
-    Returns
-    -------
-    np.ndarray or None
-        The flattened image after Gaussian filtering. Returns None if the
-        input is invalid or if filtering fails.
+        Returns
+        -------
+        np.ndarray or None
+            The flattened image after Gaussian filtering. Returns None if the
+            input is invalid or if filtering fails.
 
-    Notes
-    -----
-    - Uses the `Filters` class from `topostats.filters` to apply a series
-    of image processing steps.
-    - Handles invalid input (e.g., empty arrays or NaNs) gracefully.
-    - Logs detailed information about the filtering process.
+        Notes
+        -----
+        - Uses the `Filters` class from `topostats.filters` to apply a series
+        of image processing steps.
+        - Handles invalid input (e.g., empty arrays or NaNs) gracefully.
+        - Logs detailed information about the filtering process.
     """
     if filter_config is None:
         filter_config = {

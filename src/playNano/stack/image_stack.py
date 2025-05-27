@@ -1,4 +1,5 @@
 "Initializes the AFMImageStack class"
+
 import logging
 from typing import Any, Dict, List
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class AFMImageStack:
     """Class for managing AFM image stacks."""
+
     def __init__(
         self,
         image_stack: np.ndarray,
@@ -63,7 +65,9 @@ class AFMImageStack:
 
     def frames_with_metadata(self):
         """Yield (frame_index, image_frame, metadata_dict) tuples."""
-        for idx, (image, meta) in enumerate(zip(self.image_stack, self.frame_metadata)):
+        for idx, (image, meta) in enumerate(
+            zip(self.image_stack, self.frame_metadata, strict=False)
+        ):
             if image is not None:
                 yield idx, image, meta
             else:
