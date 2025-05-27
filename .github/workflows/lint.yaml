@@ -30,5 +30,13 @@ jobs:
       - name: Run ruff (lint + import sorting)
         run: ruff .
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  # or another stable version
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
       - name: Run markdownlint
         run: markdownlint "**/*.md" --fix

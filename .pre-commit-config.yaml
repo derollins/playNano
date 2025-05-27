@@ -14,11 +14,11 @@ repos:
         name: isort (python import sorting)
         files: \.py$
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.306
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.7
     hooks:
-      - id: ruff
-        args: [--fix]  # automatically fix issues where possible
+    - id: ruff
+      args: [--fix] # automatically fix issues where possible
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
