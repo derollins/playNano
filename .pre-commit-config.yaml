@@ -32,10 +32,9 @@ repos:
       - id: flake8
         additional_dependencies: [flake8-docstrings]
 
-  - repo: https://github.com/fsouza/markdownlint-cli2-pre-commit
-    rev: v0.0.8
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
-        args: [--fix]
-        files: \.(md|markdown)$
+        args: [-- fix]
 
