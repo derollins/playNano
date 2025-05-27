@@ -51,3 +51,25 @@ build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-ambiguous-features = true
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+known_first_party = ["playNano"] 
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.venv
+  | __pycache__
+  | build
+  | dist
+)/
+'''

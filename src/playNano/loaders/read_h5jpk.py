@@ -3,13 +3,13 @@ Module to decode and load .h5-jpk high speed AFM data files into Python NumPy ar
 Files containing multiple image frames are read together.
 """
 
+import logging
 from pathlib import Path
-import numpy as np
+
 import h5py
+import numpy as np
 
 from playNano.stack.image_stack import AFMImageStack
-
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
-from typing import List, Dict, Any
+import logging
+from typing import Any, Dict, List
+
 import numpy as np
-from pathlib import Path
 
 from playNano.processing.image_processing import flatten_stack
-
-import logging
 
 logger = logging.getLogger(__name__)
 

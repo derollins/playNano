@@ -2,14 +2,10 @@
 Placeholder for a functional script to load a folder containing .spm frames of a high speed AFM video
 """
 
+import logging
 from pathlib import Path
-import numpy as np
-
-from AFMReader.spm import load_spm
 
 from playNano.stack.image_stack import AFMImageStack
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +24,7 @@ def _extract_scan_rate(spm_file: Path) -> float:
     float
         The scan rate of the image in fast scan lines per second.
     """
+    spm_scan_rate = None
     return spm_scan_rate
 
 

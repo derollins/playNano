@@ -2,14 +2,10 @@
 Placeholder for a functional script to load a folder containing .asd frames of a high speed AFM video
 """
 
+import logging
 from pathlib import Path
-import numpy as np
-
-from AFMReader.asd import load_asd
 
 from playNano.stack.image_stack import AFMImageStack
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +24,7 @@ def _extract_scan_rate(asd_file: Path) -> float:
     float
         The scan rate of the image in fast scan lines per second.
     """
+    asd_scan_rate = None
     return asd_scan_rate
 
 

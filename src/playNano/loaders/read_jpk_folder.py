@@ -1,12 +1,11 @@
+import logging
 from pathlib import Path
+
 import numpy as np
 import tifffile
-
 from AFMReader.jpk import load_jpk
 
 from playNano.stack.image_stack import AFMImageStack
-
-import logging
 
 logger = logging.getLogger(__name__)
 

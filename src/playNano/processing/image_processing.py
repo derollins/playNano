@@ -1,7 +1,7 @@
-from topostats.filters import Filters
-import numpy as np
-
 import logging
+
+import numpy as np
+from topostats.filters import Filters
 
 logger = logging.getLogger(__name__)
 

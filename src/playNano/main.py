@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from playNano.io.loader import load_afm_stack
-from playNano.stack.image_stack import AFMImageStack
 
 
 def setup_logging(level=logging.INFO):

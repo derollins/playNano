@@ -1,8 +1,8 @@
+import logging
+
+import matplotlib.cm as cm
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-import matplotlib.cm as cm
-
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -1,15 +1,14 @@
 from pathlib import Path
-import os
 
+from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_h5jpk import load_h5jpk
-from playNano.stack.image_stack import AFMImageStack
 
 # Loaders:
 from playNano.loaders.read_jpk_folder import load_jpk_folder
-from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
+from playNano.stack.image_stack import AFMImageStack
 
-# from playNano.loaders.read_asd import load_asd  # future reader
+# from playNano.loaders.read_asd import load_asd   future reader
 
 
 def get_loader_for_folder(
