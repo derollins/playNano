@@ -102,18 +102,21 @@ These are some software packages that have helped and inspired this project:
 
 ### [Topostats](https://github.com/AFM-SPM/TopoStats)
 
-A general AFM image processing programme written in Python that batch processes AFM images. Topostats is able to flatten raw AFM images,
-mask objects and provides advanced ananlysis tools including U-net based masking. playNano leverages the `filters` module to flatten loaded AFM frames.
+A general AFM image processing programme written in Python that batch processes AFM images. 
+Topostats is able to flatten raw AFM images, mask objects and provides advanced ananlysis tools including U-net based masking. 
+playNano leverages the `filters` module to flatten loaded AFM frames.
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
-Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens each as a tuple containing a Numpy array
-and a float refering to the planar pixel to nanometer convertion factor. Within playNano this library is used to open the folder-based AFM video formats.  
+Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens 
+each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion 
+factor. Within playNano this library is used to open the folder-based AFM video formats.  
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
 
-A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and high- speed AFM videos. Faeturing mask
-analysis, particle detection and tracking, it also intergrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
+A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and 
+high- speed AFM videos. Faeturing mask analysis, particle detection and tracking, it also 
+intergrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
 
 ## 📜 License
 
