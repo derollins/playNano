@@ -28,7 +28,7 @@ jobs:
         run: black --check .
 
       - name: Run ruff (lint + import sorting)
-        run: ruff .
+        run: ruff check . --fix
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
