@@ -57,7 +57,7 @@ playNano "example_data/sample.h5-jpk" --make-gif
 ## 🛠️ CLI Usage
 
 ```bash
-playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output 
+playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output
 --save-raw --make-gif --log-level DEBUG
 ```
 
@@ -118,7 +118,7 @@ including U-net based masking. playNano leverages the `filters` module to flatte
 
 Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens
 each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion
-factor. Within playNano this library is used to open the folder-based AFM video formats.  
+factor. Within playNano this library is used to open the folder-based AFM video formats.
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
 

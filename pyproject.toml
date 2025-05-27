@@ -57,7 +57,7 @@ profile = "black"
 line_length = 88
 multi_line_output = 3
 include_trailing_comma = true
-known_first_party = ["playNano"] 
+known_first_party = ["playNano"]
 
 [tool.black]
 line-length = 88
