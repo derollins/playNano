@@ -18,7 +18,7 @@ repos:
     rev: v0.3.7
     hooks:
       - id: ruff
-        args: [--fix]
+        args: []
 
   - repo: https://github.com/psf/black
     rev: 23.7.0

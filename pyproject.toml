@@ -92,6 +92,7 @@ lint.select = [
 ]
 lint.ignore = [
     "E203",
+    "I001",
 ]
 
 [tool.ruff.lint.per-file-ignores]
