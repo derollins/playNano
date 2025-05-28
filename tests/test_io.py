@@ -257,3 +257,11 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
         assert len(frames) == 3
         assert all(f.size == (10, 10) for f in frames)
         assert all(f.mode in ("P", "RGB", "RGBA") for f in frames)  # Flexible for GIFs
+
+
+def test_using_jpk_resource(resource_path):
+    """Test that the jpk_folder_0 can be found."""
+    resource_dir = resource_path / "jpk_folder_0"
+    jpk_file = resource_dir / "jpk_sample_0.jpk"
+
+    assert jpk_file.exists(), "Test .jpk file is missing!"
