@@ -7,6 +7,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
+[![codecov](https://codecov.io/github/derollins/playNano/graph/badge.svg?token=NEV1OC12AV)](https://codecov.io/github/derollins/playNano)
 
 </div>
 
