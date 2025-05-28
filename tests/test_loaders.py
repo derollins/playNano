@@ -1,10 +1,8 @@
 """Test for loading various file types."""
 
 from unittest.mock import patch
-
 import numpy as np
 import pytest
-
 from playNano.io.loader import get_loader_for_folder
 from playNano.main import load_afm_stack
 from playNano.stack.image_stack import AFMImageStack
