@@ -1,4 +1,4 @@
-"""Tests for the functions within io."""
+"""Tests for the functions within io module."""
 
 import tempfile
 from pathlib import Path
