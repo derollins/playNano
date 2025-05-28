@@ -8,8 +8,6 @@ from pathlib import Path
 
 from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_h5jpk import load_h5jpk
-
-# Loaders:
 from playNano.loaders.read_jpk_folder import load_jpk_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
 from playNano.stack.image_stack import AFMImageStack

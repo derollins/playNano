@@ -2,8 +2,8 @@
 
 import logging
 
-import matplotlib.cm as cm
 import numpy as np
+from matplotlib import colormaps as cm
 from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
