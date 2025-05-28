@@ -11,6 +11,7 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
+        args: ["--profile", "black"]
         name: isort (python import sorting)
         language_version: python3.11
 
@@ -18,7 +19,8 @@ repos:
     rev: v0.3.7
     hooks:
       - id: ruff
-        args: []
+        args: ["--fix"]
+        additional_dependencies: [ "ruff>=0.0.285" ]
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
