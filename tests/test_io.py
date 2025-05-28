@@ -3,11 +3,9 @@
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
-
 import numpy as np
 import pytest
 from PIL import Image, ImageSequence
-
 from playNano.io.gif_export import (
     create_gif_with_scale_and_timestamp,
     normalize_to_uint8,
