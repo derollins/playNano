@@ -7,6 +7,9 @@ from pathlib import Path
 
 from playNano.io.loader import load_afm_stack
 
+INVALID_CHARS = r'\/:*?"<>|'
+INVALID_FOLDER_CHARS = r'*?"<>|'
+
 
 def setup_logging(level=logging.INFO):
     """
@@ -58,9 +61,71 @@ def parse_args():
     )
     parser.add_argument("--output-folder", type=str, help="Folder to save outputs")
     parser.add_argument(
+        "--output-name",
+        type=str,
+        help="Base name for output file (without extension, e.g., 'sample_01')",
+    )
+    parser.add_argument(
         "--make-gif", action="store_true", help="Export flattened stack as animated GIF"
     )
     return parser.parse_args()
+
+
+def sanitize_output_name(name: str, default: str) -> str:
+    """
+    Sanitize output file names by removing extensions like .gif & stripping whitespace.
+
+    Parameters
+    ----------
+    name : str
+        The output file name provided by the user.
+
+    Returns
+    -------
+    str
+        Sanitized base file name without extension.
+    """
+    if not name:
+        return default
+    name = name.strip()
+    name = Path(name).with_suffix("").name
+    if any(c in name for c in INVALID_CHARS):
+        raise ValueError(f"Invalid characters in output name: {INVALID_CHARS}")
+    return name
+
+
+def prepare_output_directory(folder: str | None, default: str = "output") -> Path:
+    """
+    Validate, resolve, and create the output directory if it doesn't exist.
+
+    Parameters
+    ----------
+    folder : str or None
+        User-provided output folder path. If None, a default folder is used.
+    default : str, optional
+        Default folder name to use if `folder` is not specified.
+
+    Returns
+    -------
+    Path
+        A resolved Path object pointing to the created output directory.
+
+    Raises
+    ------
+    ValueError
+        If any part of the folder path contains invalid characters.
+    """
+    folder_path = Path(folder.strip()) if folder else Path(default)
+
+    # Validate each part of the folder path (excluding drive/root on Windows)
+    for part in folder_path.parts:
+        if any(c in part for c in INVALID_FOLDER_CHARS):
+            raise ValueError(
+                f"Invalid characters in output folder path: {INVALID_FOLDER_CHARS}"
+            )
+
+    folder_path.mkdir(parents=True, exist_ok=True)
+    return folder_path
 
 
 def main():
@@ -87,10 +152,28 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info("Starting AFM stack processing...")
 
+    # Load and verify input
+
     input_path = Path(args.input_file)
     if not input_path.exists():
         logger.error(f"File not found: {input_path}")
         sys.exit(1)  # Exit with error code 1
+
+    # Determine and create output directory
+    try:
+        output_dir = prepare_output_directory(args.output_folder, "output")
+    except ValueError as e:
+        logger.error(str(e))
+        sys.exit(1)  # Exit with error code 1
+    logger.info(f"Saving outputs to: {output_dir}")
+
+    # Remove stem and whitepace from file name input or use flattened if none provided.
+    try:
+        output_stem = sanitize_output_name(args.output_name, "flattened")
+    except ValueError as e:
+        logger.error(str(e))
+        sys.exit(1)  # Exit with error code 1
+    gif_path = output_dir / f"{output_stem}.gif"
 
     # Load data
     logger.info(f"Loading AFM stack from {input_path}")
@@ -98,7 +181,7 @@ def main():
         afm_stack = load_afm_stack(input_path, channel=args.channel)
     except Exception as e:
         logger.exception(f"Failed to load AFM stack: {e}")
-        sys.exit(1)
+        sys.exit(1)  # Exit with error code 1
         return
 
     # Flatten stack
@@ -107,14 +190,9 @@ def main():
 
     # Optional: Export as GIF
     if args.make_gif:
-        # Determine and create output directory
-        output_dir = Path(args.output_folder) if args.output_folder else Path("output")
-        output_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Saving outputs to: {output_dir}")
 
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp
 
-        gif_path = output_dir / "flattened.gif"
         timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
         create_gif_with_scale_and_timestamp(
             afm_stack.image_stack,

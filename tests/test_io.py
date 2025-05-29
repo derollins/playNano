@@ -265,3 +265,11 @@ def test_using_jpk_resource(resource_path):
     jpk_file = resource_dir / "jpk_sample_0.jpk"
 
     assert jpk_file.exists(), "Test .jpk file is missing!"
+
+
+def test_using_h5jpk_resource(resource_path):
+    """Test that the jpk_folder_0 can be found."""
+    resource_dir = resource_path
+    jpk_file = resource_dir / "sample_0.h5-jpk"
+
+    assert jpk_file.exists(), "Test .h5-jpk file is missing!"

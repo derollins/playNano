@@ -1,5 +1,6 @@
 """Test for loading various file types."""
 
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -7,6 +8,7 @@ import pytest
 
 from playNano.cli import load_afm_stack
 from playNano.io.loader import get_loader_for_folder
+from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.stack.image_stack import AFMImageStack
 
 
@@ -170,3 +172,61 @@ def test_get_loader_for_folder_detects_extension(tmp_path):
     ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
     assert ext.lower() == ".jpk"
     assert callable(loader)
+
+
+@pytest.mark.parametrize(
+    (
+        "file_name",
+        "channel",
+        "flip_image",
+        "pixel_to_nm_scaling",
+        "image_shape",
+        "image_dtype",
+        "metadata_dtype",
+        "image_sum",
+    ),
+    [
+        pytest.param(
+            "sample_0.h5-jpk",
+            "height_trace",
+            True,
+            1.171875,
+            (4, 128, 128),
+            float,
+            dict,
+            0.04852558304727154,
+            id="test image 0",
+        )
+    ],
+)
+def test_read_h5jpk_valid_file(
+    file_name: str,
+    channel: str,
+    flip_image: bool,
+    pixel_to_nm_scaling: float,
+    image_shape: tuple[int, int, int],
+    image_dtype: type[np.floating],
+    metadata_dtype: type,
+    image_sum: float,
+    resource_path: Path,
+) -> None:
+    """Test the normal operation of loading a .h5-jpk file."""
+    result = load_h5jpk(resource_path / file_name, channel, flip_image)
+
+    assert isinstance(result, AFMImageStack)
+    assert result.pixel_size_nm == pixel_to_nm_scaling
+    assert isinstance(result.image_stack, np.ndarray)
+    assert result.image_stack.shape == image_shape
+    assert result.image_stack.dtype == np.dtype(image_dtype)
+    assert isinstance(result.frame_metadata, list)
+    assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
+    assert result.image_stack.sum() == image_sum
+    assert len(result.frame_metadata) == result.image_stack.shape[0]
+
+
+def test_get_loader_for_folder_no_valid_files(tmp_path):
+    """Test to raise FileNotFoundError when no supported files are present."""
+    (tmp_path / "file.txt").touch()
+    folder_loaders = {".jpk": lambda p: None}
+    with pytest.raises(FileNotFoundError):
+        get_loader_for_folder(tmp_path, folder_loaders)

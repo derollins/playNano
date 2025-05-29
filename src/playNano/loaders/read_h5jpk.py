@@ -311,7 +311,7 @@ def load_h5jpk(
             if flip_image:
                 frame = np.flipud(frame)
             image_stack[i] = frame
-
+        print(image_stack.sum())
         # Generate timestamps per frame from line_rate
         line_rate = _get_line_rate(measurement_group)
         frame_interval = (
