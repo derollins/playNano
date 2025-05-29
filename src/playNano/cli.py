@@ -190,7 +190,6 @@ def main():
 
     # Optional: Export as GIF
     if args.make_gif:
-
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp
 
         timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
