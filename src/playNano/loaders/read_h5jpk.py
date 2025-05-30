@@ -10,7 +10,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 
-from playNano.stack.image_stack import AFMImageStack
+from playNano.stack.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +149,45 @@ def _get_z_scaling_h5(channel_group: h5py.Group) -> tuple[float, float]:
     return multiplier, offset
 
 
+def _get_image_shape(measurement_group: h5py.Group) -> float:
+    """
+    Extract pixel width and hight from an HDF5 JPK measurement group.
+
+    The pixel dimensions are used to determine image shape.
+
+    Parameters
+    ----------
+    measurement_group : h5py.Group
+        HDF5 group corresponding to a Measurement (e.g. '/Measurement_000').
+
+    Returns
+    -------
+    tuple[int, int]
+        A tuple representing the image shape as (height_px, width_px).
+
+
+    Raises
+    ------
+    KeyError
+        If required attributes are missing in the measurement group.
+    """
+    try:
+        width_px = measurement_group.attrs[
+            "position-pattern.grid.ilength"
+        ]  # number of pixels
+        height_px = measurement_group.attrs[
+            "position-pattern.grid.jlength"
+        ]  # number of pixels
+
+        return (height_px, width_px)
+
+    except KeyError as e:
+        missing = e.args[0]
+        raise KeyError(
+            f"Missing required attribute '{missing}' in HDF5 measurement group."
+        ) from e
+
+
 def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
     """
     Extract pixel-to-nanometre scaling from an HDF5 JPK measurement group.
@@ -183,45 +222,6 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
             raise ValueError("Pixel count (ilength) is zero; cannot compute scaling.")
 
         return (ulength / ilength) * 1e9
-
-    except KeyError as e:
-        missing = e.args[0]
-        raise KeyError(
-            f"Missing required attribute '{missing}' in HDF5 measurement group."
-        ) from e
-
-
-def _get_image_shape(measurement_group: h5py.Group) -> float:
-    """
-    Extract pixel width and hight from an HDF5 JPK measurement group.
-
-    The pixel dimensions are used to determine image shape.
-
-    Parameters
-    ----------
-    measurement_group : h5py.Group
-        HDF5 group corresponding to a Measurement (e.g. '/Measurement_000').
-
-    Returns
-    -------
-    tuple[int, int]
-        A tuple representing the image shape as (height_px, width_px).
-
-
-    Raises
-    ------
-    KeyError
-        If required attributes are missing in the measurement group.
-    """
-    try:
-        width_px = measurement_group.attrs[
-            "position-pattern.grid.ilength"
-        ]  # number of pixels
-        height_px = measurement_group.attrs[
-            "position-pattern.grid.jlength"
-        ]  # number of pixels
-
-        return (height_px, width_px)
 
     except KeyError as e:
         missing = e.args[0]
@@ -311,7 +311,7 @@ def load_h5jpk(
             if flip_image:
                 frame = np.flipud(frame)
             image_stack[i] = frame
-        print(image_stack.sum())
+
         # Generate timestamps per frame from line_rate
         line_rate = _get_line_rate(measurement_group)
         frame_interval = (
@@ -320,13 +320,13 @@ def load_h5jpk(
         timestamps = np.arange(num_frames) * frame_interval
 
         # Compose per-frame metadata list
-        frame_metadata = [{"timestamp": ts} for ts in timestamps]
+        frame_metadata = []
+        for ts in timestamps:
+            frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
 
         return AFMImageStack(
-            image_stack=image_stack,
+            data=image_stack,
             pixel_size_nm=_jpk_pixel_to_nm_scaling_h5(measurement_group),
-            img_shape=(height_px, width_px),
-            line_rate=line_rate,
             channel=channel,
             file_path=str(file_path),
             frame_metadata=frame_metadata,

@@ -8,13 +8,13 @@ from unittest.mock import patch
 import pytest
 
 from playNano.cli import (
-    load_afm_stack,
     main,
     parse_args,
     prepare_output_directory,
     sanitize_output_name,
     setup_logging,
 )
+from playNano.stack.afm_stack import AFMImageStack
 
 
 def test_setup_logging_sets_correct_level(caplog):
@@ -33,13 +33,12 @@ def test_parse_args_defaults(monkeypatch):
     args = parse_args()
     assert args.input_file == "sample_path.jpk"
     assert args.channel == "height_trace"
-    assert not args.save_raw
     assert args.log_level == "INFO"
     assert args.output_folder is None
     assert not args.make_gif
 
 
-@patch("playNano.cli.load_afm_stack", return_value=False)
+@patch("playNano.stack.afm_stack", return_value=False)
 def test_main_file_not_found(mock_loader, monkeypatch, caplog):
     """Ensure main() exits with SystemExit if input file is missing."""
     # Patch sys.argv to simulate CLI input
@@ -61,13 +60,13 @@ def test_load_jpk_file(resource_path):
     folder = resource_path / "jpk_folder_0"
 
     # Attempt to load the AFM stack
-    stack = load_afm_stack(folder)
+    stack = AFMImageStack.from_file(folder)
 
     # Check that the output is an AFMImageStack (or similar)
     assert stack is not None
-    assert stack.image_stack.ndim == 3  # Ensure it's a stack of 2D images
-    assert stack.image_stack.shape[0] > 0  # At least one frame
-    assert stack.image_stack.shape[1] > 0 and stack.image_stack.shape[2] > 0
+    assert stack.data.ndim == 3  # Ensure it's a stack of 2D images
+    assert stack.data.shape[0] > 0  # At least one frame
+    assert stack.data.shape[1] > 0 and stack.data.shape[2] > 0
 
 
 def test_sanitize_valid_name():

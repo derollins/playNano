@@ -21,7 +21,7 @@ from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.loaders.read_jpk_folder import load_jpk_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
-from playNano.stack.image_stack import AFMImageStack
+from playNano.stack.afm_stack import AFMImageStack
 
 
 @pytest.mark.parametrize(
@@ -180,12 +180,10 @@ def test_load_afm_stack_folder_calls_correct_loader(tmp_path):
     dummy_file = tmp_path / "frame1.jpk"
     dummy_file.touch()
 
-    dummy_image_stack = np.zeros((1, 10, 10))
+    dummy_afm_stack = np.zeros((1, 10, 10))
     mock_stack = AFMImageStack(
-        image_stack=dummy_image_stack,
+        data=dummy_afm_stack,
         pixel_size_nm=1.0,
-        img_shape=(10, 10),
-        line_rate=1.0,
         channel="height_trace",
         file_path=str(tmp_path),
         frame_metadata=[{}],
@@ -198,7 +196,7 @@ def test_load_afm_stack_folder_calls_correct_loader(tmp_path):
 
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
         assert isinstance(result, AFMImageStack)
-        assert result.image_stack.shape == (1, 10, 10)
+        assert result.data.shape == (1, 10, 10)
 
 
 def test_normalize_to_uint8_handles_nan_and_constant_range():

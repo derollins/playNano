@@ -5,7 +5,7 @@ import logging
 import sys
 from pathlib import Path
 
-from playNano.io.loader import load_afm_stack
+from playNano.stack.afm_stack import AFMImageStack
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
@@ -51,9 +51,6 @@ def parse_args():
         "--channel", type=str, default="height_trace", help="Channel to read"
     )
     parser.add_argument(
-        "--save-raw", action="store_true", help="Keep a copy of the raw image stack"
-    )
-    parser.add_argument(
         "--log-level",
         type=str,
         default="INFO",
@@ -68,6 +65,12 @@ def parse_args():
     parser.add_argument(
         "--make-gif", action="store_true", help="Export flattened stack as animated GIF"
     )
+    parser.add_argument(
+        "--play",
+        action="store_true",
+        help="Pop up an OpenCV window to play the stack (raw first, space to flatten)",
+    )
+
     return parser.parse_args()
 
 
@@ -135,7 +138,7 @@ def main():
     Workflow:
     - Loads the input file or folder.
     - Flattens the AFM image stack using TopoStats.
-    - Optionally saves the raw stack and exports a GIF with timestamps and scale bar.
+    - Exports a GIF with timestamps and scale bar.
 
     Returns
     -------
@@ -178,23 +181,35 @@ def main():
     # Load data
     logger.info(f"Loading AFM stack from {input_path}")
     try:
-        afm_stack = load_afm_stack(input_path, channel=args.channel)
+        afm_stack = AFMImageStack.from_file(input_path, channel=args.channel)
     except Exception as e:
         logger.exception(f"Failed to load AFM stack: {e}")
         sys.exit(1)  # Exit with error code 1
         return
 
-    # Flatten stack
-    logger.info("Flattening AFM image stack...")
-    afm_stack.flatten_images(keep_raw=args.save_raw)
+    # If user wants to _play_ the stack interactively, pop up video now:
+    if args.play:
+        from playNano.io.vis import play_stack_cv
+
+        # fps approximated from metadata of first frame
+        fps = afm_stack.frame_metadata[0]["line_rate"] / afm_stack.image_shape[0]
+        play_stack_cv(
+            afm_stack.data,
+            pixel_size_nm=afm_stack.pixel_size_nm,
+            fps=fps,
+        )
+        # after user closes window, we fall through into flatten/GIF logic
 
     # Optional: Export as GIF
     if args.make_gif:
+        # Flatten stack
+        logger.info("Flattening AFM image stack...")
+        afm_stack.flatten_images()
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp
 
         timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
         create_gif_with_scale_and_timestamp(
-            afm_stack.image_stack,
+            afm_stack.data,
             afm_stack.pixel_size_nm,
             timestamps,
             output_path=gif_path,

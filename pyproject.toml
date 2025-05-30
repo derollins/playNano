@@ -33,7 +33,8 @@ dependencies = [
   "Pillow",
   "matplotlib",
   "topostats",
-  "afmreader"
+  "afmreader",
+  "opencv-python"
 ]
 
 [project.optional-dependencies]

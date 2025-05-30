@@ -10,7 +10,7 @@ from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.loaders.read_jpk_folder import load_jpk_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
-from playNano.stack.image_stack import AFMImageStack
+from playNano.stack.afm_stack import AFMImageStack
 
 # from playNano.loaders.read_asd import load_asd   future reader
 
@@ -92,9 +92,7 @@ def get_loader_for_file(
         raise ValueError(f"Unsupported file type: {ext}")
 
 
-def load_afm_stack(
-    file_path: Path | str, channel: str = "height_trace"
-) -> AFMImageStack:
+def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
     Unified interface to load AFM stacks from various file formats.
 

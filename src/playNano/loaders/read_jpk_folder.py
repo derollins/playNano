@@ -11,7 +11,7 @@ import numpy as np
 import tifffile
 from AFMReader.jpk import load_jpk
 
-from playNano.stack.image_stack import AFMImageStack
+from playNano.stack.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 
@@ -99,13 +99,14 @@ def load_jpk_folder(
             img = np.flipud(img)
         image_stack[i] = img
 
-    frame_metadata = [{"timestamp": ts} for ts in timestamps]
+        # Compose per-frame metadata list
+        frame_metadata = []
+        for ts in timestamps:
+            frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
 
     return AFMImageStack(
-        image_stack=image_stack,
+        data=image_stack,
         pixel_size_nm=first_pixel_size_nm,
-        img_shape=(height_px, width_px),
-        line_rate=line_rate,  # in lines per second
         channel=channel,
         file_path=str(folder),
         frame_metadata=frame_metadata,
