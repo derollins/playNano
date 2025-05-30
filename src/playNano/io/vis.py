@@ -15,7 +15,7 @@ def pad_to_square(img: np.ndarray, border_color: int = 0) -> np.ndarray:
     # compute top-left corner
     y = (size - h) // 2
     x = (size - w) // 2
-    canvas[y:y + h, x:x + w] = img
+    canvas[y : y + h, x : x + w] = img  # noqa: E203
     return canvas
 
 
@@ -74,7 +74,8 @@ def play_stack_cv(
 
         # Paste resized image into canvas
         canvas[
-            y_offset:y_offset + disp_size[1], x_offset:x_offset + disp_size[0]
+            y_offset : y_offset + disp_size[1],  # noqa: E203
+            x_offset : x_offset + disp_size[0],  # noqa: E203
         ] = resized_bgr
 
         # Show the final canvas

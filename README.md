@@ -56,6 +56,20 @@ Generate a flattened AFM image stack and export a GIF in one command:
 playNano "example_data/sample.h5-jpk" --make-gif
 ```
 
+Or open an interactive viewer window to inspect and flatten the data manually:
+
+```bash
+playNano "example_data/sample.h5-jpk" --play
+```
+
+## 🖥️ Interactive Viewer (--play)
+
+Launches a window for visually exploring and flattening your AFM stack.
+
+- **Space** — Apply flattening and display the processed stack.
+- **f** — Toggle between raw and flattened view (after flattening).
+- **q** or **ESC** — Quit the viewer.
+
 ## 🛠️ CLI Usage
 
 ```bash
@@ -63,25 +77,40 @@ playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output
 --save-raw --make-gif --log-level DEBUG
 ```
 
-### Options
+You can also load a folder of .jpk files (not .h5-jpk) for batch processin
+
+### Positional Arguments
 
 `input_file` (positional): Path to your `.h5-jpk` file or folder of `.jpk` files.
 
-`--channel`: Channel name, e.g. `height_trace` (default).
+### Common Options
 
-`--save-raw`: Keep a copy of the unflattened image stack.
+`--channel`: Channel name, e.g. `height_trace` (default).
 
 `--make-gif`: Export a GIF of the flattened stack.
 
 `--output-folder`: Where to save outputs.
 
+`--output-name`: Name of file output. (Default: "flattened.gif")
+
 `--log-level`: Logging verbosity (`DEBUG`, `INFO`, etc.)
+
+N.B. If both `--make-gif` and `--play` are used the data is flattened again and the gif
+generated after the interactive window is quit.
 
 ### Output
 
-📂 Flattened image stack (planned: `.npy`, `.tiff`)
+✅ Flattened image stack (in memory; save via --make-gif)
 
-🎞️ Optional animated GIF: `flattened.gif` with scale and timestamp
+🎞️ Animated GIF with scale bar and timestamps
+
+🧪 Planned formats: .npy, .tiff
+
+## ⚠️ Notes
+
+- Make sure the input file includes valid metadata like line_rate, or GIF generation may fail.
+
+- If --channel is incorrect or missing from the file, you’ll receive an error.
 
 ## 📁 Project Structure
 
@@ -102,6 +131,7 @@ This project requires the following Python packages:
 - `h5py`
 - `Pillow`
 - `matplotlib`
+- `opencv-python`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files
     (also planned for use in future `.asd` and `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing

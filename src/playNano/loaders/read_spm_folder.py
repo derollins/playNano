@@ -86,7 +86,7 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
         for ts in timestamps:
             frame_metadata.append({
                 "timestamp": ts,
-                "frame_rate": line_rate
+                "line_rate": line_rate
             })
 
         return AFMImageStack(
