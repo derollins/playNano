@@ -28,9 +28,7 @@ def play_stack_cv(
     Press SPACE to toggle between raw and flattened.
     Press ESC or 'q' to quit.
     """
-
     # instructions = "Keys: f=apply filter, SPACE= toggle filter, e=export, q=quit"
-
     delay_ms = int(50 / fps) if fps > 0 else 50
 
     # Determine image size after padding to square
