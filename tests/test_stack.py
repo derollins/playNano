@@ -77,6 +77,7 @@ def test_get_frame_metadata_index_error():
 
 
 def test_snapshot_raw_and_apply(monkeypatch):
+    """Test that the raw data is snapshoted and functions applied"""
     data = np.ones((2, 2, 2))
     stack = AFMImageStack(
         data=data.copy(),

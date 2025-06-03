@@ -108,7 +108,6 @@ def flatten_poly(frame: np.ndarray, degree: int = 1) -> np.ndarray:
     np.ndarray
         Flattened frame with background subtracted.
     """
-
     x, y = np.meshgrid(np.arange(frame.shape[1]), np.arange(frame.shape[0]))
     xx = x.ravel()
     yy = y.ravel()
@@ -165,6 +164,7 @@ def gaussian_filter(frame: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 
 
 def register_filters():
+    """Return list of filter options."""
     return {
         "topostats_flatten": topostats_flatten,
         "median_filter": median_filter,

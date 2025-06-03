@@ -29,7 +29,9 @@ If you have any questions please get in touch: <d.e.rollins@leeds.ac.uk>
 
 - 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files and folders of `.jpk` files.
 - 🔍 **Auto-detects** likely image channels (e.g., `/Height`) if not specified.
-- 🖼️ **Exports animated GIFs** of AFM image stacks for quick visualisation
+- ▶️ **Animated image viewer** to display high-speed AFM data.
+- 🪟 **Applies basic filters** for levelling AFM images.
+- 🖼️ **Exports animated GIFs** of AFM image stacks for quick visualisation.
 - 🧠 Built for integration with analysis/visualisation pipelines and tools like `TopoStats`.
 
 ---
@@ -69,8 +71,9 @@ playNano "example_data/sample.h5-jpk" --play
 
 Launches a window for visually exploring and flattening your AFM stack.
 
-- **Space** — Apply flattening and display the processed stack.
-- **f** — Toggle between raw and flattened view (after flattening).
+- **f** — Apply flattening and display the processed stack.
+- **Space** — Toggle between raw and flattened view (after flattening).
+- **e** — Export flattned video to `--output-folder` as `--output-name`.gif.
 - **q** or **ESC** — Quit the viewer.
 
 ## 🛠️ CLI Usage
@@ -90,6 +93,9 @@ You can also load a folder of .jpk files (not .h5-jpk) for batch processin
 
 `--channel`: Channel name, e.g. `height_trace` (default).
 
+`--filter`: Select filter, options are `topostats_flatten`, `flatten_poly` 
+or `median_filter`. 
+
 `--make-gif`: Export a GIF of the flattened stack.
 
 `--output-folder`: Where to save outputs.
@@ -103,7 +109,7 @@ generated after the interactive window is quit.
 
 ### Output
 
-✅ Flattened image stack (in memory; save via --make-gif)
+✅ Flattened image stack (in memory; save via --make-gif or e)
 
 🎞️ Animated GIF with scale bar and timestamps
 
@@ -135,6 +141,8 @@ This project requires the following Python packages:
 - `Pillow`
 - `matplotlib`
 - `opencv-python`
+- `scipy`
+- `python-dateutil`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files
     (also planned for use in future `.asd` and `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing

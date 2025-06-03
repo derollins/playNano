@@ -169,7 +169,7 @@ def test_get_loader_for_folder_detects_extension(tmp_path):
 
 
 def test_open_file(resource_path):
-    """Test if the file can be read"""
+    """Test if the file can be read."""
     with h5py.File(resource_path / "sample_0.h5-jpk", "r") as f:
         assert list(f.keys())  # Just trigger reading
 
