@@ -11,7 +11,7 @@ def pad_to_square(img: np.ndarray, border_color: int = 0) -> np.ndarray:
     canvas = np.full((size, size), border_color, dtype=img.dtype)
     y = (size - h) // 2
     x = (size - w) // 2
-    canvas[y : y + h, x : x + w] = img # noqa
+    canvas[y : y + h, x : x + w] = img      # noqa
     return canvas
 
 

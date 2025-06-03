@@ -93,8 +93,8 @@ You can also load a folder of .jpk files (not .h5-jpk) for batch processin
 
 `--channel`: Channel name, e.g. `height_trace` (default).
 
-`--filter`: Select filter, options are `topostats_flatten`, `flatten_poly` 
-or `median_filter`. 
+`--filter`: Select filter, options are `topostats_flatten`, `flatten_poly`
+or `median_filter`.
 
 `--make-gif`: Export a GIF of the flattened stack.
 
