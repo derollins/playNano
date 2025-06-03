@@ -60,7 +60,7 @@ def test_load_jpk_file(resource_path):
     folder = resource_path / "jpk_folder_0"
 
     # Attempt to load the AFM stack
-    stack = AFMImageStack.from_file(folder)
+    stack = AFMImageStack.load_data(folder)
 
     # Check that the output is an AFMImageStack (or similar)
     assert stack is not None

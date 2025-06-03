@@ -56,6 +56,11 @@ def parse_args():
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    parser.add_argument(
+        "--filter",
+        type=str,
+        help="Name of filter to apply (e.g., topostats_filter). Applies non-interactively.",  # noqa
+    )
     parser.add_argument("--output-folder", type=str, help="Folder to save outputs")
     parser.add_argument(
         "--output-name",
@@ -156,61 +161,75 @@ def main():
     logger.info("Starting AFM stack processing...")
 
     # Load and verify input
-
     input_path = Path(args.input_file)
     if not input_path.exists():
         logger.error(f"File not found: {input_path}")
         sys.exit(1)  # Exit with error code 1
 
-    # Determine and create output directory
-    try:
-        output_dir = prepare_output_directory(args.output_folder, "output")
-    except ValueError as e:
-        logger.error(str(e))
-        sys.exit(1)  # Exit with error code 1
-    logger.info(f"Saving outputs to: {output_dir}")
-
-    # Remove stem and whitepace from file name input or use flattened if none provided.
-    try:
-        output_stem = sanitize_output_name(args.output_name, "flattened")
-    except ValueError as e:
-        logger.error(str(e))
-        sys.exit(1)  # Exit with error code 1
-    gif_path = output_dir / f"{output_stem}.gif"
-
     # Load data
     logger.info(f"Loading AFM stack from {input_path}")
     try:
-        afm_stack = AFMImageStack.from_file(input_path, channel=args.channel)
+        afm_stack = AFMImageStack.load_data(input_path, channel=args.channel)
+        input_stem = input_path.stem
     except Exception as e:
         logger.exception(f"Failed to load AFM stack: {e}")
         sys.exit(1)  # Exit with error code 1
         return
+    fps = afm_stack.frame_metadata[0]["line_rate"] / afm_stack.image_shape[0]
 
     # If user wants to _play_ the stack interactively, pop up video now:
     if args.play:
         from playNano.io.vis import play_stack_cv
 
+        _output_dir = args.output_folder
+        _output_name = args.output_name
+
         # fps approximated from metadata of first frame
-        fps = afm_stack.frame_metadata[0]["line_rate"] / afm_stack.image_shape[0]
         play_stack_cv(
-            afm_stack.data,
-            pixel_size_nm=afm_stack.pixel_size_nm,
+            afm_stack,
             fps=fps,
+            output_dir=_output_dir,
+            output_name=_output_name,
         )
-        # after user closes window, we fall through into flatten/GIF logic
+
+        # after user closes window, we fall through into flatten/GIF logic--- want to stop this? # noqa
 
     # Optional: Export as GIF
     if args.make_gif:
-        # Flatten stack
-        logger.info("Flattening AFM image stack...")
-        afm_stack.flatten_images()
+        # Determine and create output directory
+        try:
+            output_dir = prepare_output_directory(args.output_folder)
+        except ValueError as e:
+            logger.error(str(e))
+            sys.exit(1)  # Exit with error code 1
+        logger.info(f"Saving outputs to: {output_dir}")
+
+        # Apply filters if selected
+        if args.filter:
+            logger.info(f"Applying filter: {args.filter}")
+            # Example: apply filter by name
+            afm_stack.apply([args.filter])
+
+        # Remove stem and whitepace from file name input or use input file stem if none provided. # noqa
+        try:
+            output_stem = sanitize_output_name(args.output_name, input_stem)
+        except ValueError as e:
+            logger.error(str(e))
+            sys.exit(1)  # Exit with error code 1
+
+        # Add _filtered to stem if filters applied.
+        if args.filter:
+            gif_path = output_dir / f"{output_stem}_filtered.gif"
+        else:
+            gif_path = output_dir / f"{output_stem}.gif"
+
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp
 
         timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
         create_gif_with_scale_and_timestamp(
             afm_stack.data,
             afm_stack.pixel_size_nm,
+            fps,
             timestamps,
             output_path=gif_path,
         )

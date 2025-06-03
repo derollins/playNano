@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import cv2
 import numpy as np
 import pytest
 from PIL import Image, ImageSequence
@@ -17,6 +18,7 @@ from playNano.io.loader import (
     get_loader_for_folder,
     load_afm_stack,
 )
+from playNano.io.vis import pad_to_square, play_stack_cv
 from playNano.loaders.read_asd_folder import load_asd_folder
 from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.loaders.read_jpk_folder import load_jpk_folder
@@ -271,3 +273,119 @@ def test_using_h5jpk_resource(resource_path):
     jpk_file = resource_dir / "sample_0.h5-jpk"
 
     assert jpk_file.exists(), "Test .h5-jpk file is missing!"
+
+
+def test_pad_to_square_rectangular_image():
+    """Pad a rectangular image to a square with correct centering."""
+    # Create a 2x4 grayscale image with distinct values
+    img = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
+    out = pad_to_square(img, border_color=0)
+    # Output should be 4x4, with original centered vertically
+    assert out.shape == (4, 4)
+    # Top and bottom rows should be zeros
+    assert np.all(out[0] == 0) and np.all(out[3] == 0)
+    # Middle rows should match original
+    assert np.array_equal(out[1, :], img[0]) and np.array_equal(out[2, :], img[1])
+
+
+def test_pad_to_square_square_image():
+    """Return the same image when it's already square."""
+    img = np.ones((3, 3), dtype=np.uint8) * 5
+    out = pad_to_square(img, border_color=7)
+    assert out.shape == (3, 3)
+    assert np.array_equal(out, img)
+
+
+class DummyWindow:
+    """Class for testing the cv2 window."""
+
+    pass
+
+
+def test_play_stack_cv_exits_on_escape(monkeypatch, tmp_path):
+    """play_stack_cv should exit immediately when ESC key is pressed."""
+    # Create a dummy AFMImageStackObject with a 2-frame stack of 2x2 images
+    stack = AFMImageStack(
+        data=np.zeros((2, 2, 2)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        file_path=Path(tmp_path),
+        frame_metadata=[{}],
+    )
+    # Monkeypatch all cv2 window functions to do nothing / return values
+    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
+    # getWindowImageRect returns (x, y, width, height) matching image size (2x2)
+    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
+    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
+    # monkeypatch.setattr(cv2,
+    # "cvtColor", lambda src, code: np.stack([src] * 3, axis=-1))
+    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
+    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
+    # waitKey returns ESC code (27)
+    monkeypatch.setattr(cv2, "waitKey", lambda delay: 27)
+    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
+
+    # Call play_stack_cv: should run loop once and exit without error
+    play_stack_cv(stack, fps=10.0)
+
+
+def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
+    """play_stack_cv should flatten on 'f' and toggle on SPACE."""
+    # Create a dummy 2-frame stack of 2x2 images
+    img0 = np.array([[1, 2], [3, 4]], dtype=np.uint8)
+    img1 = np.array([[5, 6], [7, 8]], dtype=np.uint8)
+    stack = AFMImageStack(
+        data=np.stack([img0, img1], axis=0),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        file_path=Path(tmp_path),
+        frame_metadata=[{"timestamp": "t0"}, {"timestamp": "t1"}],
+    )
+
+    # Track whether flatten was called
+    calls = {"flattened": False}
+
+    def fake_apply(filters):
+        calls["flattened"] = True
+        # Simulate a flattened stack with constant value
+        stack.processed["raw"] = stack.data  # ensure raw is still accessible
+        return np.full_like(stack.data, 9)
+
+    # Patch the apply method on the instance
+    monkeypatch.setattr(stack, "apply", fake_apply)
+
+    # Patch OpenCV functions
+    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
+    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
+    # monkeypatch.setattr(cv2,
+    # "cvtColor", lambda src, code: np.stack([src] * 3, axis=-1))
+    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
+    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "waitKey", lambda delay: 27)  # simulate ESC
+    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
+
+    # Simulate key presses: 'f' (flatten), SPACE (toggle), ESC (exit)
+    key_sequence = [ord("f"), 32, 27]
+    monkeypatch.setattr(cv2, "waitKey", lambda delay: key_sequence.pop(0))
+
+    # Run the function
+    play_stack_cv(stack, fps=5.0)
+
+    # Check that flatten was called
+    assert calls["flattened"] is True
+
+
+def test_pad_to_square_with_border_color():
+    """pad_to_square applies custom border_color correctly."""
+    img = np.zeros((1, 2), dtype=np.uint8)
+    out = pad_to_square(img, border_color=5)
+    # Output is 2x2; bottom row should be border_color
+    assert out.shape == (2, 2)
+    assert np.all(out[1] == 5)
+    # Top row should contain original values
+    assert out[0, 0] == 0 and out[0, 1] == 0

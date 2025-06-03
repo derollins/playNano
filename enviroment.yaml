@@ -1,0 +1,18 @@
+name: playnano_env
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - numpy
+  - h5py=3.8.*          # Pin to a stable version to avoid crashes
+  - pillow
+  - matplotlib
+  - opencv
+  - scipy
+  - pip
+  - pip:
+      - topostats
+      - afmreader
+      - python-dateutil>=2.8

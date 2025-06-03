@@ -1,14 +1,16 @@
-"""Module for applying flattening to AFM images in Numpy arrays."""
+"""Module for applying flattening and filtering to AFM images in Numpy arrays."""
 
 import logging
 
 import numpy as np
+from scipy.ndimage import gaussian_filter as scipy_gaussian
+from scipy.ndimage import median_filter as scipy_median
 from topostats.filters import Filters
 
 logger = logging.getLogger(__name__)
 
 
-def flatten_afm_frame(
+def topostats_flatten(
     frame: np.ndarray,
     filename: str = "frame",
     pixel_to_nm: float = 1.0,
@@ -90,31 +92,82 @@ def flatten_afm_frame(
         return None
 
 
-def flatten_stack(image_stack: np.ndarray, pixel_to_nm: float = 1.0) -> np.ndarray:
+def flatten_poly(frame: np.ndarray, degree: int = 1) -> np.ndarray:
     """
-    Apply AFM frame flattening to a stack of images.
+    Remove background by polynomial surface fitting.
 
     Parameters
     ----------
-    image_stack : np.ndarray
-        3D NumPy array of shape (N, H, W), where N is the number of frames.
-    pixel_to_nm : float, optional
-        Scaling factor to convert pixels to nanometers. Default is 1.0.
+    frame : np.ndarray
+        2D AFM image frame.
+    degree : int, optional
+        Degree of polynomial fit (default is 1 for linear).
 
     Returns
     -------
     np.ndarray
-        3D NumPy array of flattened frames with the same shape as the input stack.
-
-    Notes
-    -----
-    - Internally calls `flatten_afm_frame` on each frame in the stack.
-    - Frames that fail to flatten (e.g., due to invalid input) will
-    result in None and may raise an error during stacking.
+        Flattened frame with background subtracted.
     """
-    return np.stack(
-        [
-            flatten_afm_frame(frame, filename=f"frame_{i}", pixel_to_nm=pixel_to_nm)
-            for i, frame in enumerate(image_stack)
-        ]
-    )
+
+    x, y = np.meshgrid(np.arange(frame.shape[1]), np.arange(frame.shape[0]))
+    xx = x.ravel()
+    yy = y.ravel()
+    zz = frame.ravel()
+
+    if degree == 1:
+        A = np.c_[np.ones(xx.shape), xx, yy]
+    elif degree == 2:
+        A = np.c_[np.ones(xx.shape), xx, yy, xx**2, xx * yy, yy**2]
+    else:
+        raise ValueError("Only degree 1 or 2 supported.")
+
+    coeffs, *_ = np.linalg.lstsq(A, zz, rcond=None)
+    fitted = A @ coeffs
+    return frame - fitted.reshape(frame.shape)
+
+
+def median_filter(frame: np.ndarray, size: int = 3) -> np.ndarray:
+    """
+    Reduce noise using median filtering.
+
+    Parameters
+    ----------
+    frame : np.ndarray
+        2D AFM image frame.
+    size : int, optional
+        Size of the filter window (default is 3).
+
+    Returns
+    -------
+    np.ndarray
+        Denoised frame.
+    """
+    return scipy_median(frame, size=size)
+
+
+def gaussian_filter(frame: np.ndarray, sigma: float = 1.0) -> np.ndarray:
+    """
+    Smooth image using Gaussian filtering.
+
+    Parameters
+    ----------
+    frame : np.ndarray
+        2D AFM image frame.
+    sigma : float, optional
+        Standard deviation for Gaussian kernel (default is 1.0).
+
+    Returns
+    -------
+    np.ndarray
+        Smoothed frame.
+    """
+    return scipy_gaussian(frame, sigma=sigma)
+
+
+def register_filters():
+    return {
+        "topostats_flatten": topostats_flatten,
+        "median_filter": median_filter,
+        "gaussian_filter": gaussian_filter,
+        "flatten_poly": flatten_poly,
+    }

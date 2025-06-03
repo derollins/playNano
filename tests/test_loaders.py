@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import h5py
 import numpy as np
 import pytest
 
@@ -35,7 +36,7 @@ def test_load_afm_stack_file_calls_correct_loader(tmp_path):
         "playNano.io.loader.load_h5jpk",
         return_value=dummy_stack,
     ) as mock_loader:
-        result = AFMImageStack.from_file(test_file)
+        result = AFMImageStack.load_data(test_file)
 
         mock_loader.assert_called_once_with(test_file, channel="height_trace")
         assert isinstance(result, AFMImageStack)
@@ -77,7 +78,7 @@ def test_load_afm_stack_file_calls_correct_folder_loader(
     patch_path = f"playNano.io.loader.{loader_func_name}"
 
     with patch(patch_path, return_value=dummy_stack) as mock_loader:
-        result = AFMImageStack.from_file(tmp_path)
+        result = AFMImageStack.load_data(tmp_path)
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
         assert isinstance(result, AFMImageStack)
 
@@ -90,9 +91,9 @@ def test_load_afm_stack_file_calls_correct_folder_loader(
     assert detected_ext.lower() == expected_ext
 
 
-def test_from_file_with_multiple_files(tmp_path):
+def test_load_data_with_multiple_files(tmp_path):
     """
-    Test `AFMImageStack.from_file()` loads supported files if mixed ext are present.
+    Test `AFMImageStack.load_data()` loads supported files if mixed ext are present.
 
     Ensures:
     - The loader is selected correctly even with unrelated files in the folder.
@@ -112,7 +113,7 @@ def test_from_file_with_multiple_files(tmp_path):
     with patch(
         "playNano.io.loader.load_jpk_folder", return_value=dummy_stack
     ) as mock_loader:
-        result = AFMImageStack.from_file(tmp_path)
+        result = AFMImageStack.load_data(tmp_path)
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
         assert isinstance(result, AFMImageStack)
 
@@ -129,7 +130,7 @@ def test_load_afm_stack_raises_with_unknown_extension(tmp_path):
     with pytest.raises(
         FileNotFoundError, match="No supported AFM files found in the folder."
     ):
-        AFMImageStack.from_file(tmp_path)
+        AFMImageStack.load_data(tmp_path)
 
 
 def test_load_afm_stack_raises_with_unknown_extension_file(tmp_path):
@@ -143,7 +144,7 @@ def test_load_afm_stack_raises_with_unknown_extension_file(tmp_path):
     test_file.touch()
 
     with pytest.raises(ValueError, match="Unsupported file type: .unknown"):
-        AFMImageStack.from_file(test_file)
+        AFMImageStack.load_data(test_file)
 
 
 def test_get_loader_for_folder_detects_extension(tmp_path):
@@ -165,6 +166,31 @@ def test_get_loader_for_folder_detects_extension(tmp_path):
     ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
     assert ext.lower() == ".jpk"
     assert callable(loader)
+
+
+def test_open_file(resource_path):
+    """Test if the file can be read"""
+    with h5py.File(resource_path / "sample_0.h5-jpk", "r") as f:
+        assert list(f.keys())  # Just trigger reading
+
+
+def test_h5jpk_file_is_hdf5(resource_path):
+    """Check if the file is a valid HDF5 file before opening."""
+    file_path = resource_path / "sample_0.h5-jpk"
+
+    assert file_path.exists(), f"File does not exist: {file_path}"
+    assert h5py.is_hdf5(file_path), f"File is not a valid HDF5 file: {file_path}"
+
+
+def test_h5jpk_file_is_valid(resource_path):
+    """Safely check if a .h5-jpk file is a valid HDF5 file."""
+    file_path = resource_path / "sample_0.h5-jpk"  # Adjust to your test file
+    try:
+        with h5py.File(file_path, "r") as f:
+            assert isinstance(f, h5py.File)
+            assert len(f.keys()) > 0  # Ensure it has some content
+    except OSError as e:
+        pytest.fail(f"Failed to open HDF5 file: {e}")
 
 
 @pytest.mark.parametrize(
