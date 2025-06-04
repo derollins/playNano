@@ -126,7 +126,7 @@ playnano run /path/to/afm_file.h5 \
   [--make-gif] \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME]
-  [--scale-bar-nm SCALE_BAR_INT] 
+  [--scale-bar-nm SCALE_BAR_INT]
 
 ```
 

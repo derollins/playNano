@@ -28,6 +28,8 @@ from playNano.stack.afm_stack import AFMImageStack
 
 
 class DummyAFM:
+    """A dummy AFMImageStack for testing purposes."""
+
     def __init__(self):
         """Initialize a dummy AFMImageStack for testing."""
         self.data = np.zeros((5, 10, 10))

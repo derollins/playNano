@@ -373,7 +373,7 @@ def main() -> None:
     - Configure logging level based on user input.
     - Show help and exit if no subcommand is provided.
     - Call the handler function associated with the chosen subcommand.
-    
+
     Usage:
       playnano play  <input_file> [--filters …] [--output-folder …] [--output-name …]
       playnano run   <input_file> [--filters …] [--export …] [--make-gif]
