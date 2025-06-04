@@ -93,7 +93,7 @@ Opens an OpenCV window for visualising and processing the AFM stack.
 ```bash
 playnano play /path/to/afm_file.h5 \
   [--channel CHANNEL] \
-  [--filters FILTER1,FILTER2,...] \
+  [--filters FILTER1,MASK1,FILTER2,...] \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME] \
   [--scale-bar-nm SCALE_BAR_INT]
@@ -159,19 +159,23 @@ playnano run /path/to/afm_file.h5 \
 
 - **Remove Plane** (remove_plane): Fit a 2D plane to the image with inear regression and subtract it.
 
-> Plane calculated from unmasked data if mask is present.
+  > Plane calculated from unmasked data if mask is present.
 
-- **Polynomial Flatten** (polinominal_flatten): Fit and subtract a 2D polynomial of given order to remove slow surface trends.
+- **Polynomial Flatten** (polynomial_flatten): Fit and subtract a 2D polynomial of given order to remove slow surface trends.
 
-> Polynominal calculated from unmasked data if present. Order of polynomial currently set to 2.
+  > Polynominal calculated from unmasked data if present. Order of polynomial currently set to 2.
+
+- **Row Median Align** (row_median_align): Subtract the median of each row from that row to remove horizontal banding.
+
+  > Polynominal calculated from unmasked data if present.
 
 - **Zero Mean** (zero mean): Subtract the overall mean height to center the background around zero.
 
-> Mean calculated from unmasked data if mask is present.
+  > Mean calculated from unmasked data if mask is present.
 
 - **Gaussian Filter** (gaussian_filter): Apply a Gaussian low-pass filter to smooth high-frequency noise.
 
-> Sigma currently set at 1 pixel.
+  > Sigma currently set at 1 pixel.
 
 ### Masks
 
