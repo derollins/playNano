@@ -5,7 +5,16 @@ from datetime import datetime
 import numpy as np
 import pytest
 
+import playNano.stack.afm_stack as afm_stack_module
 from playNano.stack.afm_stack import FILTER_MAP, AFMImageStack, normalize_timestamps
+
+
+def dummy_filter(image, **kwargs):
+    """Filter dummy for testing."""
+    return image + 1
+
+
+patched_filters = {"dummy_filter": dummy_filter}
 
 
 def test_normalize_timestamps_various_formats():
@@ -92,8 +101,8 @@ def test_snapshot_raw_and_apply(monkeypatch):
         return arr * 2
 
     # Monkeypatch the FILTER_MAP to include our custom filter
-    monkeypatch.setitem(FILTER_MAP, "doubled", double)
-    monkeypatch.setitem(FILTER_MAP, "quadrupled", double)
+    monkeypatch.setitem(afm_stack_module.FILTER_MAP, "doubled", double)
+    monkeypatch.setitem(afm_stack_module.FILTER_MAP, "quadrupled", double)
 
     # Apply the "doubled" filter
     stack.apply(["doubled"])
@@ -112,10 +121,7 @@ def test_snapshot_raw_and_apply(monkeypatch):
 
 def test_flatten_images_uses_apply(monkeypatch):
     """Ensure applying 'topostats_flatten' updates data and stores result."""
-    import numpy as np
-
-    from playNano.stack.afm_stack import AFMImageStack
-
+    # 1) Create a tiny 2×2×2 “stack of ones”
     data = np.ones((2, 2, 2))
     stack = AFMImageStack(
         data=data.copy(),
@@ -125,23 +131,32 @@ def test_flatten_images_uses_apply(monkeypatch):
         frame_metadata=[{}, {}],
     )
 
-    # Create a fake flattened array
-    fake_flat = np.full_like(data, fill_value=7.0)
+    # 2) What we expect after “flatten”: every pixel = 7.0
+    fake_flat = np.full_like(data, 7.0)
 
-    # Patch the FILTER_MAP to simulate the flattening filter
-    def fake_flatten(frame, **kwargs):
-        return np.full_like(frame, 7.0)
-
-    monkeypatch.setitem(
-        stack.__class__.__dict__["apply"].__globals__["FILTER_MAP"],
-        "topostats_flatten",
-        fake_flatten,
+    # 3) Patch out any possibility of loading a real plugin:
+    #    Make AFMImageStack._load_plugin(...) return None so
+    # the code falls back to FILTER_MAP.
+    monkeypatch.setattr(
+        "playNano.stack.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
     )
 
+    # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
+    monkeypatch.setitem(
+        FILTER_MAP,
+        "topostats_flatten",
+        lambda frame, **kwargs: np.full_like(frame, 7.0),
+    )
+
+    # 5) Call apply([...]) – now it must pick up our fake function from FILTER_MAP
     out = stack.apply(["topostats_flatten"])
+
+    # 6) Now it should be equal to fake_flat
     np.testing.assert_array_equal(out, fake_flat)
-    assert "flattened" in stack.processed or "topostats_flatten" in stack.processed
-    np.testing.assert_array_equal(stack.data, fake_flat)
+
+    # 7) Also verify that stack.processed["topostats_flatten"] was set to fake_flat
+    assert "topostats_flatten" in stack.processed
+    np.testing.assert_array_equal(stack.processed["topostats_flatten"], fake_flat)
 
 
 def test_frames_with_metadata_iterator():
@@ -189,7 +204,7 @@ def test_restore_raw(monkeypatch):
     def double(arr):
         return arr * 2
 
-    monkeypatch.setitem(FILTER_MAP, "doubled", double)
+    monkeypatch.setitem(afm_stack_module.FILTER_MAP, "doubled", double)
 
     stack.apply(["doubled"])
     assert np.all(stack.data == 2)

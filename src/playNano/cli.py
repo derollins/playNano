@@ -1,17 +1,28 @@
-"""Main script implimenting CLI for playNano."""
+"""Main script implementing CLI for playNano."""
 
 import argparse
 import logging
 import sys
+from importlib import metadata
 from pathlib import Path
 
+from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
+from playNano.processing.filters import register_filters
 from playNano.stack.afm_stack import AFMImageStack
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
 
+# Built-in filters dictionary
+FILTER_MAP = register_filters()
 
-def setup_logging(level=logging.INFO):
+# Names of all entry-point plugins (if any third-party filters are installed)
+ALL_ENTRYPOINT_NAMES = {
+    ep.name for ep in metadata.entry_points(group="playNano.filters")
+}
+
+
+def setup_logging(level: int = logging.INFO) -> None:
     """
     Configure the logging format and level.
 
@@ -19,10 +30,6 @@ def setup_logging(level=logging.INFO):
     ----------
     level : int, optional
         Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.
-
-    Returns
-    -------
-    None
     """
     logging.basicConfig(
         level=level,
@@ -30,63 +37,16 @@ def setup_logging(level=logging.INFO):
     )
 
 
-def parse_args():
-    """
-    Parse command-line arguments for AFM stack processing.
-
-    Returns
-    -------
-    argparse.Namespace
-        Parsed command-line arguments.
-    """
-    parser = argparse.ArgumentParser(
-        description="Flatten an AFM .h5-jpk video stack or folder of .jpk video frames."
-    )
-    parser.add_argument(
-        "input_file",
-        type=str,
-        help="Path to AFM input file (.h5-jpk, etc.) or folder of .jpk files",
-    )
-    parser.add_argument(
-        "--channel", type=str, default="height_trace", help="Channel to read"
-    )
-    parser.add_argument(
-        "--log-level",
-        type=str,
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-    )
-    parser.add_argument(
-        "--filter",
-        type=str,
-        help="Name of filter to apply (e.g., topostats_filter). Applies non-interactively.",  # noqa
-    )
-    parser.add_argument("--output-folder", type=str, help="Folder to save outputs")
-    parser.add_argument(
-        "--output-name",
-        type=str,
-        help="Base name for output file (without extension, e.g., 'sample_01')",
-    )
-    parser.add_argument(
-        "--make-gif", action="store_true", help="Export flattened stack as animated GIF"
-    )
-    parser.add_argument(
-        "--play",
-        action="store_true",
-        help="Pop up an OpenCV window to play the stack (raw first, space to flatten)",
-    )
-
-    return parser.parse_args()
-
-
 def sanitize_output_name(name: str, default: str) -> str:
     """
-    Sanitize output file names by removing extensions like .gif & stripping whitespace.
+    Sanitize output file names by removing extensions and stripping whitespace.
 
     Parameters
     ----------
     name : str
         The output file name provided by the user.
+    default : str
+        Default name to use if `name` is empty or None.
 
     Returns
     -------
@@ -96,9 +56,15 @@ def sanitize_output_name(name: str, default: str) -> str:
     if not name:
         return default
     name = name.strip()
-    name = Path(name).with_suffix("").name
+    # Remove extension if any
+    try:
+        name = Path(name).with_suffix("").name
+    except ValueError:
+        return default
+
     if any(c in name for c in INVALID_CHARS):
         raise ValueError(f"Invalid characters in output name: {INVALID_CHARS}")
+
     return name
 
 
@@ -109,14 +75,14 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
     Parameters
     ----------
     folder : str or None
-        User-provided output folder path. If None, a default folder is used.
+        User-provided output folder path. If None, use `default`.
     default : str, optional
-        Default folder name to use if `folder` is not specified.
+        Default folder name to use if `folder` not specified.
 
     Returns
     -------
     Path
-        A resolved Path object pointing to the created output directory.
+        A Path object pointing to the created output directory.
 
     Raises
     ------
@@ -124,115 +90,392 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
         If any part of the folder path contains invalid characters.
     """
     folder_path = Path(folder.strip()) if folder else Path(default)
-
-    # Validate each part of the folder path (excluding drive/root on Windows)
     for part in folder_path.parts:
         if any(c in part for c in INVALID_FOLDER_CHARS):
             raise ValueError(
                 f"Invalid characters in output folder path: {INVALID_FOLDER_CHARS}"
             )
-
     folder_path.mkdir(parents=True, exist_ok=True)
     return folder_path
 
 
-def main():
+def parse_filter_list(filter_arg: str | None) -> list[str]:
     """
-    Process an AFM image stack.
+    Given a comma-separated string of filter names (or None), produce
+    a clean list of nonempty names.
 
-    Workflow:
-    - Loads the input file or folder.
-    - Flattens the AFM image stack using TopoStats.
-    - Exports a GIF with timestamps and scale bar.
+    Parameters
+    ----------
+    filter_arg : str or None
+        Comma-separated filters, e.g. "topostats_flatten,median_filter"
 
     Returns
     -------
-    None
-
-    Notes
-    -----
-    - Input can be a `.h5-jpk` file or a folder of `.jpk` files.
-    - Uses `playNano.io.loader.load_afm_stack` to load data.
-    - Uses `playNano.io.gif_export.create_gif_with_scale_and_timestamp` to export GIFs.
+    list of str
+        List of stripped filter names. Empty if filter_arg is None or blank.
     """
-    args = parse_args()
-    setup_logging(getattr(logging, args.log_level.upper()))
-    logger = logging.getLogger(__name__)
-    logger.info("Starting AFM stack processing...")
+    if not filter_arg:
+        return []
+    return [s.strip() for s in filter_arg.split(",") if s.strip()]
 
-    # Load and verify input
+
+def apply_filters_to_stack(afm_stack: AFMImageStack, filter_steps: list[str]) -> None:
+    """
+    Apply all requested filters (in order) to afm_stack.data.
+
+    This calls `afm_stack.apply(filter_steps)`.  If any `step`
+    is not found, logs an error and exits.
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The AFM stack whose .data will be modified.
+    filter_steps : list of str
+        Sequence of filter names. If empty, no filtering is done.
+
+    Raises
+    ------
+    SystemExit
+        If one of the filter names is invalid.
+    """
+    if not filter_steps:
+        return
+    logger = logging.getLogger(__name__)
+    logger.info(f"Applying filters: {filter_steps!r}")
+
+    # Validate each name
+    valid_methods = (
+        set(dir(AFMImageStack)) | set(FILTER_MAP.keys()) | ALL_ENTRYPOINT_NAMES
+    )
+    for step in filter_steps:
+        if step not in valid_methods:
+            logger.error(f"Unknown filter name '{step}'")
+            sys.exit(1)
+
+    try:
+        afm_stack.apply(filter_steps)
+    except ValueError as e:
+        logger.error(f"Error applying filter(s): {e}")
+        sys.exit(1)
+
+
+def write_exports(
+    afm_stack: AFMImageStack,
+    out_folder: Path,
+    base_name: str,
+    formats: list[str],
+) -> None:
+    """
+    Write out requested bundles from an AFM stack (.data must be final version).
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel
+    out_folder : Path
+        Directory to write export files (will be created if needed)
+    base_name : str
+        Base file name (no extension) for each export, e.g. "sample_01"
+    formats : list of str
+        Which formats to write; valid set = {"tif", "npz", "h5"}.
+
+    Raises
+    ------
+    SystemExit
+        If any element of `formats` is not in {"tif","npz","h5"}.
+    """
+    stack_data = afm_stack.data
+    px_nm = afm_stack.pixel_size_nm
+    timestamps = [md.get("timestamp") for md in afm_stack.frame_metadata]
+    channel = afm_stack.channel
+
+    out_folder.mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger(__name__)
+
+    valid = {"tif", "npz", "h5"}
+    for fmt in formats:
+        if fmt not in valid:
+            logger.error(f"Unsupported export format '{fmt}'. Choose from {valid}.")
+            sys.exit(1)
+
+    if "tif" in formats:
+        tif_path = out_folder / f"{base_name}.ome.tif"
+        logger.info(f"Writing OME-TIFF → {tif_path}")
+        save_ome_tiff_stack(
+            path=tif_path,
+            stack=stack_data,
+            pixel_size_nm=px_nm,
+            timestamps=timestamps,
+            channel=channel,
+        )
+
+    if "npz" in formats:
+        npz_path = out_folder / f"{base_name}"
+        logger.info(f"Writing NPZ bundle → {npz_path}.npz")
+        save_npz_bundle(
+            path=npz_path,
+            stack=stack_data,
+            pixel_size_nm=px_nm,
+            timestamps=timestamps,
+            channel=channel,
+        )
+
+    if "h5" in formats:
+        h5_path = out_folder / f"{base_name}"
+        logger.info(f"Writing HDF5 bundle → {h5_path}.h5")
+        save_h5_bundle(
+            path=h5_path,
+            stack=stack_data,
+            pixel_size_nm=px_nm,
+            timestamps=timestamps,
+            frame_metadata=afm_stack.frame_metadata,
+            channel=channel,
+        )
+
+
+def handle_play(args: argparse.Namespace) -> None:
+    """
+    Handle the 'play' subcommand: launch OpenCV window and return.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Must contain:
+        - input_file (str): path to AFM data
+        - channel (str)
+        - filters (str or None)
+        - output_folder (str or None)
+        - output_name (str or None)
+    """
+    logger = logging.getLogger(__name__)
     input_path = Path(args.input_file)
     if not input_path.exists():
         logger.error(f"File not found: {input_path}")
-        sys.exit(1)  # Exit with error code 1
+        sys.exit(1)
 
-    # Load data
-    logger.info(f"Loading AFM stack from {input_path}")
+    logger.info("Starting AFM stack in PLAY mode…")
     try:
         afm_stack = AFMImageStack.load_data(input_path, channel=args.channel)
-        input_stem = input_path.stem
     except Exception as e:
-        logger.exception(f"Failed to load AFM stack: {e}")
-        sys.exit(1)  # Exit with error code 1
-        return
+        logger.error(f"Failed to load AFM stack: {e}")
+        sys.exit(1)
+
     fps = afm_stack.frame_metadata[0]["line_rate"] / afm_stack.image_shape[0]
+    filter_steps = parse_filter_list(args.filters)
 
-    # If user wants to _play_ the stack interactively, pop up video now:
-    if args.play:
-        from playNano.io.vis import play_stack_cv
+    from playNano.io.vis import play_stack_cv
 
-        _output_dir = args.output_folder
-        _output_name = args.output_name
+    if args.scale_bar_nm:
+        _scale_bar_nm = args.scale_bar_nm
+    else:
+        _scale_bar_nm = 100
 
-        # fps approximated from metadata of first frame
-        play_stack_cv(
-            afm_stack,
-            fps=fps,
-            output_dir=_output_dir,
-            output_name=_output_name,
-        )
+    play_stack_cv(
+        afm_stack,
+        fps=fps,
+        output_dir=args.output_folder,
+        output_name=args.output_name,
+        filter_steps=filter_steps,
+        scale_bar_nm=_scale_bar_nm,
+    )
+    # Once the user closes the window, we simply return.
+    return
 
-        # after user closes window, we fall through into flatten/GIF logic--- want to stop this? # noqa
 
-    # Optional: Export as GIF
+def handle_run(args: argparse.Namespace) -> None:
+    """
+    Handle the 'run' subcommand: apply filters, then write exports & GIF.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Must contain:
+        - input_file (str)
+        - channel (str)
+        - filters (str or None)
+        - export (str or None)
+        - make_gif (bool)
+        - output_folder (str or None)
+        - output_name (str or None)
+    """
+    logger = logging.getLogger(__name__)
+    input_path = Path(args.input_file)
+    if not input_path.exists():
+        logger.error(f"File not found: {input_path}")
+        sys.exit(1)
+
+    logger.info("Starting AFM stack in RUN mode…")
+    try:
+        afm_stack = AFMImageStack.load_data(input_path, channel=args.channel)
+    except Exception as e:
+        logger.error(f"Failed to load AFM stack: {e}")
+        sys.exit(1)
+
+    input_stem = input_path.stem
+
+    # 1) Apply filters (if any)
+    filter_steps = parse_filter_list(args.filters)
+    if filter_steps:
+        apply_filters_to_stack(afm_stack, filter_steps)
+
+    # 2) Write any requested bundles
+    if args.export:
+        formats = [fmt.strip().lower() for fmt in args.export.split(",") if fmt.strip()]
+        try:
+            out_dir = prepare_output_directory(args.output_folder, default="output")
+        except ValueError as e:
+            logger.error(str(e))
+            sys.exit(1)
+
+        base_name = sanitize_output_name(args.output_name, input_stem)
+        write_exports(afm_stack, out_dir, base_name, formats)
+
+    # 3) Write GIF if requested
     if args.make_gif:
-        # Determine and create output directory
         try:
-            output_dir = prepare_output_directory(args.output_folder)
+            gif_dir = prepare_output_directory(args.output_folder, default="output")
         except ValueError as e:
             logger.error(str(e))
-            sys.exit(1)  # Exit with error code 1
-        logger.info(f"Saving outputs to: {output_dir}")
+            sys.exit(1)
 
-        # Apply filters if selected
-        if args.filter:
-            logger.info(f"Applying filter: {args.filter}")
-            # Example: apply filter by name
-            afm_stack.apply([args.filter])
-
-        # Remove stem and whitepace from file name input or use input file stem if none provided. # noqa
-        try:
-            output_stem = sanitize_output_name(args.output_name, input_stem)
-        except ValueError as e:
-            logger.error(str(e))
-            sys.exit(1)  # Exit with error code 1
-
-        # Add _filtered to stem if filters applied.
-        if args.filter:
-            gif_path = output_dir / f"{output_stem}_filtered.gif"
-        else:
-            gif_path = output_dir / f"{output_stem}.gif"
+        base_name = sanitize_output_name(args.output_name, input_stem)
+        gif_name = f"{base_name}_filtered" if filter_steps else base_name
+        gif_path = gif_dir / f"{gif_name}.gif"
 
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp
 
-        timestamps = [meta["timestamp"] for meta in afm_stack.frame_metadata]
+        timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
+
+        if args.scale_bar_nm:
+            _scale_bar_nm = args.scale_bar_nm
+        else:
+            _scale_bar_nm = 100
+
+        logger.info(f"Writing GIF → {gif_path}")
         create_gif_with_scale_and_timestamp(
             afm_stack.data,
             afm_stack.pixel_size_nm,
-            fps,
             timestamps,
             output_path=gif_path,
+            scale_bar_length_nm=_scale_bar_nm,
+            cmap_name="afmhot",
         )
-        logger.info(f"Exported GIF to {gif_path}")
 
-    logger.info("Processing complete.")
+    logger.info("Run processing complete.")
+    return
+
+
+def main() -> None:
+    """
+    Main entry point for playNano CLI.
+
+    Usage:
+      playnano play  <input_file> [--filters …] [--output-folder …] [--output-name …]
+      playnano run   <input_file> [--filters …] [--export …] [--make-gif]
+        [--output-folder …] [--output-name …]
+    """
+    parser = argparse.ArgumentParser(
+        description="playNano: Load, filter, export, or play HS-AFM image stacks."
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Set logging level (default=INFO).",
+    )
+
+    subparsers = parser.add_subparsers(
+        title="subcommands",
+        dest="command",
+        help="Choose one subcommand: 'play' or 'run'.",
+    )
+
+    # 1) 'play' subcommand
+    play_parser = subparsers.add_parser(
+        "play", help="Interactive play mode (OpenCV window)."
+    )
+    play_parser.add_argument(
+        "input_file", type=str, help="Path to AFM input file or folder."
+    )
+    play_parser.add_argument(
+        "--channel",
+        type=str,
+        default="height_trace",
+        help="Channel to read (default=height_trace).",
+    )
+    play_parser.add_argument(
+        "--filters",
+        type=str,
+        help="Comma-separated filter names to apply when user presses 'f'.",
+    )
+    play_parser.add_argument(
+        "--output-folder",
+        type=str,
+        help="Folder to save any exported GIF (if user hits 'e').",
+    )
+    play_parser.add_argument(
+        "--output-name", type=str, help="Base name for exported GIF (no extension)."
+    )
+    play_parser.add_argument(
+        "--scale-bar-nm",
+        type=int,
+        help="Interger length of scale bar in nm",
+    )
+    play_parser.set_defaults(func=handle_play)
+
+    # 2) 'run' subcommand
+    run_parser = subparsers.add_parser(
+        "run", help="Run mode: apply filters & export bundles/GIF."
+    )
+    run_parser.add_argument(
+        "input_file", type=str, help="Path to AFM input file or folder."
+    )
+    run_parser.add_argument(
+        "--channel",
+        type=str,
+        default="height_trace",
+        help="Channel to read (default=height_trace).",
+    )
+    run_parser.add_argument(
+        "--filters", type=str, help="Comma-separated filter names to apply in order."
+    )
+    run_parser.add_argument(
+        "--export",
+        type=str,
+        help="Comma-separated formats to export: 'tif', 'npz', 'h5'.",
+    )
+    run_parser.add_argument(
+        "--make-gif",
+        action="store_true",
+        help="Also write an animated GIF after filtering.",
+    )
+    run_parser.add_argument(
+        "--output-folder",
+        type=str,
+        help="Folder to write bundles and/or GIF (default='./output').",
+    )
+    run_parser.add_argument(
+        "--output-name", type=str, help="Base name for output files (no extension)."
+    )
+    run_parser.add_argument(
+        "--scale-bar-nm",
+        type=int,
+        help="Interger length of scale bar in nm",
+    )
+    run_parser.set_defaults(func=handle_run)
+
+    args = parser.parse_args()
+    setup_logging(getattr(logging, args.log_level.upper()))
+
+    if args.command is None:
+        # No subcommand: just show help and exit
+        parser.print_help(file=sys.stderr)
+        sys.exit(0)
+
+    # Dispatch to the chosen subcommand
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

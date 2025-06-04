@@ -1,6 +1,6 @@
 # 📽️ playNano
 
-**AFM Video Reader for `.h5-jpk` files and other high speed AFM video formats**
+**AFM Video Reader for `.h5-jpk` files and other high-speed AFM video formats**
 
 <div align="center">
 
@@ -14,25 +14,26 @@
 
 </div>
 
-`playNano` is a lightweight Python library for reading and processing atomic force microscopy (AFM)
-as **video/image stacks**. `playNano` focuses on extracting and reshaping time-series AFM data,
-enabling dynamic visualisation, analysis, and export.
+**playNano** is a Python tool for loading, filtering, visualising, and exporting time-series AFM data,
+such as high-speed AFM (HS-AFM) videos. It supports interactive playback of AFM video data, application
+of processing filters, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
+HDF5 bundles, and animated GIFs.
 
-This project is in development and not fully stable. If you find any issues please open an issue at:
+This project requires Python 3.10 or newer and is in development. If you find any issues, please open an issue at:
 <https://github.com/derollins/playNano/issues>
 
-If you have any questions please get in touch: <d.e.rollins@leeds.ac.uk>
+Questions? Email: <d.e.rollins@leeds.ac.uk>
 
 ---
 
 ## ✨ Features
 
 - 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files and folders of `.jpk` files.
-- 🔍 **Auto-detects** likely image channels (e.g., `/Height`) if not specified.
-- ▶️ **Animated image viewer** to display high-speed AFM data.
-- 🪟 **Applies basic filters** for levelling AFM images.
-- 🖼️ **Exports animated GIFs** of AFM image stacks for quick visualisation.
-- 🧠 Built for integration with analysis/visualisation pipelines and tools like `TopoStats`.
+- ▶️ **Animated image viewer** for high-speed AFM playback.
+- 🪟 **Applies basic filters** and ordered filter chains to image data.
+- 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
+- 🎞️ **Generates animated GIFs** of AFM stacks with annotations.
+- 🧠 Built for integration with analysis pipelines and tools like `TopoStats`.
 
 ---
 
@@ -45,9 +46,7 @@ git clone https://github.com/derollins/playNano.git
 cd playNano
 ```
 
-It is recommended to install the package in a virtual environment.
-
-Once in the virtual environment:
+It is recommended to use a virtual environment. Then install in editable mode:
 
 ```bash
 pip install -e .
@@ -55,65 +54,146 @@ pip install -e .
 
 ## 🚀 Quickstart
 
-Generate a flattened AFM image stack and export a GIF in one command:
+Generate a flattened AFM image stack and export a GIF:
 
 ```bash
-playNano "example_data/sample.h5-jpk" --make-gif
+playnano run "example_data/sample.h5-jpk" --make-gif 
 ```
 
-Or open an interactive viewer window to inspect and flatten the data manually:
+Or launch an interactive viewer to inspect and flatten the data:
 
 ```bash
-playNano "example_data/sample.h5-jpk" --play
+playnano play "example_data/sample.h5-jpk"
 ```
 
-## 🖥️ Interactive Viewer (--play)
+## ⌨️ CLI Usage
 
-Launches a window for visually exploring and flattening your AFM stack.
+### General  Structure
 
-- **f** — Apply flattening and display the processed stack.
-- **Space** — Toggle between raw and flattened view (after flattening).
-- **e** — Export flattned video to `--output-folder` as `--output-name`.gif.
+```bash
+playnano <command> <input_file> [options]
+```
+
+Commands:
+
+- `play`: Launches the interactive viewer.
+- `run`: Batch processing mode for applying filters and exporting.
+
+### 🖥️ Interactive Playback mode (`play`)
+
+Opens an OpenCV window for visualising and processing the AFM stack.
+
+```bash
+playnano play /path/to/afm_file.h5 \
+  [--channel CHANNEL] \
+  [--filters FILTER1,FILTER2,...] \
+  [--output-folder OUTPUT_DIR] \
+  [--output-name BASE_NAME] \
+  [--scale-bar-nm SCALE_BAR_INT]
+
+```
+
+**Viewer key bindings:**
+
+Apply filter:
+
+- **f** — Apply filtering and update view.
+- **Space** — Toggle between raw and filtered data.
+
+Save and export:
+
+- **t** — Export the current data as an OME-TIF (.ome.tif), loadable in many image analysis programmes.
+- **n** — Export the current data as a NumPy zipped archive (.npz).
+- **h** — Export the current data as a HDF5 bundle (.h5).
+- **g** — Export the data as an animated GIF with the annotations in the viewed (scale bar and timestamps).
+
+> 📝 Note: The exported data reflects the current view — if raw data is shown, raw is exported;
+> if filters are applied, the filtered view is saved.
+
+Other commands:
+
 - **q** or **ESC** — Quit the viewer.
 
-## 🛠️ CLI Usage
+## 👟 Command Line mode (`run`)
+
+Apply filters and export without interaction.
 
 ```bash
-playNano path/to/file.h5-jpk --channel height_trace --output-folder ./output
---save-raw --make-gif --log-level DEBUG
+playnano run /path/to/afm_file.h5 \
+  [--channel CHANNEL] \
+  [--filters FILTER1,FILTER2,...] \
+  [--export tif,npz,h5] \
+  [--make-gif] \
+  [--output-folder OUTPUT_DIR] \
+  [--output-name BASE_NAME]
+  [--scale-bar-nm SCALE_BAR_INT] 
+
 ```
 
-You can also load a folder of .jpk files (not .h5-jpk) for batch processin
+- `--channel`: (default: `height_trace`): Channel to load.
 
-### Positional Arguments
+- `--filters`: Comma-separated list of filters to apply in order.
 
-`input_file` (positional): Path to your `.h5-jpk` file or folder of `.jpk` files.
+- `--export`: Comma-separated list of formats to export (tif, npz, h5).
 
-### Common Options
+- `--make-gif`: Write an animated GIF after filtering.
 
-`--channel`: Channel name, e.g. `height_trace` (default).
+- `--output-folder`: Directory to write exports and/or GIF (default: ./output).
 
-`--filter`: Select filter, options are `topostats_flatten`, `flatten_poly`
-or `median_filter`.
+- `--output-name`: Base filename for output files (no extension).
 
-`--make-gif`: Export a GIF of the flattened stack.
+- `--scale-bar-nm`: Length of scale bar annotation on GIF animation in nm.
 
-`--output-folder`: Where to save outputs.
+## 📟 Outputs
 
-`--output-name`: Name of file output. (Default: "flattened.gif")
+Once loaded you can export AFM stacks in the following formats:
 
-`--log-level`: Logging verbosity (`DEBUG`, `INFO`, etc.)
+| Format   | Description                                | Extension  |
+| -------- | ------------------------------------------ | ---------- |
+| OME-TIFF | Multi-frame TIFF for image analysis        | `.ome.tif` |
+| NumPy    | Zipped archive of array + metadata         | `.npz`     |
+| HDF5     | Self-contained AFM stack bundle            | `.h5`      |
+| GIF      | Animated GIF with scale bar and timestamps | `.gif`     |
 
-N.B. If both `--make-gif` and `--play` are used the data is flattened again and the gif
-generated after the interactive window is quit.
+- Use `--output-folder` and `--output-name` to customize where and how files are saved.
+- Defaults:
 
-### Output
+  - Folder: `./output/`
+  - Name: derived from input filename (with `_filtered` suffix if filters were used)
 
-✅ Flattened image stack (in memory; save via --make-gif or e)
+## Logging Level
 
-🎞️ Animated GIF with scale bar and timestamps
+Control verbosity with:
 
-🧪 Planned formats: .npy, .tiff
+```bash
+--log-level {DEBUG,INFO,WARNING,ERROR}
+```
+
+Default is `INFO`.
+
+## 🧪 Examples
+
+Interactive playback (`play`) with filters and export folder:
+
+```bash
+playnano play sample.h5 --filters topostats_flatten,median_filter --output-folder ./gifs --output-name sample_view
+```
+
+Batch run (`run`) with filters, exporting OME-TIFF and NPZ bundles, plus GIF:
+
+```bash
+playnano run sample.h5 \
+--filters topostats_flatten,median_filter \
+--export tif,npz \
+--make-gif \
+--output-folder ./results \
+--output-name sample_processed
+```
+
+## 🧩 Filter Plugins
+
+You can extend playNano by installing third-party filter plugins via entry points under playNano.filters.
+These become available in the CLI filter lists automatically.
 
 ## ⚠️ Notes
 
@@ -121,18 +201,25 @@ generated after the interactive window is quit.
 
 - If --channel is incorrect or missing from the file, you’ll receive an error.
 
+- For .h5-jpk and other multi-frame formats, a single file is loaded. For formats like .jpk or .spm, provide a folder
+    containing the frame files.
+
 ## 📁 Project Structure
 
 ```text
 playNano/
-├── io/              # Input/output utilities (e.g. the common file loader and GIF export)
+├── io/              # I/O utilities (e.g. file loader, GIF export, interactive window)
 ├── loaders/         # File format-specific loaders
-├── processing/      # Image flattening, filtering, analysis etc.
-├── stack/           # AFMImageStack class and metadata
-└── main.py          # CLI entry point
+├── processing/      # Image flattening, filters, and processing logic
+├── stack/           # AFMImageStack class and metadata handling
+├── utils.py         # Utility functions
+├── main.py          # Internal CLI command handlers
+└── cli.py           # CLI entry point
 ```
 
 ## 🧩 Dependencies
+
+Requires Python 3.10 or newer.
 
 This project requires the following Python packages:
 
@@ -143,6 +230,7 @@ This project requires the following Python packages:
 - `opencv-python`
 - `scipy`
 - `python-dateutil`
+- `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files
     (also planned for use in future `.asd` and `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
@@ -154,20 +242,20 @@ These are some software packages that have helped and inspired this project:
 ### [Topostats](https://github.com/AFM-SPM/TopoStats)
 
 A general AFM image processing programme written in Python that batch processes AFM images.
-Topostats is able to flatten raw AFM images, mask objects and provides advanced ananlysis tools
+Topostats is able to flatten raw AFM images, mask objects and provides advanced analysis tools
 including U-net based masking. playNano leverages the `filters` module to flatten loaded AFM frames.
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
 Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens
-each as a tuple containing a Numpy arrayand a float refering to the planar pixel to nanometer convertion
+each as a tuple containing a NumPy array and a float referring to the planar pixel to nanometer convertion
 factor. Within playNano this library is used to open the folder-based AFM video formats.
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
 
 A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and
-high- speed AFM videos. Faeturing mask analysis, particle detection and tracking, it also
-intergrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
+high-speed AFM videos. Featuring mask analysis, particle detection and tracking, it also
+integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
 
 ## 📜 License
 

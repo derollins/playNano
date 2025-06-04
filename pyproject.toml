@@ -28,9 +28,10 @@ keywords = [
   "scientific visualization"
 ]
 dependencies = [
-  "numpy",
+  "numpy<2.0",
   "h5py",
   "Pillow",
+  "tifffile", 
   "matplotlib",
   "topostats",
   "afmreader",
@@ -51,7 +52,13 @@ dev = [
 ]
 
 [project.scripts]
-playnano = "playNano.main:main"
+playnano = "playNano.cli:main"
+
+[project.entry-points."playNano.filters"]
+topostats_flatten = "playNano.processing.filters:topostats_flatten"
+median_filter     = "playNano.processing.filters:median_filter"
+gaussian_filter   = "playNano.processing.filters:gaussian_filter"
+flatten_poly      = "playNano.processing.filters:flatten_poly"
 
 [project.urls]
 GitHub = "https://github.com/derollins/playNano"

@@ -6,13 +6,11 @@ Returns an AFMImageStack object
 
 from pathlib import Path
 
-from playNano.loaders.read_asd_folder import load_asd_folder
+from playNano.loaders.read_asd import load_asd_file
 from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.loaders.read_jpk_folder import load_jpk_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
 from playNano.stack.afm_stack import AFMImageStack
-
-# from playNano.loaders.read_asd import load_asd   future reader
 
 
 def get_loader_for_folder(
@@ -81,6 +79,7 @@ def get_loader_for_file(
         If the file type is unsupported or better handled as a folder.
     """
     ext = file_path.suffix.lower()
+
     if ext in file_loaders:
         return file_loaders[ext]
     elif ext in folder_loaders:
@@ -117,12 +116,13 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
 
     folder_loaders = {
         ".jpk": load_jpk_folder,
-        ".asd": load_asd_folder,
         ".spm": load_spm_folder,
+        # Add others as needed
     }
 
     file_loaders = {
         ".h5-jpk": load_h5jpk,
+        ".asd": load_asd_file,
         # Add others as needed
     }
 

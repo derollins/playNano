@@ -59,11 +59,16 @@ def create_gif_with_scale_and_timestamp(
     cmap = cm.get_cmap(cmap_name)
 
     # Check if timestamps are usable
-    has_valid_timestamps = (
+    if (
         timestamps is not None
         and isinstance(timestamps, (list, tuple))
         and len(timestamps) == len(image_stack)
-    )
+    ):
+        has_valid_timestamps = True
+    else:
+        raise ValueError(
+            "Invalid timestamps: must be a list/tuple matching image_stack length."
+        )
 
     for i, frame in enumerate(image_stack):
         # Normalize and colorize

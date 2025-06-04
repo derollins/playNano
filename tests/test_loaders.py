@@ -48,7 +48,6 @@ def test_load_afm_stack_file_calls_correct_loader(tmp_path):
     [
         ("example.JPK", ".jpk", "load_jpk_folder"),
         ("file1.JpK", ".jpk", "load_jpk_folder"),
-        ("file2.AsD", ".asd", "load_asd_folder"),
         ("file.spm", ".spm", "load_spm_folder"),
     ],
 )
@@ -84,7 +83,6 @@ def test_load_afm_stack_file_calls_correct_folder_loader(
 
     folder_loaders = {
         ".jpk": lambda p: None,
-        ".asd": lambda p: None,
         ".spm": lambda p: None,
     }
     detected_ext, _ = get_loader_for_folder(tmp_path, folder_loaders)

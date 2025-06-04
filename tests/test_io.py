@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 from PIL import Image, ImageSequence
 
+from playNano.io import vis
 from playNano.io.gif_export import (
     create_gif_with_scale_and_timestamp,
     normalize_to_uint8,
@@ -19,11 +20,36 @@ from playNano.io.loader import (
     load_afm_stack,
 )
 from playNano.io.vis import pad_to_square, play_stack_cv
-from playNano.loaders.read_asd_folder import load_asd_folder
+from playNano.loaders.read_asd import load_asd_file
 from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.loaders.read_jpk_folder import load_jpk_folder
 from playNano.loaders.read_spm_folder import load_spm_folder
 from playNano.stack.afm_stack import AFMImageStack
+
+
+class DummyAFM:
+    def __init__(self):
+        self.data = np.zeros((5, 10, 10))
+        self.pixel_size_nm = 1.0
+        self.frame_metadata = [{"timestamp": i} for i in range(5)]
+        self.channel = "Height"
+        self.file_path = Path("dummy.jpk")
+        self.processed = {"raw": self.data}
+
+    def apply(self, filters):
+        return self.data + 1  # simulate filtered result
+
+    @property
+    def image_shape(self):
+        return self.data.shape[1:]
+
+    # Only needed if _export_* methods rely on specific attributes/methods
+    def __getitem__(self, key):
+        return self.data  # fallback for dict-like access if used in your code
+
+
+def create_dummy_afm():
+    return DummyAFM()
 
 
 @pytest.mark.parametrize(
@@ -31,7 +57,6 @@ from playNano.stack.afm_stack import AFMImageStack
     [
         ("example.JPK", ".jpk"),
         ("file1.JpK", ".jpk"),
-        ("file2.AsD", ".asd"),
         ("file.spm", ".spm"),
     ],
 )
@@ -42,7 +67,6 @@ def test_get_loader_for_folder_detects_extensions(tmp_path, filename, expected_e
 
     folder_loaders = {
         ".jpk": load_jpk_folder,
-        ".asd": load_asd_folder,
         ".spm": load_spm_folder,
     }
 
@@ -68,7 +92,6 @@ def test_get_loader_for_folder_raises_file_not_found():
 
         folder_loaders = {
             ".jpk": load_jpk_folder,
-            ".asd": load_asd_folder,
             ".spm": load_spm_folder,
         }
 
@@ -84,7 +107,6 @@ def test_get_loader_for_folder_returns_callable():
 
         folder_loaders = {
             ".jpk": load_jpk_folder,
-            ".asd": load_asd_folder,
             ".spm": load_spm_folder,
         }
 
@@ -102,7 +124,6 @@ def test_get_loader_for_folder_ignores_directories():
 
         folder_loaders = {
             ".jpk": load_jpk_folder,
-            ".asd": load_asd_folder,
             ".spm": load_spm_folder,
         }
 
@@ -120,7 +141,6 @@ def test_get_loader_for_folder_case_insensitive():
 
         folder_loaders = {
             ".jpk": load_jpk_folder,
-            ".asd": load_asd_folder,
             ".spm": load_spm_folder,
         }
 
@@ -129,16 +149,41 @@ def test_get_loader_for_folder_case_insensitive():
         assert callable(loader)
 
 
+@pytest.mark.parametrize(
+    "filename, expected_ext",
+    [
+        ("example.h5-JPK", ".h5-jpk"),
+        ("file1.h5-JpK", ".h5-jpk"),
+        ("file.asd", ".asd"),
+    ],
+)
+def test_get_loader_for_file_detects_extensions(tmp_path, filename, expected_ext):
+    """Test that get_loader_for_file detects file extension and returns loader."""
+    (tmp_path / filename).touch()
+    file_path = tmp_path / filename
+
+    file_loaders = {
+        ".h5-jpk": load_h5jpk,
+        ".asd": load_asd_file,
+    }
+    folder_loaders = {
+        ".jpk": load_jpk_folder,
+        ".spm": load_spm_folder,
+    }
+    loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+    assert callable(loader)
+
+
 def test_get_loader_for_file_known_extension():
     """Test get_loader_for_file returns correct loader for supported file extension."""
     fake_path = Path("/fake/path/sample.h5-jpk")
 
     file_loaders = {
         ".h5-jpk": load_h5jpk,
+        ".asd": load_asd_file,
     }
     folder_loaders = {
         ".jpk": load_jpk_folder,
-        ".asd": load_asd_folder,
         ".spm": load_spm_folder,
     }
 
@@ -304,23 +349,27 @@ class DummyWindow:
 
 def test_play_stack_cv_exits_on_escape(monkeypatch, tmp_path):
     """play_stack_cv should exit immediately when ESC key is pressed."""
-    # Create a dummy AFMImageStackObject with a 2-frame stack of 2x2 images
+    # Create a dummy AFMImageStack with a 2-frame stack of 2x2 images
     stack = AFMImageStack(
         data=np.zeros((2, 2, 2)),
         pixel_size_nm=1.0,
         channel="height_trace",
-        file_path=Path(tmp_path),
-        frame_metadata=[{}],
+        file_path=tmp_path,
+        frame_metadata=[{}, {}],
     )
-    # Monkeypatch all cv2 window functions to do nothing / return values
+
+    # Monkey­patch all cv2 window functions to do nothing / return values
     monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
     monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
     monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
     # getWindowImageRect returns (x, y, width, height) matching image size (2x2)
     monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
+    # cv2.normalize is used in rendering; just return the source array
     monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
-    # monkeypatch.setattr(cv2,
-    # "cvtColor", lambda src, code: np.stack([src] * 3, axis=-1))
+    # <— add a stub for cv2.cvtColor
+    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
+
+    # Resize and imshow do nothing
     monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
     monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
     # waitKey returns ESC code (27)
@@ -340,8 +389,8 @@ def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
         data=np.stack([img0, img1], axis=0),
         pixel_size_nm=1.0,
         channel="height_trace",
-        file_path=Path(tmp_path),
-        frame_metadata=[{"timestamp": "t0"}, {"timestamp": "t1"}],
+        file_path=tmp_path,
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
     )
 
     # Track whether flatten was called
@@ -349,8 +398,8 @@ def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
 
     def fake_apply(filters):
         calls["flattened"] = True
-        # Simulate a flattened stack with constant value
-        stack.processed["raw"] = stack.data  # ensure raw is still accessible
+        # Simulate a flattened stack of all 9’s
+        stack.processed["raw"] = stack.data  # ensure “raw” exists
         return np.full_like(stack.data, 9)
 
     # Patch the apply method on the instance
@@ -362,11 +411,10 @@ def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
     monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
     monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
     monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
-    # monkeypatch.setattr(cv2,
-    # "cvtColor", lambda src, code: np.stack([src] * 3, axis=-1))
+    # <— add a stub for cv2.cvtColor
+    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
     monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
     monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "waitKey", lambda delay: 27)  # simulate ESC
     monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
 
     # Simulate key presses: 'f' (flatten), SPACE (toggle), ESC (exit)
@@ -389,3 +437,154 @@ def test_pad_to_square_with_border_color():
     assert np.all(out[1] == 5)
     # Top row should contain original values
     assert out[0, 0] == 0 and out[0, 1] == 0
+
+
+def test_normalize_to_uint8_handles_negative_values():
+    """Test normalize_to_uint8 properly rescales negative values."""
+    img = np.array([[-10, 0], [10, 20]], dtype=np.float32)
+    out = normalize_to_uint8(img)
+    assert out.min() == 0
+    assert out.max() == 255
+
+
+def test_normalize_to_uint8_large_image():
+    """Test normalize_to_uint8 on large arrays."""
+    img = np.random.rand(1000, 1000) * 100
+    out = normalize_to_uint8(img)
+    assert out.shape == img.shape
+    assert out.dtype == np.uint8
+
+
+def test_create_gif_with_mismatched_timestamps(tmp_path):
+    """Test GIF creation with fewer timestamps than frames."""
+    stack = np.random.rand(3, 10, 10)
+    timestamps = [0.0]  # only 1 timestamp
+    output_path = tmp_path / "bad_timestamps.gif"
+
+    with pytest.raises(ValueError, match="timestamps.*length"):
+        create_gif_with_scale_and_timestamp(
+            image_stack=stack,
+            pixel_size_nm=1.0,
+            timestamps=timestamps,
+            scale_bar_length_nm=5,
+            output_path=output_path,
+            duration=0.2,
+            cmap_name="afmhot",
+        )
+
+
+def test_pad_to_square_color_image():
+    """Ensure color images (H, W, 3) are padded correctly, only 2D."""
+    img = np.ones((2, 4), dtype=np.uint8) * 100
+    out = pad_to_square(img, border_color=0)
+    assert out.shape == (4, 4)
+    assert np.all(out[0] == 0)
+    assert np.all(out[-1] == 0)
+
+
+def test_pad_to_square_rgb_square_image():
+    """Ensure no padding occurs on square RGB image."""
+    img = np.ones((5, 5), dtype=np.uint8) * 255
+    out = pad_to_square(img, border_color=0)
+    assert out.shape == img.shape
+    assert np.array_equal(out, img)
+
+
+def test_get_loader_for_file_prioritizes_file_loader():
+    """File extension loader should be used even if folder loader exists."""
+    fake_path = Path("/path/sample.h5-jpk")
+
+    loader = get_loader_for_file(
+        fake_path,
+        file_loaders={".h5-jpk": load_h5jpk},
+        folder_loaders={".jpk": load_jpk_folder},
+    )
+    assert loader == load_h5jpk
+
+
+def test_load_afm_stack_unsupported_file(tmp_path):
+    """Test that unsupported file types raise an error."""
+    file = tmp_path / "unsupported_file.xyz"
+    file.touch()
+
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        load_afm_stack(file)
+
+
+def test_play_stack_cv_skips_on_other_keys(monkeypatch, tmp_path):
+    """Pressing an unhandled key should just continue playback."""
+    stack = AFMImageStack(
+        data=np.random.rand(2, 5, 5),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        file_path=tmp_path,
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 5, 5))
+    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
+    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
+    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
+    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
+
+    keys = [ord("x"), 27]  # random key + ESC to exit
+    monkeypatch.setattr(cv2, "waitKey", lambda delay: keys.pop(0))
+
+    play_stack_cv(stack, fps=5.0)
+
+
+def test_get_loader_for_folder_picks_first_supported(tmp_path):
+    """Should pick the first supported extension found in folder."""
+    (tmp_path / "file1.spm").touch()
+    (tmp_path / "file2.jpk").touch()
+
+    ext, loader = get_loader_for_folder(
+        tmp_path, {".spm": load_spm_folder, ".jpk": load_jpk_folder}
+    )
+    assert ext.lower() in [".asd", ".jpk"]
+    assert callable(loader)
+
+
+def test_make_save_dir(tmp_path):
+    path = vis._make_save_dir(str(tmp_path))
+    assert path.exists()
+    assert path.is_dir()
+
+
+def test_compute_out_stem_uses_default_when_empty():
+    result = vis._compute_out_stem("", "defaultname")
+    assert result == "defaultname"
+
+
+@patch("playNano.io.vis.save_ome_tiff_stack")
+def test_export_tiff_calls_save(mock_save):
+    dummy = create_dummy_afm()
+    vis._export_tiff(dummy, dummy.data, Path("."), "basename", filtered=False)
+    assert mock_save.called
+
+
+@patch("playNano.io.vis.save_npz_bundle")
+def test_export_npz_calls_save(mock_save):
+    dummy = create_dummy_afm()
+    vis._export_npz(dummy, dummy.data, Path("."), "basename", filtered=True)
+    assert mock_save.called
+
+
+@patch("playNano.io.vis.save_h5_bundle")
+def test_export_h5_calls_save(mock_save):
+    dummy = create_dummy_afm()
+    vis._export_h5(dummy, dummy.data, Path("."), "basename", filtered=False)
+    assert mock_save.called
+
+
+@patch("playNano.io.gif_export.create_gif_with_scale_and_timestamp")
+def test_export_gif_calls_create(mock_gif):
+    dummy = create_dummy_afm()
+    vis._export_gif(
+        dummy, dummy.data, Path("."), "basename", filtered=False, scale_bar_nm=100
+    )
+    assert mock_gif.called

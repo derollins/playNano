@@ -11,7 +11,7 @@ from typing import Any
 import dateutil.parser
 import numpy as np
 
-from playNano.processing import filters
+import playNano.processing.filters as filters
 
 FILTER_MAP = filters.register_filters()
 
@@ -307,12 +307,16 @@ class AFMImageStack:
 
         for step in steps:
             fn = getattr(self, step, None)
+
             if not callable(fn):
-                # Try load from entry points first
+                # 1. try entry-point plugin
                 try:
                     fn = self._load_plugin(step)
                 except ValueError:
-                    # fallback to local filters dict
+                    fn = None  # plugin truly missing
+
+                # 2. fall back to local registry if plugin missing **or** returned None
+                if not callable(fn):
                     fn = FILTER_MAP.get(step)
 
             if not callable(fn):
