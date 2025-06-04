@@ -40,7 +40,7 @@ class DummyAFM:
         self.processed = {"raw": self.data}
 
     def apply(self, filters):
-        """Dummy apply method to simulate processing."""
+        """Simulate processing with a dummy apply method."""
         return self.data + 1  # simulate filtered result
 
     @property
