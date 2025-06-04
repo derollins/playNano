@@ -101,8 +101,7 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
 
 def parse_filter_list(filter_arg: str | None) -> list[str]:
     """
-    Given a comma-separated string of filter names (or None), produce
-    a clean list of nonempty names.
+    Given comma-separated strings of filters (or None), produce a list of names.
 
     Parameters
     ----------
@@ -367,8 +366,14 @@ def handle_run(args: argparse.Namespace) -> None:
 
 def main() -> None:
     """
-    Main entry point for playNano CLI.
+    Parse command-line arguments and dispatch to the appropriate CLI subcommand.
 
+    - Set up argument parsing for 'play' and 'run' subcommands,
+    each with their own options.
+    - Configure logging level based on user input.
+    - Show help and exit if no subcommand is provided.
+    - Call the handler function associated with the chosen subcommand.
+    
     Usage:
       playnano play  <input_file> [--filters …] [--output-folder …] [--output-name …]
       playnano run   <input_file> [--filters …] [--export …] [--make-gif]

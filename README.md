@@ -57,7 +57,7 @@ pip install -e .
 Generate a flattened AFM image stack and export a GIF:
 
 ```bash
-playnano run "example_data/sample.h5-jpk" --make-gif 
+playnano run "example_data/sample.h5-jpk" --make-gif
 ```
 
 Or launch an interactive viewer to inspect and flatten the data:

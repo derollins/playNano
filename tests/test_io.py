@@ -29,6 +29,7 @@ from playNano.stack.afm_stack import AFMImageStack
 
 class DummyAFM:
     def __init__(self):
+        """Initialize a dummy AFMImageStack for testing."""
         self.data = np.zeros((5, 10, 10))
         self.pixel_size_nm = 1.0
         self.frame_metadata = [{"timestamp": i} for i in range(5)]
@@ -37,18 +38,22 @@ class DummyAFM:
         self.processed = {"raw": self.data}
 
     def apply(self, filters):
+        """Dummy apply method to simulate processing."""
         return self.data + 1  # simulate filtered result
 
     @property
     def image_shape(self):
+        """Return the shape of the image data."""
         return self.data.shape[1:]
 
     # Only needed if _export_* methods rely on specific attributes/methods
     def __getitem__(self, key):
+        """Allow dict-like access to data."""
         return self.data  # fallback for dict-like access if used in your code
 
 
 def create_dummy_afm():
+    """Create a dummy AFMImageStack for testing purposes."""
     return DummyAFM()
 
 
@@ -550,18 +555,21 @@ def test_get_loader_for_folder_picks_first_supported(tmp_path):
 
 
 def test_make_save_dir(tmp_path):
+    """Test that _make_save_dir creates a directory and returns its path."""
     path = vis._make_save_dir(str(tmp_path))
     assert path.exists()
     assert path.is_dir()
 
 
 def test_compute_out_stem_uses_default_when_empty():
+    """Test that _compute_out_stem returns default name when input is empty."""
     result = vis._compute_out_stem("", "defaultname")
     assert result == "defaultname"
 
 
 @patch("playNano.io.vis.save_ome_tiff_stack")
 def test_export_tiff_calls_save(mock_save):
+    """Test that _export_tiff calls save_ome_tiff_stack with correct parameters."""
     dummy = create_dummy_afm()
     vis._export_tiff(dummy, dummy.data, Path("."), "basename", filtered=False)
     assert mock_save.called
@@ -569,6 +577,7 @@ def test_export_tiff_calls_save(mock_save):
 
 @patch("playNano.io.vis.save_npz_bundle")
 def test_export_npz_calls_save(mock_save):
+    """Test that _export_npz calls save_npz_bundle with correct parameters."""
     dummy = create_dummy_afm()
     vis._export_npz(dummy, dummy.data, Path("."), "basename", filtered=True)
     assert mock_save.called
@@ -576,6 +585,7 @@ def test_export_npz_calls_save(mock_save):
 
 @patch("playNano.io.vis.save_h5_bundle")
 def test_export_h5_calls_save(mock_save):
+    """Test that _export_h5 calls save_h5_bundle with correct parameters."""
     dummy = create_dummy_afm()
     vis._export_h5(dummy, dummy.data, Path("."), "basename", filtered=False)
     assert mock_save.called
@@ -583,6 +593,7 @@ def test_export_h5_calls_save(mock_save):
 
 @patch("playNano.io.gif_export.create_gif_with_scale_and_timestamp")
 def test_export_gif_calls_create(mock_gif):
+    """Test calls create_gif_with_scale_and_timestamp with correct parameters."""
     dummy = create_dummy_afm()
     vis._export_gif(
         dummy, dummy.data, Path("."), "basename", filtered=False, scale_bar_nm=100

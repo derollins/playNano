@@ -31,7 +31,7 @@ dependencies = [
   "numpy<2.0",
   "h5py",
   "Pillow",
-  "tifffile", 
+  "tifffile",
   "matplotlib",
   "topostats",
   "afmreader",

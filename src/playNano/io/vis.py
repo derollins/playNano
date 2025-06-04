@@ -238,7 +238,9 @@ def play_stack_cv(
     scale_bar_nm: int = 100,
 ) -> None:
     """
-    Pop up an OpenCV window and play a 3D AFM stack as video,
+    Pop up an OpenCV window and play a 3D AFM stack as video.
+
+    This function allows you to view a 3D AFM image stack as a video,
     with on-the-fly filtering & export.
 
     Press
@@ -346,7 +348,9 @@ def play_stack_cv(
             bar_length_nm=scale_bar_nm,
         )
 
-        canvas[y_off : y_off + disp_size[1], x_off : x_off + disp_size[0]] = (  # noqa
+        canvas[
+            y_off : y_off + disp_size[1], x_off : x_off + disp_size[0]  # noqa
+            ] = (
             resized
         )
         cv2.imshow(window_name, canvas)

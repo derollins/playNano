@@ -29,9 +29,7 @@ def test_setup_logging_sets_correct_level(caplog):
 
 
 def test_parse_args_defaults(monkeypatch):
-    """
-    Verify `playnano run sample_path.jpk` uses correct defaults and does not error.
-    """
+    """Verify `playnano run sample_path.jpk` uses defaults and does not error."""
     # Simulate: playnano run sample_path.jpk
     monkeypatch.setattr(sys, "argv", ["prog", "run", "sample_path.jpk"])
     # Pretend the path exists
@@ -93,6 +91,7 @@ def test_load_jpk_file(resource_path):
 
 
 def test_parse_filter_list_various_inputs():
+    """Test parse_filter_list handles various input formats correctly."""
     assert parse_filter_list(None) == []
     assert parse_filter_list("") == []
     assert parse_filter_list("median_filter") == ["median_filter"]
@@ -210,6 +209,7 @@ def test_sanitize_output_name_trims_and_defaults():
 
 
 def test_apply_filters_invalid_name(monkeypatch, caplog):
+    """Test apply_filters_to_stack raises SystemExit on invalid filter name."""
     mock_stack = MagicMock()
     invalid_filter = "nonexistent_filter"
     with pytest.raises(SystemExit):
@@ -218,6 +218,7 @@ def test_apply_filters_invalid_name(monkeypatch, caplog):
 
 
 def test_apply_filters_valueerror(monkeypatch, caplog):
+    """Test apply_filters_to_stack handles ValueError from filter application."""
     mock_stack = MagicMock()
     mock_stack.apply.side_effect = ValueError("bad filter")
     # ensure the filter name exists to get past the first validation
@@ -230,6 +231,7 @@ def test_apply_filters_valueerror(monkeypatch, caplog):
 
 
 def test_write_exports_invalid_format(tmp_path, caplog):
+    """Test write_exports raises SystemExit on unsupported export format."""
     mock_stack = MagicMock()
     mock_stack.data = "data"
     mock_stack.pixel_size_nm = 1.0
@@ -244,6 +246,7 @@ def test_write_exports_invalid_format(tmp_path, caplog):
 
 
 def test_handle_play_file_not_found(tmp_path, caplog):
+    """Test handle_play raises SystemExit if input file does not exist."""
     from argparse import Namespace
 
     from playNano.cli import handle_play
@@ -262,6 +265,7 @@ def test_handle_play_file_not_found(tmp_path, caplog):
 
 
 def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
+    """Test handle_play raises SystemExit if loading AFMImageStack fails."""
     from argparse import Namespace
 
     from playNano.cli import handle_play
@@ -286,6 +290,7 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
 
 
 def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
+    """Test handle_run raises SystemExit for invalid output folder path."""
     from argparse import Namespace
 
     from playNano.cli import handle_run
@@ -313,6 +318,7 @@ def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
 
 
 def test_handle_run_make_gif(monkeypatch, tmp_path):
+    """Test handle_run creates a GIF when make_gif is True."""
     from argparse import Namespace
 
     from playNano.cli import handle_run
@@ -350,6 +356,7 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
 
 
 def test_main_no_command(monkeypatch, capsys):
+    """Test main() exits with usage message when no command is provided."""
     import sys
 
     from playNano.cli import main
