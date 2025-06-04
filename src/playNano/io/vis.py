@@ -348,10 +348,7 @@ def play_stack_cv(
             bar_length_nm=scale_bar_nm,
         )
 
-        canvas[
-            y_off : y_off + disp_size[1], x_off : x_off + disp_size[0]  # noqa
-            ] = resized
-        
+        canvas[y_off : y_off + disp_size[1], x_off : x_off + disp_size[0]] = resized
 
         cv2.imshow(window_name, canvas)
 
