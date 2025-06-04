@@ -141,7 +141,7 @@ playnano run /path/to/afm_file.h5 \
 
 - `--channel`: (default: `height_trace`): Channel to load.
 
-- `--filters`: Comma-separated list of filters and masks to apply in order. 
+- `--filters`: Comma-separated list of filters and masks to apply in order.
 
 - `--export`: Comma-separated list of formats to export (tif, npz, h5).
 
