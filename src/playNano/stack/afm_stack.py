@@ -12,8 +12,13 @@ import dateutil.parser
 import numpy as np
 
 import playNano.processing.filters as filters
+import playNano.processing.masked_filters as masked_filters
+import playNano.processing.masking as masking
 
+# Built-in filters and mask dictionaries
 FILTER_MAP = filters.register_filters()
+MASK_MAP = masking.register_masking()
+MASK_FILTERS_MAP = masked_filters.register_mask_filters()
 
 logger = logging.getLogger(__name__)
 
@@ -281,61 +286,119 @@ class AFMImageStack:
 
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """
-        Apply a sequence of filter steps to the AFM image stack.
+        Apply a sequence of processing steps to each frame in the AFM image stack,
+        allowing mixing of unmasked filters, mask-generators, masked filters,
+            and 'clear'.
 
-        Parameters
-        ----------
-        steps : list of str
-            List of filter names or method names to apply in order.
-        **kwargs : dict
-            Additional parameters passed to filter functions.
+        - “clear” resets/discards the current mask (returning to unmasked mode).
+        - If a step name is in MASK_MAP, compute a new boolean mask from
+            the current data.
+        - If a step name is in FILTER_MAP, dispatch to the masked version
+            (if mask≠None and MASK_FILTERS_MAP contains that key) or else to
+            the unmasked version.
+        - Unknown step names are first looked up as plugins, then fall
+            back to FILTER_MAP or raise ValueError.
 
-        Returns
-        -------
-        np.ndarray
-            The processed data array after applying all steps.
-
-        Raises
-        ------
-        ValueError
-            If a filter step name is not found.
+        At the end, self.data is replaced by the final processed array.
         """
+        # 1) Take a snapshot of raw data
         if "raw" not in self.processed:
             self.processed["raw"] = self.data.copy()
 
+        # 2) Initialize working array and mask
         arr = self.data  # shape: (N, H, W)
+        n_frames = arr.shape[0]
+        mask: np.ndarray | None = None
 
         for step in steps:
-            fn = getattr(self, step, None)
+            # ---------- (A) CLEAR STEP ----------
+            if step == "clear":
+                logger.info("Step 'clear' → dropping existing mask (unmasked mode).")
+                mask = None
+                continue
 
+            # ---------- (B) MASK GENERATOR ----------
+            if step in MASK_MAP:
+                logger.info(
+                    f"Step '{step}' → computing new mask based on current data."
+                )  # noqa
+                new_mask = np.zeros_like(arr, dtype=bool)
+                for i in range(n_frames):
+                    try:
+                        new_mask[i] = MASK_MAP[step](arr[i], **kwargs)
+                    except TypeError:
+                        # In case the mask‐generator needs different args,
+                        # pass only 'frame'
+                        new_mask[i] = MASK_MAP[step](arr[i])
+                    except Exception as e:
+                        logger.error(
+                            f"Error computing mask '{step}' for frame {i}: {e}"
+                        )  # noqa
+                        new_mask[i] = np.zeros_like(arr[i], dtype=bool)
+                mask = new_mask
+                # Do not change arr itself—mask only
+                continue
+
+            # ---------- (C) FILTER OR PLUGIN ----------
+            # 1) Attempt to find a method on self (e.g. self.some_method)
+            fn = getattr(self, step, None)
             if not callable(fn):
-                # 1. try entry-point plugin
+                # 2) Try loading a plugin entry‐point
                 try:
                     fn = self._load_plugin(step)
                 except ValueError:
-                    fn = None  # plugin truly missing
-
-                # 2. fall back to local registry if plugin missing **or** returned None
-                if not callable(fn):
-                    fn = FILTER_MAP.get(step)
+                    fn = None
 
             if not callable(fn):
-                raise ValueError(f"Filter step '{step}' not found")
+                # 3) Fall back to FILTER_MAP (unmasked)
+                fn = FILTER_MAP.get(step)
 
-            # Apply filter frame-wise
-            filtered_frames = []
-            for i in range(arr.shape[0]):
-                frame = arr[i]
-                filtered_frame = fn(frame, **kwargs)
-                if filtered_frame is None:
-                    logger.warning(f"Filter '{step}' returned None for frame {i}")
-                    filtered_frame = frame  # fallback to original frame
-                filtered_frames.append(filtered_frame)
+            if not callable(fn):
+                # Step is not recognized anywhere
+                raise ValueError(
+                    f"Filter step '{step}' not found in plugins or FILTER_MAP."
+                )  # noqa
 
-            arr = np.stack(filtered_frames, axis=0)
-            self.processed[step] = arr
-            logger.info(f"Applied filter step: {step}")
+            # Now we know ‘fn’ is the unmasked version (callable(frame→frame)).
+            # Decide if we should run its masked counterpart:
+            if mask is not None and step in MASK_FILTERS_MAP:
+                # Use the masked version for each frame
+                logger.info(f"Step '{step}' (masked) → applying masked filter.")
+                new_arr = np.zeros_like(arr, dtype=arr.dtype)
+                for i in range(n_frames):
+                    try:
+                        new_arr[i] = MASK_FILTERS_MAP[step](arr[i], mask[i], **kwargs)
+                    except TypeError:
+                        # Drop **kwargs if the masked fn expects only (data, mask)
+                        new_arr[i] = MASK_FILTERS_MAP[step](arr[i], mask[i])
+                    except Exception as e:
+                        logger.error(
+                            f"Error in masked filter '{step}' for frame {i}: {e}"
+                        )  # noqa# noqa
+                        new_arr[i] = arr[i]  # fallback: keep original
+                arr = new_arr
 
+            else:
+                # Unmasked path: just call fn(frame) for each frame
+                logger.info(f"Step '{step}' (unmasked) → applying unmasked filter.")
+                new_arr = np.zeros_like(arr, dtype=arr.dtype)
+                for i in range(n_frames):
+                    try:
+                        new_arr[i] = fn(arr[i], **kwargs)
+                    except TypeError:
+                        # If fn only expects (data,), drop **kwargs
+                        new_arr[i] = fn(arr[i])
+                    except Exception as e:
+                        logger.warning(
+                            f"Filter '{step}' returned None or error for frame {i}: {e}"
+                        )  # noqa
+                        new_arr[i] = arr[i]
+                arr = new_arr
+
+            # 4) Store a snapshot in processed dict
+            self.processed[step] = arr.copy()
+
+        # 5) After all steps, overwrite self.data
         self.data = arr
         return arr
 

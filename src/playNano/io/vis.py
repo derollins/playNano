@@ -8,36 +8,12 @@ import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 
-from playNano.cli import sanitize_output_name
+from playNano.cli import prepare_output_directory, sanitize_output_name
 from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
 from playNano.stack.afm_stack import AFMImageStack
 from playNano.utils import draw_scale_and_timestamp, normalize_to_uint8, pad_to_square
 
 logger = logging.getLogger(__name__)
-
-
-def _make_save_dir(output_dir: Optional[str]) -> Path:
-    """
-    Create (if necessary) and return a Path to the desired output directory.
-
-    Parameters
-    ----------
-    output_dir : str or None
-        User-provided path for exports. If None or empty, defaults to "./output".
-
-    Returns
-    -------
-    Path
-        The (existing or newly created) directory path.
-
-    Raises
-    ------
-    Exception
-        If the directory cannot be created.
-    """
-    out = Path(output_dir or "output")
-    out.mkdir(parents=True, exist_ok=True)
-    return out
 
 
 def _compute_out_stem(output_name: Optional[str], default_stem: str) -> str:
@@ -373,7 +349,7 @@ def play_stack_cv(
 
         # 't': export current view as OME-TIFF
         elif key == ord("t"):
-            save_dir = _make_save_dir(output_dir)
+            save_dir = prepare_output_directory(output_dir, "output")
             base = _compute_out_stem(output_name, afm_data.file_path.stem)
             stack_view = raw_data if not showing_flat else flat_stack
             _export_tiff(
@@ -382,7 +358,7 @@ def play_stack_cv(
 
         # 'n': export current view as NPZ
         elif key == ord("n"):
-            save_dir = _make_save_dir(output_dir)
+            save_dir = prepare_output_directory(output_dir, "output")
             base = _compute_out_stem(output_name, afm_data.file_path.stem)
             stack_view = raw_data if not showing_flat else flat_stack
             _export_npz(
@@ -391,7 +367,7 @@ def play_stack_cv(
 
         # 'h': export current view as HDF5
         elif key == ord("h"):
-            save_dir = _make_save_dir(output_dir)
+            save_dir = prepare_output_directory(output_dir, "output")
             base = _compute_out_stem(output_name, afm_data.file_path.stem)
             stack_view = raw_data if not showing_flat else flat_stack
             _export_h5(
@@ -400,7 +376,7 @@ def play_stack_cv(
 
         # 'g': export current view as GIF
         elif key == ord("g"):
-            save_dir = _make_save_dir(output_dir)
+            save_dir = prepare_output_directory(output_dir, "output")
             base = _compute_out_stem(output_name, afm_data.file_path.stem)
             stack_view = raw_data if not showing_flat else flat_stack
             _export_gif(

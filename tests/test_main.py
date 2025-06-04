@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 from playNano.cli import (
-    apply_filters_to_stack,
     main,
     parse_filter_list,
     prepare_output_directory,
@@ -206,28 +205,6 @@ def test_prepare_output_directory_nested(tmp_path):
 def test_sanitize_output_name_trims_and_defaults():
     """Test sanitize_output_name trims and uses default if needed."""
     assert sanitize_output_name("   ", "fallback") == "fallback"
-
-
-def test_apply_filters_invalid_name(monkeypatch, caplog):
-    """Test apply_filters_to_stack raises SystemExit on invalid filter name."""
-    mock_stack = MagicMock()
-    invalid_filter = "nonexistent_filter"
-    with pytest.raises(SystemExit):
-        apply_filters_to_stack(mock_stack, [invalid_filter])
-    assert "Unknown filter name" in caplog.text
-
-
-def test_apply_filters_valueerror(monkeypatch, caplog):
-    """Test apply_filters_to_stack handles ValueError from filter application."""
-    mock_stack = MagicMock()
-    mock_stack.apply.side_effect = ValueError("bad filter")
-    # ensure the filter name exists to get past the first validation
-    monkeypatch.setattr("playNano.cli.FILTER_MAP", {"valid_filter": lambda x: x})
-    monkeypatch.setattr("playNano.cli.ALL_ENTRYPOINT_NAMES", set())
-
-    with pytest.raises(SystemExit):
-        apply_filters_to_stack(mock_stack, ["valid_filter"])
-    assert "Error applying filter(s): bad filter" in caplog.text
 
 
 def test_write_exports_invalid_format(tmp_path, caplog):

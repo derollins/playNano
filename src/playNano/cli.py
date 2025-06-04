@@ -8,13 +8,17 @@ from pathlib import Path
 
 from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
 from playNano.processing.filters import register_filters
+from playNano.processing.masked_filters import register_mask_filters
+from playNano.processing.masking import register_masking
 from playNano.stack.afm_stack import AFMImageStack
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
 
-# Built-in filters dictionary
+# Built-in filters and mask dictionaries
 FILTER_MAP = register_filters()
+MASK_MAP = register_masking()
+MASK_FILTERS_MAP = register_mask_filters()
 
 # Names of all entry-point plugins (if any third-party filters are installed)
 ALL_ENTRYPOINT_NAMES = {
@@ -116,46 +120,6 @@ def parse_filter_list(filter_arg: str | None) -> list[str]:
     if not filter_arg:
         return []
     return [s.strip() for s in filter_arg.split(",") if s.strip()]
-
-
-def apply_filters_to_stack(afm_stack: AFMImageStack, filter_steps: list[str]) -> None:
-    """
-    Apply all requested filters (in order) to afm_stack.data.
-
-    This calls `afm_stack.apply(filter_steps)`.  If any `step`
-    is not found, logs an error and exits.
-
-    Parameters
-    ----------
-    afm_stack : AFMImageStack
-        The AFM stack whose .data will be modified.
-    filter_steps : list of str
-        Sequence of filter names. If empty, no filtering is done.
-
-    Raises
-    ------
-    SystemExit
-        If one of the filter names is invalid.
-    """
-    if not filter_steps:
-        return
-    logger = logging.getLogger(__name__)
-    logger.info(f"Applying filters: {filter_steps!r}")
-
-    # Validate each name
-    valid_methods = (
-        set(dir(AFMImageStack)) | set(FILTER_MAP.keys()) | ALL_ENTRYPOINT_NAMES
-    )
-    for step in filter_steps:
-        if step not in valid_methods:
-            logger.error(f"Unknown filter name '{step}'")
-            sys.exit(1)
-
-    try:
-        afm_stack.apply(filter_steps)
-    except ValueError as e:
-        logger.error(f"Error applying filter(s): {e}")
-        sys.exit(1)
 
 
 def write_exports(
@@ -313,9 +277,13 @@ def handle_run(args: argparse.Namespace) -> None:
     input_stem = input_path.stem
 
     # 1) Apply filters (if any)
-    filter_steps = parse_filter_list(args.filters)
-    if filter_steps:
-        apply_filters_to_stack(afm_stack, filter_steps)
+    steps = parse_filter_list(args.filters)
+    if steps:
+        try:
+            afm_stack.apply(steps)
+        except ValueError as e:
+            logger.error(f"Error in apply(…): {e}")
+            sys.exit(1)
 
     # 2) Write any requested bundles
     if args.export:
@@ -338,7 +306,7 @@ def handle_run(args: argparse.Namespace) -> None:
             sys.exit(1)
 
         base_name = sanitize_output_name(args.output_name, input_stem)
-        gif_name = f"{base_name}_filtered" if filter_steps else base_name
+        gif_name = f"{base_name}_filtered" if steps else base_name
         gif_path = gif_dir / f"{gif_name}.gif"
 
         from playNano.io.gif_export import create_gif_with_scale_and_timestamp

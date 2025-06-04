@@ -556,9 +556,9 @@ def test_get_loader_for_folder_picks_first_supported(tmp_path):
     assert callable(loader)
 
 
-def test_make_save_dir(tmp_path):
-    """Test that _make_save_dir creates a directory and returns its path."""
-    path = vis._make_save_dir(str(tmp_path))
+def test_prepare_output_directory(tmp_path):
+    """Test that prepare_output_directory creates a directory and returns its path."""
+    path = vis.prepare_output_directory(str(tmp_path))
     assert path.exists()
     assert path.is_dir()
 
