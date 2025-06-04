@@ -141,7 +141,7 @@ playnano run /path/to/afm_file.h5 \
 
 - `--channel`: (default: `height_trace`): Channel to load.
 
-- `--filters`: Comma-separated list of filters and masks to apply in order.
+- `--filters`: Comma-separated list of filters and masks to apply in order. 
 
 - `--export`: Comma-separated list of formats to export (tif, npz, h5).
 
@@ -155,9 +155,31 @@ playnano run /path/to/afm_file.h5 \
 
 ## 🪟 Flattening
 
-### Filters 
+### Filters
 
-- 
+- **Remove Plane** (remove_plane): Fit a 2D plane to the image with inear regression and subtract it.
+
+> Plane calculated from unmasked data if mask is present.
+
+- **Polynomial Flatten** (polinominal_flatten): Fit and subtract a 2D polynomial of given order to remove slow surface trends.
+
+> Polynominal calculated from unmasked data if present. Order of polynomial currently set to 2.
+
+- **Zero Mean** (zero mean): Subtract the overall mean height to center the background around zero.
+
+> Mean calculated from unmasked data if mask is present.
+
+- **Gaussian Filter** (gaussian_filter): Apply a Gaussian low-pass filter to smooth high-frequency noise.
+
+> Sigma currently set at 1 pixel.
+
+### Masks
+
+- **Mask with threshold** (mask_threshold): Mask data above a threshold. Currently set to 0.0.
+
+- **Mask with mean offset** (mask_mean_offset): Mask data above the mean +/- (s.d. * factor). Factor currently set to 1.0.
+
+- **clear** resets mask.
 
 ## 📟 Outputs
 
