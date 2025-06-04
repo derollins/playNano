@@ -286,8 +286,9 @@ class AFMImageStack:
 
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """
-        Apply a sequence of processing steps to each frame in the AFM image stack,
-        allowing mixing of unmasked filters, mask-generators, masked filters,
+        Apply a sequence of processing steps to each frame in the AFM image stack.
+
+        Allows mixing of unmasked filters, mask-generators, masked filters,
             and 'clear'.
 
         - “clear” resets/discards the current mask (returning to unmasked mode).

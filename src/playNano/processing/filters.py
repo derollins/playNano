@@ -193,6 +193,7 @@ def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
 def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
     Subtract the overall mean height to center the background around zero.
+    
     If a mask is provided, mean is computed only over background (mask == False).
 
     Parameters

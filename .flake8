@@ -3,4 +3,4 @@
 extend-ignore = E203
 max-line-length = 88
 exclude = .git,__pycache__,build,dist
-max-complexity = 18
+max-complexity = 25

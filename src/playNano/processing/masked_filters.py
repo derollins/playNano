@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
-    Fit a 2D plane on background only (where mask == False)
-    and subtract it from the full image.
+    Fit a 2D plane on background only and subtract it from the full image.
 
     Parameters
     ----------
