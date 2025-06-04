@@ -19,6 +19,13 @@ such as high-speed AFM (HS-AFM) videos. It supports interactive playback of AFM 
 of processing filters, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
 HDF5 bundles, and animated GIFs.
 
+**Files read:**
+<div align="center">
+
+**`.h5-jpk`, `.jpk`, `.asd`**
+
+</div>
+
 This project requires Python 3.10 or newer and is in development. If you find any issues, please open an issue at:
 <https://github.com/derollins/playNano/issues>
 
@@ -94,6 +101,8 @@ playnano play /path/to/afm_file.h5 \
 ```
 
 **Viewer key bindings:**
+
+Press keys to inteact with the video viewing window:
 
 Apply filter:
 
