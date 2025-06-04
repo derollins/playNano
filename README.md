@@ -130,7 +130,7 @@ Apply filters and export without interaction.
 ```bash
 playnano run /path/to/afm_file.h5 \
   [--channel CHANNEL] \
-  [--filters FILTER1,FILTER2,...] \
+  [--filters FILTER1,MASK1,FILTER2,...] \
   [--export tif,npz,h5] \
   [--make-gif] \
   [--output-folder OUTPUT_DIR] \
@@ -141,7 +141,7 @@ playnano run /path/to/afm_file.h5 \
 
 - `--channel`: (default: `height_trace`): Channel to load.
 
-- `--filters`: Comma-separated list of filters to apply in order.
+- `--filters`: Comma-separated list of filters and masks to apply in order.
 
 - `--export`: Comma-separated list of formats to export (tif, npz, h5).
 
@@ -152,6 +152,12 @@ playnano run /path/to/afm_file.h5 \
 - `--output-name`: Base filename for output files (no extension).
 
 - `--scale-bar-nm`: Length of scale bar annotation on GIF animation in nm.
+
+## 🪟 Flattening
+
+### Filters 
+
+- 
 
 ## 📟 Outputs
 
