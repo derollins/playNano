@@ -358,7 +358,7 @@ class AFMImageStack:
                 # Step is not recognized anywhere
                 raise ValueError(
                     f"Filter step '{step}' not found in plugins or FILTER_MAP."
-                )  # noqa
+                )
 
             # Now we know ‘fn’ is the unmasked version (callable(frame→frame)).
             # Decide if we should run its masked counterpart:
