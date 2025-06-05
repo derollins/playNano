@@ -375,7 +375,7 @@ class AFMImageStack:
                     except Exception as e:
                         logger.error(
                             f"Error in masked filter '{step}' for frame {i}: {e}"
-                        )  # noqa# noqa
+                        )
                         new_arr[i] = arr[i]  # fallback: keep original
                 arr = new_arr
 

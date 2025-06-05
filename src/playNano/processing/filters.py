@@ -215,7 +215,14 @@ def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
         if mask.shape != img.shape:
             raise ValueError("Mask must have same shape as data.")
         # Compute mean over background (where mask is False)
-        mean_val = np.mean(img[~mask])
+        unmasked = img[~mask]
+        if unmasked.size == 0:
+            mean_val = np.mean(img)
+            raise ValueError(
+                "Mask excludes all pixels — cannot compute mean. "
+                "zero_mean applied without mask."
+            )
+        mean_val = np.mean(unmasked)
     return img - mean_val
 
 

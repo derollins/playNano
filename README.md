@@ -35,7 +35,7 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 
 ## ✨ Features
 
-- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` files and folders of `.jpk` files.
+- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` files.
 - ▶️ **Animated image viewer** for high-speed AFM playback.
 - 🪟 **Applies basic filters** and ordered filter chains to image data.
 - 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
@@ -159,8 +159,6 @@ playnano run /path/to/afm_file.h5 \
 
 - **Remove Plane** (remove_plane): Fit a 2D plane to the image with inear regression and subtract it.
 
-  > Plane calculated from unmasked data if mask is present.
-
 - **Polynomial Flatten** (polynomial_flatten): Fit and subtract a 2D polynomial of given order to remove slow surface trends.
 
   > Polynominal calculated from unmasked data if present. Order of polynomial currently set to 2.
@@ -233,8 +231,22 @@ playnano run sample.h5 \
 
 ## 🧩 Filter Plugins
 
-You can extend playNano by installing third-party filter plugins via entry points under playNano.filters.
+You can extend playNano by installing third-party filter plugins via entry points under playNano.filters. Edit the
+`[project.entry-points."playNano.filters"]` section of the pyproject.toml file like this:
+
+```toml
+[project.entry-points."playNano.filters"]
+other_filter   = "playNano.processing.filters:other_filter"
+my_new_plugin  = "mylibrary.moldule:my_new_plugin"
+```
+
 These become available in the CLI filter lists automatically.
+
+Plugins must have the format:
+
+```python
+def filter_plugin(2Ddata: np.ndarray, **kwargs) -> np.ndarray:
+```
 
 ## ⚠️ Notes
 
@@ -272,8 +284,8 @@ This project requires the following Python packages:
 - `scipy`
 - `python-dateutil`
 - `tifffile`
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` files
-    (also planned for use in future `.asd` and `.spm` loading).
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files
+    (also planned for use in future for `.spm` loading).
 - [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
 
 ## 🤝 Related Software

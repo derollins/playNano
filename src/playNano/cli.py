@@ -25,6 +25,14 @@ ALL_ENTRYPOINT_NAMES = {
     ep.name for ep in metadata.entry_points(group="playNano.filters")
 }
 
+preset_steps = [
+    "remove_plane",
+    "mask_mean_offset",
+    "row_median_align",
+    "zero_mean",
+    "gaussian_filter",
+]
+
 
 def setup_logging(level: int = logging.INFO) -> None:
     """
@@ -105,7 +113,7 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
 
 def parse_filter_list(filter_arg: str | None) -> list[str]:
     """
-    Given comma-separated strings of filters (or None), produce a list of names.
+    Given comma-separated strings of filters and masks, produce a list of names.
 
     Parameters
     ----------
@@ -118,8 +126,12 @@ def parse_filter_list(filter_arg: str | None) -> list[str]:
         List of stripped filter names. Empty if filter_arg is None or blank.
     """
     if not filter_arg:
-        return []
-    return [s.strip() for s in filter_arg.split(",") if s.strip()]
+        steps = []
+    elif filter_arg.startswith("preset"):
+        steps = preset_steps
+    else:
+        steps = [s.strip() for s in filter_arg.split(",") if s.strip()]
+    return steps
 
 
 def write_exports(

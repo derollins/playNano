@@ -42,7 +42,7 @@ def save_ome_tiff_stack(
         "PhysicalSizeX": float(pixel_size_nm) * 1e-3,
         "PhysicalSizeY": float(pixel_size_nm) * 1e-3,
         "PhysicalSizeZ": 1.0,  # we’re not truly volumetric, so set Z spacing to 1 µm
-        "TimeIncrement": None,  # if you know uniform frame interval, you could set this
+        "TimeIncrement": timestamps[1],  # assume uniform time increments
         "TimePoint": [float(t) if t is not None else 0.0 for t in timestamps],
         "ChannelName": [channel],  # just one channel here
     }
@@ -103,7 +103,7 @@ def save_h5_bundle(
     """
     Save a 3D AFM stack plus all metadata into a single HDF5 file.
 
-    - path: Path to “.h5” (we’ll force .h5 suffix).
+    - path: Path to “.h5” (we'll force .h5 suffix).
     - frame_metadata: full list of dicts (one dict per frame).
     """
     path = path.with_suffix(".h5")

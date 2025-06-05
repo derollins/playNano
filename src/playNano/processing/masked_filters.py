@@ -54,7 +54,9 @@ def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
 
 
 def polynomial_flatten_masked(
-    data: np.ndarray, order: int, mask: np.ndarray
+    data: np.ndarray,
+    mask: np.ndarray,
+    order: int = 2,
 ) -> np.ndarray:
     """
     Fit a 2D polynomial (quadratic only) using background (mask==False) and subtract it.
@@ -147,7 +149,7 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
 def register_mask_filters():
     """Return list of masking options."""
     return {
-        "remove_plane": remove_plane_masked,
+        # "remove_plane": remove_plane_masked, >>not wokring for some reason
         "polynomial_flatten": polynomial_flatten_masked,
         "row_median_align": row_median_align_masked,
         "zero_mean": lambda data, mask: filters.zero_mean(data, mask=mask),

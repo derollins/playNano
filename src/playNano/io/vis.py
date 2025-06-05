@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 
-from playNano.cli import prepare_output_directory, sanitize_output_name
+from playNano.cli import prepare_output_directory, preset_steps, sanitize_output_name
 from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
 from playNano.stack.afm_stack import AFMImageStack
 from playNano.utils import draw_scale_and_timestamp, normalize_to_uint8, pad_to_square
@@ -28,7 +28,7 @@ def _compute_out_stem(output_name: Optional[str], default_stem: str) -> str:
     output_name : str or None
         The user-provided basename (no extension).
     default_stem : str
-        Fallback filename stem (usually the input file’s stem).
+        Fallback filename stem (usually the input file's stem).
 
     Returns
     -------
@@ -221,7 +221,7 @@ def play_stack_cv(
 
     Press
       - 'f' to apply the filters in `filter_steps` (default to
-      'topostats_flatten' if none provided),
+      'preset' if none provided),
       - SPACE to toggle between raw and filtered,
       - 't' to export current view as OME-TIFF,
       - 'n' to export current view as NPZ,
@@ -245,7 +245,7 @@ def play_stack_cv(
         If empty, uses `afm_data.file_path.stem`.
     filter_steps : list of str, optional
         A list of filter names (in order) to apply when 'f' is pressed.
-        If None or empty, defaults to ["topostats_flatten"].
+        If None or empty, defaults to ["preset"].
 
     Returns
     -------
@@ -337,7 +337,7 @@ def play_stack_cv(
 
         # 'f': apply filters now
         elif key == ord("f"):
-            steps = filter_steps if filter_steps else ["topostats_flatten"]
+            steps = filter_steps if filter_steps else preset_steps
             logger.info(f"[play] Applying filters: {steps} …")
             flat_stack = afm_data.apply(steps)
             showing_flat = True
