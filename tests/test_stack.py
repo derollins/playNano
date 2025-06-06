@@ -8,6 +8,25 @@ import pytest
 import playNano.stack.afm_stack as afm_stack_module
 from playNano.stack.afm_stack import FILTER_MAP, AFMImageStack, normalize_timestamps
 
+def test_init_invalid_data_type():
+    """Test that AFMImageStack raises TypeError for invalid data type."""
+    with pytest.raises(TypeError):
+        AFMImageStack(data=[[1,2,3]], pixel_size_nm=5.0, channel="height", file_path="dummy")
+
+
+def test_init_invalid_data_dim():
+    """Test that AFMImageStack raises ValueError for invalid data dimensions."""
+    data_2d = np.ones((10,10))
+    with pytest.raises(ValueError):
+        AFMImageStack(data=data_2d, pixel_size_nm=5.0, channel="height", file_path="dummy")
+
+
+def test_init_invalid_pixel_size():
+    """Test that AFMImageStack raises ValueError for invalid pixel size."""
+    data = np.ones((5, 10, 10))
+    with pytest.raises(ValueError):
+        AFMImageStack(data=data, pixel_size_nm=0, channel="height", file_path="dummy")
+
 
 def dummy_filter(image, **kwargs):
     """Filter dummy for testing."""
@@ -142,11 +161,13 @@ def test_flatten_images_uses_apply(monkeypatch):
     )
 
     # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
-    monkeypatch.setitem(
-        FILTER_MAP,
-        "topostats_flatten",
-        lambda frame, **kwargs: np.full_like(frame, 7.0),
+    #patch _reslve_step to directly return our fake function
+    monkeypatch.setattr(
+        stack,
+        "_resolve_step",
+        lambda step: ("filter", lambda frame, **kwargs: np.full_like(frame, 7.0))
     )
+
 
     # 5) Call apply([...]) – now it must pick up our fake function from FILTER_MAP
     out = stack.apply(["topostats_flatten"])
@@ -185,6 +206,33 @@ def test_normalize_timestamps_mixed():
     assert normalized[2]["timestamp"] == 2.5
     assert normalized[3]["timestamp"] is None
     assert normalized[4]["timestamp"] is None
+
+def test_getitem_single_frame():
+    """Test that __getitem__ returns a single frame as a numpy array."""
+    data = np.arange(27).reshape(3, 3, 3).astype(float)
+    stack = AFMImageStack(data.copy(), 1.0, "height", "dummy")
+    frame1 = stack[1]
+    assert isinstance(frame1, np.ndarray)
+    assert frame1.shape == (3, 3)
+    assert np.allclose(frame1, data[1])
+
+def test_getitem_slice_creates_new_stack():
+    """Test that __getitem__ with a slice returns a new AFMImageStack."""
+    data = np.random.rand(4, 5, 5)
+    stack = AFMImageStack(data.copy(), 2.0, "height", "dummy")
+    substack = stack[1:3]
+    assert isinstance(substack, AFMImageStack)
+    assert substack.n_frames == 2
+    assert np.allclose(substack.data, data[1:3])
+    # Check metadata length matches too:
+    assert len(substack.frame_metadata) == 2
+
+def test_getitem_invalid_index():
+    """Test that __getitem__ raises IndexError for invalid index."""
+    data = np.random.rand(2, 2, 2)
+    stack = AFMImageStack(data.copy(), 1.0, "height", "dummy")
+    with pytest.raises(TypeError):
+        _ = stack["not_an_int_or_slice"]
 
 
 def test_restore_raw(monkeypatch):

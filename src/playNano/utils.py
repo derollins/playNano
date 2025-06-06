@@ -1,7 +1,12 @@
 """Utility functions for playNano."""
 
+from __future__ import annotations
+from typing import Any
+
 import cv2
 import numpy as np
+import dateutil.parser
+from datetime import datetime
 
 
 def pad_to_square(img: np.ndarray, border_color: int = 0) -> np.ndarray:
@@ -32,6 +37,59 @@ def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     image = np.nan_to_num(image, nan=0.0, posinf=0.0, neginf=0.0)
     norm = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
     return norm.astype(np.uint8)
+
+
+def normalize_timestamps(metadata_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Normalize timestamp data to a float in seconds.
+
+    Given a list of per-frame metadata dicts, parse each 'timestamp' entry
+    (if present) into a float (seconds). Returns a new list of dicts
+    with 'timestamp' replaced by float or None.
+
+    - ISO-format strings → parsed with dateutil.isoparse()
+    - datetime objects       → .timestamp()
+    - numeric (int/float)    → float()
+    - missing/unparsable     → None
+
+    Parameters
+    ----------
+    metadata_list : list of dict
+        List of metadata dictionaries, each possibly containing a 'timestamp'.
+
+    Returns
+    -------
+    list of dict
+        List of metadata dicts with 'timestamp' normalized to float seconds or None.
+    """
+    normalized: list[dict[str, Any]] = []
+    for md in metadata_list:
+        new_md = dict(md)  # shallow copy so we don't mutate the original
+        t = new_md.get("timestamp", None)
+
+        if t is None:
+            new_md["timestamp"] = None
+
+        elif isinstance(t, str):
+            try:
+                dt = dateutil.parser.isoparse(t)
+                new_md["timestamp"] = dt.timestamp()
+            except Exception:
+                # parsing failed
+                new_md["timestamp"] = None
+
+        elif isinstance(t, datetime):
+            new_md["timestamp"] = t.timestamp()
+
+        elif isinstance(t, (int, float)):
+            new_md["timestamp"] = float(t)
+
+        else:
+            new_md["timestamp"] = None
+
+        normalized.append(new_md)
+
+    return normalized
 
 
 def draw_scale_and_timestamp(

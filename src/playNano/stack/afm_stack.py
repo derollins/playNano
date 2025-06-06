@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-import dateutil.parser
 import numpy as np
 
 import playNano.processing.filters as filters
 import playNano.processing.masked_filters as masked_filters
 import playNano.processing.masking as masking
+from playNano.utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
 FILTER_MAP = filters.register_filters()
@@ -21,59 +20,6 @@ MASK_MAP = masking.register_masking()
 MASK_FILTERS_MAP = masked_filters.register_mask_filters()
 
 logger = logging.getLogger(__name__)
-
-
-def normalize_timestamps(metadata_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """
-    Normalize timestamp data to a float in seconds.
-
-    Given a list of per-frame metadata dicts, parse each 'timestamp' entry
-    (if present) into a float (seconds). Returns a new list of dicts
-    with 'timestamp' replaced by float or None.
-
-    - ISO-format strings → parsed with dateutil.isoparse()
-    - datetime objects       → .timestamp()
-    - numeric (int/float)    → float()
-    - missing/unparsable     → None
-
-    Parameters
-    ----------
-    metadata_list : list of dict
-        List of metadata dictionaries, each possibly containing a 'timestamp'.
-
-    Returns
-    -------
-    list of dict
-        List of metadata dicts with 'timestamp' normalized to float seconds or None.
-    """
-    normalized: list[dict[str, Any]] = []
-    for md in metadata_list:
-        new_md = dict(md)  # shallow copy so we don't mutate the original
-        t = new_md.get("timestamp", None)
-
-        if t is None:
-            new_md["timestamp"] = None
-
-        elif isinstance(t, str):
-            try:
-                dt = dateutil.parser.isoparse(t)
-                new_md["timestamp"] = dt.timestamp()
-            except Exception:
-                # parsing failed
-                new_md["timestamp"] = None
-
-        elif isinstance(t, datetime):
-            new_md["timestamp"] = t.timestamp()
-
-        elif isinstance(t, (int, float)):
-            new_md["timestamp"] = float(t)
-
-        else:
-            new_md["timestamp"] = None
-
-        normalized.append(new_md)
-
-    return normalized
 
 
 class AFMImageStack:
@@ -103,6 +49,15 @@ class AFMImageStack:
         frame_metadata : list of dict, optional
             Per-frame metadata; will be padded or trimmed to length n_frames
         """
+        # Validate that data is a 3D NumPy array
+        if not isinstance(data, np.ndarray):
+            raise TypeError(f"`data` must be a NumPy array; got {type(data).__name__}")
+        if data.ndim != 3:
+            raise ValueError(f"`data` must be a 3D array (n_frames, height, width); got shape {data.shape}")
+        # Validate pixel_size_nm
+        if not isinstance(pixel_size_nm, (int, float)) or pixel_size_nm <= 0:
+            raise ValueError(f"`pixel_size_nm` must be a positive number; got {pixel_size_nm!r}")
+
         self.data = data
         self.pixel_size_nm = pixel_size_nm
         self.channel = channel
@@ -124,6 +79,127 @@ class AFMImageStack:
 
         # Store processed results; 'raw' is populated on first processing
         self.processed: dict[str, np.ndarray] = {}
+
+
+    def _resolve_step(self, step: str) -> tuple[str, callable]:
+        """
+        Determine the type of 'step' and return a tuple (step_type, fn),
+        where step_type is one of: 'clear', 'mask', 'filter', 'plugin', 'method'.
+        Raises ValueError if step is not recognized.
+        """
+        if step == "clear":
+            return "clear", None
+
+        # 1) Mask generator?
+        if step in MASK_MAP:
+            return "mask", MASK_MAP[step]
+
+        # 2) Bound method on self? (e.g. a custom method on AFMImageStack)
+        method = getattr(self, step, None)
+        if callable(method):
+            return "method", method
+
+        # 3) Plugin filter entry point?
+        try:
+            ep = next(
+                ep for ep in metadata.entry_points(group="playNano.filters")
+                if ep.name == step
+            )
+        except StopIteration:
+            ep = None
+        if ep is not None:
+            fn = ep.load()
+            return "plugin", fn
+
+        # 4) Unmasked filter in FILTER_MAP?
+        if step in FILTER_MAP:
+            return "filter", FILTER_MAP[step]
+
+        # 5) No match
+        raise ValueError(
+            f"Unrecognized step '{step}'. Available masks: {list(MASK_MAP)}; "
+            f"built-in filters: {list(FILTER_MAP)}; methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
+            f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."
+        )
+    
+
+    def _execute_mask_step(self, mask_fn: callable, arr: np.ndarray, **kwargs) -> np.ndarray:
+        """
+        Return a boolean mask for each frame in 'arr' using the provided mask function.
+        
+        Run a mask generator function (mask_fn) on each frame of 'arr' (shape (N, H, W)),
+        returning a boolean array of shape (N, H, W). If mask_fn(frame, **kwargs) raises
+        TypeError, try mask_fn(frame). If any other exception occurs, log an error and
+        set that frame's mask to all False.
+        """
+        n_frames, H, W = arr.shape
+        new_mask = np.zeros((n_frames, H, W), dtype=bool)
+        for i in range(n_frames):
+            try:
+                # First, attempt to call with kwargs
+                new_mask[i] = mask_fn(arr[i], **kwargs)
+            except TypeError:
+                try:
+                    new_mask[i] = mask_fn(arr[i])
+                except Exception as e:
+                    logger.error(f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}")
+                    new_mask[i] = np.zeros((H, W), dtype=bool)
+            except Exception as e:
+                logger.error(f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}")
+                new_mask[i] = np.zeros((H, W), dtype=bool)
+        return new_mask
+    
+    def _execute_filter_step(
+        self,
+        filter_fn: callable,
+        arr: np.ndarray,
+        mask: np.ndarray | None,
+        step_name: str,
+        **kwargs,
+    ) -> np.ndarray:
+        """
+        Apply a filter (filter_fn) to each frame in 'arr'. 
+        
+        If mask is not None AND
+        step_name is in MASK_FILTERS_MAP, call the masked version for each frame:
+            MASK_FILTERS_MAP[step_name](frame, mask[i], **kwargs)
+        Otherwise, call filter_fn(frame, **kwargs).
+        Returns a new array of same shape as arr.
+        Logs warnings if any frame’s filter raises an exception, and keeps original frame in that case.
+        """
+        n_frames, H, W = arr.shape
+        new_arr = np.zeros_like(arr)
+
+        if mask is not None and step_name in MASK_FILTERS_MAP:
+            masked_fn = MASK_FILTERS_MAP[step_name]
+            for i in range(n_frames):
+                try:
+                    new_arr[i] = masked_fn(arr[i], mask[i], **kwargs)
+                except TypeError:
+                    try:
+                        new_arr[i] = masked_fn(arr[i], mask[i])
+                    except Exception as e:
+                        logger.error(f"Masked filter '{step_name}' failed on frame {i}: {e}")
+                        new_arr[i] = arr[i]
+                except Exception as e:
+                    logger.error(f"Masked filter '{step_name}' failed on frame {i}: {e}")
+                    new_arr[i] = arr[i]
+        else:
+            for i in range(n_frames):
+                try:
+                    new_arr[i] = filter_fn(arr[i], **kwargs)
+                except TypeError:
+                    try:
+                        new_arr[i] = filter_fn(arr[i])
+                    except Exception as e:
+                        logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
+                        new_arr[i] = arr[i]
+                except Exception as e:
+                    logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
+                    new_arr[i] = arr[i]
+
+        return new_arr
+
 
     @classmethod
     def load_data(
@@ -248,6 +324,28 @@ class AFMImageStack:
             else:
                 print(f"Warning: Frame {idx} is None and skipped")
 
+    def __getitem__(self, idx: int | slice) -> np.ndarray | AFMImageStack:
+        """
+        Get a specific frame or a slice of frames from the stack.
+
+        Allow stack[i] to return the i-th frame (2D array), or stack[i:j] 
+        to return a new AFMImageStack containing frames [i:j].
+        Raises TypeError for invalid index types.
+        """
+        if isinstance(idx, int):
+            return self.data[idx]
+        if isinstance(idx, slice):
+            sub_data = self.data[idx]
+            sub_meta = self.frame_metadata[idx]
+            return AFMImageStack(
+                data=sub_data,
+                pixel_size_nm=self.pixel_size_nm,
+                channel=self.channel,
+                file_path=self.file_path,
+                frame_metadata=sub_meta,
+            )
+        raise TypeError(f"Invalid index type: {type(idx).__name__}")
+
     def _snapshot_raw(self):
         """
         Store the very first raw data under 'raw' in processed dict.
@@ -288,116 +386,55 @@ class AFMImageStack:
         """
         Apply a sequence of processing steps to each frame in the AFM image stack.
 
-        Allows mixing of unmasked filters, mask-generators, masked filters,
-            and 'clear'.
+        Steps can be:
+          - "clear"       : reset any existing mask
+          - mask names    : keys in MASK_MAP
+          - filter names  : keys in FILTER_MAP
+          - plugin names  : entry points in 'playNano.filters'
+          - method names  : bound methods on this class
+        **kwargs are forwarded to mask functions or filter functions as appropriate.
 
-        - “clear” resets/discards the current mask (returning to unmasked mode).
-        - If a step name is in MASK_MAP, compute a new boolean mask from
-            the current data.
-        - If a step name is in FILTER_MAP, dispatch to the masked version
-            (if mask≠None and MASK_FILTERS_MAP contains that key) or else to
-            the unmasked version.
-        - Unknown step names are first looked up as plugins, then fall
-            back to FILTER_MAP or raise ValueError.
-
-        At the end, self.data is replaced by the final processed array.
+        Returns
+        -------
+        np.ndarray
+          The processed data array of shape (n_frames, height, width).
         """
-        # 1) Take a snapshot of raw data
+        # 1) Snapshot raw data if not already done
         if "raw" not in self.processed:
             self.processed["raw"] = self.data.copy()
 
-        # 2) Initialize working array and mask
-        arr = self.data  # shape: (N, H, W)
+        arr = self.data
         n_frames = arr.shape[0]
-        mask: np.ndarray | None = None
+        mask = None
 
         for step in steps:
-            # ---------- (A) CLEAR STEP ----------
-            if step == "clear":
-                logger.info("Step 'clear' → dropping existing mask (unmasked mode).")
+            step_type, fn = self._resolve_step(step)
+
+            # (A) CLEAR: drop any existing mask
+            if step_type == "clear":
+                logger.info("Step 'clear' → dropping existing mask.")
                 mask = None
                 continue
 
-            # ---------- (B) MASK GENERATOR ----------
-            if step in MASK_MAP:
-                logger.info(
-                    f"Step '{step}' → computing new mask based on current data."
-                )  # noqa
-                new_mask = np.zeros_like(arr, dtype=bool)
-                for i in range(n_frames):
-                    try:
-                        new_mask[i] = MASK_MAP[step](arr[i], **kwargs)
-                    except TypeError:
-                        # In case the mask‐generator needs different args,
-                        # pass only 'frame'
-                        new_mask[i] = MASK_MAP[step](arr[i])
-                    except Exception as e:
-                        logger.error(
-                            f"Error computing mask '{step}' for frame {i}: {e}"
-                        )  # noqa
-                        new_mask[i] = np.zeros_like(arr[i], dtype=bool)
+            # (B) MASK GENERATOR
+            if step_type == "mask":
+                logger.info(f"Step '{step}' → computing new mask based on current data.")
+                # Compute mask over all frames
+                new_mask = self._execute_mask_step(fn, arr, **kwargs)
                 mask = new_mask
-                # Do not change arr itself—mask only
+                # Do not modify arr itself
                 continue
 
-            # ---------- (C) FILTER OR PLUGIN ----------
-            # 1) Attempt to find a method on self (e.g. self.some_method)
-            fn = getattr(self, step, None)
-            if not callable(fn):
-                # 2) Try loading a plugin entry‐point
-                try:
-                    fn = self._load_plugin(step)
-                except ValueError:
-                    fn = None
+            # (C) FILTER OR PLUGIN
+            # fn is now a callable that processes a 2D frame → 2D frame
+            logger.info(f"Step '{step}' (filter) → applying to all frames.")
+            new_arr = self._execute_filter_step(fn, arr, mask, step, **kwargs)
 
-            if not callable(fn):
-                # 3) Fall back to FILTER_MAP (unmasked)
-                fn = FILTER_MAP.get(step)
+            # Store a snapshot in processed dict
+            self.processed[step] = new_arr.copy()
 
-            if not callable(fn):
-                # Step is not recognized anywhere
-                raise ValueError(
-                    f"Filter step '{step}' not found in plugins or FILTER_MAP."
-                )
-
-            # Now we know ‘fn’ is the unmasked version (callable(frame→frame)).
-            # Decide if we should run its masked counterpart:
-            if mask is not None and step in MASK_FILTERS_MAP:
-                # Use the masked version for each frame
-                logger.info(f"Step '{step}' (masked) → applying masked filter.")
-                new_arr = np.zeros_like(arr, dtype=arr.dtype)
-                for i in range(n_frames):
-                    try:
-                        new_arr[i] = MASK_FILTERS_MAP[step](arr[i], mask[i], **kwargs)
-                    except TypeError:
-                        # Drop **kwargs if the masked fn expects only (data, mask)
-                        new_arr[i] = MASK_FILTERS_MAP[step](arr[i], mask[i])
-                    except Exception as e:
-                        logger.error(
-                            f"Error in masked filter '{step}' for frame {i}: {e}"
-                        )
-                        new_arr[i] = arr[i]  # fallback: keep original
-                arr = new_arr
-
-            else:
-                # Unmasked path: just call fn(frame) for each frame
-                logger.info(f"Step '{step}' (unmasked) → applying unmasked filter.")
-                new_arr = np.zeros_like(arr, dtype=arr.dtype)
-                for i in range(n_frames):
-                    try:
-                        new_arr[i] = fn(arr[i], **kwargs)
-                    except TypeError:
-                        # If fn only expects (data,), drop **kwargs
-                        new_arr[i] = fn(arr[i])
-                    except Exception as e:
-                        logger.warning(
-                            f"Filter '{step}' returned None or error for frame {i}: {e}"
-                        )  # noqa
-                        new_arr[i] = arr[i]
-                arr = new_arr
-
-            # 4) Store a snapshot in processed dict
-            self.processed[step] = arr.copy()
+            # Update arr for next iteration
+            arr = new_arr
 
         # 5) After all steps, overwrite self.data
         self.data = arr
