@@ -3,17 +3,18 @@
 import logging
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
-from playNano.cli import (
+from playNano.cli.entrypoint import (
     main,
-    parse_filter_list,
+    setup_logging,
+)
+from playNano.cli.utils import (
     prepare_output_directory,
     sanitize_output_name,
-    setup_logging,
 )
 from playNano.stack.afm_stack import AFMImageStack
 
@@ -51,18 +52,6 @@ def test_parse_args_defaults(monkeypatch):
     assert result is None
 
 
-@patch("pathlib.Path.exists", return_value=False)
-def test_main_file_not_found(mock_exists, monkeypatch, caplog):
-    """Ensure main() exits with SystemExit if input file is missing."""
-    monkeypatch.setattr(sys, "argv", ["prog", "run", "nonexistent.jpk"])
-    caplog.set_level(logging.ERROR)
-
-    with pytest.raises(SystemExit):
-        main()
-
-    assert "File not found" in caplog.text
-
-
 def test_load_jpk_file(resource_path):
     """
     Test loading a .jpk folder returns a valid AFMImageStack.
@@ -87,18 +76,6 @@ def test_load_jpk_file(resource_path):
     assert stack.data.ndim == 3
     assert stack.data.shape[0] > 0
     assert stack.data.shape[1] > 0 and stack.data.shape[2] > 0
-
-
-def test_parse_filter_list_various_inputs():
-    """Test parse_filter_list handles various input formats correctly."""
-    assert parse_filter_list(None) == []
-    assert parse_filter_list("") == []
-    assert parse_filter_list("median_filter") == ["median_filter"]
-    assert parse_filter_list(" flatten,  median_filter ") == [
-        "flatten",
-        "median_filter",
-    ]
-    assert parse_filter_list(",,topo,,") == ["topo"]
 
 
 def test_sanitize_valid_name():
@@ -216,7 +193,7 @@ def test_write_exports_invalid_format(tmp_path, caplog):
     mock_stack.channel = "height_trace"
 
     with pytest.raises(SystemExit):
-        from playNano.cli import write_exports
+        from playNano.cli.actions import write_exports
 
         write_exports(mock_stack, tmp_path, "testfile", ["invalid"])
     assert "Unsupported export format" in caplog.text
@@ -226,29 +203,31 @@ def test_handle_play_file_not_found(tmp_path, caplog):
     """Test handle_play raises SystemExit if input file does not exist."""
     from argparse import Namespace
 
-    from playNano.cli import handle_play
+    from playNano.cli.handlers import handle_play
 
     args = Namespace(
         input_file="nonexistent.jpk",
         channel="height_trace",
-        filters=None,
+        processing=None,
+        processing_file=None,
         output_folder=None,
         output_name=None,
+        scale_bar_nm=100,  # optional, but matches run handler
     )
 
     with pytest.raises(SystemExit):
         handle_play(args)
-    assert "File not found" in caplog.text
+    assert "Failed to load nonexistent.jpk" in caplog.text
 
 
 def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
     """Test handle_play raises SystemExit if loading AFMImageStack fails."""
     from argparse import Namespace
 
-    from playNano.cli import handle_play
+    from playNano.cli.handlers import handle_play
 
     mock_load = MagicMock(side_effect=Exception("load failed"))
-    monkeypatch.setattr("playNano.cli.AFMImageStack.load_data", mock_load)
+    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load)
 
     file = tmp_path / "file.jpk"
     file.write_text("data")
@@ -256,32 +235,36 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
     args = Namespace(
         input_file=str(file),
         channel="height_trace",
-        filters=None,
+        processing=None,
+        processing_file=None,
         output_folder=None,
         output_name=None,
+        scale_bar_nm=None,
     )
 
     with pytest.raises(SystemExit):
         handle_play(args)
-    assert "Failed to load AFM stack" in caplog.text
+    assert "Failed to load" in caplog.text
 
 
 def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
     """Test handle_run raises SystemExit for invalid output folder path."""
     from argparse import Namespace
 
-    from playNano.cli import handle_run
+    from playNano.cli.handlers import handle_run
 
     good_stack = MagicMock()
     good_stack.frame_metadata = [{"timestamp": 1}]
     monkeypatch.setattr(
-        "playNano.cli.AFMImageStack.load_data", lambda *a, **k: good_stack
+        "playNano.cli.actions.AFMImageStack.load_data", lambda *a, **k: good_stack
     )
 
     args = Namespace(
         input_file=str(tmp_path / "test.jpk"),
         channel="height_trace",
-        filters=None,
+        processing=None,
+        processing_file=None,
+        scale_bar_nm=None,
         export="tif",
         make_gif=False,
         output_folder="bad|name",
@@ -298,7 +281,7 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
     """Test handle_run creates a GIF when make_gif is True."""
     from argparse import Namespace
 
-    from playNano.cli import handle_run
+    from playNano.cli.handlers import handle_run
 
     fake_data = np.zeros((10, 10, 10))
     fake_stack = MagicMock()
@@ -307,19 +290,22 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
     fake_stack.frame_metadata = [{"timestamp": i} for i in range(10)]
     fake_stack.channel = "height_trace"
     fake_stack.image_shape = (10, 10)
+    fake_stack.file_path = tmp_path / "sample.jpk"
+    fake_stack.processed = {}
 
+    # Patch load_data to return our fake stack
     monkeypatch.setattr(
-        "playNano.cli.AFMImageStack.load_data", lambda *a, **k: fake_stack
+        "playNano.cli.actions.AFMImageStack.load_data", lambda *a, **k: fake_stack
     )
-    monkeypatch.setattr(
-        "playNano.io.gif_export.create_gif_with_scale_and_timestamp",
-        lambda *a, **k: None,
-    )
+
+    # Patch the actual gif creation so no file is written
+    monkeypatch.setattr("playNano.cli.actions.export_gif", lambda *a, **k: None)
 
     args = Namespace(
         input_file=str(tmp_path / "sample.jpk"),
         channel="height_trace",
-        filters=None,
+        processing=None,
+        processing_file=None,
         export=None,
         make_gif=True,
         output_folder=str(tmp_path),
@@ -328,15 +314,15 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
     )
     (tmp_path / "sample.jpk").write_text("x")
 
+    # Run the function
     handle_run(args)
-    assert (tmp_path / "outputname.gif").exists() is False  # mocked
 
 
 def test_main_no_command(monkeypatch, capsys):
     """Test main() exits with usage message when no command is provided."""
     import sys
 
-    from playNano.cli import main
+    from playNano.cli.entrypoint import main
 
     monkeypatch.setattr(sys, "argv", ["prog"])
     with pytest.raises(SystemExit) as e:

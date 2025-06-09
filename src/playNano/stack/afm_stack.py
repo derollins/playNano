@@ -10,13 +10,13 @@ from typing import Any
 import numpy as np
 
 import playNano.processing.filters as filters
+import playNano.processing.mask_generators as mask_generators
 import playNano.processing.masked_filters as masked_filters
-import playNano.processing.masking as masking
-from playNano.utils import normalize_timestamps
+from playNano.utils.time_utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
 FILTER_MAP = filters.register_filters()
-MASK_MAP = masking.register_masking()
+MASK_MAP = mask_generators.register_masking()
 MASK_FILTERS_MAP = masked_filters.register_mask_filters()
 
 logger = logging.getLogger(__name__)
@@ -53,10 +53,14 @@ class AFMImageStack:
         if not isinstance(data, np.ndarray):
             raise TypeError(f"`data` must be a NumPy array; got {type(data).__name__}")
         if data.ndim != 3:
-            raise ValueError(f"`data` must be a 3D array (n_frames, height, width); got shape {data.shape}")
+            raise ValueError(
+                f"`data` must be a 3D array (n_frames, height, width); got shape {data.shape}"  # noqa
+            )
         # Validate pixel_size_nm
         if not isinstance(pixel_size_nm, (int, float)) or pixel_size_nm <= 0:
-            raise ValueError(f"`pixel_size_nm` must be a positive number; got {pixel_size_nm!r}")
+            raise ValueError(
+                f"`pixel_size_nm` must be a positive number; got {pixel_size_nm!r}"
+            )
 
         self.data = data
         self.pixel_size_nm = pixel_size_nm
@@ -80,11 +84,11 @@ class AFMImageStack:
         # Store processed results; 'raw' is populated on first processing
         self.processed: dict[str, np.ndarray] = {}
 
-
     def _resolve_step(self, step: str) -> tuple[str, callable]:
         """
-        Determine the type of 'step' and return a tuple (step_type, fn),
-        where step_type is one of: 'clear', 'mask', 'filter', 'plugin', 'method'.
+        Determine the type of 'step' and return a tuple (step_type, fn).
+
+        Step_type is one of: 'clear', 'mask', 'filter', 'plugin', 'method'.
         Raises ValueError if step is not recognized.
         """
         if step == "clear":
@@ -102,7 +106,8 @@ class AFMImageStack:
         # 3) Plugin filter entry point?
         try:
             ep = next(
-                ep for ep in metadata.entry_points(group="playNano.filters")
+                ep
+                for ep in metadata.entry_points(group="playNano.filters")
                 if ep.name == step
             )
         except StopIteration:
@@ -118,19 +123,21 @@ class AFMImageStack:
         # 5) No match
         raise ValueError(
             f"Unrecognized step '{step}'. Available masks: {list(MASK_MAP)}; "
-            f"built-in filters: {list(FILTER_MAP)}; methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
-            f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."
+            f"built-in filters: {list(FILTER_MAP)}; methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "  # noqa
+            f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."  # noqa
         )
-    
 
-    def _execute_mask_step(self, mask_fn: callable, arr: np.ndarray, **kwargs) -> np.ndarray:
+    def _execute_mask_step(
+        self, mask_fn: callable, arr: np.ndarray, **kwargs
+    ) -> np.ndarray:
         """
         Return a boolean mask for each frame in 'arr' using the provided mask function.
-        
-        Run a mask generator function (mask_fn) on each frame of 'arr' (shape (N, H, W)),
-        returning a boolean array of shape (N, H, W). If mask_fn(frame, **kwargs) raises
-        TypeError, try mask_fn(frame). If any other exception occurs, log an error and
-        set that frame's mask to all False.
+
+        Run a mask generator function (mask_fn) on each frame of 'arr'
+        (shape (N, H, W)), returning a boolean array of shape (N, H, W).
+        If mask_fn(frame, **kwargs) raises TypeError, try mask_fn(frame).
+        If any other exception occurs, log an error and set that frame's
+        mask to all False.
         """
         n_frames, H, W = arr.shape
         new_mask = np.zeros((n_frames, H, W), dtype=bool)
@@ -142,13 +149,17 @@ class AFMImageStack:
                 try:
                     new_mask[i] = mask_fn(arr[i])
                 except Exception as e:
-                    logger.error(f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}")
+                    logger.error(
+                        f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}"
+                    )  # noqa
                     new_mask[i] = np.zeros((H, W), dtype=bool)
             except Exception as e:
-                logger.error(f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}")
+                logger.error(
+                    f"Mask generator '{mask_fn.__name__}' failed on frame {i}: {e}"
+                )  # noqa
                 new_mask[i] = np.zeros((H, W), dtype=bool)
         return new_mask
-    
+
     def _execute_filter_step(
         self,
         filter_fn: callable,
@@ -158,14 +169,15 @@ class AFMImageStack:
         **kwargs,
     ) -> np.ndarray:
         """
-        Apply a filter (filter_fn) to each frame in 'arr'. 
-        
+        Apply a filter (filter_fn) to each frame in 'arr'.
+
         If mask is not None AND
         step_name is in MASK_FILTERS_MAP, call the masked version for each frame:
             MASK_FILTERS_MAP[step_name](frame, mask[i], **kwargs)
         Otherwise, call filter_fn(frame, **kwargs).
         Returns a new array of same shape as arr.
-        Logs warnings if any frame’s filter raises an exception, and keeps original frame in that case.
+        Logs warnings if any frame's filter raises an exception, and keeps original
+        frame in that case.
         """
         n_frames, H, W = arr.shape
         new_arr = np.zeros_like(arr)
@@ -179,10 +191,14 @@ class AFMImageStack:
                     try:
                         new_arr[i] = masked_fn(arr[i], mask[i])
                     except Exception as e:
-                        logger.error(f"Masked filter '{step_name}' failed on frame {i}: {e}")
+                        logger.error(
+                            f"Masked filter '{step_name}' failed on frame {i}: {e}"
+                        )  # noqa
                         new_arr[i] = arr[i]
                 except Exception as e:
-                    logger.error(f"Masked filter '{step_name}' failed on frame {i}: {e}")
+                    logger.error(
+                        f"Masked filter '{step_name}' failed on frame {i}: {e}"
+                    )  # noqa
                     new_arr[i] = arr[i]
         else:
             for i in range(n_frames):
@@ -192,14 +208,15 @@ class AFMImageStack:
                     try:
                         new_arr[i] = filter_fn(arr[i])
                     except Exception as e:
-                        logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
+                        logger.warning(
+                            f"Filter '{step_name}' failed on frame {i}: {e}"
+                        )  # noqa
                         new_arr[i] = arr[i]
                 except Exception as e:
                     logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
                     new_arr[i] = arr[i]
 
         return new_arr
-
 
     @classmethod
     def load_data(
@@ -226,13 +243,13 @@ class AFMImageStack:
 
         normalized_metadata: list[dict[str, Any]] = normalize_timestamps(
             afm.frame_metadata
-        )  # noqa
+        )
 
         return cls(
             data=afm.data,
             pixel_size_nm=afm.pixel_size_nm,
             channel=channel,
-            file_path=path,
+            file_path=Path(path),
             frame_metadata=normalized_metadata,
         )
 
@@ -328,7 +345,7 @@ class AFMImageStack:
         """
         Get a specific frame or a slice of frames from the stack.
 
-        Allow stack[i] to return the i-th frame (2D array), or stack[i:j] 
+        Allow stack[i] to return the i-th frame (2D array), or stack[i:j]
         to return a new AFMImageStack containing frames [i:j].
         Raises TypeError for invalid index types.
         """
@@ -404,7 +421,6 @@ class AFMImageStack:
             self.processed["raw"] = self.data.copy()
 
         arr = self.data
-        n_frames = arr.shape[0]
         mask = None
 
         for step in steps:
@@ -418,7 +434,9 @@ class AFMImageStack:
 
             # (B) MASK GENERATOR
             if step_type == "mask":
-                logger.info(f"Step '{step}' → computing new mask based on current data.")
+                logger.info(
+                    f"Step '{step}' → computing new mask based on current data."
+                )  # noqa
                 # Compute mask over all frames
                 new_mask = self._execute_mask_step(fn, arr, **kwargs)
                 mask = new_mask

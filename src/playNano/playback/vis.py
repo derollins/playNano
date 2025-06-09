@@ -1,6 +1,7 @@
 """Module for opening a window to interactively view and export AFM image stacks."""
 
 import logging
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -8,10 +9,12 @@ import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 
-from playNano.cli import prepare_output_directory, preset_steps, sanitize_output_name
+from playNano.cli.utils import prepare_output_directory, sanitize_output_name
 from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
+from playNano.processing.pipeline import ProcessingPipeline
 from playNano.stack.afm_stack import AFMImageStack
-from playNano.utils import draw_scale_and_timestamp, normalize_to_uint8, pad_to_square
+from playNano.utils.io_utils import normalize_to_uint8, pad_to_square
+from playNano.utils.time_utils import draw_scale_and_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +204,17 @@ def _export_gif(
         output_path=gif_path,
         scale_bar_length_nm=scale_bar_nm,
     )
-    logger.info(f"[play] Exported GIF → {gif_path}")
+    logger.debug(f"[play] Exported GIF → {gif_path}")
+
+
+default_steps_with_kwargs = [
+    ("remove_plane", {}),
+    ("polynomial_flatten", {"order": 2}),
+    ("mask_mean_offset", {"factor": 0.5}),
+    ("row_median_align", {}),
+    ("polynomial_flatten", {"order": 2}),
+    ("zero_mean", {}),
+]
 
 
 def play_stack_cv(
@@ -210,7 +223,7 @@ def play_stack_cv(
     window_name: str = "AFM Stack Viewer",
     output_dir: str = "./",
     output_name: str = "",
-    filter_steps: Optional[list[str]] = None,
+    steps_with_kwargs: Optional[list[tuple[str, dict[str, object]]]] = None,
     scale_bar_nm: int = 100,
 ) -> None:
     """
@@ -220,8 +233,8 @@ def play_stack_cv(
     with on-the-fly filtering & export.
 
     Press
-      - 'f' to apply the filters in `filter_steps` (default to
-      'preset' if none provided),
+      - 'f' to apply the filters in `steps_with_kwargs` (default to
+      'default_steps_with_kwargs' if none provided),
       - SPACE to toggle between raw and filtered,
       - 't' to export current view as OME-TIFF,
       - 'n' to export current view as NPZ,
@@ -243,9 +256,10 @@ def play_stack_cv(
     output_name : str, optional
         Base name (no extension) for any exported files.
         If empty, uses `afm_data.file_path.stem`.
-    filter_steps : list of str, optional
-        A list of filter names (in order) to apply when 'f' is pressed.
-        If None or empty, defaults to ["preset"].
+    steps_with_kwargs : list of tuples (str, object), optional
+        A list of tuple containing filter names (in order) with keyword arguments
+         to apply when 'f' is pressed If None or empty,
+         defaults to [default_steps_with_kwargs].
 
     Returns
     -------
@@ -272,8 +286,8 @@ def play_stack_cv(
     # Always keep a snapshot of the raw frames
     raw_data = afm_data.processed.get("raw", afm_data.data)
 
-    if not filter_steps:
-        filter_steps = []
+    if not steps_with_kwargs:
+        steps_with_kwargs = []
 
     cmap = cm.get_cmap("afmhot")
 
@@ -315,7 +329,6 @@ def play_stack_cv(
         x_off = (win_w - disp_size[0]) // 2
 
         timestamp = idx / fps
-
         draw_scale_and_timestamp(
             resized,
             timestamp,
@@ -335,13 +348,33 @@ def play_stack_cv(
         if key in (27, ord("q")):
             break
 
-        # 'f': apply filters now
+        # 'f': apply filters
         elif key == ord("f"):
-            steps = filter_steps if filter_steps else preset_steps
-            logger.info(f"[play] Applying filters: {steps} …")
-            flat_stack = afm_data.apply(steps)
-            showing_flat = True
-            raw_data = afm_data.processed["raw"]
+            # If no filters configured, use default workflow
+            if not steps_with_kwargs:
+                logger.info("[play] No filters configured. Using default preset.")
+                steps_with_kwargs = default_steps_with_kwargs
+
+            # Apply the processing pipeline with the configured steps
+            logger.info(f"[play] Applying filters: {steps_with_kwargs} …")
+            processing = ProcessingPipeline(afm_data)
+            for step_name, step_kwargs in steps_with_kwargs:
+                if step_name == "clear":
+                    processing.clear_mask()
+                else:
+                    try:
+                        processing.add_filter(step_name, **step_kwargs)
+                    except Exception as e:
+                        logger.error(f"Error adding filter '{step_name}': {e}")
+                        sys.exit(1)
+            try:
+                processing.run()
+                flat_stack = afm_data.data
+                raw_data = afm_data.processed["raw"]
+                showing_flat = True
+            except Exception as e:
+                logger.error(f"Error in processing.run(): {e}")
+                sys.exit(1)
 
         # SPACE: toggle raw vs. filtered (only if flat_stack exists)
         elif key == ord(" ") and flat_stack is not None:

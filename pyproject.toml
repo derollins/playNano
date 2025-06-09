@@ -33,11 +33,11 @@ dependencies = [
   "Pillow",
   "tifffile",
   "matplotlib",
-  "topostats",
   "afmreader",
   "opencv-python",
   "python-dateutil>=2.8",
   "scipy",
+  "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -52,10 +52,9 @@ dev = [
 ]
 
 [project.scripts]
-playnano = "playNano.cli:main"
+playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
-topostats_flatten = "playNano.processing.filters:topostats_flatten"
 median_filter     = "playNano.processing.filters:median_filter"
 gaussian_filter   = "playNano.processing.filters:gaussian_filter"
 flatten_poly      = "playNano.processing.filters:flatten_poly"

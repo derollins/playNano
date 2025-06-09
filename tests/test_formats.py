@@ -7,8 +7,8 @@ import h5py
 import numpy as np
 import pytest
 
+from playNano.io.formats.read_h5jpk import load_h5jpk
 from playNano.io.loader import get_loader_for_folder
-from playNano.loaders.read_h5jpk import load_h5jpk
 from playNano.stack.afm_stack import AFMImageStack
 
 

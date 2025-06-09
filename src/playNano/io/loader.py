@@ -6,10 +6,10 @@ Returns an AFMImageStack object
 
 from pathlib import Path
 
-from playNano.loaders.read_asd import load_asd_file
-from playNano.loaders.read_h5jpk import load_h5jpk
-from playNano.loaders.read_jpk_folder import load_jpk_folder
-from playNano.loaders.read_spm_folder import load_spm_folder
+from playNano.io.formats.read_asd import load_asd_file
+from playNano.io.formats.read_h5jpk import load_h5jpk
+from playNano.io.formats.read_jpk_folder import load_jpk_folder
+from playNano.io.formats.read_spm_folder import load_spm_folder
 from playNano.stack.afm_stack import AFMImageStack
 
 

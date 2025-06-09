@@ -6,7 +6,8 @@ import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
 
-from playNano.utils import draw_scale_and_timestamp, normalize_to_uint8
+from playNano.utils.io_utils import normalize_to_uint8
+from playNano.utils.time_utils import draw_scale_and_timestamp
 
 logger = logging.getLogger(__name__)
 

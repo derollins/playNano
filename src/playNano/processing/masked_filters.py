@@ -142,7 +142,6 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
         else:
             med = np.median(row[~mask_row])
         aligned[i, :] -= med
-
     return aligned
 
 

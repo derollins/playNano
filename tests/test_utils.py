@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from playNano.utils import normalize_to_uint8, pad_to_square
+from playNano.utils.io_utils import normalize_to_uint8, pad_to_square
 
 
 def test_pad_to_square():

@@ -9,7 +9,10 @@ import numpy as np
 import pytest
 from PIL import Image, ImageSequence
 
-from playNano.io import vis
+from playNano.io.formats.read_asd import load_asd_file
+from playNano.io.formats.read_h5jpk import load_h5jpk
+from playNano.io.formats.read_jpk_folder import load_jpk_folder
+from playNano.io.formats.read_spm_folder import load_spm_folder
 from playNano.io.gif_export import (
     create_gif_with_scale_and_timestamp,
     normalize_to_uint8,
@@ -19,11 +22,9 @@ from playNano.io.loader import (
     get_loader_for_folder,
     load_afm_stack,
 )
-from playNano.io.vis import pad_to_square, play_stack_cv
-from playNano.loaders.read_asd import load_asd_file
-from playNano.loaders.read_h5jpk import load_h5jpk
-from playNano.loaders.read_jpk_folder import load_jpk_folder
-from playNano.loaders.read_spm_folder import load_spm_folder
+from playNano.playback import vis
+from playNano.playback.vis import pad_to_square, play_stack_cv
+from playNano.processing.pipeline import ProcessingPipeline
 from playNano.stack.afm_stack import AFMImageStack
 
 
@@ -39,7 +40,7 @@ class DummyAFM:
         self.file_path = Path("dummy.jpk")
         self.processed = {"raw": self.data}
 
-    def apply(self, filters):
+    def apply(self):
         """Simulate processing with a dummy apply method."""
         return self.data + 1  # simulate filtered result
 
@@ -400,17 +401,19 @@ def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
         frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
     )
 
-    # Track whether flatten was called
+    # Track if pipeline.run() was called
     calls = {"flattened": False}
 
-    def fake_apply(filters):
+    def fake_run(self):
         calls["flattened"] = True
         # Simulate a flattened stack of all 9’s
-        stack.processed["raw"] = stack.data  # ensure “raw” exists
-        return np.full_like(stack.data, 9)
+        self.stack.processed["raw"] = self.stack.data.copy()
+        flat = np.full_like(self.stack.data, 9)
+        self.stack.data = flat
+        return flat
 
-    # Patch the apply method on the instance
-    monkeypatch.setattr(stack, "apply", fake_apply)
+    # Patch run() on the ProcessingPipeline class
+    monkeypatch.setattr(ProcessingPipeline, "run", fake_run)
 
     # Patch OpenCV functions
     monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
@@ -569,7 +572,7 @@ def test_compute_out_stem_uses_default_when_empty():
     assert result == "defaultname"
 
 
-@patch("playNano.io.vis.save_ome_tiff_stack")
+@patch("playNano.playback.vis.save_ome_tiff_stack")
 def test_export_tiff_calls_save(mock_save):
     """Test that _export_tiff calls save_ome_tiff_stack with correct parameters."""
     dummy = create_dummy_afm()
@@ -577,7 +580,7 @@ def test_export_tiff_calls_save(mock_save):
     assert mock_save.called
 
 
-@patch("playNano.io.vis.save_npz_bundle")
+@patch("playNano.playback.vis.save_npz_bundle")
 def test_export_npz_calls_save(mock_save):
     """Test that _export_npz calls save_npz_bundle with correct parameters."""
     dummy = create_dummy_afm()
@@ -585,7 +588,7 @@ def test_export_npz_calls_save(mock_save):
     assert mock_save.called
 
 
-@patch("playNano.io.vis.save_h5_bundle")
+@patch("playNano.playback.vis.save_h5_bundle")
 def test_export_h5_calls_save(mock_save):
     """Test that _export_h5 calls save_h5_bundle with correct parameters."""
     dummy = create_dummy_afm()

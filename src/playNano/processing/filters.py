@@ -5,91 +5,8 @@ import logging
 import numpy as np
 from scipy import ndimage
 from sklearn.linear_model import LinearRegression
-from topostats.filters import Filters
 
 logger = logging.getLogger(__name__)
-
-
-def topostats_flatten(
-    frame: np.ndarray,
-    filename: str = "frame",
-    pixel_to_nm: float = 1.0,
-    filter_config: dict = None,
-) -> np.ndarray:
-    """
-    Apply a filtering pipeline to flatten an AFM image frame.
-
-    Uses TopoStats filters to flatten the AFM image frames held with the Numpy array.
-
-    Parameters
-    ----------
-    frame : np.ndarray
-        2D NumPy array representing the AFM image frame.
-    filename : str, optional
-        Name of the frame, used for logging and identification. Default is "frame".
-    pixel_to_nm : float, optional
-        Scaling factor to convert pixels to nanometers. Default is 1.0.
-    filter_config : dict, optional
-        Dictionary of filter configuration parameters.
-        If None, a default configuration is used.
-
-    Returns
-    -------
-    np.ndarray or None
-        The flattened image after Gaussian filtering. Returns None if the
-        input is invalid or if filtering fails.
-
-    Notes
-    -----
-    - Uses the `Filters` class from `topostats.filters` to apply a series
-    of image processing steps.
-    - Handles invalid input (e.g., empty arrays or NaNs) gracefully.
-    - Logs detailed information about the filtering process.
-    """
-    if filter_config is None:
-        filter_config = {
-            "row_alignment_quantile": 0.05,
-            "threshold_method": "std_dev",
-            "otsu_threshold_multiplier": 1.0,
-            "threshold_std_dev": {"above": 0.5, "below": 10},
-            "threshold_absolute": None,
-            "gaussian_size": 2,
-            "gaussian_mode": "nearest",
-            "remove_scars": {"run": False},
-        }
-
-    try:
-        logger.info(
-            f"Flattening frame '{filename}': shape={frame.shape}, dtype={frame.dtype}"
-        )
-
-        if frame.size == 0 or np.isnan(frame).any():
-            logger.warning(
-                f"Input frame invalid for {filename}: empty or contains NaNs"
-            )
-            return None
-
-        filters = Filters(
-            image=frame,
-            filename=filename,
-            pixel_to_nm_scaling=pixel_to_nm,
-            **filter_config,
-        )
-        filters.filter_image()  # run filtering pipeline
-
-        gaussian_filtered = filters.images.get("gaussian_filtered", None)
-        if gaussian_filtered is None:
-            logger.warning(
-                f"Warning: 'gaussian_filtered' image not"
-                f"found in filters.images for {filename}"
-            )
-            return None
-
-        return gaussian_filtered
-
-    except Exception as e:
-        logger.warning(f"Exception flattening frame {filename}: {e}")
-        return None
 
 
 def row_median_align(data: np.ndarray) -> np.ndarray:
@@ -251,7 +168,6 @@ def register_filters():
         "remove_plane": remove_plane,
         "row_median_align": row_median_align,
         "zero_mean": zero_mean,
-        "topostats_flatten": topostats_flatten,
         "polynomial_flatten": polynomial_flatten,
         "gaussian_filter": gaussian_filter,
     }
