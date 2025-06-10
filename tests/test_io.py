@@ -5,13 +5,25 @@ from pathlib import Path
 from unittest.mock import patch
 
 import cv2
+import h5py
 import numpy as np
 import pytest
+import tifffile
 from PIL import Image, ImageSequence
 
-from playNano.io import vis
+from playNano.io.export import (
+    export_bundles,
+    save_h5_bundle,
+    save_npz_bundle,
+    save_ome_tiff_stack,
+)
+from playNano.io.formats.read_asd import load_asd_file
+from playNano.io.formats.read_h5jpk import load_h5jpk
+from playNano.io.formats.read_jpk_folder import load_jpk_folder
+from playNano.io.formats.read_spm_folder import load_spm_folder
 from playNano.io.gif_export import (
     create_gif_with_scale_and_timestamp,
+    export_gif,
     normalize_to_uint8,
 )
 from playNano.io.loader import (
@@ -19,11 +31,9 @@ from playNano.io.loader import (
     get_loader_for_folder,
     load_afm_stack,
 )
-from playNano.io.vis import pad_to_square, play_stack_cv
-from playNano.loaders.read_asd import load_asd_file
-from playNano.loaders.read_h5jpk import load_h5jpk
-from playNano.loaders.read_jpk_folder import load_jpk_folder
-from playNano.loaders.read_spm_folder import load_spm_folder
+from playNano.playback import vis
+from playNano.playback.vis import pad_to_square, play_stack_cv
+from playNano.processing.pipeline import ProcessingPipeline
 from playNano.stack.afm_stack import AFMImageStack
 
 
@@ -39,7 +49,7 @@ class DummyAFM:
         self.file_path = Path("dummy.jpk")
         self.processed = {"raw": self.data}
 
-    def apply(self, filters):
+    def apply(self):
         """Simulate processing with a dummy apply method."""
         return self.data + 1  # simulate filtered result
 
@@ -400,17 +410,19 @@ def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
         frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
     )
 
-    # Track whether flatten was called
+    # Track if pipeline.run() was called
     calls = {"flattened": False}
 
-    def fake_apply(filters):
+    def fake_run(self):
         calls["flattened"] = True
         # Simulate a flattened stack of all 9’s
-        stack.processed["raw"] = stack.data  # ensure “raw” exists
-        return np.full_like(stack.data, 9)
+        self.stack.processed["raw"] = self.stack.data.copy()
+        flat = np.full_like(self.stack.data, 9)
+        self.stack.data = flat
+        return flat
 
-    # Patch the apply method on the instance
-    monkeypatch.setattr(stack, "apply", fake_apply)
+    # Patch run() on the ProcessingPipeline class
+    monkeypatch.setattr(ProcessingPipeline, "run", fake_run)
 
     # Patch OpenCV functions
     monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
@@ -563,41 +575,113 @@ def test_prepare_output_directory(tmp_path):
     assert path.is_dir()
 
 
-def test_compute_out_stem_uses_default_when_empty():
-    """Test that _compute_out_stem returns default name when input is empty."""
-    result = vis._compute_out_stem("", "defaultname")
-    assert result == "defaultname"
-
-
-@patch("playNano.io.vis.save_ome_tiff_stack")
-def test_export_tiff_calls_save(mock_save):
-    """Test that _export_tiff calls save_ome_tiff_stack with correct parameters."""
-    dummy = create_dummy_afm()
-    vis._export_tiff(dummy, dummy.data, Path("."), "basename", filtered=False)
-    assert mock_save.called
-
-
-@patch("playNano.io.vis.save_npz_bundle")
-def test_export_npz_calls_save(mock_save):
-    """Test that _export_npz calls save_npz_bundle with correct parameters."""
-    dummy = create_dummy_afm()
-    vis._export_npz(dummy, dummy.data, Path("."), "basename", filtered=True)
-    assert mock_save.called
-
-
-@patch("playNano.io.vis.save_h5_bundle")
-def test_export_h5_calls_save(mock_save):
-    """Test that _export_h5 calls save_h5_bundle with correct parameters."""
-    dummy = create_dummy_afm()
-    vis._export_h5(dummy, dummy.data, Path("."), "basename", filtered=False)
-    assert mock_save.called
-
-
 @patch("playNano.io.gif_export.create_gif_with_scale_and_timestamp")
 def test_export_gif_calls_create(mock_gif):
     """Test calls create_gif_with_scale_and_timestamp with correct parameters."""
     dummy = create_dummy_afm()
-    vis._export_gif(
-        dummy, dummy.data, Path("."), "basename", filtered=False, scale_bar_nm=100
-    )
+    export_gif(dummy, True, Path("."), "basename", scale_bar_nm=100, raw=False)
     assert mock_gif.called
+
+
+@pytest.fixture
+def dummy_stack():
+    """Create a dummy image stack."""
+    data = np.random.rand(3, 4, 4).astype(np.float32)
+    timestamps = [0.0, 1.0, 2.0]
+    metadata = [{"timestamp": t} for t in timestamps]
+    return data, timestamps, metadata
+
+
+@pytest.fixture
+def afm_stack_obj(dummy_stack):
+    """Generate a dummy AFMImageStack object."""
+    data, timestamps, metadata = dummy_stack
+    stack = AFMImageStack(
+        data=data,
+        pixel_size_nm=1.0,
+        frame_metadata=metadata,
+        file_path="dummy_path.h5-jpk",
+        channel="height_trace",
+    )
+    # Add raw to test raw handling
+    stack.processed["raw"] = data.copy()
+    return stack
+
+
+def test_save_ome_tiff_stack_creates_file(dummy_stack):
+    """Test that save_tiff_bundle creates a file."""
+    data, timestamps, _ = dummy_stack
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_path = Path(tmpdir) / "test.ome.tif"
+        save_ome_tiff_stack(out_path, data, 1.0, timestamps)
+        assert out_path.exists()
+        with tifffile.TiffFile(out_path) as tif:
+            assert tif.series[0].shape[:1] == (3,)  # 3 frames
+
+
+def test_save_npz_bundle_creates_file(dummy_stack):
+    """Test that save_npz_bundle creates a file."""
+    data, timestamps, _ = dummy_stack
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_path = Path(tmpdir) / "test"
+        save_npz_bundle(out_path, data, 1.0, timestamps)
+        npz_path = out_path.with_suffix(".npz")
+        assert npz_path.exists()
+        # Properly close file after reading
+        with np.load(npz_path) as contents:
+            assert "data" in contents and "pixel_size_nm" in contents
+        npz_path.unlink()
+
+
+def test_save_h5_bundle_creates_file(dummy_stack):
+    """Test that save_h5_bundle creates a file."""
+    data, timestamps, metadata = dummy_stack
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_path = Path(tmpdir) / "test"
+        save_h5_bundle(out_path, data, 1.0, timestamps, metadata)
+        h5_path = out_path.with_suffix(".h5")
+        assert h5_path.exists()
+        with h5py.File(h5_path, "r") as f:
+            assert "data" in f
+            assert f.attrs["channel"] == "height_trace"
+
+
+def test_export_bundles_all_formats_unfiltered(afm_stack_obj):
+    """Test that export bundles exports raw data without _filtered sufix."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_dir = Path(tmpdir)
+        export_bundles(afm_stack_obj, out_dir, "test_stack", ["tif", "npz", "h5"])
+        assert (out_dir / "test_stack.ome.tif").exists()
+        assert (out_dir / "test_stack.npz").exists()
+        assert (out_dir / "test_stack.h5").exists()
+
+
+def test_export_bundles_all_formats_filtered(afm_stack_obj):
+    """Test that export bundles exports filtered data with _filtered suffix."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_dir = Path(tmpdir)
+        # Ensure raw data exists
+        afm_stack_obj.processed["raw"] = afm_stack_obj.data.copy()
+        # Simulate presence of filtered data
+        afm_stack_obj.processed["filtered"] = afm_stack_obj.data.copy()
+        export_bundles(
+            afm_stack_obj, out_dir, "test_stack", ["tif", "npz", "h5"], raw=False
+        )
+        assert (out_dir / "test_stack_filtered.ome.tif").exists()
+        assert (out_dir / "test_stack_filtered.npz").exists()
+        assert (out_dir / "test_stack_filtered.h5").exists()
+
+
+def test_export_bundles_invalid_format_raises(afm_stack_obj):
+    """Test that export budles raises and error and exits if unknown format passed."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with pytest.raises(SystemExit):
+            export_bundles(afm_stack_obj, Path(tmpdir), "bad_format", ["abc"])
+
+
+def test_export_bundles_raw_flag(afm_stack_obj):
+    """Test that data is saved without _filtered tag when raw flag is true."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        out_dir = Path(tmpdir)
+        export_bundles(afm_stack_obj, out_dir, "stack_raw", ["tif"], raw=True)
+        assert (out_dir / "stack_raw.ome.tif").exists()

@@ -64,7 +64,7 @@ pip install -e .
 Generate a flattened AFM image stack and export a GIF:
 
 ```bash
-playnano run "example_data/sample.h5-jpk" --make-gif
+playnano run "example_data/sample.h5-jpk" --processing "remove_plane;mask_mean_offset:factor=1;row_median_align" --make-gif
 ```
 
 Or launch an interactive viewer to inspect and flatten the data:
@@ -72,6 +72,8 @@ Or launch an interactive viewer to inspect and flatten the data:
 ```bash
 playnano play "example_data/sample.h5-jpk"
 ```
+
+Press the **f** key to flatten with default steps.
 
 ## ⌨️ CLI Usage
 
@@ -85,15 +87,97 @@ Commands:
 
 - `play`: Launches the interactive viewer.
 - `run`: Batch processing mode for applying filters and exporting.
+- `wizard`: Open interactive processing wizard for applying filters and exporting.
+
+### 👟 Command Line mode (`run`)
+
+Apply filters and export without interaction.
+
+```bash
+playnano run /path/to/afm_file.h5-jpk \
+  [--channel CHANNEL] \
+  [--processing [PROCESSING_STEPS_STR] or [--processing-file [PATH_TO_PROCESSING_YAML] \
+  [--export tif,npz,h5] \
+  [--make-gif] \
+  [--output-folder OUTPUT_DIR] \
+  [--output-name BASE_NAME]
+  [--scale-bar-nm SCALE_BAR_INT]
+
+```
+
+- `--channel`: (default: `height_trace`): Channel to load.
+
+- `--output-folder`: Directory to write exports and/or GIF (default: ./output).
+
+- `--output-name`: Base filename for output files (no extension).
+
+- `--export`: Comma-separated list of formats to export (tif, npz, h5).
+
+- `--make-gif`: Write an animated GIF after filtering.
+
+- `--scale-bar-nm`: Length of scale bar annotation on GIF animation in nm. Set to 0 to remove sacle bar.
+
+- `--processing`: Semi-colon-separated list of filters and masks to apply in order (see Flattening section
+                  below), with parameters seperated with a colon.
+                  I.e. "remove_plane;mask_mean_offset:factor=1;row_median_align;clear;gaussian_filter"
+
+- `--processing-file`:  An alternative processing input feild which takes a yaml file listing filtering
+                        steps and parameters.
+
+> Expected YAML schema:
+
+ ```yaml
+    filters:
+    - name: remove_plane
+    - name: gaussian_filter
+        sigma: 2.0
+    - name: threshold_mask
+        threshold: 2
+    - name: polynomial_flatten
+        order: 2
+```
+
+### 🧙‍♂️ Interactive Wizard mode (`wizard`)
+
+Launches an interactive REPL for building and executing processing pipelines.
+
+Takes ``--channel``, `--output-folder`, `--output-name` and `--scale-bar_nm` flags as above.
+
+```bash
+playnano wizard /path/to/afm_file.h5-jpk \
+  [--channel CHANNEL] \
+  [--output-folder OUTPUT_DIR] \
+  [--output-name BASE_NAME]
+  [--scale-bar-nm SCALE_BAR_INT]
+```
+
+Use `help` to see a list of calls.
+
+Start my using the `add` call followed by the name of a filter or mask to add a processing step, the REPL will ask
+for paramters if required. Once a few steps have been added use `list` to see the pipeline, `save` followed by a path
+to a `.yaml` file to save the pipeline for use with the `--processing-file` flag and `run` to execute the processes.
+      add remove_plane
+      add gaussian_filter
+        sigma: 2.0
+      list
+      run
+      quit
+
+Once run, the REPL will ask you about exporting the processed data and generating GIF animiations.
+These will be save to the `--output-dir` set at initlization and as the `--output-name`.
+
+Use `quit` to exit the wizard early.
 
 ### 🖥️ Interactive Playback mode (`play`)
 
 Opens an OpenCV window for visualising and processing the AFM stack.
 
+The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags.
+
 ```bash
-playnano play /path/to/afm_file.h5 \
+playnano play /path/to/afm_file.h5-jpk \
   [--channel CHANNEL] \
-  [--filters FILTER1,MASK1,FILTER2,...] \
+  [--processing [PROCESSING_STEPS_STR] or [--processing-file [PATH_TO_PROCESSING_YAML] \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME] \
   [--scale-bar-nm SCALE_BAR_INT]
@@ -123,36 +207,6 @@ Other commands:
 
 - **q** or **ESC** — Quit the viewer.
 
-## 👟 Command Line mode (`run`)
-
-Apply filters and export without interaction.
-
-```bash
-playnano run /path/to/afm_file.h5 \
-  [--channel CHANNEL] \
-  [--filters FILTER1,MASK1,FILTER2,...] \
-  [--export tif,npz,h5] \
-  [--make-gif] \
-  [--output-folder OUTPUT_DIR] \
-  [--output-name BASE_NAME]
-  [--scale-bar-nm SCALE_BAR_INT]
-
-```
-
-- `--channel`: (default: `height_trace`): Channel to load.
-
-- `--filters`: Comma-separated list of filters and masks to apply in order.
-
-- `--export`: Comma-separated list of formats to export (tif, npz, h5).
-
-- `--make-gif`: Write an animated GIF after filtering.
-
-- `--output-folder`: Directory to write exports and/or GIF (default: ./output).
-
-- `--output-name`: Base filename for output files (no extension).
-
-- `--scale-bar-nm`: Length of scale bar annotation on GIF animation in nm.
-
 ## 🪟 Flattening
 
 ### Filters
@@ -161,7 +215,7 @@ playnano run /path/to/afm_file.h5 \
 
 - **Polynomial Flatten** (polynomial_flatten): Fit and subtract a 2D polynomial of given order to remove slow surface trends.
 
-  > Polynominal calculated from unmasked data if present. Order of polynomial currently set to 2.
+  > Polynominal calculated from unmasked data if present. Parameter: Order(Int) default set to 2.
 
 - **Row Median Align** (row_median_align): Subtract the median of each row from that row to remove horizontal banding.
 
@@ -173,13 +227,17 @@ playnano run /path/to/afm_file.h5 \
 
 - **Gaussian Filter** (gaussian_filter): Apply a Gaussian low-pass filter to smooth high-frequency noise.
 
-  > Sigma currently set at 1 pixel.
+  > Parameter: Sigma(float) default set to 1 pixel.
 
 ### Masks
 
-- **Mask with threshold** (mask_threshold): Mask data above a threshold. Currently set to 0.0.
+- **Mask with threshold** (mask_threshold): Mask data above a threshold.
 
-- **Mask with mean offset** (mask_mean_offset): Mask data above the mean +/- (s.d. * factor). Factor currently set to 1.0.
+> Parameter: Threshold(float) default set to 0.0.
+
+- **Mask with mean offset** (mask_mean_offset): Mask data above the mean +/- (s.d. * factor).
+
+> Paramter: Factor(float) deafult set to 1.0.
 
 - **clear** resets mask.
 
@@ -215,14 +273,16 @@ Default is `INFO`.
 Interactive playback (`play`) with filters and export folder:
 
 ```bash
-playnano play sample.h5 --filters topostats_flatten,median_filter --output-folder ./gifs --output-name sample_view
+playnano play sample.h5 --processing "remove_plane;mask_mean_offset:factor=1;row_median_align" \
+                        --output-folder ./gifs \
+                        --output-name sample_view
 ```
 
-Batch run (`run`) with filters, exporting OME-TIFF and NPZ bundles, plus GIF:
+Batch run (`run`) with filtering steps set by processiing yaml file, exporting OME-TIFF and NPZ bundles, plus GIF:
 
 ```bash
 playnano run sample.h5 \
---filters topostats_flatten,median_filter \
+--processing-file my_filter_steps.yaml \
 --export tif,npz \
 --make-gif \
 --output-folder ./results \
@@ -286,7 +346,6 @@ This project requires the following Python packages:
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files
     (also planned for use in future for `.spm` loading).
-- [`TopoStats`](https://github.com/AFM-SPM/TopoStats) — for AFM image flattening and processing
 
 ## 🤝 Related Software
 
@@ -296,7 +355,7 @@ These are some software packages that have helped and inspired this project:
 
 A general AFM image processing programme written in Python that batch processes AFM images.
 Topostats is able to flatten raw AFM images, mask objects and provides advanced analysis tools
-including U-net based masking. playNano leverages the `filters` module to flatten loaded AFM frames.
+including U-net based masking.
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
