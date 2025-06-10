@@ -102,7 +102,7 @@ def setup_wizard_env(monkeypatch):
 
 @patch("builtins.input", side_effect=EOFError)
 def test_wizard_eof_exit(mock_input):
-    """EOFError from input should exit cleanly with code 0."""
+    """EOFError from input should exit cleanly with code 0."""  # noqa
     with pytest.raises(SystemExit) as exc:
         actions.wizard_mode("in.jpk", "chan", None, None, None)
     assert exc.value.code == 0
