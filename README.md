@@ -321,13 +321,12 @@ def filter_plugin(2Ddata: np.ndarray, **kwargs) -> np.ndarray:
 
 ```text
 playNano/
-├── io/              # I/O utilities (e.g. file loader, GIF export, interactive window)
-├── loaders/         # File format-specific loaders
+├── io/              # I/O utilities (e.g. file loaders and exports)
+├── playback/        # Interactive window
 ├── processing/      # Image flattening, filters, and processing logic
 ├── stack/           # AFMImageStack class and metadata handling
 ├── utils.py         # Utility functions
-├── main.py          # Internal CLI command handlers
-└── cli.py           # CLI entry point
+└── cli              # CLI entry point and functions
 ```
 
 ## 🧩 Dependencies
