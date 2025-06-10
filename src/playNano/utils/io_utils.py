@@ -93,7 +93,7 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
     """
     if folder is None:
         folder = default
-    elif type(folder) is not str:
+    elif not isinstance(folder, str):
         try:
             folder = str(folder)
         except Exception as e:

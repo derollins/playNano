@@ -436,7 +436,7 @@ class AFMImageStack:
             if step_type == "mask":
                 logger.info(
                     f"Step '{step}' → computing new mask based on current data."
-                )  # noqa
+                )
                 # Compute mask over all frames
                 new_mask = self._execute_mask_step(fn, arr, **kwargs)
                 mask = new_mask

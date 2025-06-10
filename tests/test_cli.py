@@ -27,10 +27,6 @@ from playNano.stack.afm_stack import AFMImageStack
 register_filters()
 register_masking()
 
-print("Registered filters:", list(FILTER_MAP.keys()))
-print("Registered masks:", list(MASK_MAP.keys()))
-
-
 @patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("boom"))
 def test_run_pipeline_mode_load_error_logs_and_returns(mock_load, caplog):
     """Test that loading AFM data failure logs an error and returns None."""
@@ -211,13 +207,14 @@ register_mask_filters()
 
 @pytest.fixture
 def mock_filters(monkeypatch):
+    """Mock creating the mask and filters maps."""
     monkeypatch.setitem(MASK_MAP, "mock_mask", lambda: None)
     monkeypatch.setitem(FILTER_MAP, "mock_filter", lambda: None)
 
 
 def test_parse_processing_string_with_mock(mock_filters):
+    """Test the parseing of the processing steps string input."""
     from playNano.cli.utils import parse_processing_string
-
     s = "mock_mask:param1=1; mock_filter:param2=2"
     steps = parse_processing_string(s)
     assert steps[0][0] == "mock_mask"
@@ -226,10 +223,12 @@ def test_parse_processing_string_with_mock(mock_filters):
 
 @pytest.mark.parametrize("name", ["invalid_step", "blur", "xyz123"])
 def test_is_valid_step_false(name):
+    """Test that invalid steps are identified."""
     assert is_valid_step(name) is False
 
 
 def test_parse_processing_string_basic(mock_filters):
+    """Test the parsing of a processing string give correct steps and params."""
     s = "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
     FILTER_MAP["gaussian_filter"] = lambda: None
     MASK_MAP["threshold_mask"] = lambda: None
@@ -242,6 +241,7 @@ def test_parse_processing_string_basic(mock_filters):
 
 
 def test_parse_processing_string_with_bools_and_ints(mock_filters):
+    """Test the parsing of bools and intergers from rpocessing strings."""
     MASK_MAP["some_mask"] = lambda: None
     s = "remove_plane; some_mask:enabled=true,threshold=5"
     steps = parse_processing_string(s)
@@ -252,17 +252,20 @@ def test_parse_processing_string_with_bools_and_ints(mock_filters):
 
 
 def test_parse_processing_string_invalid_name():
+    """Test the parsing of a processing string with an unknown step."""
     with pytest.raises(ValueError, match="Unknown processing step: 'bad_step'"):
         parse_processing_string("bad_step")
 
 
 def test_parse_processing_string_invalid_param_format():
+    """Test parsing a string with an invalid parameter format."""
     s = "gaussian_filter:sigma2.0"
     with pytest.raises(ValueError, match="Invalid parameter expression"):
         parse_processing_string(s)
 
 
 def test_parse_processing_file_yaml(tmp_path):
+    """Test the parsing of a yaml processing file."""
     yaml_data = {
         "filters": [
             {"name": "remove_plane"},
@@ -282,6 +285,7 @@ def test_parse_processing_file_yaml(tmp_path):
 
 
 def test_parse_processing_file_json(tmp_path):
+    """Test the parsing of a json file."""
     json_data = {
         "filters": [
             {"name": "remove_plane"},
@@ -299,11 +303,13 @@ def test_parse_processing_file_json(tmp_path):
 
 
 def test_parse_processing_file_invalid_file():
+    """Test the identification of an invalid processing file."""
     with pytest.raises(FileNotFoundError):
         parse_processing_file("non_existent.yaml")
 
 
 def test_parse_processing_file_invalid_schema(tmp_path):
+    """Test the processing of a yaml file without the correct schema."""
     bad_yaml = tmp_path / "bad.yaml"
     bad_yaml.write_text("not_a_dict: [1, 2, 3]")
     with pytest.raises(ValueError, match="processing file must contain top-level key"):
@@ -311,6 +317,7 @@ def test_parse_processing_file_invalid_schema(tmp_path):
 
 
 def test_parse_processing_file_invalid_filter_entry(tmp_path):
+    """Test the parsing of a processing file with an invlaid step."""
     bad_yaml = tmp_path / "bad.yaml"
     bad_yaml.write_text(yaml.dump({"filters": [{"sigma": 1.0}]}))
     with pytest.raises(ValueError, match="must be a dict containing 'name'"):

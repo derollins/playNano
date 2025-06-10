@@ -8,16 +8,9 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from playNano.cli.entrypoint import (
-    main,
-    setup_logging,
-)
+from playNano.cli.entrypoint import main, setup_logging
 from playNano.stack.afm_stack import AFMImageStack
-from playNano.utils.io_utils import (
-    prepare_output_directory,
-    sanitize_output_name,
-)
-
+from playNano.utils.io_utils import prepare_output_directory, sanitize_output_name
 
 def test_setup_logging_sets_correct_level(caplog):
     """Check setup_logging sets the specified logging level correctly."""

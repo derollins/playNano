@@ -585,6 +585,7 @@ def test_export_gif_calls_create(mock_gif):
 
 @pytest.fixture
 def dummy_stack():
+    """Create a dummy image stack."""
     data = np.random.rand(3, 4, 4).astype(np.float32)
     timestamps = [0.0, 1.0, 2.0]
     metadata = [{"timestamp": t} for t in timestamps]
@@ -593,6 +594,7 @@ def dummy_stack():
 
 @pytest.fixture
 def afm_stack_obj(dummy_stack):
+    """Generate a dummy AFMImageStack object."""
     data, timestamps, metadata = dummy_stack
     stack = AFMImageStack(
         data=data,
@@ -607,6 +609,7 @@ def afm_stack_obj(dummy_stack):
 
 
 def test_save_ome_tiff_stack_creates_file(dummy_stack):
+    """Test that save_tiff_bundle creates a file."""
     data, timestamps, _ = dummy_stack
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test.ome.tif"
@@ -617,6 +620,7 @@ def test_save_ome_tiff_stack_creates_file(dummy_stack):
 
 
 def test_save_npz_bundle_creates_file(dummy_stack):
+    """Test that save_npz_bundle creates a file."""
     data, timestamps, _ = dummy_stack
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test"
@@ -630,6 +634,7 @@ def test_save_npz_bundle_creates_file(dummy_stack):
 
 
 def test_save_h5_bundle_creates_file(dummy_stack):
+    """Test that save_h5_bundle creates a file."""
     data, timestamps, metadata = dummy_stack
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test"
@@ -642,6 +647,7 @@ def test_save_h5_bundle_creates_file(dummy_stack):
 
 
 def test_export_bundles_all_formats_unfiltered(afm_stack_obj):
+    """Test that export bundles exports raw data without _filtered sufix."""
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir)
         export_bundles(afm_stack_obj, out_dir, "test_stack", ["tif", "npz", "h5"])
@@ -651,6 +657,7 @@ def test_export_bundles_all_formats_unfiltered(afm_stack_obj):
 
 
 def test_export_bundles_all_formats_filtered(afm_stack_obj):
+    """Test that export bundles exports filtered data with _filtered suffix."""
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir)
         # Ensure raw data exists
@@ -666,12 +673,14 @@ def test_export_bundles_all_formats_filtered(afm_stack_obj):
 
 
 def test_export_bundles_invalid_format_raises(afm_stack_obj):
+    """Test that export budles raises and error and exits if unknown format passed."""
     with tempfile.TemporaryDirectory() as tmpdir:
         with pytest.raises(SystemExit):
             export_bundles(afm_stack_obj, Path(tmpdir), "bad_format", ["abc"])
 
 
 def test_export_bundles_raw_flag(afm_stack_obj):
+    """Test that data is saved without _filtered tag when raw flag is true."""
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir)
         export_bundles(afm_stack_obj, out_dir, "stack_raw", ["tif"], raw=True)

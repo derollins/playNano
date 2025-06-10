@@ -4,11 +4,7 @@ import argparse
 import logging
 import sys
 
-from playNano.cli.handlers import (
-    handle_play,
-    handle_processing_wizard,
-    handle_run,
-)
+from playNano.cli.handlers import handle_play, handle_processing_wizard, handle_run
 from playNano.errors import LoadError
 
 logger = logging.getLogger(__name__)

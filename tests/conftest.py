@@ -16,6 +16,7 @@ def resource_path():
 
 @pytest.fixture(autouse=True)
 def register_all_filters_and_masks():
+    """Fixtrue for registering all filteres and masks before tests"""
     # Automatically run before every test
     register_filters()
     register_masking()

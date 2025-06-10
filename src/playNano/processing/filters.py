@@ -5,6 +5,7 @@ import logging
 import numpy as np
 from scipy import ndimage
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -67,44 +68,57 @@ def remove_plane(data: np.ndarray) -> np.ndarray:
 
 def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     """
-    Fit and subtract a 2D polynomial of given order to remove slow surface trends.
+    Subtract a 2D polynomial surface of given order to flatten AFM image data.
 
     Parameters
     ----------
     data : np.ndarray
-        2D AFM image data (should be already plane-removed for best results).
+        2D AFM image data.
     order : int
-        Order of the polynomial (currently supports order=2 for quadratic).
-        Default is 2.
+        Polynomial order for surface fitting (e.g., 1 for linear, 2 for quadratic).
 
     Returns
     -------
     np.ndarray
-        Polynomial-flattened image.
+        Flattened image with polynomial background removed.
+
+    Raises
+    ------
+    ValueError
+        If data is not a 2D array or if order is not a positive integer.
     """
-    if order != 2:
-        raise ValueError("Currently only quadratic (order=2) flattening is supported.")
+    # Validate input shape and type
+    if not isinstance(data, np.ndarray) or data.ndim != 2:
+        raise ValueError("Input data must be a 2D NumPy array.")
+    if not isinstance(order, int) or order < 1:
+        raise ValueError("Polynomial order must be a positive integer.")
+
     h, w = data.shape
+
+    # Generate coordinate grid for surface fitting
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     Z = data.astype(np.float64)
-    # Flatten
-    Xf = X.ravel()
-    Yf = Y.ravel()
+
+    # Prepare design matrix with all polynomial terms up to the given order
+    coords = np.stack([X.ravel(), Y.ravel()], axis=1)
+    try:
+        poly = PolynomialFeatures(order)
+        A = poly.fit_transform(coords)
+    except Exception as e:
+        raise RuntimeError(f"Failed to generate polynomial features: {e}")
+
+    # Solve for least-squares polynomial surface
     Zf = Z.ravel()
-    # Design matrix for quadratic: [1, x, y, x^2, x*y, y^2]
-    A = np.stack([np.ones_like(Xf), Xf, Yf, Xf**2, Xf * Yf, Yf**2], axis=1)
-    # Solve least squares for coefficients
-    coeff, _, _, _ = np.linalg.lstsq(A, Zf, rcond=None)
-    # Compute fitted surface
-    Z_fit = (
-        coeff[0]
-        + coeff[1] * X
-        + coeff[2] * Y
-        + coeff[3] * X**2
-        + coeff[4] * X * Y
-        + coeff[5] * Y**2
-    )
-    return data - Z_fit
+    try:
+        coeff, _, _, _ = np.linalg.lstsq(A, Zf, rcond=None)
+    except np.linalg.LinAlgError as e:
+        raise RuntimeError(f"Least squares fitting failed: {e}")
+
+    # Reconstruct the fitted surface and subtract it
+    Z_fit = A @ coeff
+    flattened = Z - Z_fit.reshape(h, w)
+
+    return flattened
 
 
 def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
