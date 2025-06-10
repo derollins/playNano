@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-
 import playNano.processing.filters as filters
 
 logger = logging.getLogger(__name__)
@@ -94,21 +93,19 @@ def polynomial_flatten_masked(
         poly = PolynomialFeatures(order)
         A = poly.fit_transform(coords)
     except Exception as e:
-        raise RuntimeError(f"Failed to generate polynomial features: {e}")
+        raise RuntimeError(f"Failed to generate polynomial features: {e}") from e
 
     bg_idx = ~mask.ravel()
 
     if np.count_nonzero(bg_idx) < A.shape[1]:
-            raise ValueError(
-                "Not enough background pixels to perform polynomial fit."
-            )
+        raise ValueError("Not enough background pixels to perform polynomial fit.")
 
     # Solve for least-squares polynomial surface
     Zf = Z.ravel()
     try:
         coeff, _, _, _ = np.linalg.lstsq(A[bg_idx], Zf[bg_idx], rcond=None)
     except np.linalg.LinAlgError as e:
-        raise RuntimeError(f"Least squares fitting failed: {e}")
+        raise RuntimeError(f"Least squares fitting failed: {e}") from e
 
     # Reconstruct the fitted surface and subtract it
     Z_fit = A @ coeff

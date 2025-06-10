@@ -71,24 +71,29 @@ def test_polynomial_flatten_various_orders():
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
 
     # Generate data: plane + quadratic + cubic terms
-    data_linear = 3 + 2*X + 5*Y  # order=1 exact
-    data_quadratic = data_linear + 1.5*X**2 - 0.5*X*Y + 2*Y**2  # order=2 exact
+    data_linear = 3 + 2 * X + 5 * Y  # order=1 exact
+    data_quadratic = data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2  # order=2 exact
     data_cubic = (
-        data_quadratic
-        + 0.1*X**3 - 0.2*X**2*Y + 0.3*X*Y**2 - 0.4*Y**3
+        data_quadratic + 0.1 * X**3 - 0.2 * X**2 * Y + 0.3 * X * Y**2 - 0.4 * Y**3
     )  # order=3 exact
 
     # Test order=1 flattening recovers zero residual for linear surface
     residual_1 = filters.polynomial_flatten(data_linear, order=1)
-    assert np.allclose(residual_1, 0, atol=1e-8), "Order 1 flattening failed on linear data"
+    assert np.allclose(
+        residual_1, 0, atol=1e-8
+    ), "Order 1 flattening failed on linear data"  # noqa
 
     # Test order=2 flattening recovers zero residual for quadratic surface
     residual_2 = filters.polynomial_flatten(data_quadratic, order=2)
-    assert np.allclose(residual_2, 0, atol=1e-8), "Order 2 flattening failed on quadratic data"
+    assert np.allclose(
+        residual_2, 0, atol=1e-8
+    ), "Order 2 flattening failed on quadratic data"  # noqa
 
     # Test order=3 flattening recovers zero residual for cubic surface
     residual_3 = filters.polynomial_flatten(data_cubic, order=3)
-    assert np.allclose(residual_3, 0, atol=1e-7), "Order 3 flattening failed on cubic data"
+    assert np.allclose(
+        residual_3, 0, atol=1e-7
+    ), "Order 3 flattening failed on cubic data"  # noqa
 
     # Test error on invalid order
     with pytest.raises(ValueError):
@@ -315,6 +320,7 @@ def test_polynomial_flatten_masked_basic():
     # so result near zero
     assert np.allclose(result, 0, atol=1e-12)
 
+
 @pytest.mark.parametrize("order", [1, 2, 3])
 def test_polynomial_flatten_masked_orders(order: int):
     """Test polynomial flattening for different orders using masked background."""
@@ -331,7 +337,7 @@ def test_polynomial_flatten_masked_orders(order: int):
     background = (A @ coeff).reshape(h, w)
 
     # Add a localized Gaussian bump as the foreground (to be masked out)
-    bump = np.exp(-((X - 32) ** 2 + (Y - 32) ** 2) / (2 * 5 ** 2)) * 10.0
+    bump = np.exp(-((X - 32) ** 2 + (Y - 32) ** 2) / (2 * 5**2)) * 10.0
     data = background + bump
 
     # Foreground mask excludes bump region from fitting

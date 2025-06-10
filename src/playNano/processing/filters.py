@@ -105,14 +105,14 @@ def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
         poly = PolynomialFeatures(order)
         A = poly.fit_transform(coords)
     except Exception as e:
-        raise RuntimeError(f"Failed to generate polynomial features: {e}")
+        raise RuntimeError(f"Failed to generate polynomial features: {e}") from e
 
     # Solve for least-squares polynomial surface
     Zf = Z.ravel()
     try:
         coeff, _, _, _ = np.linalg.lstsq(A, Zf, rcond=None)
     except np.linalg.LinAlgError as e:
-        raise RuntimeError(f"Least squares fitting failed: {e}")
+        raise RuntimeError(f"Least squares fitting failed: {e}") from e
 
     # Reconstruct the fitted surface and subtract it
     Z_fit = A @ coeff

@@ -27,6 +27,7 @@ from playNano.stack.afm_stack import AFMImageStack
 register_filters()
 register_masking()
 
+
 @patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("boom"))
 def test_run_pipeline_mode_load_error_logs_and_returns(mock_load, caplog):
     """Test that loading AFM data failure logs an error and returns None."""
@@ -215,6 +216,7 @@ def mock_filters(monkeypatch):
 def test_parse_processing_string_with_mock(mock_filters):
     """Test the parseing of the processing steps string input."""
     from playNano.cli.utils import parse_processing_string
+
     s = "mock_mask:param1=1; mock_filter:param2=2"
     steps = parse_processing_string(s)
     assert steps[0][0] == "mock_mask"
