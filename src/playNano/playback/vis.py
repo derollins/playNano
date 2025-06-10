@@ -2,210 +2,24 @@
 
 import logging
 import sys
-from pathlib import Path
 from typing import Optional
 
 import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 
-from playNano.cli.utils import prepare_output_directory, sanitize_output_name
-from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
+from playNano.io.export import export_bundles
+from playNano.io.gif_export import export_gif
 from playNano.processing.pipeline import ProcessingPipeline
 from playNano.stack.afm_stack import AFMImageStack
-from playNano.utils.io_utils import normalize_to_uint8, pad_to_square
+from playNano.utils.io_utils import (
+    normalize_to_uint8,
+    pad_to_square,
+    prepare_output_directory,
+)
 from playNano.utils.time_utils import draw_scale_and_timestamp
 
 logger = logging.getLogger(__name__)
-
-
-def _compute_out_stem(output_name: Optional[str], default_stem: str) -> str:
-    """
-    Sanitize and return a base filename (no extension) for exports.
-
-    If `output_name` is None or empty, `default_stem` is used. Otherwise,
-    `sanitize_output_name` is applied to `output_name`.
-
-    Parameters
-    ----------
-    output_name : str or None
-        The user-provided basename (no extension).
-    default_stem : str
-        Fallback filename stem (usually the input file's stem).
-
-    Returns
-    -------
-    str
-        A valid, sanitized base name to use for export files.
-    """
-    return sanitize_output_name(output_name, default_stem)
-
-
-def _export_tiff(
-    afm_data: AFMImageStack,
-    stack: np.ndarray,
-    output_dir: Path,
-    base_stem: str,
-    filtered: bool,
-) -> None:
-    """
-    Export `stack` as an OME-TIFF.
-
-    Parameters
-    ----------
-    afm_data : AFMImageStack
-        The AFM stack (for metadata).
-    stack : np.ndarray
-        Array of shape (n_frames, H, W) to write.
-    output_dir : Path
-        Directory in which to save the TIFF.
-    base_stem : str
-        Base file name (no extension).
-    filtered : bool
-        If True, append "_filtered" to `base_stem`. Otherwise no suffix.
-
-    Returns
-    -------
-    None
-    """
-    suffix = "_filtered" if filtered else ""
-    tif_path = output_dir / f"{base_stem}{suffix}.ome.tif"
-    timestamps = [md["timestamp"] for md in afm_data.frame_metadata]
-    save_ome_tiff_stack(
-        path=tif_path,
-        stack=stack,
-        pixel_size_nm=afm_data.pixel_size_nm,
-        timestamps=timestamps,
-        channel=afm_data.channel,
-    )
-    logger.info(f"[play] Exported OME-TIFF → {tif_path}")
-
-
-def _export_npz(
-    afm_data: AFMImageStack,
-    stack: np.ndarray,
-    output_dir: Path,
-    base_stem: str,
-    filtered: bool,
-) -> None:
-    """
-    Export `stack` as a compressed NPZ bundle.
-
-    Parameters
-    ----------
-    afm_data : AFMImageStack
-        The AFM stack (for metadata).
-    stack : np.ndarray
-        Array of shape (n_frames, H, W) to write.
-    output_dir : Path
-        Directory in which to save the NPZ.
-    base_stem : str
-        Base file name (no extension).
-    filtered : bool
-        If True, append "_filtered" to `base_stem`. Otherwise no suffix.
-
-    Returns
-    -------
-    None
-    """
-    suffix = "_filtered" if filtered else ""
-    npz_path = output_dir / f"{base_stem}{suffix}"
-    timestamps = [md["timestamp"] for md in afm_data.frame_metadata]
-    save_npz_bundle(
-        path=npz_path,
-        stack=stack,
-        pixel_size_nm=afm_data.pixel_size_nm,
-        timestamps=timestamps,
-        channel=afm_data.channel,
-    )
-    logger.info(f"[play] Exported NPZ → {npz_path}.npz")
-
-
-def _export_h5(
-    afm_data: AFMImageStack,
-    stack: np.ndarray,
-    output_dir: Path,
-    base_stem: str,
-    filtered: bool,
-) -> None:
-    """
-    Export `stack` as an HDF5 bundle, embedding full frame_metadata.
-
-    Parameters
-    ----------
-    afm_data : AFMImageStack
-        The AFM stack (for metadata & frame_metadata).
-    stack : np.ndarray
-        Array of shape (n_frames, H, W) to write.
-    output_dir : Path
-        Directory in which to save the HDF5.
-    base_stem : str
-        Base file name (no extension).
-    filtered : bool
-        If True, append "_filtered" to `base_stem`. Otherwise no suffix.
-
-    Returns
-    -------
-    None
-    """
-    suffix = "_filtered" if filtered else ""
-    h5_path = output_dir / f"{base_stem}{suffix}"
-    timestamps = [md["timestamp"] for md in afm_data.frame_metadata]
-    save_h5_bundle(
-        path=h5_path,
-        stack=stack,
-        pixel_size_nm=afm_data.pixel_size_nm,
-        timestamps=timestamps,
-        frame_metadata=afm_data.frame_metadata,
-        channel=afm_data.channel,
-    )
-    logger.info(f"[play] Exported HDF5 → {h5_path}.h5")
-
-
-def _export_gif(
-    afm_data: AFMImageStack,
-    stack: np.ndarray,
-    output_dir: Path,
-    base_stem: str,
-    filtered: bool,
-    scale_bar_nm: float,
-) -> None:
-    """
-    Export `stack` as an animated GIF with scale bar and timestamp overlay.
-
-    Parameters
-    ----------
-    afm_data : AFMImageStack
-        The AFM stack (for metadata & pixel_size).
-    stack : np.ndarray
-        Array of shape (n_frames, H, W) to write.
-    output_dir : Path
-        Directory in which to save the GIF.
-    base_stem : str
-        Base file name (no extension).
-    filtered : bool
-        If True, append "_filtered" to `base_stem`. Otherwise no suffix.
-    fps : float
-        Frames per second to embed (for correct timestamp).
-
-    Returns
-    -------
-    None
-    """
-    from playNano.io.gif_export import create_gif_with_scale_and_timestamp
-
-    suffix = "_filtered" if filtered else ""
-    gif_path = output_dir / f"{base_stem}{suffix}.gif"
-    timestamps = [md["timestamp"] for md in afm_data.frame_metadata]
-    create_gif_with_scale_and_timestamp(
-        stack,
-        afm_data.pixel_size_nm,
-        timestamps,
-        output_path=gif_path,
-        scale_bar_length_nm=scale_bar_nm,
-    )
-    logger.debug(f"[play] Exported GIF → {gif_path}")
-
 
 default_steps_with_kwargs = [
     ("remove_plane", {}),
@@ -383,42 +197,42 @@ def play_stack_cv(
         # 't': export current view as OME-TIFF
         elif key == ord("t"):
             save_dir = prepare_output_directory(output_dir, "output")
-            base = _compute_out_stem(output_name, afm_data.file_path.stem)
-            stack_view = raw_data if not showing_flat else flat_stack
-            _export_tiff(
-                afm_data, stack_view, save_dir, base_stem=base, filtered=showing_flat
-            )
+            raw = False
+            if showing_flat is False and "raw" in afm_data.processed:
+                raw = True
+            export_bundles(afm_data, save_dir, output_name, ["tif"], raw)
 
         # 'n': export current view as NPZ
         elif key == ord("n"):
             save_dir = prepare_output_directory(output_dir, "output")
-            base = _compute_out_stem(output_name, afm_data.file_path.stem)
-            stack_view = raw_data if not showing_flat else flat_stack
-            _export_npz(
-                afm_data, stack_view, save_dir, base_stem=base, filtered=showing_flat
-            )
+            if showing_flat:
+                raw = False
+            elif showing_flat is False and "raw" in afm_data.processed:
+                raw = True
+            export_bundles(afm_data, save_dir, output_name, ["npz"], raw)
 
         # 'h': export current view as HDF5
         elif key == ord("h"):
             save_dir = prepare_output_directory(output_dir, "output")
-            base = _compute_out_stem(output_name, afm_data.file_path.stem)
-            stack_view = raw_data if not showing_flat else flat_stack
-            _export_h5(
-                afm_data, stack_view, save_dir, base_stem=base, filtered=showing_flat
-            )
+            if showing_flat:
+                raw = False
+            elif showing_flat is False and "raw" in afm_data.processed:
+                raw = True
+            export_bundles(afm_data, save_dir, output_name, ["h5"], raw)
 
         # 'g': export current view as GIF
         elif key == ord("g"):
             save_dir = prepare_output_directory(output_dir, "output")
-            base = _compute_out_stem(output_name, afm_data.file_path.stem)
-            stack_view = raw_data if not showing_flat else flat_stack
-            _export_gif(
+            raw = False
+            if showing_flat is False and "raw" in afm_data.processed:
+                raw = True
+            export_gif(
                 afm_data,
-                stack_view,
+                True,
                 save_dir,
-                base_stem=base,
-                filtered=showing_flat,
+                output_name,
                 scale_bar_nm=scale_bar_nm,
+                raw=raw,
             )
 
         # Advance to next frame

@@ -7,7 +7,9 @@ import h5py
 import numpy as np
 import pytest
 
+from playNano.io.formats.read_asd import load_asd_file
 from playNano.io.formats.read_h5jpk import load_h5jpk
+from playNano.io.formats.read_jpk_folder import load_jpk_folder
 from playNano.io.loader import get_loader_for_folder
 from playNano.stack.afm_stack import AFMImageStack
 
@@ -197,10 +199,10 @@ def test_h5jpk_file_is_valid(resource_path):
         "channel",
         "flip_image",
         "pixel_to_nm_scaling",
-        "image_shape",
+        "stack_shape",
         "image_dtype",
         "metadata_dtype",
-        "image_sum",
+        "stack_sum",
     ),
     [
         pytest.param(
@@ -221,10 +223,10 @@ def test_read_h5jpk_valid_file(
     channel: str,
     flip_image: bool,
     pixel_to_nm_scaling: float,
-    image_shape: tuple[int, int, int],
+    stack_shape: tuple[int, int, int],
     image_dtype: type[np.floating],
     metadata_dtype: type,
-    image_sum: float,
+    stack_sum: float,
     resource_path: Path,
 ) -> None:
     """Test the normal operation of loading a .h5-jpk file."""
@@ -233,11 +235,11 @@ def test_read_h5jpk_valid_file(
     assert isinstance(result, AFMImageStack)
     assert result.pixel_size_nm == pixel_to_nm_scaling
     assert isinstance(result.data, np.ndarray)
-    assert result.data.shape == image_shape
+    assert result.data.shape == stack_shape
     assert result.data.dtype == np.dtype(image_dtype)
     assert isinstance(result.frame_metadata, list)
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
-    assert result.data.sum() == image_sum
+    assert result.data.sum() == stack_sum
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
@@ -247,3 +249,100 @@ def test_get_loader_for_folder_no_valid_files(tmp_path):
     folder_loaders = {".jpk": lambda p: None}
     with pytest.raises(FileNotFoundError):
         get_loader_for_folder(tmp_path, folder_loaders)
+
+
+@pytest.mark.parametrize(
+    (
+        "file_name",
+        "channel",
+        "pixel_to_nm_scaling",
+        "stack_shape",
+        "image_dtype",
+        "metadata_dtype",
+        "stack_sum",
+    ),
+    [
+        pytest.param(
+            "asd_sample_0.asd",
+            "TP",
+            0.5,
+            (32, 200, 200),
+            float,
+            dict,
+            -251179816.91781396,
+            id="test image 0",
+        )
+    ],
+)
+def test_read_asd_valid_file(
+    file_name: str,
+    channel: str,
+    pixel_to_nm_scaling: float,
+    stack_shape: tuple[int, int, int],
+    image_dtype: type[np.floating],
+    metadata_dtype: type,
+    stack_sum: float,
+    resource_path: Path,
+) -> None:
+    """Test the normal operation of loading a .h5-jpk file."""
+    result = load_asd_file(resource_path / file_name, channel)
+
+    assert isinstance(result, AFMImageStack)
+    assert result.pixel_size_nm == pixel_to_nm_scaling
+    assert isinstance(result.data, np.ndarray)
+    assert result.data.shape == stack_shape
+    assert result.data.dtype == np.dtype(image_dtype)
+    assert isinstance(result.frame_metadata, list)
+    assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
+    assert result.data.sum() == stack_sum
+    assert len(result.frame_metadata) == result.data.shape[0]
+
+
+@pytest.mark.parametrize(
+    (
+        "folder_name",
+        "channel",
+        "flip_image",
+        "pixel_to_nm_scaling",
+        "stack_shape",
+        "image_dtype",
+        "metadata_dtype",
+        "stack_sum",
+    ),
+    [
+        pytest.param(
+            "jpk_folder_0",
+            "height_trace",
+            True,
+            1.953125,
+            (3, 512, 512),
+            float,
+            dict,
+            304613162.9259033,
+            id="test image 0",
+        )
+    ],
+)
+def test_read_jpk_valid_files(
+    folder_name: str,
+    channel: str,
+    flip_image: bool,
+    pixel_to_nm_scaling: float,
+    stack_shape: tuple[int, int, int],
+    image_dtype: type[np.floating],
+    metadata_dtype: type,
+    stack_sum: float,
+    resource_path: Path,
+) -> None:
+    """Test the normal operation of loading a .h5-jpk file."""
+    result = load_jpk_folder(resource_path / folder_name, channel, flip_image)
+
+    assert isinstance(result, AFMImageStack)
+    assert result.pixel_size_nm == pixel_to_nm_scaling
+    assert isinstance(result.data, np.ndarray)
+    assert result.data.shape == stack_shape
+    assert result.data.dtype == np.dtype(image_dtype)
+    assert isinstance(result.frame_metadata, list)
+    assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
+    assert result.data.sum() == stack_sum
+    assert len(result.frame_metadata) == result.data.shape[0]

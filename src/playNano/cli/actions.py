@@ -8,102 +8,20 @@ from playNano.cli.utils import (
     is_valid_step,
     parse_processing_file,
     parse_processing_string,
-    prepare_output_directory,
-    sanitize_output_name,
 )
 from playNano.errors import LoadError
-from playNano.io.export import save_h5_bundle, save_npz_bundle, save_ome_tiff_stack
-from playNano.io.gif_export import create_gif_with_scale_and_timestamp
+from playNano.io.export import (
+    export_bundles,
+    save_h5_bundle,
+    save_npz_bundle,
+    save_ome_tiff_stack,
+)
+from playNano.io.gif_export import export_gif
 from playNano.playback.vis import play_stack_cv
 from playNano.processing.core import process_stack
 from playNano.stack.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
-
-
-def export_bundles(
-    afm_stack,
-    formats: list[str],
-    output_folder: str | None,
-    output_name: str | None,
-) -> None:
-    """
-    Export filtered data to one or more file formats (tif, npz, h5).
-
-    Parameters
-    ----------
-    afm_stack : AFMImageStack
-        The AFM stack object containing processed data.
-    formats : list of str
-        List of formats to export (e.g., ['tif', 'npz', 'h5']).
-    output_folder : str or None
-        Destination folder for output files.
-    output_name : str or None
-        Optional base name override for exported files.
-    """
-    # sanitize and prepare output dir
-    out_dir = prepare_output_directory(output_folder, default="output")
-    base = sanitize_output_name(output_name, Path(afm_stack.file_path).stem)
-    raw_exists = "raw" in afm_stack.processed
-    filtered_exists = raw_exists and any(
-        key != "raw" for key in afm_stack.processed.keys()
-    )
-    if filtered_exists:
-        base = f"{base}_filtered"
-    write_exports(afm_stack, out_dir, base, formats, raw=False)
-    logger.debug(f"[export] Bundles ({formats}) written to {out_dir}")
-
-
-def export_gif(
-    afm_stack,
-    make_gif: bool,
-    output_folder: str | None,
-    output_name: str | None,
-    scale_bar_nm: int | None,
-) -> None:
-    """
-    Optionally export a GIF of the AFM stack with scale bar and timestamps.
-
-    Parameters
-    ----------
-    afm_stack : AFMImageStack
-        The AFM stack object containing processed data.
-    make_gif : bool
-        Whether or not to generate a GIF.
-    output_folder : str or None
-        Destination folder for the GIF.
-    output_name : str or None
-        Optional base name override for the GIF file.
-    scale_bar_nm : int or None
-        Length of the scale bar in nanometers.
-    """
-    if not make_gif:
-        return
-
-    out_dir = prepare_output_directory(output_folder, default="output")
-    base = sanitize_output_name(output_name, Path(afm_stack.file_path).stem)
-    raw_exists = "raw" in afm_stack.processed
-    filtered_exists = raw_exists and any(
-        key != "raw" for key in afm_stack.processed.keys()
-    )
-    if filtered_exists:
-        base = f"{base}_filtered"
-    gif_path = out_dir / f"{base}.gif"
-    timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
-
-    # default scale bar
-    bar_nm = scale_bar_nm if scale_bar_nm is not None else 100
-
-    logger.debug(f"[export] Writing GIF → {gif_path}")
-    create_gif_with_scale_and_timestamp(
-        afm_stack.data,
-        afm_stack.pixel_size_nm,
-        timestamps,
-        output_path=gif_path,
-        scale_bar_length_nm=bar_nm,
-        cmap_name="afmhot",
-    )
-    logger.debug(f"[export] GIF written to {gif_path}")
 
 
 def run_pipeline_mode(
@@ -477,6 +395,10 @@ def write_exports(
         Base file name (no extension) for each export, e.g. "sample_01"
     formats : list of str
         Which formats to write; valid set = {"tif", "npz", "h5"}.
+    raw : bool, optional
+        If True, use the raw data from `afm_stack.processed["raw"]`.
+        If False, use the final processed data in `afm_stack.data`.
+        Default is False (use processed data).
 
     Raises
     ------

@@ -12,11 +12,11 @@ from playNano.cli.entrypoint import (
     main,
     setup_logging,
 )
-from playNano.cli.utils import (
+from playNano.stack.afm_stack import AFMImageStack
+from playNano.utils.io_utils import (
     prepare_output_directory,
     sanitize_output_name,
 )
-from playNano.stack.afm_stack import AFMImageStack
 
 
 def test_setup_logging_sets_correct_level(caplog):
@@ -103,7 +103,8 @@ def test_clear_directory_whitespace(tmp_path, monkeypatch):
 
     monkeypatch.setattr(Path, "mkdir", fake_mkdir)
     result = prepare_output_directory(" ./test/directory/for/test   ", "default")
-    assert result == Path("./test/directory/for/test")
+    expected = Path("./test/directory/for/test").resolve()
+    assert result.resolve() == expected
     assert called["mk"] is True
 
 
@@ -115,7 +116,8 @@ def test_sanitize_invalid_characters_dir():
 
 def test_sanitize_empty_output_dir():
     """Test that an empty directory path defaults to the fallback path."""
-    assert prepare_output_directory("", "default") == Path("default")
+    result = prepare_output_directory("", "default")
+    assert result.resolve().name == "default"
 
 
 def test_setup_logging_warn_level(caplog):
@@ -149,7 +151,8 @@ def test_prepare_output_dir_default_used(tmp_path, monkeypatch):
     """Test fallback directory path is used when input is empty."""
     monkeypatch.chdir(tmp_path)
     result = prepare_output_directory("", "fallback_dir")
-    assert result == Path("fallback_dir")
+    expected = tmp_path / "fallback_dir"
+    assert result.resolve() == expected.resolve()
     assert result.exists()
 
 
@@ -274,7 +277,7 @@ def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
 
     with pytest.raises(SystemExit):
         handle_run(args)
-    assert "Invalid characters in output folder path" in caplog.text
+    assert "Invalid characters in output name" in caplog.text
 
 
 def test_handle_run_make_gif(monkeypatch, tmp_path):

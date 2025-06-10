@@ -34,21 +34,18 @@ def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
     if mask.shape != data.shape:
         raise ValueError("Mask must have same shape as data.")
-    h, w = data.shape
+    bg_idx = ~mask.ravel()
+    if np.sum(bg_idx) < 3:
+        raise ValueError("Not enough background pixels to fit a plane.")
 
-    # Create coordinate grid
+    h, w = data.shape
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     Z = data.astype(np.float64)
-
-    Xf = X.ravel()
-    Yf = Y.ravel()
+    features = np.vstack((X.ravel(), Y.ravel())).T
     Zf = Z.ravel()
-    features = np.vstack((Xf, Yf)).T
 
-    bg_idx = ~mask.ravel()
     model = LinearRegression()
     model.fit(features[bg_idx], Zf[bg_idx])
-
     plane = model.predict(features).reshape(h, w)
     return data - plane
 
@@ -148,7 +145,7 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
 def register_mask_filters():
     """Return list of masking options."""
     return {
-        # "remove_plane": remove_plane_masked, >>not wokring for some reason
+        "remove_plane": remove_plane_masked,
         "polynomial_flatten": polynomial_flatten_masked,
         "row_median_align": row_median_align_masked,
         "zero_mean": lambda data, mask: filters.zero_mean(data, mask=mask),
