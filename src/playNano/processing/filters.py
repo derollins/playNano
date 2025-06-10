@@ -5,91 +5,9 @@ import logging
 import numpy as np
 from scipy import ndimage
 from sklearn.linear_model import LinearRegression
-from topostats.filters import Filters
+from sklearn.preprocessing import PolynomialFeatures
 
 logger = logging.getLogger(__name__)
-
-
-def topostats_flatten(
-    frame: np.ndarray,
-    filename: str = "frame",
-    pixel_to_nm: float = 1.0,
-    filter_config: dict = None,
-) -> np.ndarray:
-    """
-    Apply a filtering pipeline to flatten an AFM image frame.
-
-    Uses TopoStats filters to flatten the AFM image frames held with the Numpy array.
-
-    Parameters
-    ----------
-    frame : np.ndarray
-        2D NumPy array representing the AFM image frame.
-    filename : str, optional
-        Name of the frame, used for logging and identification. Default is "frame".
-    pixel_to_nm : float, optional
-        Scaling factor to convert pixels to nanometers. Default is 1.0.
-    filter_config : dict, optional
-        Dictionary of filter configuration parameters.
-        If None, a default configuration is used.
-
-    Returns
-    -------
-    np.ndarray or None
-        The flattened image after Gaussian filtering. Returns None if the
-        input is invalid or if filtering fails.
-
-    Notes
-    -----
-    - Uses the `Filters` class from `topostats.filters` to apply a series
-    of image processing steps.
-    - Handles invalid input (e.g., empty arrays or NaNs) gracefully.
-    - Logs detailed information about the filtering process.
-    """
-    if filter_config is None:
-        filter_config = {
-            "row_alignment_quantile": 0.05,
-            "threshold_method": "std_dev",
-            "otsu_threshold_multiplier": 1.0,
-            "threshold_std_dev": {"above": 0.5, "below": 10},
-            "threshold_absolute": None,
-            "gaussian_size": 2,
-            "gaussian_mode": "nearest",
-            "remove_scars": {"run": False},
-        }
-
-    try:
-        logger.info(
-            f"Flattening frame '{filename}': shape={frame.shape}, dtype={frame.dtype}"
-        )
-
-        if frame.size == 0 or np.isnan(frame).any():
-            logger.warning(
-                f"Input frame invalid for {filename}: empty or contains NaNs"
-            )
-            return None
-
-        filters = Filters(
-            image=frame,
-            filename=filename,
-            pixel_to_nm_scaling=pixel_to_nm,
-            **filter_config,
-        )
-        filters.filter_image()  # run filtering pipeline
-
-        gaussian_filtered = filters.images.get("gaussian_filtered", None)
-        if gaussian_filtered is None:
-            logger.warning(
-                f"Warning: 'gaussian_filtered' image not"
-                f"found in filters.images for {filename}"
-            )
-            return None
-
-        return gaussian_filtered
-
-    except Exception as e:
-        logger.warning(f"Exception flattening frame {filename}: {e}")
-        return None
 
 
 def row_median_align(data: np.ndarray) -> np.ndarray:
@@ -150,44 +68,57 @@ def remove_plane(data: np.ndarray) -> np.ndarray:
 
 def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     """
-    Fit and subtract a 2D polynomial of given order to remove slow surface trends.
+    Subtract a 2D polynomial surface of given order to flatten AFM image data.
 
     Parameters
     ----------
     data : np.ndarray
-        2D AFM image data (should be already plane-removed for best results).
+        2D AFM image data.
     order : int
-        Order of the polynomial (currently supports order=2 for quadratic).
-        Default is 2.
+        Polynomial order for surface fitting (e.g., 1 for linear, 2 for quadratic).
 
     Returns
     -------
     np.ndarray
-        Polynomial-flattened image.
+        Flattened image with polynomial background removed.
+
+    Raises
+    ------
+    ValueError
+        If data is not a 2D array or if order is not a positive integer.
     """
-    if order != 2:
-        raise ValueError("Currently only quadratic (order=2) flattening is supported.")
+    # Validate input shape and type
+    if not isinstance(data, np.ndarray) or data.ndim != 2:
+        raise ValueError("Input data must be a 2D NumPy array.")
+    if not isinstance(order, int) or order < 1:
+        raise ValueError("Polynomial order must be a positive integer.")
+
     h, w = data.shape
+
+    # Generate coordinate grid for surface fitting
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     Z = data.astype(np.float64)
-    # Flatten
-    Xf = X.ravel()
-    Yf = Y.ravel()
+
+    # Prepare design matrix with all polynomial terms up to the given order
+    coords = np.stack([X.ravel(), Y.ravel()], axis=1)
+    try:
+        poly = PolynomialFeatures(order)
+        A = poly.fit_transform(coords)
+    except Exception as e:
+        raise RuntimeError(f"Failed to generate polynomial features: {e}") from e
+
+    # Solve for least-squares polynomial surface
     Zf = Z.ravel()
-    # Design matrix for quadratic: [1, x, y, x^2, x*y, y^2]
-    A = np.stack([np.ones_like(Xf), Xf, Yf, Xf**2, Xf * Yf, Yf**2], axis=1)
-    # Solve least squares for coefficients
-    coeff, _, _, _ = np.linalg.lstsq(A, Zf, rcond=None)
-    # Compute fitted surface
-    Z_fit = (
-        coeff[0]
-        + coeff[1] * X
-        + coeff[2] * Y
-        + coeff[3] * X**2
-        + coeff[4] * X * Y
-        + coeff[5] * Y**2
-    )
-    return data - Z_fit
+    try:
+        coeff, _, _, _ = np.linalg.lstsq(A, Zf, rcond=None)
+    except np.linalg.LinAlgError as e:
+        raise RuntimeError(f"Least squares fitting failed: {e}") from e
+
+    # Reconstruct the fitted surface and subtract it
+    Z_fit = A @ coeff
+    flattened = Z - Z_fit.reshape(h, w)
+
+    return flattened
 
 
 def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
@@ -251,7 +182,6 @@ def register_filters():
         "remove_plane": remove_plane,
         "row_median_align": row_median_align,
         "zero_mean": zero_mean,
-        "topostats_flatten": topostats_flatten,
         "polynomial_flatten": polynomial_flatten,
         "gaussian_filter": gaussian_filter,
     }

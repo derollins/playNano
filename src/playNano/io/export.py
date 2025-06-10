@@ -1,11 +1,18 @@
 """Tools for exporting data in various formats."""
 
 import json
+import logging
+import sys
 from pathlib import Path
 
 import h5py
 import numpy as np
 import tifffile
+
+from playNano.stack.afm_stack import AFMImageStack
+from playNano.utils.io_utils import prepare_output_directory, sanitize_output_name
+
+logger = logging.getLogger(__name__)
 
 
 def save_ome_tiff_stack(
@@ -125,3 +132,97 @@ def save_h5_bundle(
 
     # after closing, user can reopen in Python and
     # reparse 'frame_metadata' via json.loads(...)
+
+
+def export_bundles(
+    afm_stack: AFMImageStack,
+    output_folder: Path,
+    base_name: str,
+    formats: list[str],
+    raw: bool = False,
+) -> None:
+    """
+    Write out requested bundles from an AFM stack (.data must be final version).
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel
+    out_folder : Path
+        Directory to write export files (will be created if needed)
+    base_name : str
+        Base file name (no extension) for each export, e.g. "sample_01"
+    formats : list of str
+        Which formats to write; valid set = {"tif", "npz", "h5"}.
+    raw : bool, optional
+        If True, use the raw data from `afm_stack.processed["raw"]`.
+        If False, use the final processed data in `afm_stack.data`.
+        Default is False (use processed data).
+
+    Raises
+    ------
+    SystemExit
+        If any element of `formats` is not in {"tif","npz","h5"}.
+    """
+    # Determine whether to use raw or processed data
+    # (allows saving of unfiltered from play mode)
+    if raw is False:
+        stack_data = afm_stack.data
+    elif raw is True and "raw" in afm_stack.processed:
+        stack_data = afm_stack.processed["raw"]
+
+    timestamps = [md.get("timestamp") for md in afm_stack.frame_metadata]
+
+    base_name = sanitize_output_name(base_name, Path(afm_stack.file_path).stem)
+
+    raw_exists = "raw" in afm_stack.processed
+    filtered_exists = raw_exists and any(
+        key != "raw" for key in afm_stack.processed.keys()
+    )
+    if filtered_exists and raw is False:
+        base_name = f"{base_name}_filtered"
+
+    output_folder = prepare_output_directory(output_folder, default="output")
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    valid = {"tif", "npz", "h5"}
+    for fmt in formats:
+        if fmt not in valid:
+            logger.error(f"Unsupported export format '{fmt}'. Choose from {valid}.")
+            sys.exit(1)
+
+    if "tif" in formats:
+        tif_path = output_folder / f"{base_name}.ome.tif"
+        logger.info(f"Writing OME-TIFF → {tif_path}")
+        save_ome_tiff_stack(
+            path=tif_path,
+            stack=stack_data,
+            pixel_size_nm=afm_stack.pixel_size_nm,
+            timestamps=timestamps,
+            channel=afm_stack.channel,
+        )
+
+    if "npz" in formats:
+        npz_path = output_folder / f"{base_name}"
+        logger.info(f"Writing NPZ bundle → {npz_path}.npz")
+        save_npz_bundle(
+            path=npz_path,
+            stack=stack_data,
+            pixel_size_nm=afm_stack.pixel_size_nm,
+            timestamps=timestamps,
+            channel=afm_stack.channel,
+        )
+
+    if "h5" in formats:
+        h5_path = output_folder / f"{base_name}"
+        logger.info(f"Writing HDF5 bundle → {h5_path}.h5")
+        save_h5_bundle(
+            path=h5_path,
+            stack=stack_data,
+            pixel_size_nm=afm_stack.pixel_size_nm,
+            timestamps=timestamps,
+            frame_metadata=afm_stack.frame_metadata,
+            channel=afm_stack.channel,
+        )
+
+    logger.debug(f"[export] Bundles ({formats}) written to {output_folder}")

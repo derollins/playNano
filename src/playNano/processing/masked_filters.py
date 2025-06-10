@@ -4,6 +4,7 @@ import logging
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 import playNano.processing.filters as filters
 
@@ -34,21 +35,18 @@ def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
     if mask.shape != data.shape:
         raise ValueError("Mask must have same shape as data.")
-    h, w = data.shape
+    bg_idx = ~mask.ravel()
+    if np.sum(bg_idx) < 3:
+        raise ValueError("Not enough background pixels to fit a plane.")
 
-    # Create coordinate grid
+    h, w = data.shape
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     Z = data.astype(np.float64)
-
-    Xf = X.ravel()
-    Yf = Y.ravel()
+    features = np.vstack((X.ravel(), Y.ravel())).T
     Zf = Z.ravel()
-    features = np.vstack((Xf, Yf)).T
 
-    bg_idx = ~mask.ravel()
     model = LinearRegression()
     model.fit(features[bg_idx], Zf[bg_idx])
-
     plane = model.predict(features).reshape(h, w)
     return data - plane
 
@@ -59,14 +57,14 @@ def polynomial_flatten_masked(
     order: int = 2,
 ) -> np.ndarray:
     """
-    Fit a 2D polynomial (quadratic only) using background (mask==False) and subtract it.
+    Fit a 2D polynomial using background (mask==False) and subtract it.
 
     Parameters
     ----------
     data : np.ndarray
         2D AFM image.
     order : int
-        Polynomial order. Only order=2 is supported here.
+        Polynomial order. Default order=2.
     mask : np.ndarray
         Boolean mask of same shape; True=foreground, False=background.
 
@@ -78,34 +76,42 @@ def polynomial_flatten_masked(
     Raises
     ------
     ValueError
-        If order != 2 or mask.shape != data.shape.
+        If mask.shape != data.shape or order is not a positive integer.
     """
-    if order != 2:
-        raise ValueError("Only quadratic flattening supported.")
     if mask.shape != data.shape:
         raise ValueError("Mask must have same shape as data.")
+    if not isinstance(order, int) or order < 1:
+        raise ValueError("Polynomial order must be a positive integer.")
 
     h, w = data.shape
+    # Generate coordinate grid for surface fitting
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     Z = data.astype(np.float64)
-
-    Xf = X.ravel()
-    Yf = Y.ravel()
-    Zf = Z.ravel()
-    A = np.stack([np.ones_like(Xf), Xf, Yf, Xf**2, Xf * Yf, Yf**2], axis=1)
+    # Prepare design matrix with all polynomial terms up to the given order
+    coords = np.stack([X.ravel(), Y.ravel()], axis=1)
+    try:
+        poly = PolynomialFeatures(order)
+        A = poly.fit_transform(coords)
+    except Exception as e:
+        raise RuntimeError(f"Failed to generate polynomial features: {e}") from e
 
     bg_idx = ~mask.ravel()
-    coeff, _, _, _ = np.linalg.lstsq(A[bg_idx], Zf[bg_idx], rcond=None)
 
-    Z_fit = (
-        coeff[0]
-        + coeff[1] * X
-        + coeff[2] * Y
-        + coeff[3] * X**2
-        + coeff[4] * X * Y
-        + coeff[5] * Y**2
-    )
-    return data - Z_fit
+    if np.count_nonzero(bg_idx) < A.shape[1]:
+        raise ValueError("Not enough background pixels to perform polynomial fit.")
+
+    # Solve for least-squares polynomial surface
+    Zf = Z.ravel()
+    try:
+        coeff, _, _, _ = np.linalg.lstsq(A[bg_idx], Zf[bg_idx], rcond=None)
+    except np.linalg.LinAlgError as e:
+        raise RuntimeError(f"Least squares fitting failed: {e}") from e
+
+    # Reconstruct the fitted surface and subtract it
+    Z_fit = A @ coeff
+    flattened = data.astype(np.float64) - Z_fit.reshape(h, w)
+
+    return flattened
 
 
 def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -142,14 +148,13 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
         else:
             med = np.median(row[~mask_row])
         aligned[i, :] -= med
-
     return aligned
 
 
 def register_mask_filters():
     """Return list of masking options."""
     return {
-        # "remove_plane": remove_plane_masked, >>not wokring for some reason
+        "remove_plane": remove_plane_masked,
         "polynomial_flatten": polynomial_flatten_masked,
         "row_median_align": row_median_align_masked,
         "zero_mean": lambda data, mask: filters.zero_mean(data, mask=mask),
