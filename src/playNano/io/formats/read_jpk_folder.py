@@ -11,7 +11,7 @@ import numpy as np
 import tifffile
 from AFMReader.jpk import load_jpk
 
-from playNano.stack.afm_stack import AFMImageStack
+from playNano.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 

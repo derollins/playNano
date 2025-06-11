@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
+from playNano.afm_stack import AFMImageStack
 from playNano.errors import LoadError
 from playNano.processing.pipeline import ProcessingPipeline
-from playNano.stack.afm_stack import AFMImageStack
 
 
 def process_stack(

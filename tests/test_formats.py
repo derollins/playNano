@@ -7,11 +7,11 @@ import h5py
 import numpy as np
 import pytest
 
+from playNano.afm_stack import AFMImageStack
 from playNano.io.formats.read_asd import load_asd_file
 from playNano.io.formats.read_h5jpk import load_h5jpk
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
 from playNano.io.loader import get_loader_for_folder
-from playNano.stack.afm_stack import AFMImageStack
 
 
 def test_load_afm_stack_file_calls_correct_loader(tmp_path):

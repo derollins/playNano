@@ -115,7 +115,7 @@ def main() -> None:
     )
     play_parser.set_defaults(func=handle_play)
 
-    # 2) 'processing' subcommand (wizard)
+    # 2) 'wizard' subcommand (wizard)
     wizard_parser = subparsers.add_parser(
         "wizard", help="Launch interactive processing builder (wizard)."
     )

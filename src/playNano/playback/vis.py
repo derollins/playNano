@@ -8,10 +8,10 @@ import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 
+from playNano.afm_stack import AFMImageStack
 from playNano.io.export import export_bundles
 from playNano.io.gif_export import export_gif
 from playNano.processing.pipeline import ProcessingPipeline
-from playNano.stack.afm_stack import AFMImageStack
 from playNano.utils.io_utils import (
     normalize_to_uint8,
     pad_to_square,
