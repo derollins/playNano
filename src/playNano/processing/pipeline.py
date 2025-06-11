@@ -79,6 +79,8 @@ class ProcessingPipeline:
             if step_type == "mask":
                 # Compute a new mask over all frames
                 new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
+                # Save mask in oject and update
+                self.stack.masks[step_name] = new_mask.copy()
                 mask = new_mask
                 continue
 

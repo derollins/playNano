@@ -72,15 +72,9 @@ def test_polynomial_flatten_various_orders():
 
     # Generate data: plane + quadratic + cubic terms
     data_linear = 3 + 2 * X + 5 * Y  # order=1 exact
-    data_quadratic = (
-        data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2
-    )  # order=2 exact
+    data_quadratic = data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2  # order=2 exact
     data_cubic = (
-        data_quadratic
-        + 0.1 * X**3
-        - 0.2 * X**2 * Y
-        + 0.3 * X * Y**2
-        - 0.4 * Y**3
+        data_quadratic + 0.1 * X**3 - 0.2 * X**2 * Y + 0.3 * X * Y**2 - 0.4 * Y**3
     )  # order=3 exact
 
     # Test order=1 flattening recovers zero residual for linear surface
@@ -187,7 +181,15 @@ def test_mask_threshold_basic():
     """Tests that the threshold mask fuctnion works as expected."""
     data = np.array([[0.1, 0.5], [1.2, -1.5]])
     mask = mask_gen.mask_threshold(data, threshold=1.0)
-    expected = np.array([[False, False], [True, True]])
+    expected = np.array([[False, False], [True, False]])
+    assert np.array_equal(mask, expected)
+
+
+def test_mask_below_threshold_basic():
+    """Tests that the threshold mask fuctnion works as expected."""
+    data = np.array([[0.1, 0.5], [1.2, -1.5]])
+    mask = mask_gen.mask_below_threshold(data, threshold=1.0)
+    expected = np.array([[True, True], [False, True]])
     assert np.array_equal(mask, expected)
 
 

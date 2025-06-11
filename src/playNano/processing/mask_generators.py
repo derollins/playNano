@@ -9,13 +9,18 @@ logger = logging.getLogger(__name__)
 
 
 def mask_threshold(data: np.ndarray, threshold: float = 0.0) -> np.ndarray:
-    """Mask where abs(data) > threshold."""
-    return np.abs(data) > threshold
+    """Mask where data > threshold."""
+    return (data > threshold) & np.isfinite(data)
+
+
+def mask_below_threshold(data: np.ndarray, threshold: float = 0.0) -> np.ndarray:
+    """Mask where data < threshold."""
+    return (data < threshold) & np.isfinite(data)
 
 
 def mask_mean_offset(data: np.ndarray, factor: float = 1.0) -> np.ndarray:
     """Mask values > mean +/- factor*std."""
-    return np.abs(data - np.mean(data)) > factor * np.std(data)
+    return (data - np.mean(data)) > factor * np.std(data)
 
 
 def mask_morphological(
@@ -46,6 +51,7 @@ def register_masking():
     """Return list of masking options."""
     return {
         "mask_threshold": mask_threshold,
+        "mask_below_threshold": mask_below_threshold,
         "mask_mean_offset": mask_mean_offset,
         "mask_morphological": mask_morphological,
         "mask_adaptive": mask_adaptive,
