@@ -7,7 +7,7 @@ from typing import Any
 
 import numpy as np
 
-from playNano.stack.afm_stack import AFMImageStack
+from playNano.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 

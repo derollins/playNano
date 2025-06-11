@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 import playNano.cli.actions as actions
+from playNano.afm_stack import AFMImageStack
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -22,7 +23,6 @@ from playNano.errors import LoadError
 from playNano.processing.filters import register_filters
 from playNano.processing.mask_generators import register_masking
 from playNano.processing.masked_filters import register_mask_filters
-from playNano.stack.afm_stack import AFMImageStack
 
 register_filters()
 register_masking()

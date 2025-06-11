@@ -324,9 +324,9 @@ playNano/
 ├── io/              # I/O utilities (e.g. file loaders and exports)
 ├── playback/        # Interactive window
 ├── processing/      # Image flattening, filters, and processing logic
-├── stack/           # AFMImageStack class and metadata handling
-├── utils.py         # Utility functions
-└── cli              # CLI entry point and functions
+├── utils/           # Utility functions
+├── cli/             # CLI entry point and functions
+└── afm_stack.py     # AFMImageStack class and metadata handling
 ```
 
 ## 🧩 Dependencies

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
+from playNano.afm_stack import AFMImageStack
 from playNano.processing.pipeline import ProcessingPipeline
-from playNano.stack.afm_stack import AFMImageStack
 
 
 @pytest.fixture

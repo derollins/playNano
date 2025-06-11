@@ -9,7 +9,7 @@ import h5py
 import numpy as np
 import tifffile
 
-from playNano.stack.afm_stack import AFMImageStack
+from playNano.afm_stack import AFMImageStack
 from playNano.utils.io_utils import prepare_output_directory, sanitize_output_name
 
 logger = logging.getLogger(__name__)

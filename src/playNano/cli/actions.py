@@ -4,6 +4,7 @@ import logging
 import sys
 from pathlib import Path
 
+from playNano.afm_stack import AFMImageStack
 from playNano.cli.utils import (
     is_valid_step,
     parse_processing_file,
@@ -19,7 +20,6 @@ from playNano.io.export import (
 from playNano.io.gif_export import export_gif
 from playNano.playback.vis import play_stack_cv
 from playNano.processing.core import process_stack
-from playNano.stack.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 

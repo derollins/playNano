@@ -11,6 +11,7 @@ import pytest
 import tifffile
 from PIL import Image, ImageSequence
 
+from playNano.afm_stack import AFMImageStack
 from playNano.io.export import (
     export_bundles,
     save_h5_bundle,
@@ -34,7 +35,6 @@ from playNano.io.loader import (
 from playNano.playback import vis
 from playNano.playback.vis import pad_to_square, play_stack_cv
 from playNano.processing.pipeline import ProcessingPipeline
-from playNano.stack.afm_stack import AFMImageStack
 
 
 class DummyAFM:

@@ -5,8 +5,8 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-import playNano.stack.afm_stack as afm_stack_module
-from playNano.stack.afm_stack import AFMImageStack, normalize_timestamps
+import playNano.afm_stack as afm_stack_module
+from playNano.afm_stack import AFMImageStack, normalize_timestamps
 
 
 def test_init_invalid_data_type():
@@ -162,7 +162,7 @@ def test_flatten_images_uses_apply(monkeypatch):
     #    Make AFMImageStack._load_plugin(...) return None so
     # the code falls back to FILTER_MAP.
     monkeypatch.setattr(
-        "playNano.stack.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
+        "playNano.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
     )
 
     # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
