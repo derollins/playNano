@@ -109,9 +109,9 @@ class ProcessingPipeline:
                         )
                         last_mask = "overlay"
                         raise ValueError("Previous mask not accessible.") from None
-                    self.stack.masks[
-                        f"step_{step_idx}_{last_mask}_{step_name}"
-                    ] = new_mask.copy()
+                    self.stack.masks[f"step_{step_idx}_{last_mask}_{step_name}"] = (
+                        new_mask.copy()
+                    )
                     mask = new_mask
                     continue
                 continue
@@ -122,7 +122,7 @@ class ProcessingPipeline:
                     fn, arr, mask, step_name, **kwargs
                 )
             except Exception as e:
-                logger.error(f"Failed to apply filter/plugin/method '{step_name}': {e}")
+                logger.error(f"Failed to apply filter/plugin/method '{step_name}': {e}")    # noqa
                 raise
             # Snapshot
             self.stack.processed[f"step_{step_idx}_{step_name}"] = new_arr.copy()

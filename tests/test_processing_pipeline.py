@@ -198,3 +198,117 @@ def test_pipeline_invalid_step_raises():
     pipeline.add_filter("nonexistent_filter")
     with pytest.raises(ValueError):
         _ = pipeline.run()
+
+
+def test_pipeline_combines_multiple_masks():
+    # Create dummy 3D data: 2 frames of 4x4
+    data = np.zeros((2, 4, 4), dtype=bool)
+
+    # Create fake mask outputs
+    mask1 = np.zeros_like(data)
+    mask1[:, 0:2, 0:2] = True  # top-left
+
+    mask2 = np.zeros_like(data)
+    mask2[:, 2:4, 2:4] = True  # bottom-right
+
+    # Setup mock AFMImageStack
+    stack = MagicMock(spec=AFMImageStack)
+    stack.data = data.copy()
+    stack.processed = {}
+    stack.masks = {}
+
+    # Return 'mask' type and dummy function for both mask steps
+    def resolve_step_mock(name):
+        return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
+
+    stack._resolve_step.side_effect = resolve_step_mock
+    stack._execute_mask_step.side_effect = lambda fn, d, **kwargs: fn(d, **kwargs)
+
+    # Create pipeline and add two mask steps
+    pipeline = ProcessingPipeline(stack)
+    pipeline.add_mask("mask1").add_mask("mask2")
+
+    # Run the pipeline
+    pipeline.run()
+
+    # Check if two masks are stored
+    assert len(stack.masks) == 2
+
+    # Check the last mask is a logical OR of both
+    combined_key = list(stack.masks)[-1]
+    combined_mask = stack.masks[combined_key]
+    expected = np.logical_or(mask1, mask2)
+    np.testing.assert_array_equal(combined_mask, expected)
+
+    # Check naming pattern
+    assert "mask2" in combined_key
+
+
+def test_mask_overlay_fallback_name_without_error():
+    data = np.zeros((2, 4, 4), dtype=bool)
+
+    # Initial mask
+    mask1 = np.zeros_like(data)
+    mask1[:, 0:2, 0:2] = True
+
+    # Second mask to overlay
+    mask2 = np.zeros_like(data)
+    mask2[:, 2:4, 2:4] = True
+
+    stack = MagicMock(spec=AFMImageStack)
+    stack.data = data.copy()
+    stack.processed = {}
+    stack.masks = {}  # <- No previously saved masks
+
+    def resolve_step_mock(name):
+        return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
+
+    stack._resolve_step.side_effect = resolve_step_mock
+    stack._execute_mask_step.side_effect = lambda fn, d, **kwargs: fn(d, **kwargs)
+
+    pipeline = ProcessingPipeline(stack)
+    pipeline.add_mask("mask1").add_mask("mask2")
+
+    # Run and ensure no error occurs
+    result = pipeline.run()
+
+    assert result.shape == data.shape
+    assert len(stack.masks) == 2
+    mask_key = list(stack.masks)[-1]
+    assert "overlay" in mask_key or "mask2" in mask_key
+
+
+def test_mask_overlay_raises_value_error_if_previous_mask_missing():
+    data = np.zeros((2, 4, 4), dtype=bool)
+
+    mask1 = np.zeros_like(data)
+    mask2 = np.zeros_like(data)
+    mask2[:, 2:4, 2:4] = True
+
+    stack = MagicMock(spec=AFMImageStack)
+    stack.data = data.copy()
+    stack.processed = {}
+
+    # Use a MagicMock instead of a real dict so we can mock __setitem__
+    mock_masks = MagicMock()
+    stack.masks = mock_masks
+
+    def resolve_step_mock(name):
+        return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
+
+    stack._resolve_step.side_effect = resolve_step_mock
+    stack._execute_mask_step.side_effect = lambda fn, d, **kwargs: fn(d, **kwargs)
+
+    pipeline = ProcessingPipeline(stack)
+    pipeline.add_mask("mask1").add_mask("mask2")
+
+    # Simulate failure when attempting to assign fallback overlay mask
+    def broken_mask_assign(key, value):
+        if "overlay" in key:
+            raise ValueError("Previous mask not accessible.")
+
+    mock_masks.__setitem__.side_effect = broken_mask_assign
+
+    # Should raise ValueError when fallback naming hits
+    with pytest.raises(ValueError, match="Previous mask not accessible"):
+        pipeline.run()
