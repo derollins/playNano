@@ -71,13 +71,16 @@ class ProcessingPipeline:
 
         arr = self.stack.data
         mask = None  # current boolean mask (3D array) or None
-
+        step_idx = 0
         for step_name, kwargs in self.steps:
-            logger.info(f"[processing] Applying step '{step_name}' with args {kwargs}")
+            step_idx += 1
+            logger.info(
+                f"[processing] Applying step {step_idx}: '{step_name}' with args {kwargs}"  # noqa
+            )
             try:
                 step_type, fn = self.stack._resolve_step(step_name)
             except Exception as e:
-                logger.error(f"Failed to resolve step '{step_name}': {e}")
+                logger.error(f"Failed to resolve step {step_idx}: {step_name}': {e}")
                 raise
 
             if step_type == "clear":
@@ -90,7 +93,7 @@ class ProcessingPipeline:
                     # Compute a mask over all frames
                     new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
                     # Save mask in oject and update
-                    self.stack.masks[step_name] = new_mask.copy()
+                    self.stack.masks[f"step_{step_idx}_{step_name}"] = new_mask.copy()
                     mask = new_mask
                     continue
                 elif isinstance(mask, np.ndarray):
@@ -99,13 +102,16 @@ class ProcessingPipeline:
                     new_mask = np.logical_or(mask, new_mask)
                     try:
                         last_mask = list(self.stack.masks)[-1]
+                        last_mask = "_".join(last_mask.split("_")[2:])
                     except IndexError:
                         logger.warning(
                             "No previous mask found when overlaying. Using fallback name 'overlay'."  # noqa
                         )
                         last_mask = "overlay"
                         raise ValueError("Previous mask not accessible.") from None
-                    self.stack.masks[f"{last_mask}_{step_name}"] = new_mask.copy()
+                    self.stack.masks[f"step_{step_idx}_{last_mask}_{step_name}"] = (
+                        new_mask.copy()
+                    )
                     mask = new_mask
                     continue
                 continue
@@ -118,9 +124,8 @@ class ProcessingPipeline:
             except Exception as e:
                 logger.error(f"Failed to apply filter/plugin/method '{step_name}': {e}")
                 raise
-
             # Snapshot
-            self.stack.processed[step_name] = new_arr.copy()
+            self.stack.processed[f"step_{step_idx}_{step_name}"] = new_arr.copy()
             arr = new_arr
 
         # Overwrite stack.data
