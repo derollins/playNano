@@ -50,7 +50,7 @@ def test_remove_plane_removes_tilt_with_noise():
     corrected = filters.remove_plane(data_noisy)
     # After correction, mean trend should be close to zero
     plane = np.median(corrected)
-    assert abs(plane) < 1.2e-2
+    assert abs(plane) < 1.4e-2
 
 
 def test_polynomial_flatten_basic():

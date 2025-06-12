@@ -134,8 +134,8 @@ def test_multiple_filters_chain(toy_stack):
     pipe.add_filter("double1").add_filter("double2")
     result = pipe.run()
 
-    np.testing.assert_array_equal(toy_stack.processed["double1"], first_out)
-    np.testing.assert_array_equal(toy_stack.processed["double2"], second_out)
+    np.testing.assert_array_equal(toy_stack.processed["step_1_double1"], first_out)
+    np.testing.assert_array_equal(toy_stack.processed["step_2_double2"], second_out)
     np.testing.assert_array_equal(result, second_out)
 
 
@@ -188,7 +188,7 @@ def test_pipeline_eq_apply_simple_filter():
     assert np.allclose(out1, out2)
     # Ensure 'raw' snapshot exists in processed
     assert "raw" in stack2.processed
-    assert "remove_plane" in stack2.processed
+    assert "step_1_remove_plane" in stack2.processed
 
 
 def test_pipeline_invalid_step_raises():
