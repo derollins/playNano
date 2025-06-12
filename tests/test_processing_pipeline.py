@@ -201,6 +201,7 @@ def test_pipeline_invalid_step_raises():
 
 
 def test_pipeline_combines_multiple_masks():
+    """Test that pipeline combines masks without clear"""
     # Create dummy 3D data: 2 frames of 4x4
     data = np.zeros((2, 4, 4), dtype=bool)
 
@@ -217,8 +218,8 @@ def test_pipeline_combines_multiple_masks():
     stack.processed = {}
     stack.masks = {}
 
-    # Return 'mask' type and dummy function for both mask steps
     def resolve_step_mock(name):
+        """Return 'mask' type and dummy function for both mask steps"""
         return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
 
     stack._resolve_step.side_effect = resolve_step_mock
@@ -245,6 +246,7 @@ def test_pipeline_combines_multiple_masks():
 
 
 def test_mask_overlay_fallback_name_without_error():
+    """Test that if no previous mask is found when overlaying 'overlay' is used"""
     data = np.zeros((2, 4, 4), dtype=bool)
 
     # Initial mask
@@ -261,6 +263,7 @@ def test_mask_overlay_fallback_name_without_error():
     stack.masks = {}  # <- No previously saved masks
 
     def resolve_step_mock(name):
+        """Mock resove step"""
         return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
 
     stack._resolve_step.side_effect = resolve_step_mock
@@ -279,6 +282,7 @@ def test_mask_overlay_fallback_name_without_error():
 
 
 def test_mask_overlay_raises_value_error_if_previous_mask_missing():
+    """Test that an value error is raised if previous mask isn't found"""
     data = np.zeros((2, 4, 4), dtype=bool)
 
     mask1 = np.zeros_like(data)
@@ -302,8 +306,8 @@ def test_mask_overlay_raises_value_error_if_previous_mask_missing():
     pipeline = ProcessingPipeline(stack)
     pipeline.add_mask("mask1").add_mask("mask2")
 
-    # Simulate failure when attempting to assign fallback overlay mask
     def broken_mask_assign(key, value):
+        """Simulate failure when attempting to assign fallback overlay mask"""
         if "overlay" in key:
             raise ValueError("Previous mask not accessible.")
 
