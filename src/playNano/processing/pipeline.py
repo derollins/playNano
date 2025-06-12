@@ -109,9 +109,9 @@ class ProcessingPipeline:
                         )
                         last_mask = "overlay"
                         raise ValueError("Previous mask not accessible.") from None
-                    self.stack.masks[f"step_{step_idx}_{last_mask}_{step_name}"] = (
-                        new_mask.copy()
-                    )
+                    self.stack.masks[
+                        f"step_{step_idx}_{last_mask}_{step_name}"
+                    ] = new_mask.copy()
                     mask = new_mask
                     continue
                 continue
