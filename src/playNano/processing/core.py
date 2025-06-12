@@ -26,6 +26,8 @@ def process_stack(
     for name, kwargs in steps:
         if name == "clear":
             pipeline.clear_mask()
+        elif name == "mask":
+            pipeline.add_mask(name, **kwargs)
         else:
             pipeline.add_filter(name, **kwargs)
     pipeline.run()

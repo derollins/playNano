@@ -33,7 +33,12 @@ class ProcessingPipeline:
         self.steps: list[tuple[str, dict[str, Any]]] = []
 
     def add_mask(self, mask_name: str, **kwargs) -> ProcessingPipeline:
-        """Add a mask step by name. Mask will be recomputed on current data."""
+        """
+        Add a mask step by name. Mask will be recomputed on current data.
+
+        If a mask was added previously and not cleared this mask is added to
+        the origonal.
+        """
         self.steps.append((mask_name, kwargs))
         return self
 
@@ -69,7 +74,11 @@ class ProcessingPipeline:
 
         for step_name, kwargs in self.steps:
             logger.info(f"[processing] Applying step '{step_name}' with args {kwargs}")
-            step_type, fn = self.stack._resolve_step(step_name)
+            try:
+                step_type, fn = self.stack._resolve_step(step_name)
+            except Exception as e:
+                logger.error(f"Failed to resolve step '{step_name}': {e}")
+                raise
 
             if step_type == "clear":
                 # Reset mask
@@ -77,17 +86,38 @@ class ProcessingPipeline:
                 continue
 
             if step_type == "mask":
-                # Compute a new mask over all frames
-                new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
-                # Save mask in oject and update
-                self.stack.masks[step_name] = new_mask.copy()
-                mask = new_mask
+                if mask is None:
+                    # Compute a mask over all frames
+                    new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
+                    # Save mask in oject and update
+                    self.stack.masks[step_name] = new_mask.copy()
+                    mask = new_mask
+                    continue
+                elif isinstance(mask, np.ndarray):
+                    # Compute a new mask over all frames
+                    new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
+                    new_mask = np.logical_or(mask, new_mask)
+                    try:
+                        last_mask = list(self.stack.masks)[-1]
+                    except IndexError:
+                        logger.warning(
+                            "No previous mask found when overlaying. Using fallback name 'overlay'."  # noqa
+                        )
+                        last_mask = "overlay"
+                        raise ValueError("Previous mask not accessible.") from None
+                    self.stack.masks[f"{last_mask}_{step_name}"] = new_mask.copy()
+                    mask = new_mask
+                    continue
                 continue
 
             # Otherwise, step is a filter/method/plugin
-            new_arr = self.stack._execute_filter_step(
-                fn, arr, mask, step_name, **kwargs
-            )
+            try:
+                new_arr = self.stack._execute_filter_step(
+                    fn, arr, mask, step_name, **kwargs
+                )
+            except Exception as e:
+                logger.error(f"Failed to apply filter/plugin/method '{step_name}': {e}")
+                raise
 
             # Snapshot
             self.stack.processed[step_name] = new_arr.copy()
@@ -95,4 +125,5 @@ class ProcessingPipeline:
 
         # Overwrite stack.data
         self.stack.data = arr
+        logger.info("Processing pipeline completed successfully.")
         return arr
