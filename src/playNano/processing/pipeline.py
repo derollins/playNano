@@ -122,9 +122,7 @@ class ProcessingPipeline:
                     fn, arr, mask, step_name, **kwargs
                 )
             except Exception as e:
-                logger.error(
-                    f"Failed to apply filter/plugin/method '{step_name}': {e}"
-                )
+                logger.error(f"Failed to apply filter/plugin/method '{step_name}': {e}")
                 raise
             # Snapshot
             self.stack.processed[f"step_{step_idx}_{step_name}"] = new_arr.copy()
