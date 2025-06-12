@@ -235,11 +235,34 @@ Other commands:
 
 > Parameter: Threshold(float) default set to 0.0.
 
+- **Mask below threshold** (mask_below_threshold): Mask data below a threshold.
+
+> Parameter: Threshold(float) default set to 0.0.
+
 - **Mask with mean offset** (mask_mean_offset): Mask data above the mean +/- (s.d. * factor).
 
 > Paramter: Factor(float) deafult set to 1.0.
 
 - **clear** resets mask.
+
+### 🧩 Filter Plugins
+
+You can extend playNano by installing third-party filter plugins via entry points under playNano.filters. Edit the
+`[project.entry-points."playNano.filters"]` section of the pyproject.toml file like this:
+
+```toml
+[project.entry-points."playNano.filters"]
+other_filter   = "playNano.processing.filters:other_filter"
+my_new_plugin  = "mylibrary.moldule:my_new_plugin"
+```
+
+These become available in the CLI filter lists automatically.
+
+Plugins must have the format:
+
+```python
+def filter_plugin(2Ddata: np.ndarray, **kwargs) -> np.ndarray:
+```
 
 ## 📟 Outputs
 
@@ -287,25 +310,6 @@ playnano run sample.h5 \
 --make-gif \
 --output-folder ./results \
 --output-name sample_processed
-```
-
-## 🧩 Filter Plugins
-
-You can extend playNano by installing third-party filter plugins via entry points under playNano.filters. Edit the
-`[project.entry-points."playNano.filters"]` section of the pyproject.toml file like this:
-
-```toml
-[project.entry-points."playNano.filters"]
-other_filter   = "playNano.processing.filters:other_filter"
-my_new_plugin  = "mylibrary.moldule:my_new_plugin"
-```
-
-These become available in the CLI filter lists automatically.
-
-Plugins must have the format:
-
-```python
-def filter_plugin(2Ddata: np.ndarray, **kwargs) -> np.ndarray:
 ```
 
 ## ⚠️ Notes
