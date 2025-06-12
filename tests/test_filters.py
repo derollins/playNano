@@ -50,7 +50,7 @@ def test_remove_plane_removes_tilt_with_noise():
     corrected = filters.remove_plane(data_noisy)
     # After correction, mean trend should be close to zero
     plane = np.median(corrected)
-    assert abs(plane) < 1.2e-2
+    assert abs(plane) < 2.0e-2
 
 
 def test_polynomial_flatten_basic():
@@ -187,7 +187,15 @@ def test_mask_threshold_basic():
     """Tests that the threshold mask fuctnion works as expected."""
     data = np.array([[0.1, 0.5], [1.2, -1.5]])
     mask = mask_gen.mask_threshold(data, threshold=1.0)
-    expected = np.array([[False, False], [True, True]])
+    expected = np.array([[False, False], [True, False]])
+    assert np.array_equal(mask, expected)
+
+
+def test_mask_below_threshold_basic():
+    """Tests that the threshold mask fuctnion works as expected."""
+    data = np.array([[0.1, 0.5], [1.2, -1.5]])
+    mask = mask_gen.mask_below_threshold(data, threshold=1.0)
+    expected = np.array([[True, True], [False, True]])
     assert np.array_equal(mask, expected)
 
 

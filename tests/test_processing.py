@@ -42,9 +42,10 @@ def test_process_stack_handles_clear_step(mock_pipeline_cls, mock_load_data):
     mock_pipeline_cls.return_value = mock_pipeline
     mock_load_data.return_value = mock_stack
 
-    steps = [("clear", {}), ("flatten", {})]
+    steps = [("mask", {}), ("clear", {}), ("flatten", {})]
     result = core.process_stack(Path("data.jpk"), "Deflection", steps)
 
+    mock_pipeline.add_mask.assert_called_once_with("mask")
     mock_pipeline.clear_mask.assert_called_once()
     mock_pipeline.add_filter.assert_called_once_with("flatten")
     mock_pipeline.run.assert_called_once()

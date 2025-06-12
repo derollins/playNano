@@ -9,9 +9,7 @@ from typing import Any
 
 import numpy as np
 
-import playNano.processing.filters as filters
-import playNano.processing.mask_generators as mask_generators
-import playNano.processing.masked_filters as masked_filters
+from playNano.processing import filters, mask_generators, masked_filters
 from playNano.utils.time_utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
@@ -83,6 +81,8 @@ class AFMImageStack:
 
         # Store processed results; 'raw' is populated on first processing
         self.processed: dict[str, np.ndarray] = {}
+        # Store masks
+        self.masks: dict[str, np.ndarray] = {}
 
     def _resolve_step(self, step: str) -> tuple[str, callable]:
         """
