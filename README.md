@@ -245,6 +245,8 @@ Other commands:
 
 - **clear** resets mask.
 
+> N.B. Mask are overalyed on each other unless cleared by using the "`clear`" command.
+
 ### 🧩 Filter Plugins
 
 You can extend playNano by installing third-party filter plugins via entry points under playNano.filters. Edit the
