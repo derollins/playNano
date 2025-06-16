@@ -38,8 +38,6 @@ def handle_play(args: argparse.Namespace) -> None:
         - channel (str)
         - processing_str (str or None)
         - processing_file (str or None)
-        - export (str or None), comma-separated formats like "tif,npz,h5"
-        - make_gif (bool), whether to create a GIF
         - output_folder (str or None)
         - output_name (str or None)
         - scale_bar_nm (int or None), 0 turns off scale bar

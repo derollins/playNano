@@ -58,7 +58,7 @@ def test_run_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_parse):
     mock_proc.assert_called_once_with(
         Path("in.jpk"), "ch", [("f1", {}), ("f2", {"a": 1})]
     )
-    mock_bundles.assert_called_once_with(pipe, ["npz", "h5"], "od", "nm")
+    mock_bundles.assert_called_once_with(pipe, "od", "nm", ["npz", "h5"])
 
 
 @patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("err"))
