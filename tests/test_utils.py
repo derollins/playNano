@@ -77,7 +77,7 @@ class TestGuessHeightDataUnits(unittest.TestCase):
 
 def test_convert_height_units_to_nm():
     """Test conversion of height units to nanometers."""
-    data = np.array([[1e3, 2e3]])  # pretend this is in meters
+    data = np.array([[1e-3, 2e-3]])  # pretend this is in meters
     expected = np.array([[1e6, 2e6]])  # nanometers
     result = convert_height_units_to_nm(data, "m")
     np.testing.assert_allclose(result, expected)
