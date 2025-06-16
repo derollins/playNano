@@ -2,6 +2,7 @@
 Module to load .jpk AFM data files from a folder into Python NumPy arrays.
 
 Files contained within the same folder are read together.
+Files read with the height data in nm.
 """
 
 import logging
