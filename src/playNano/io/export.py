@@ -148,7 +148,7 @@ def export_bundles(
     ----------
     afm_stack : AFMImageStack
         The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel
-    out_folder : Path
+    output_folder : Path
         Directory to write export files (will be created if needed)
     base_name : str
         Base file name (no extension) for each export, e.g. "sample_01"

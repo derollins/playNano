@@ -271,7 +271,7 @@ def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
 
     with pytest.raises(SystemExit):
         handle_run(args)
-    assert "Invalid characters in output name" in caplog.text
+    assert "Invalid characters in output folder" in caplog.text
 
 
 def test_handle_run_make_gif(monkeypatch, tmp_path):

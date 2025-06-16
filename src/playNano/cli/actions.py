@@ -85,8 +85,13 @@ def run_pipeline_mode(
 
     # 3) Exports
     if export:
-        formats = [f.strip() for f in export.split(",") if f.strip()]
-        export_bundles(afm_stack, formats, output_folder, output_name)
+        export_raw = export
+        if (export_raw.startswith("'") and export_raw.endswith("'")) or (
+            export_raw.startswith('"') and export_raw.endswith('"')
+        ):
+            export_raw = export_raw[1:-1]
+        formats = [tok.strip() for tok in export_raw.split(",") if tok.strip()]
+        export_bundles(afm_stack, output_folder, output_name, formats)
 
     # 4) GIF
     export_gif(afm_stack, make_gif, output_folder, output_name, scale_bar_nm)
@@ -270,7 +275,7 @@ def wizard_mode(
                 while True:
                     val_str = input(
                         f"  Enter {param_name} (default={default}): "
-                    ).strip()  # noqa
+                    ).strip()
                     if val_str == "":
                         kwargs[param_name] = default
                         break
@@ -313,7 +318,7 @@ def wizard_mode(
                 or old_i >= len(wizard_steps)
                 or new_i < 0
                 or new_i > len(wizard_steps)
-            ):  # noqa
+            ):
                 print("Indices out of range.\n")
                 continue
             item = wizard_steps.pop(old_i)
@@ -358,11 +363,11 @@ def wizard_mode(
             if export_choice in ("y", "yes"):
                 fmt_str = input(
                     "Enter formats (comma-separated, e.g. tif,npz,h5): "
-                ).strip()  # noqa
+                ).strip()
                 formats = [
                     fmt.strip().lower() for fmt in fmt_str.split(",") if fmt.strip()
-                ]  # noqa
-                export_bundles(afm_stack, formats, output_folder, output_name)
+                ]
+                export_bundles(afm_stack, output_folder, output_name, formats)
 
             # Ask if user wants to make a GIF
             gif_choice = input("Create a GIF? (y/n): ").strip().lower()
@@ -418,13 +423,13 @@ def write_exports(
     out_folder.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger(__name__)
 
-    valid = {"tif", "npz", "h5"}
+    valid = {"tif", "tiff", "npz", "h5"}
     for fmt in formats:
         if fmt not in valid:
             logger.error(f"Unsupported export format '{fmt}'. Choose from {valid}.")
             sys.exit(1)
 
-    if "tif" in formats:
+    if "tif" in formats or "tiff" in formats:
         tif_path = out_folder / f"{base_name}.ome.tif"
         logger.info(f"Writing OME-TIFF → {tif_path}")
         save_ome_tiff_stack(
