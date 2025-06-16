@@ -259,7 +259,9 @@ def wizard_mode(
                 params_to_ask = [("order", int, 2)]
             elif step_name == "mask_mean_offset":
                 params_to_ask = [("factor", float, 1.0)]
-            elif step_name == "threshold_mask":
+            elif step_name == "mask_threshold":
+                params_to_ask = [("threshold", float, 1.0)]
+            elif step_name == "mask_below_threshold":
                 params_to_ask = [("threshold", float, 1.0)]
             # (You can extend this list as new filters appear)
 
