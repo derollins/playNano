@@ -205,6 +205,7 @@ def play_stack_cv(
         # 'n': export current view as NPZ
         elif key == ord("n"):
             save_dir = prepare_output_directory(output_dir, "output")
+            raw = False
             if showing_flat:
                 raw = False
             elif showing_flat is False and "raw" in afm_data.processed:
@@ -214,6 +215,8 @@ def play_stack_cv(
         # 'h': export current view as HDF5
         elif key == ord("h"):
             save_dir = prepare_output_directory(output_dir, "output")
+            raw = False
+
             if showing_flat:
                 raw = False
             elif showing_flat is False and "raw" in afm_data.processed:
