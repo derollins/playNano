@@ -2,7 +2,7 @@
 Module to decode and load .asd high speed AFM data files into Python NumPy arrays.
 
 Files containing multiple image frames are read together.
-Converts the height data into SI units (m) typically from nm.
+Converts the height data into nm from another metric unit (e.g. m).
 """
 
 import logging
