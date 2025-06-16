@@ -186,16 +186,16 @@ def test_wizard_remove_and_move_valid(capsys):
 def test_wizard_save_generates_yaml(tmp_path):
     """Save should serialize current steps to YAML file."""
     yaml_file = tmp_path / "cfg.yaml"
-    inputs = iter(["add threshold_mask", "", f"save {yaml_file}", "quit"])  # default
+    inputs = iter(["add mask_threshold", "", f"save {yaml_file}", "quit"])  # default
     monkey = pytest.MonkeyPatch()
-    monkey.setattr(actions, "is_valid_step", lambda n: n == "threshold_mask")
+    monkey.setattr(actions, "is_valid_step", lambda n: n == "mask_threshold")
     monkey.setattr(builtins, "input", lambda prompt="": next(inputs))
 
     with pytest.raises(SystemExit):
         actions.wizard_mode("in.jpk", "chan", None, None, None)
 
     data = yaml.safe_load(yaml_file.read_text())
-    assert data == {"filters": [{"name": "threshold_mask", "threshold": 1.0}]}
+    assert data == {"filters": [{"name": "mask_threshold", "threshold": 1.0}]}
     monkey.undo()
 
 
