@@ -42,6 +42,8 @@ def load_jpk_folder(
     """
     Load an AFM video from a folder of individual .jpk image files.
 
+    AFMReader converts "height", "measuredHeight" and "amplitude" channels to nm.
+
     Parameters
     ----------
     folder_path : Path | str
@@ -79,7 +81,6 @@ def load_jpk_folder(
     image_stack = np.empty((num_frames, height_px, width_px), dtype=dtype)
 
     # Extract metadata from first image
-
     # Line rate and timestamps
     line_rate = _extract_scan_rate(jpk_files[0])  # lines per second
     lines_per_frame = height_px  # number of fast scan lines in an image

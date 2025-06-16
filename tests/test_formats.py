@@ -1,15 +1,21 @@
 """Test for loading various file types."""
 
+import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import h5py
 import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
-from playNano.io.formats.read_asd import load_asd_file
-from playNano.io.formats.read_h5jpk import load_h5jpk
+from playNano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
+from playNano.io.formats.read_h5jpk import (
+    _get_z_unit_h5,
+    _guess_and_standardize_units_to_nm,
+    apply_z_unit_conversion,
+    load_h5jpk,
+)
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
 from playNano.io.loader import get_loader_for_folder
 
@@ -213,7 +219,7 @@ def test_h5jpk_file_is_valid(resource_path):
             (4, 128, 128),
             float,
             dict,
-            0.04852558304727154,
+            48525583.047271535,
             id="test image 0",
         )
     ],
@@ -298,6 +304,42 @@ def test_read_asd_valid_file(
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
+class TestStandardizeUnitsToNM(unittest.TestCase):
+    """Tests ofr the standardisation of units to nm in the asd reader."""
+
+    def test_pm_conversion(self):
+        """Test if input is in pm, range is 100000 → guessed unit 'pm'."""
+        data = np.array([[100000, 200000]])  # pm
+        expected = np.array([[100.0, 200.0]])  # in nm
+        result = _standardize_units_to_nm(data.copy(), "TP")
+        np.testing.assert_allclose(result, expected)
+
+    def test_um_conversion(self):
+        """Test if input has range 2e-5 → guessed unit 'um'."""
+        data = np.array([[0.0, 2e-4]])  # um
+        expected = np.array([[0.0, 0.2]])  # in nm
+        result = _standardize_units_to_nm(data.copy(), "TP")
+        np.testing.assert_allclose(result, expected)
+
+    def test_ignore_non_topography_channel(self):
+        """Test that non-topography channel aren't converted."""
+        data = np.array([[1.0, 2.0]])
+        result = _standardize_units_to_nm(data.copy(), "CP")
+        np.testing.assert_array_equal(result, data)
+
+    def test_fallback_to_nm_on_invalid_data(self):
+        """Test that if no unit is guessed nm is assumed."""
+        data = np.array([[np.nan, np.nan]])
+        result = _standardize_units_to_nm(data.copy(), "TP")
+        self.assertTrue(np.all(np.isnan(result)))
+
+    def test_returns_same_array(self):
+        """Test that when sata has a range of 1 the same array is returned."""
+        data = np.array([[1.0, 2.0]])
+        result = _standardize_units_to_nm(data, "TP")
+        self.assertIs(result, data)
+
+
 @pytest.mark.parametrize(
     (
         "folder_name",
@@ -346,3 +388,103 @@ def test_read_jpk_valid_files(
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
     assert result.data.sum() == stack_sum
     assert len(result.frame_metadata) == result.data.shape[0]
+
+
+class TestGetZUnitH5(unittest.TestCase):
+    """Tests for the `_get_z_unit_h5` helper function."""
+
+    def test_returns_unit_string(self):
+        """Should return the unit string from group attributes."""
+        mock_group = MagicMock()
+        mock_group.attrs.get.return_value = "nm"
+        self.assertEqual(_get_z_unit_h5(mock_group), "nm")
+
+    def test_returns_numeric_unit_as_string(self):
+        """Should return numeric unit converted to string."""
+        mock_group = MagicMock()
+        mock_group.attrs.get.return_value = 1.0
+        self.assertEqual(_get_z_unit_h5(mock_group), "1.0")
+
+    def test_returns_none_on_missing_attr(self):
+        """Should return None if attribute access fails."""
+        mock_group = MagicMock()
+        mock_group.attrs.get.side_effect = Exception("broken")
+        self.assertIsNone(_get_z_unit_h5(mock_group))
+
+
+class TestGuessAndStandardizeUnitsToNM(unittest.TestCase):
+    """Tests for `_guess_and_standardize_units_to_nm` conversion logic."""
+
+    def test_converts_pm_to_nm(self):
+        """Should convert picometer input to nanometers."""
+        data = np.array([[100000.0, 200000.0]])  # pm → expect [100.0, 200.0] nm
+        expected = np.array([[100.0, 200.0]])
+        result = _guess_and_standardize_units_to_nm(data.copy())
+        np.testing.assert_allclose(result, expected)
+
+    def test_converts_um_to_nm(self):
+        """Should convert micrometer input to nanometers."""
+        data = np.array([[0.0, 2e-4]])  # um → expect [1000.0, 2000.0] nm
+        expected = np.array([[0.0, 0.2]])
+        result = _guess_and_standardize_units_to_nm(data.copy())
+        np.testing.assert_allclose(result, expected)
+
+    def test_handles_nan_only_data(self):
+        """Should leave NaN-only data unchanged."""
+        data = np.array([[np.nan, np.nan]])
+        result = _guess_and_standardize_units_to_nm(data.copy())
+        self.assertTrue(np.all(np.isnan(result)))
+
+    def test_returns_same_array_instance(self):
+        """Should perform in-place modification of the original array."""
+        data = np.array([[1.0, 2.0]])
+        result = _guess_and_standardize_units_to_nm(data)
+        self.assertIs(result, data)
+
+
+class TestZUnitBlock:
+    """Tests for apply_z_unit_conversion."""
+
+    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value="um")
+    @patch(
+        "playNano.io.formats.read_h5jpk.convert_height_units_to_nm",
+        side_effect=lambda img, unit: img * 1000,
+    )
+    def test_known_unit_conversion(self, mock_convert, mock_get_unit):
+        """Should convert units like 'um' to nm."""
+        images = np.array([[1e-3, 2e-3]])
+        channel_group = MagicMock()
+
+        result = apply_z_unit_conversion(images.copy(), channel_group)
+
+        np.testing.assert_allclose(result, [[1.0, 2.0]])
+
+        mock_convert.assert_called_once()
+        called_args, _ = mock_convert.call_args
+        np.testing.assert_allclose(called_args[0], np.array([[1e-3, 2e-3]]))
+        assert called_args[1] == "um"
+
+    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value="deg")
+    def test_passthrough_for_non_scaled_units(self, mock_get_unit):
+        """Should not modify images if unit is in ['V', 'v', 'deg']."""
+        images = np.array([[0.3, 0.7]])
+        channel_group = MagicMock()
+
+        result = apply_z_unit_conversion(images.copy(), channel_group)
+
+        np.testing.assert_array_equal(result, images)
+
+    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value=None)
+    @patch(
+        "playNano.io.formats.read_h5jpk._guess_and_standardize_units_to_nm",
+        side_effect=lambda img: img * 1e9,
+    )
+    def test_fallback_to_guessing(self, mock_guess, mock_get_unit):
+        """Should guess and convert if no unit is present."""
+        images = np.array([[1e-9, 2e-9]])
+        channel_group = MagicMock()
+
+        result = apply_z_unit_conversion(images.copy(), channel_group)
+
+        np.testing.assert_allclose(result, [[1.0, 2.0]])
+        mock_guess.assert_called_once()
