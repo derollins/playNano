@@ -2,6 +2,7 @@
 Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.
 
 Files containing multiple image frames are read together.
+Converts the height data into nm from another metric unit (e.g. m).
 """
 
 import logging
@@ -11,6 +12,11 @@ import h5py
 import numpy as np
 
 from playNano.afm_stack import AFMImageStack
+from playNano.utils.io_utils import (
+    convert_height_units_to_nm,
+    guess_height_data_units,
+    height_units,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +155,33 @@ def _get_z_scaling_h5(channel_group: h5py.Group) -> tuple[float, float]:
     return multiplier, offset
 
 
+def _get_z_unit_h5(channel_group: h5py.Group) -> str:
+    """
+    Extract the Z unit from an HDF5 channel group.
+
+    Parameters
+    ----------
+    channel_group : h5py.Group
+        The HDF5 group corresponding to a specific channel
+        (e.g. /Measurement_000/Channel_001).
+
+    Returns
+    -------
+    string
+        The unit of the z data values.
+
+    Notes
+    -----
+    Defaults to None if attribute is not present.
+    """
+    try:
+        z_unit = str(channel_group.attrs.get("net-encoder.scaling.unit.unit", 1.0))
+    except Exception as e:
+        z_unit = None
+        logger.warning(f"Failed to read unit, returning None: {e}")
+    return z_unit
+
+
 def _get_image_shape(measurement_group: h5py.Group) -> float:
     """
     Extract pixel width and hight from an HDF5 JPK measurement group.
@@ -266,11 +299,56 @@ def _get_line_rate(measurement_group: h5py.Group) -> float:
         ) from e
 
 
+def _guess_and_standardize_units_to_nm(image_stack: np.ndarray) -> np.ndarray:
+    """
+    Convert height data to nanometers for metric data.
+
+    Attempts to guess the unit from data range; defaults to 'nm' on failure.
+
+    Parameters
+    ----------
+    image_stack : np.ndarray
+        AFM height data array (2D or 3D).
+
+    Returns
+    -------
+    None
+    """
+    try:
+        height_unit = guess_height_data_units(image_stack)
+        logger.info(f"Guessed that the height unit is {height_unit}")
+    except Exception as e:
+        height_unit = "nm"
+        logger.warning(f"Failed to guess height unit, defaulting to 'nm': {e}")
+    image_stack[:] = convert_height_units_to_nm(image_stack, height_unit)
+    return image_stack
+
+
+def apply_z_unit_conversion(
+    images: np.ndarray, channel_group: h5py.Group, channel: str = "TP"
+) -> np.ndarray:
+    """Apply z unit conversion to nanometers if needed, or guess if unknown."""
+    try:
+        z_unit = _get_z_unit_h5(channel_group)
+    except Exception as e:
+        logging.warning(f"Could not read unit for channel '{channel}': {e}")
+        z_unit = None
+
+    if z_unit is not None and z_unit in height_units:
+        images = convert_height_units_to_nm(images, z_unit)
+    elif z_unit is not None and z_unit in ["V", "v", "deg"]:
+        pass  # No conversion needed
+    else:
+        images = _guess_and_standardize_units_to_nm(images)
+
+    return images
+
+
 def load_h5jpk(
     file_path: Path | str, channel: str, flip_image: bool = True
 ) -> AFMImageStack:
     """
-    Load image stack from a JPK .h5-jpk file.
+    Load image stack from a JPK .h5-jpk file, scaled to nanometers.
 
     The images are loaded, reshaped into frames, and have timestamps generated.
 
@@ -299,6 +377,9 @@ def load_h5jpk(
         # Apply Z scaling and offset
         scaling, offset = _get_z_scaling_h5(channel_group)
         images = (raw_images * scaling) + offset
+
+        # Convert to nm if necessary
+        images = apply_z_unit_conversion(images, channel_group, channel)
 
         # Get image shape and number of frames
         height_px, width_px = _get_image_shape(measurement_group)

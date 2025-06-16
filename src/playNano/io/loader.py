@@ -100,6 +100,8 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     This loader splits these two approaches and loads both into
     the common AFMImageStack object for processing.
 
+    All data values with length units (i.e. m) are converted to nm.
+
     Parameters
     ----------
     file_path : Path | str
