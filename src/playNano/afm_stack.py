@@ -193,12 +193,12 @@ class AFMImageStack:
                     except Exception as e:
                         logger.error(
                             f"Masked filter '{step_name}' failed on frame {i}: {e}"
-                        )  # noqa
+                        )
                         new_arr[i] = arr[i]
                 except Exception as e:
                     logger.error(
                         f"Masked filter '{step_name}' failed on frame {i}: {e}"
-                    )  # noqa
+                    )
                     new_arr[i] = arr[i]
         else:
             for i in range(n_frames):
