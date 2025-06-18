@@ -272,7 +272,10 @@ def test_restore_raw(monkeypatch):
 
 
 class DummyStack:
+
+    """Dummy class that delegates filter execution to AFMImageStack."""
     def _execute_filter_step(self, filter_fn, arr, mask, step_name, **kwargs):
+        """Execute a filter step using AFMImageStack's implementation."""
         return AFMImageStack._execute_filter_step(
             self, filter_fn, arr, mask, step_name, **kwargs
         )
@@ -280,12 +283,14 @@ class DummyStack:
 
 @pytest.fixture
 def arr_and_mask():
+    """Fixture that returns a sample array and corresponding boolean mask."""
     arr = np.ones((2, 3, 3), dtype=float)
     mask = np.zeros_like(arr, dtype=bool)
     return arr, mask
 
 
 def test_masked_filter_success(arr_and_mask):
+    """Test successful application of a masked filter function."""
     arr, mask = arr_and_mask
     masked_fn = Mock(return_value=np.zeros((3, 3)))
 
@@ -296,9 +301,10 @@ def test_masked_filter_success(arr_and_mask):
 
 
 def test_masked_filter_typeerror_fallback(arr_and_mask):
+    """Test fallback behavior when masked filter raises TypeError."""
     arr, mask = arr_and_mask
 
-    def fail_on_kwargs(frame, m, **kwargs):
+    def fail_on_kwargs(frame, m, **kwargs):     #noqa
         raise TypeError("ignore kwargs")
 
     fallback_fn = Mock(return_value=np.ones((3, 3)))
@@ -316,6 +322,7 @@ def test_masked_filter_typeerror_fallback(arr_and_mask):
 
 
 def test_masked_filter_fallback_on_error(arr_and_mask):
+    """Test fallback to original array when masked filter raises an error."""
     arr, mask = arr_and_mask
 
     def always_fail(*args, **kwargs):
@@ -327,6 +334,7 @@ def test_masked_filter_fallback_on_error(arr_and_mask):
 
 
 def test_unmasked_filter_success(arr_and_mask):
+    """Test successful application of an unmasked filter function."""
     arr, _ = arr_and_mask
     fn = Mock(return_value=np.full((3, 3), 7))
     out = DummyStack()._execute_filter_step(fn, arr, None, "noop")
@@ -334,6 +342,7 @@ def test_unmasked_filter_success(arr_and_mask):
 
 
 def test_unmasked_filter_typeerror_fallback(arr_and_mask):
+    """Test fallback behavior when unmasked filter raises TypeError."""
     arr, _ = arr_and_mask
 
     def fail_kwargs(frame, **kwargs):
@@ -347,6 +356,7 @@ def test_unmasked_filter_typeerror_fallback(arr_and_mask):
 
 
 def test_unmasked_filter_fallback_on_error(arr_and_mask):
+    """Test fallback to original array when unmasked filter raises an error."""
     arr, _ = arr_and_mask
 
     def fail(frame, **kwargs):
@@ -357,6 +367,7 @@ def test_unmasked_filter_fallback_on_error(arr_and_mask):
 
 
 def test_masked_filter_typeerror_then_exception(caplog, arr_and_mask):
+    """Test fallback & log when masked filter raises TypeError & another exception."""
     arr, mask = arr_and_mask
 
     # Raise TypeError first, then ValueError on second attempt
@@ -377,6 +388,7 @@ def test_masked_filter_typeerror_then_exception(caplog, arr_and_mask):
 
 
 def test_masked_filter_general_exception(caplog, arr_and_mask):
+    """Test fallback and logging when masked filter raises a general exception."""
     arr, mask = arr_and_mask
 
     # Immediately raise some other exception
