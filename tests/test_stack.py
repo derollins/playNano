@@ -1,6 +1,8 @@
 """Tests for the stack class."""
 
+import logging
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
@@ -267,3 +269,124 @@ def test_restore_raw(monkeypatch):
     restored = stack.restore_raw()
     assert np.all(restored == 1)
     assert np.all(stack.data == 1)
+
+
+class DummyStack:
+    def _execute_filter_step(self, filter_fn, arr, mask, step_name, **kwargs):
+        return AFMImageStack._execute_filter_step(
+            self, filter_fn, arr, mask, step_name, **kwargs
+        )
+
+
+@pytest.fixture
+def arr_and_mask():
+    arr = np.ones((2, 3, 3), dtype=float)
+    mask = np.zeros_like(arr, dtype=bool)
+    return arr, mask
+
+
+def test_masked_filter_success(arr_and_mask):
+    arr, mask = arr_and_mask
+    masked_fn = Mock(return_value=np.zeros((3, 3)))
+
+    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": masked_fn}):
+        out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
+        assert np.all(out == 0)
+        assert masked_fn.call_count == 2
+
+
+def test_masked_filter_typeerror_fallback(arr_and_mask):
+    arr, mask = arr_and_mask
+
+    def fail_on_kwargs(frame, m, **kwargs):
+        raise TypeError("ignore kwargs")
+
+    fallback_fn = Mock(return_value=np.ones((3, 3)))
+    fallback_wrapper = Mock(
+        side_effect=[
+            TypeError("ignore"),
+            fallback_fn(arr[0], mask[0]),
+            fallback_fn(arr[1], mask[1]),
+        ]
+    )
+
+    with patch("playNano.cli.utils.MASK_FILTERS_MAP", {"dummy": fallback_wrapper}):
+        out = DummyStack()._execute_filter_step(None, arr, mask, "dummy", foo=42)
+        assert np.all(out == 1)
+
+
+def test_masked_filter_fallback_on_error(arr_and_mask):
+    arr, mask = arr_and_mask
+
+    def always_fail(*args, **kwargs):
+        raise ValueError("bad frame")
+
+    with patch("playNano.cli.utils.MASK_FILTERS_MAP", {"dummy": always_fail}):
+        out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
+        assert np.all(out == arr)  # fallback to original
+
+
+def test_unmasked_filter_success(arr_and_mask):
+    arr, _ = arr_and_mask
+    fn = Mock(return_value=np.full((3, 3), 7))
+    out = DummyStack()._execute_filter_step(fn, arr, None, "noop")
+    assert np.all(out == 7)
+
+
+def test_unmasked_filter_typeerror_fallback(arr_and_mask):
+    arr, _ = arr_and_mask
+
+    def fail_kwargs(frame, **kwargs):
+        raise TypeError("bad kwargs")
+
+    fallback = Mock(return_value=np.ones((3, 3)))
+
+    wrapped = Mock(side_effect=[TypeError("bad"), fallback(arr[0]), fallback(arr[1])])
+    out = DummyStack()._execute_filter_step(wrapped, arr, None, "noop", bad=True)
+    assert np.all(out == 1)
+
+
+def test_unmasked_filter_fallback_on_error(arr_and_mask):
+    arr, _ = arr_and_mask
+
+    def fail(frame, **kwargs):
+        raise RuntimeError("oops")
+
+    out = DummyStack()._execute_filter_step(fail, arr, None, "noop")
+    assert np.all(out == arr)
+
+
+def test_masked_filter_typeerror_then_exception(caplog, arr_and_mask):
+    arr, mask = arr_and_mask
+
+    # Raise TypeError first, then ValueError on second attempt
+    def faulty_fn(a, m):
+        if isinstance(m, np.ndarray) and m.shape == a.shape:
+            raise ValueError("Deliberate failure after fallback")
+        raise TypeError("Deliberate TypeError")
+
+    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
+        with caplog.at_level(logging.ERROR):
+            out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
+
+    # Output should fallback to original array
+    assert np.all(out == arr)
+    # Logs should show fallback error message
+    assert "failed on frame 0" in caplog.text
+    assert "Deliberate failure after fallback" in caplog.text
+
+
+def test_masked_filter_general_exception(caplog, arr_and_mask):
+    arr, mask = arr_and_mask
+
+    # Immediately raise some other exception
+    def faulty_fn(a, m):
+        raise RuntimeError("Immediate failure")
+
+    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
+        with caplog.at_level(logging.ERROR):
+            out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
+
+    assert np.all(out == arr)
+    assert "Masked filter 'dummy' failed on frame 0" in caplog.text
+    assert "Immediate failure" in caplog.text
