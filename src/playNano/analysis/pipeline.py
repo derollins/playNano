@@ -2,6 +2,7 @@
 
 import importlib.metadata
 import logging
+from collections import defaultdict
 from datetime import UTC, datetime
 from typing import Any, Optional
 
@@ -17,10 +18,24 @@ AnalysisRecord = dict[str, Any]  # could refine with a dataclass later
 
 
 class AnalysisPipeline:
-    """Orchestrates a sequence of analysis steps on an AFMImageStack."""
+    """
+    Orchestrates a sequence of analysis steps on an AFMImageStack.
+
+    This class manages the configuration and execution of modular, reusable
+    analysis routines. Each step is defined by a registered analysis module
+    (subclass of `AnalysisModule`) and its parameters.
+
+    Analysis results are collected in order and optionally logged to disk.
+    Outputs from previous steps can be accessed by subsequent modules.
+    """
 
     def __init__(self):
-        """Initiallize the AnalysisPipeline class"""
+        """
+        Initialize an empty analysis pipeline.
+
+        Steps are stored as a list of (module_name, params) tuples.
+        Modules are loaded on demand using an internal registry or entry points.
+        """
         # Each entry: (module_name: str, params:   dict)
         self.steps: list[tuple[str, dict[str, Any]]] = []
         # Cache instantiated modules: name -> instance
@@ -28,23 +43,59 @@ class AnalysisPipeline:
 
     def add(self, module_name: str, **params) -> None:
         """
-        Enqueue a module by name with given parameters.
+        Add an analysis module to the pipeline.
 
-        Example: pipeline.add("particle_detect", threshold=5, min_size=10)
+        Parameters
+        ----------
+        module_name : str
+            The name of the analysis module to add (must be registered).
+        **params
+            Keyword arguments passed to the module's `run()` method.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> pipeline.add("particle_detect", threshold=5, min_size=10)
+        >>> pipeline.add("track_particles", max_jump=3)
         """
         self.steps.append((module_name, params))
 
     def clear(self) -> None:
-        """Remove all scheduled steps."""
+        """
+        Remove all scheduled analysis steps and clear module cache.
+
+        This allows reconfiguration of the pipeline without creating a new instance.
+        """
         self.steps.clear()
         self._module_cache.clear()
 
     def _load_module(self, module_name: str) -> AnalysisModule:
         """
-        Load and instantiate a module given its name.
+        Load and instantiate an analysis module given its name.
 
-        First check an internal registry, then entry points.
-        Caches instances to avoid reloading if run() called multiple times.
+        Modules are first looked up in a built-in registry, then via entry points
+        registered under the group 'playNano.analysis'. Loaded modules are cached
+        to avoid re-instantiation on repeated `run()` calls.
+
+        Parameters
+        ----------
+        module_name : str
+            The name of the analysis module to load.
+
+        Returns
+        -------
+        AnalysisModule
+            The loaded and initialized module instance.
+
+        Raises
+        ------
+        ValueError
+            If the module name cannot be resolved from the registry or entry points.
+        TypeError
+            If the loaded module is not an instance of `AnalysisModule`.
         """
         if module_name in self._module_cache:
             return self._module_cache[module_name]
@@ -81,19 +132,50 @@ class AnalysisPipeline:
 
     def run(self, stack: AFMImageStack, log_to: Optional[str] = None) -> AnalysisRecord:
         """
-        Execute all added steps on the AFMImageStack.
+        Execute all added analysis steps on the given AFMImageStack.
 
-        Returns a  dict with keys:
-        - "environment": info  dict
-        - "steps": ordered list of step records
-        - optionally "results_by_name":  dict mapping name->list of outputs
-        Optionally writes JSON log to log_to path.
+        Each module is called with the current `stack` and the results of
+        previous steps (accessible by name). Outputs are stored in a list
+        of ordered step records and grouped by module name.
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            The AFM data object to analyze.
+        log_to : str, optional
+            Path to a JSON file where the analysis record will be saved.
+
+        Returns
+        -------
+        AnalysisRecord : dict
+            A dictionary containing:
+            - "environment": snapshot of software/library versions
+            - "steps": list of step records with outputs and metadata
+            - "results_by_name": mapping from module names to output lists
+
+        Notes
+        -----
+        Step outputs are stored inline in the "steps" list, and grouped in
+        "results_by_name" for easy access.
+
+        Raises
+        ------
+        Exception
+            Any exception raised by individual analysis modules will be propagated.
+
+        Examples
+        --------
+        >>> stack = AFMImageStack(data)
+        >>> pipeline = AnalysisPipeline()
+        >>> pipeline.add("count_nonzero")
+        >>> pipeline.add("particle_detect", threshold=4)
+        >>> results = pipeline.run(stack)
+        >>> results["results_by_name"]["particle_detect"][0]["coords"].shape
+        (n_detections, 3)
         """
         env_info = gather_environment_info()
         step_results: list[dict[str, Any]] = []
-        # previous_results_all: name -> list of outputs  dicts
-        previous_results_all: dict[str, list[dict[str, Any]]] = {}
-        # previous_latest: name -> latest outputs  dict
+        results_by_name: defaultdict[str, list] = defaultdict(list)
         previous_latest: dict[str, dict[str, Any]] = {}
         # module cache unchanged
         for idx, (module_name, params) in enumerate(self.steps, start=1):
@@ -113,22 +195,20 @@ class AnalysisPipeline:
                 raise
 
             # record this step
-            rec: dict[str, Any] = {
+            step_record: dict[str, Any] = {
                 "index": idx,
                 "name": module_name,
                 "params": params,
-                "module_version": getattr(module, "version", None),
                 "timestamp": timestamp,
+                "module_version": getattr(module, "version", None),
                 "outputs": outputs,
             }
-            step_results.append(rec)
+            step_results.append(step_record)
 
             # update previous_results structures
-            previous_results_all.setdefault(module_name, []).append(outputs)
+            results_by_name[module_name].append(outputs)
+            # allow downstream modules to use latest result
             previous_latest[module_name] = outputs
-
-        # optionally build results_by_name
-        results_by_name: dict[str, list[dict[str, Any]]] = dict(previous_results_all)
 
         # build final record
         analysis_record: AnalysisRecord = {
@@ -142,8 +222,7 @@ class AnalysisPipeline:
         if log_to:
             import json
             import os
-
             os.makedirs(os.path.dirname(log_to), exist_ok=True)
-            with open(log_to, "w") as f:
-                json.dump(analysis_record, f, indent=2, cls=NumpyEncoder)
+            with open(log_to, "w") as file:
+                json.dump(analysis_record, file, indent=2, cls=NumpyEncoder)
         return analysis_record
