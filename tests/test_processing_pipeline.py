@@ -317,3 +317,251 @@ def test_mask_overlay_raises_value_error_if_previous_mask_missing():
     # Should raise ValueError when fallback naming hits
     with pytest.raises(ValueError, match="Previous mask not accessible"):
         pipeline.run()
+
+
+@pytest.fixture
+def mock_stack():
+    """Fixture for a mock AFMImageStack with dummy data and empty state."""
+    stack = MagicMock()
+    stack.data = np.ones((2, 4, 4), dtype=float)
+    stack.processed = {}
+    stack.masks = {}
+    return stack
+
+
+def test_processing_history_recorded(mock_stack):
+    """Test that processing history records filter name and snapshot key."""
+
+    def dummy_filter(data, **kwargs):
+        """Dummies a filter."""
+        return data + 1
+
+    mock_stack._resolve_step.return_value = ("filter", dummy_filter)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr, **kwargs)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("add_one", amount=1)
+    result = pipeline.run() # noqa
+
+    assert "processing_history" in mock_stack.__dict__
+    history = mock_stack.processing_history
+    assert isinstance(history, list)
+    assert history[0]["name"] == "add_one"
+    assert "processed_key" in history[0]
+    key = history[0]["processed_key"]
+    assert key in mock_stack.processed
+    assert np.allclose(mock_stack.processed[key], 2.0)
+
+
+def test_mask_step_records_correct_key(mock_stack):
+    """Test that a mask step records its key and output correctly."""
+
+    def dummy_mask(data, **kwargs):
+        """Dummies a mask."""
+        mask = np.zeros_like(data, dtype=bool)
+        mask[:, :2, :2] = True
+        return mask
+
+    mock_stack._resolve_step.return_value = ("mask", dummy_mask)
+    mock_stack._execute_mask_step.side_effect = lambda fn, arr, **kwargs: fn(
+        arr, **kwargs
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_mask("mask_top_left")
+    pipeline.run()
+
+    history = mock_stack.processing_history
+    assert history[0]["name"] == "mask_top_left"
+    assert "mask_key" in history[0]
+    key = history[0]["mask_key"]
+    assert key in mock_stack.masks
+    assert np.any(mock_stack.masks[key])
+
+
+def test_mask_overlay_combines_masks(mock_stack):
+    """Test that applying two masks overlays them using logical OR."""
+
+    def mask1(data, **kwargs):
+        """add mask for testing."""
+        m = np.zeros_like(data, dtype=bool)
+        m[:, 0, 0] = True
+        return m
+
+    def mask2(data, **kwargs):
+        """add mask for testing."""
+        m = np.zeros_like(data, dtype=bool)
+        m[:, 1, 1] = True
+        return m
+
+    def resolve_step(name):
+        """resolve test for testing."""
+        if name == "mask1":
+            return ("mask", mask1)
+        else:
+            return ("mask", mask2)
+
+    mock_stack._resolve_step.side_effect = resolve_step
+    mock_stack._execute_mask_step.side_effect = lambda fn, arr, **kwargs: fn(
+        arr, **kwargs
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_mask("mask1").add_mask("mask2")
+    pipeline.run()
+
+    assert len(mock_stack.masks) == 2
+    keys = list(mock_stack.masks.keys())
+    combined = mock_stack.masks[keys[1]]
+    assert combined[:, 0, 0].all()
+    assert combined[:, 1, 1].all()
+
+
+def test_processing_keys_by_name_structure(mock_stack):
+    """Test that processing_keys_by_name groups step keys by name."""
+
+    def dummy_filter(data, **kwargs):
+        return data * 2
+
+    mock_stack._resolve_step.return_value = ("filter", dummy_filter)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr, **kwargs)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("scale").add_filter("scale")
+    pipeline.run()
+
+    keymap = mock_stack.processing_keys_by_name
+    assert "scale" in keymap
+    assert isinstance(keymap["scale"], list)
+    assert len(keymap["scale"]) == 2
+
+    for key in keymap["scale"]:
+        assert key in mock_stack.processed
+
+
+def test_clear_mask_records_history(mock_stack):
+    """Test that a 'clear' step is logged with step_type and cleared flag."""
+    mock_stack._resolve_step.return_value = ("clear", None)
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.clear_mask()
+    pipeline.run()
+
+    history = mock_stack.processing_history
+    assert len(history) == 1
+    assert history[0]["step_type"] == "clear"
+    assert history[0].get("mask_cleared", False) is True
+
+
+def test_filter_step_exception_is_raised_and_logged(caplog):
+    """Test that filter failure logs the error and re-raises the exception."""
+
+    def broken_filter(data, **kwargs):
+        raise RuntimeError("Intentional failure")
+
+    # Mock AFMImageStack
+    stack = MagicMock()
+    stack.data = np.ones((2, 4, 4), dtype=float)
+    stack.processed = {}
+    stack.masks = {}
+
+    # Proper mocking: pipeline will resolve step to a function,
+    # and _execute_filter_step will CALL that function
+    stack._resolve_step.return_value = ("filter", broken_filter)
+    stack._execute_filter_step.side_effect = lambda fn, arr, mask, name, **kwargs: fn(
+        arr, **kwargs
+    )
+
+    pipeline = ProcessingPipeline(stack)
+    pipeline.add_filter("broken_step")
+
+    # Run and check that the exception is raised
+    with pytest.raises(RuntimeError, match="Intentional failure"):
+        pipeline.run()
+
+    # Verify the error was logged
+    error_logs = [
+        record.message for record in caplog.records if record.levelname == "ERROR"
+    ]
+    assert any("Failed to apply filter 'broken_step'" in msg for msg in error_logs)
+
+
+def test_stack_data_matches_final_history_output(mock_stack):
+    """Test that stack.data matches the final output and is stored."""
+
+    def dummy_filter(data, **kwargs):
+        """Dummies a filter."""
+        return data + 42
+
+    mock_stack._resolve_step.return_value = ("filter", dummy_filter)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("add_42")
+    final_result = pipeline.run()
+
+    # Get final snapshot key from history
+    last_step = mock_stack.processing_history[-1]
+    key = last_step["processed_key"]
+    assert np.allclose(mock_stack.processed[key], final_result)
+    assert np.allclose(mock_stack.data, final_result)
+
+
+def test_history_length_matches_steps(mock_stack):
+    """Test that each step added corresponds to a history entry."""
+    mock_stack._resolve_step.return_value = ("filter", lambda d, **kwargs: d + 1)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("step1").add_filter("step2").add_filter("step3")
+    pipeline.run()
+
+    assert len(mock_stack.processing_history) == 3
+    names = [step["name"] for step in mock_stack.processing_history]
+    assert names == ["step1", "step2", "step3"]
+
+
+def test_all_snapshot_keys_are_unique(mock_stack):
+    """Test that all step keys in processing history are unique."""
+    mock_stack._resolve_step.return_value = ("filter", lambda d, **kwargs: d)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    for _ in range(5):
+        pipeline.add_filter("noop")
+    pipeline.run()
+
+    keys = [step["processed_key"] for step in mock_stack.processing_history]
+    assert len(keys) == len(set(keys))  # No duplicates
+
+
+def test_processing_keys_by_name_handles_duplicates(mock_stack):
+    """Test that repeated step names produce multiple distinct keys."""
+
+    def dummy_filter(data, **kwargs):
+        """Dummies a filter."""
+        return data + kwargs.get("offset", 0)
+
+    mock_stack._resolve_step.return_value = ("filter", dummy_filter)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr, **kwargs)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("adjust", offset=1)
+    pipeline.add_filter("adjust", offset=2)
+    pipeline.run()
+
+    keys = mock_stack.processing_keys_by_name["adjust"]
+    assert len(keys) == 2
+    assert keys[0] != keys[1]
