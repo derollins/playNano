@@ -59,6 +59,10 @@ median_filter     = "playNano.processing.filters:median_filter"
 gaussian_filter   = "playNano.processing.filters:gaussian_filter"
 flatten_poly      = "playNano.processing.filters:flatten_poly"
 
+[project.entry-points."playNano.analysis"]
+count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"
+particle_detect = "playNano.analysis.modules.detection:ParticleDetector"
+
 [project.urls]
 GitHub = "https://github.com/derollins/playNano"
 
