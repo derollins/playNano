@@ -11,10 +11,55 @@ from playNano.analysis import BUILTIN_ANALYSIS_MODULES
 from playNano.analysis.base import AnalysisModule
 from playNano.analysis.metadata import gather_environment_info
 from playNano.analysis.utils import NumpyEncoder
+from playNano.processing.mask_generators import register_masking
+
+MASKING_FUNCS = register_masking()
 
 logger = logging.getLogger(__name__)
 
-AnalysisRecord = dict[str, Any]  # could refine with a dataclass later
+AnalysisRecord = dict[str, Any]
+"""
+Structured output of an AnalysisPipeline run.
+
+This record contains environment metadata, a detailed step-by-step log of the
+analysis workflow, and access to all module outputs grouped by name.
+
+Keys
+----
+environment : dict
+    Metadata about the runtime environment (e.g. Python version, library versions).
+frame_times : list[float] or None
+    List of timestamps (in seconds) for each frame in the stack.
+    Used for time-aware analysis and visualization. If unavailable, None.
+analysis_steps : list of dict
+    Ordered list of executed analysis steps. Each entry contains:
+        - index : int
+            1-based index of the step in the pipeline.
+        - name : str
+            The name of the analysis module used.
+        - params : dict
+            Parameters passed to the module.
+        - timestamp : str
+            ISO 8601 UTC timestamp when the step was executed.
+        - module_version : str or None
+            Optional version string provided by the module.
+        - outputs : dict
+            Result returned by the module's run() method.
+results_by_name : dict[str, list[dict]]
+    Maps module names to lists of outputs from each occurrence.
+    Useful for retrieving results when modules are reused.
+
+Notes
+-----
+This structure is attached to `stack.analysis_results` after execution,
+and may optionally be saved to disk via `log_to`.
+
+Examples
+--------
+>>> record = pipeline.run(stack)
+>>> record["results_by_name"]["feature_detection"][0]["summary"]
+{'total_features': 23, 'avg_features_per_frame': 3.8, ...}
+"""
 
 
 class AnalysisPipeline:
@@ -130,13 +175,48 @@ class AnalysisPipeline:
         self._module_cache[module_name] = instance
         return instance
 
+    def _resolve_mask_fn(self, params: dict[str, Any]) -> dict[str, Any]:
+        """
+        Resolve a string-based 'mask_fn' to its registered callable, if applicable.
+
+        If `params["mask_fn"]` is a string matching a registered masking function,
+        replaces it with the corresponding callable. Returns a shallow copy of `params`
+        with the resolved function.
+
+        Parameters
+        ----------
+        params : dict of str to Any
+            Dictionary of parameters passed to an analysis module.
+            Must include 'mask_fn'.
+
+        Returns
+        -------
+        dict
+            A shallow copy of `params` with 'mask_fn' resolved to a callable.
+
+        Raises
+        ------
+        ValueError
+            If the provided string does not correspond to a registered masking function.
+        """
+        mask_key = params["mask_fn"]
+        if mask_key in MASKING_FUNCS:
+            params = params.copy()
+            params["mask_fn"] = MASKING_FUNCS[mask_key]
+            return params
+        else:
+            raise ValueError(
+                f"mask_fn '{mask_key}' not found in registered masking functions"
+            )
+
     def run(self, stack: AFMImageStack, log_to: Optional[str] = None) -> AnalysisRecord:
         """
         Execute all added analysis steps on the given AFMImageStack.
 
-        Each module is called with the current `stack` and the results of
-        previous steps (accessible by name). Outputs are stored in a list
-        of ordered step records and grouped by module name.
+        Each step invokes a registered AnalysisModule, passing in the AFMImageStack
+        and outputs of prior steps. Results from each module are recorded in order,
+        and grouped by module name for easy access. Also captures frame timestamps
+        if available.
 
         Parameters
         ----------
@@ -148,30 +228,44 @@ class AnalysisPipeline:
         Returns
         -------
         AnalysisRecord : dict
-            A dictionary containing:
-            - "environment": snapshot of software/library versions
-            - "steps": list of step records with outputs and metadata
-            - "results_by_name": mapping from module names to output lists
+            A dict containing:
+            - environment : dict
+                Metadata about the runtime environment
+                (Python version, package versions, etc.).
+            - frame_times : list of float or None
+                Timestamps for each frame, from stack.get_frame_times(),
+                or None if unavailable.
+            - analysis_steps : list of dict
+                Ordered list of executed analysis steps. Each entry has:
+                * index : int (1-based)
+                * name : str (module_name)
+                * params : dict (parameters passed)
+                * timestamp : str (ISO 8601 UTC when step ran)
+                * module_version : str or None
+                * outputs : dict (module.run(...) return value)
+            - results_by_name : dict[str, list of dict]
+                Maps module names to lists of their outputs from each invocation.
 
         Notes
         -----
-        Step outputs are stored inline in the "steps" list, and grouped in
-        "results_by_name" for easy access.
+        This record is attached to `stack.analysis_results`. If log_to is provided,
+        the record is written as JSON using NumpyEncoder (arrays serialized properly).
 
         Raises
         ------
         Exception
-            Any exception raised by individual analysis modules will be propagated.
+            Any exception raised by a module.run(...) call is propagated after logging.
 
         Examples
         --------
-        >>> stack = AFMImageStack(data)
         >>> pipeline = AnalysisPipeline()
         >>> pipeline.add("count_nonzero")
-        >>> pipeline.add("particle_detect", threshold=4)
-        >>> results = pipeline.run(stack)
-        >>> results["results_by_name"]["particle_detect"][0]["coords"].shape
-        (n_detections, 3)
+        >>> pipeline.add("feature_detection", mask_fn="threshold_mask", min_size=5)
+        >>> record = pipeline.run(stack, log_to="out.json")
+        >>> record["frame_times"][:3]
+        [0.0, 0.5, 1.0]
+        >>> record["analysis_steps"][1]["outputs"]["summary"]["total_features"]
+        42
         """
         env_info = gather_environment_info()
         step_results: list[dict[str, Any]] = []
@@ -185,6 +279,10 @@ class AnalysisPipeline:
             module = self._load_module(module_name)
             # timestamp
             timestamp = datetime.now(UTC).isoformat() + "Z"
+
+            if "mask_fn" in params and isinstance(params["mask_fn"], str):
+                params = self._resolve_mask_fn(params)
+
             # run; pass in previous_latest so module can read latest outputs by name
             try:
                 outputs = module.run(stack, previous_results=previous_latest, **params)
@@ -213,7 +311,10 @@ class AnalysisPipeline:
         # build final record
         analysis_record: AnalysisRecord = {
             "environment": env_info,
-            "steps": step_results,
+            "frame_times": (
+                stack.get_frame_times() if hasattr(stack, "get_frame_times") else None
+            ),
+            "analysis_steps": step_results,
             "results_by_name": results_by_name,
         }
         # attach to stack
@@ -222,6 +323,7 @@ class AnalysisPipeline:
         if log_to:
             import json
             import os
+
             os.makedirs(os.path.dirname(log_to), exist_ok=True)
             with open(log_to, "w") as file:
                 json.dump(analysis_record, file, indent=2, cls=NumpyEncoder)
