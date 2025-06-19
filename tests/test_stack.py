@@ -2,6 +2,8 @@
 
 import logging
 from datetime import datetime
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
 import numpy as np
@@ -272,8 +274,8 @@ def test_restore_raw(monkeypatch):
 
 
 class DummyStack:
-
     """Dummy class that delegates filter execution to AFMImageStack."""
+
     def _execute_filter_step(self, filter_fn, arr, mask, step_name, **kwargs):
         """Execute a filter step using AFMImageStack's implementation."""
         return AFMImageStack._execute_filter_step(
@@ -304,7 +306,7 @@ def test_masked_filter_typeerror_fallback(arr_and_mask):
     """Test fallback behavior when masked filter raises TypeError."""
     arr, mask = arr_and_mask
 
-    def fail_on_kwargs(frame, m, **kwargs):     #noqa
+    def fail_on_kwargs(frame, m, **kwargs):  # noqa
         raise TypeError("ignore kwargs")
 
     fallback_fn = Mock(return_value=np.ones((3, 3)))
@@ -402,3 +404,46 @@ def test_masked_filter_general_exception(caplog, arr_and_mask):
     assert np.all(out == arr)
     assert "Masked filter 'dummy' failed on frame 0" in caplog.text
     assert "Immediate failure" in caplog.text
+
+
+# --- Fixtures for AFMImageStack with time metadata ---
+
+
+@pytest.fixture
+def stack_with_times():
+    """AFMImageStack with explicit and implicit timestamps."""
+    # Create small data and metadata
+    data = np.zeros((4, 2, 2), dtype=float)
+    # frame_metadata: first has timestamp 0.0, second missing, third 2.5, fourth missing
+    meta = [{"timestamp": 0.0}, {}, {"timestamp": 2.5}, {}]
+    # Use TemporaryDirectory for file_path
+    with TemporaryDirectory() as td:
+        stack = AFMImageStack(
+            data.copy(),
+            pixel_size_nm=1.0,
+            channel="h",
+            file_path=Path(td),
+            frame_metadata=meta,
+        )
+        yield stack
+
+
+# --- Tests for AFMImageStack time methods ---
+
+
+def test_time_for_frame_with_and_without_timestamp(stack_with_times):
+    """time_for_frame should return timestamp or index as float."""
+    stack = stack_with_times
+    assert stack.time_for_frame(0) == 0.0
+    # missing timestamp: fallback to index
+    assert stack.time_for_frame(1) == 1.0
+    assert pytest.approx(stack.time_for_frame(2)) == 2.5
+    assert stack.time_for_frame(3) == 3.0
+
+
+def test_get_frame_times(stack_with_times):
+    """get_frame_times should return list of 4 floats with fallbacks."""
+    stack = stack_with_times
+    times = stack.get_frame_times()
+    assert isinstance(times, list) and len(times) == 4
+    assert times == [0.0, 1.0, 2.5, 3.0]

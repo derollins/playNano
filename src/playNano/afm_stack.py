@@ -458,21 +458,59 @@ class AFMImageStack:
         self.data = arr
         return arr
 
-    def time_for_frame(self, idx: int) -> Any:
+    def time_for_frame(self, idx: int) -> float:
         """
         Get the timestamp for a given frame index.
 
         Parameters
         ----------
         idx : int
-            Frame index.
+            Frame index in the stack.
 
         Returns
         -------
-        float or None
-            Timestamp in seconds or None if unavailable.
+        float
+            Timestamp in seconds for the frame. If not available,
+            the index itself is returned as a fallback.
+
+        Notes
+        -----
+        This fallback (index-as-time) assumes uniform frame intervals
+        and is useful for stacks without explicit time metadata.
+
+        Examples
+        --------
+        >>> stack.frame_metadata = [{"timestamp": 0.0}, {}, {"timestamp": 2.0}]
+        >>> stack.time_for_frame(1)
+        1.0
+        >>> stack.time_for_frame(2)
+        2.0
         """
-        return self.frame_metadata[idx].get("timestamp")
+        return self.frame_metadata[idx].get("timestamp", float(idx))
+
+    def get_frame_times(self) -> list[float]:
+        """
+        Return a list of timestamps (in seconds) for each frame in the stack.
+
+        This method uses `time_for_frame()` to retrieve the timestamp for
+        each frame, which allows central control over fallback behavior.
+
+        Returns
+        -------
+        list of float or None
+            List of timestamps per frame. If unavailable, entries may be None.
+
+        Examples
+        --------
+        >>> stack.frame_metadata = [{"timestamp": 0.0}, {"timestamp": 1.0}]
+        >>> stack.get_frame_times()
+        [0.0, 1.0]
+
+        >>> stack.frame_metadata = [{"timestamp": 0.0}, {}]
+        >>> stack.get_frame_times()
+        [0.0, None]
+        """
+        return [self.time_for_frame(i) for i in range(len(self.frame_metadata))]
 
     def channel_for_frame(self, idx: int) -> str:
         """

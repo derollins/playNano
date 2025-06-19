@@ -56,9 +56,7 @@ dev = [
 playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
-median_filter     = "playNano.processing.filters:median_filter"
-gaussian_filter   = "playNano.processing.filters:gaussian_filter"
-flatten_poly      = "playNano.processing.filters:flatten_poly"
+median_filter     = "playNano.processing.filters:median_filter" # Doesn't exist yet but used in testing
 
 [project.entry-points."playNano.analysis"]
 count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"

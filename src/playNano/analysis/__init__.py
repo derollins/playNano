@@ -2,8 +2,9 @@
 
 # Import built-in modules so they register or can be referenced
 from .modules.count_nonzero import CountNonzeroModule
+from .modules.feature_detection import FeatureDetectionModule
 
-# import other built-in modules as you implement them, e.g.:
+# import other built-in modules implemented, e.g.:
 # from .modules.detection import ParticleDetector
 # from .modules.segmentation import FrameSegmenter
 # ...
@@ -11,7 +12,7 @@ from .modules.count_nonzero import CountNonzeroModule
 # Build registry: map module.name to class
 _BUILTIN = [
     CountNonzeroModule,
-    # ParticleDetector,
+    FeatureDetectionModule,
     # FrameSegmenter,
     # etc.
 ]
