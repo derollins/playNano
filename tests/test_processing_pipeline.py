@@ -18,7 +18,7 @@ def toy_stack():
     with tempfile.TemporaryDirectory() as tmpdirname:
         temp_path = Path(tmpdirname)
         # pixel_size_nm=1.0, channel=“h”, dummy metadata
-        stack = AFMImageStack(data.copy(), 1.0, "h", temp_path, "dum")
+        stack = AFMImageStack(data.copy(), 1.0, "h", temp_path, [{}] * data.shape[0])
         stack.processed = {}
 
     # Patch resolution and execution methods
@@ -170,7 +170,7 @@ def make_toy_stack():
     with tempfile.TemporaryDirectory() as tmpdirname:
         temp_path = Path(tmpdirname)
         # pixel_size_nm=1.0, channel=“h”, dummy metadata
-        return AFMImageStack(data.copy(), 1.0, "h", temp_path, "dum")
+        return AFMImageStack(data.copy(), 1.0, "h", temp_path, [{}] * data.shape[0])
 
 
 def test_pipeline_eq_apply_simple_filter():
@@ -343,7 +343,7 @@ def test_processing_history_recorded(mock_stack):
 
     pipeline = ProcessingPipeline(mock_stack)
     pipeline.add_filter("add_one", amount=1)
-    result = pipeline.run() # noqa
+    result = pipeline.run()  # noqa
 
     assert "processing_history" in mock_stack.__dict__
     history = mock_stack.processing_history
