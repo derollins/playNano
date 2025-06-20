@@ -462,3 +462,13 @@ def write_exports(
             frame_metadata=afm_stack.frame_metadata,
             channel=channel,
         )
+
+
+def print_env_info():
+    """Print the current playNano environment metadata."""
+    import json
+
+    from playNano.utils.system_info import gather_environment_info
+
+    env = gather_environment_info()
+    print(json.dumps(env, indent=2))

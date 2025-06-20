@@ -9,8 +9,9 @@ import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
-from playNano.analysis import export, metadata, utils
+from playNano.analysis import export, utils
 from playNano.analysis.base import AnalysisModule
+from playNano.utils import system_info
 
 
 class DummyModule(AnalysisModule):
@@ -60,7 +61,7 @@ def test_export_analysis_to_json_creates_file_and_dir():
 
 
 def test_gather_environment_info_contains_expected_keys():
-    info = metadata.gather_environment_info()
+    info = system_info.gather_environment_info()
 
     assert "timestamp" in info
     assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z", info["timestamp"])

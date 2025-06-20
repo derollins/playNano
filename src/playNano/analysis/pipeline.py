@@ -9,9 +9,9 @@ from typing import Any, Optional
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis import BUILTIN_ANALYSIS_MODULES
 from playNano.analysis.base import AnalysisModule
-from playNano.analysis.metadata import gather_environment_info
 from playNano.analysis.utils import NumpyEncoder
 from playNano.processing.mask_generators import register_masking
+from playNano.utils.system_info import gather_environment_info
 
 MASKING_FUNCS = register_masking()
 

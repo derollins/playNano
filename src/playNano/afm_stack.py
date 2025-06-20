@@ -21,7 +21,20 @@ logger = logging.getLogger(__name__)
 
 
 class AFMImageStack:
-    """Class for managing AFM image stacks and applying processing steps."""
+    """Class for managing AFM image stacks and applying processing steps.
+
+    Attributes
+    ----------
+    processed : dict[str, np.ndarray]
+        Stores snapshot arrays produced by filter steps. Keys are typically
+        named like 'step_1_remove_plane', 'step_2_gaussian', etc., and values
+        are 3D arrays of shape (n_frames, height, width).
+
+    masks : dict[str, np.ndarray]
+        Stores boolean masks produced by mask steps. Keys follow a similar
+        naming pattern (e.g., 'step_3_mask_threshold'), and values are boolean
+        arrays of shape (n_frames, height, width).
+    """
 
     def __init__(
         self,
@@ -378,7 +391,7 @@ class AFMImageStack:
             if image is not None:
                 yield idx, image, meta
             else:
-                print(f"Warning: Frame {idx} is None and skipped")
+                logger.warning(f"Warning: Frame {idx} is None and skipped")
 
     def __getitem__(self, idx: int | slice) -> np.ndarray | AFMImageStack:
         """
@@ -411,6 +424,53 @@ class AFMImageStack:
         if "raw" not in self.processed:
             # copy the array so later modifications to self.data don’t touch 'raw'
             self.processed["raw"] = self.data.copy()
+
+    def export_processing_log(self, path: str) -> None:
+        """
+        Export the processing history, snapshot keys, and environment metadata to JSON.
+
+        Parameters
+        ----------
+        path : str
+            File path to write the log.
+        """
+        import json
+        import os
+
+        from playNano.analysis.utils import NumpyEncoder
+
+        record = {
+            "environment": getattr(self, "processing_environment", {}),
+            "steps": getattr(self, "processing_history", []),
+            "keys_by_name": getattr(self, "processing_keys_by_name", {}),
+        }
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(record, f, indent=2, cls=NumpyEncoder)
+
+    def export_analysis_log(self, path: str) -> None:
+        """
+        Export the analysis record (steps, results, and environment metadata) to JSON.
+
+        Parameters
+        ----------
+        path : str
+            File path to write the log.
+        """
+        import json
+        import os
+
+        from playNano.analysis.utils import NumpyEncoder
+
+        if not hasattr(self, "analysis_results") or not self.analysis_results:
+            raise ValueError(
+                "No analysis results found. Run an AnalysisPipeline first."
+            )
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(self.analysis_results, f, indent=2, cls=NumpyEncoder)
 
     def _load_plugin(self, name: str):
         """
@@ -454,6 +514,12 @@ class AFMImageStack:
         -------
         np.ndarray
           The processed data array of shape (n_frames, height, width).
+
+        NOTES
+        -----
+        This method does not populate processing_history or assign unique
+        snapshot keys per step. For tracked, reproducible processing,
+        use ProcessingPipeline.
         """
         # 1) Snapshot raw data if not already done
         if "raw" not in self.processed:
@@ -549,13 +615,16 @@ class AFMImageStack:
 
         >>> stack.frame_metadata = [{"timestamp": 0.0}, {}]
         >>> stack.get_frame_times()
-        [0.0, None]
+        [0.0, 1.0]
         """
         return [self.time_for_frame(i) for i in range(len(self.frame_metadata))]
 
     def channel_for_frame(self, idx: int) -> str:
         """
         Get the channel name for a given frame index.
+
+        Returns the value of the 'channel' key in the frame's metadata if present,
+        otherwise falls back to the global stack-level channel.
 
         Parameters
         ----------

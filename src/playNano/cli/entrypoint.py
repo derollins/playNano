@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 
+from playNano.cli.actions import print_env_info
 from playNano.cli.handlers import handle_play, handle_processing_wizard, handle_run
 from playNano.errors import LoadError
 
@@ -198,6 +199,9 @@ def main() -> None:
     )
 
     run_parser.set_defaults(func=handle_run)
+
+    parser_env = subparsers.add_parser("env-info", help="Print environment info")
+    parser_env.set_defaults(func=lambda args: print_env_info())
 
     args = parser.parse_args()
     setup_logging(getattr(logging, args.log_level.upper()))
