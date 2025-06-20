@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 
 from playNano.afm_stack import AFMImageStack
+from playNano.utils.system_info import gather_environment_info
 
 logger = logging.getLogger(__name__)
 
@@ -258,4 +259,5 @@ class ProcessingPipeline:
             elif "mask_key" in rec:
                 keys_by_name[nm].append(rec["mask_key"])
         self.stack.processing_keys_by_name = dict(keys_by_name)
+        self.stack.processing_environment = gather_environment_info()
         return arr

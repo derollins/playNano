@@ -15,7 +15,7 @@ from playNano.analysis.modules.feature_detection import FeatureDetectionModule
 @pytest.fixture
 def stack_1frame_with_timestamps():
     """
-    AFMImageStack with 1 frame of 3×3 data and an explicit timestamp.
+    AFMImageStack with 1 frame of 3x3 data and an explicit timestamp.
     frame_metadata contains a 'timestamp' key.
     """
     data = np.arange(9, dtype=float).reshape(1, 3, 3)
