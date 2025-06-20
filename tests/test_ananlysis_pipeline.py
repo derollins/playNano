@@ -151,7 +151,7 @@ def test_run_saves_to_log_file(tmp_path, dummy_stack, dummy_module):
     pipeline.add("dummy")
 
     log_path = tmp_path / "analysis_record.json"
-    result = pipeline.run(                          # noqa: deliberately ignore result
+    result = pipeline.run(                          # noqa: F841
         dummy_stack, log_to=str(log_path)
     )
     assert log_path.exists()
