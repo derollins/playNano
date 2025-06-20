@@ -68,28 +68,67 @@ class AFMImageStack:
         # Validate and pad/trim metadata to match number of frames
         n = self.data.shape[0]
         if frame_metadata is None:
-            self.frame_metadata = [{} for _ in range(n)]
-        else:
-            if len(frame_metadata) < n:
-                self.frame_metadata = frame_metadata + [{}] * (n - len(frame_metadata))
-            elif len(frame_metadata) > n:
-                raise ValueError(
-                    f"Metadata length ({len(frame_metadata)}) does not match number of frames ({n})."  # noqa
-                )
-            else:
-                self.frame_metadata = frame_metadata
+            frame_metadata = [{} for _ in range(n)]
 
-        # Store processed results; 'raw' is populated on first processing
+        if len(frame_metadata) < n:
+            frame_metadata = frame_metadata + [{}] * (n - len(frame_metadata))
+        elif len(frame_metadata) > n:
+            raise ValueError(
+                f"Metadata length ({len(frame_metadata)}) does not match number of frames ({n})."  # noqa: E501
+            )
+
+        # Normalize all timestamps
+        self.frame_metadata = normalize_timestamps(frame_metadata)
+
+        # Stores processed data arrays from filters, keyed by step
+        # name (e.g. 'gaussian_filter', 'remove_plane')
         self.processed: dict[str, np.ndarray] = {}
-        # Store masks
+        # Stores generated masks, keyed by mask generator name (e.g. 'otsu',
+        # 'threshold')
         self.masks: dict[str, np.ndarray] = {}
 
     def _resolve_step(self, step: str) -> tuple[str, callable]:
         """
-        Determine the type of 'step' and return a tuple (step_type, fn).
+        Resolves a processing step identifier to its corresponding type and callable.
 
-        Step_type is one of: 'clear', 'mask', 'filter', 'plugin', 'method'.
-        Raises ValueError if step is not recognized.
+        This method determines the nature of the given `step` string and returns a tuple
+        containing the step type and the associated function or method.
+
+        The step can be one of:
+
+        - "clear": A special step that clears previous operations (returns `None`
+        as the function).
+        - "mask": A predefined mask operation from `MASK_MAP`.
+        - "method": A bound method defined on the current instance.
+        - "plugin": A dynamically loaded plugin from the `playNano.filters`
+        entry point group.
+        - "filter": A predefined filter operation from `FILTER_MAP`.
+
+        Parameters
+        ----------
+        step : str
+            The name of the processing step to resolve.
+
+        Returns
+        -------
+        tuple[str, Callable | None]
+            A tuple containing:
+            - The type of the step as a string.
+            - The corresponding callable object, or `None` if the step is "clear".
+
+        Raises
+        ------
+        ValueError
+            If the step name is not recognized as any of the supported types.
+
+        Notes
+        -----
+        The resolution order is:
+        1. "clear"
+        2. Mask from `MASK_MAP`
+        3. Bound method on the instance
+        4. Plugin from `playNano.filters`
+        5. Filter from `FILTER_MAP`
         """
         if step == "clear":
             return "clear", None
@@ -486,7 +525,8 @@ class AFMImageStack:
         >>> stack.time_for_frame(2)
         2.0
         """
-        return self.frame_metadata[idx].get("timestamp", float(idx))
+        ts = self.frame_metadata[idx].get("timestamp", None)
+        return float(idx) if ts is None else ts
 
     def get_frame_times(self) -> list[float]:
         """
@@ -497,8 +537,9 @@ class AFMImageStack:
 
         Returns
         -------
-        list of float or None
-            List of timestamps per frame. If unavailable, entries may be None.
+        list of floats
+            List of timestamps per frame. If unavailable, the frame index is
+            used as a fallback.
 
         Examples
         --------

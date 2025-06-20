@@ -89,9 +89,7 @@ class FeatureDetectionModule(AnalysisModule):
         # 1. Obtain or validate mask array
         if mask_key is not None:
             if not previous_results or mask_key not in previous_results:
-                raise KeyError(
-                    f"mask_key '{mask_key}' not found in previous_results"
-                )
+                raise KeyError(f"mask_key '{mask_key}' not found in previous_results")
             mask_arr = previous_results[mask_key]
             if not (
                 isinstance(mask_arr, np.ndarray)
@@ -99,7 +97,7 @@ class FeatureDetectionModule(AnalysisModule):
                 and mask_arr.shape == data.shape
             ):
                 raise ValueError(
-                    f"previous_results[{mask_key}] must be a boolean ndarray of shape {data.shape}" # noqa
+                    f"previous_results[{mask_key}] must be a boolean ndarray of shape {data.shape}"  # noqa
                 )
         else:
             if mask_fn is None:

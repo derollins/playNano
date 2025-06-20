@@ -74,8 +74,8 @@ def test_metadata_padding_when_shorter():
         frame_metadata=small_meta,
     )
     assert len(stack.frame_metadata) == 3
-    assert stack.frame_metadata[1] == {}
-    assert stack.frame_metadata[2] == {}
+    assert stack.frame_metadata[1] == {"timestamp": None}
+    assert stack.frame_metadata[2] == {"timestamp": None}
 
 
 def test_metadata_error_when_longer():
@@ -196,7 +196,10 @@ def test_frames_with_metadata_iterator():
         data=arr, pixel_size_nm=1.0, channel="ch", file_path=".", frame_metadata=meta
     )
     results = list(stack.frames_with_metadata())
-    assert results == [(0, arr[0], {"a": 1}), (1, arr[1], {"b": 2})]
+    assert results == [
+        (0, arr[0], {"a": 1, "timestamp": None}),
+        (1, arr[1], {"b": 2, "timestamp": None}),
+    ]
 
 
 def test_normalize_timestamps_mixed():
