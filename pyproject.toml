@@ -5,7 +5,7 @@ name = "playNano"
 version = "0.1.0"
 description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <=3.12"
 authors = [
   { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk"}
 ]
