@@ -5,7 +5,7 @@ name = "playNano"
 version = "0.1.0"
 description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.13"
 authors = [
   { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk"}
 ]
@@ -16,6 +16,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -81,7 +82,7 @@ known_first_party = ["playNano"]
 
 [tool.black]
 line-length = 88
-target-version = ['py311']
+target-version = ['py310', 'py311', 'py312']
 include = '\.pyi?$'
 exclude = '''
 /(
