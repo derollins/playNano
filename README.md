@@ -15,8 +15,8 @@
 </div>
 
 **playNano** is a Python tool for loading, filtering, visualising, and exporting time-series AFM data,
-such as high-speed AFM (HS-AFM) videos. It supports interactive playback of AFM video data, application
-of processing filters, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
+such as high-speed AFM (HS-AFM) videos. It supports interactive playback, flexible processing pipelines,
+and provenance-aware analysis tracking, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
 HDF5 bundles, and animated GIFs.
 
 **Files read:**
@@ -40,6 +40,8 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 - 🪟 **Applies basic filters** and ordered filter chains to image data.
 - 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
 - 🎞️ **Generates animated GIFs** of AFM stacks with annotations.
+- 📒 **Tracks** full processing and analysis provenance for reproducibility.
+- 🔌 **Plugin system** for custom filters.
 - 🧠 Built for integration with analysis pipelines and tools like `TopoStats`.
 
 ---
@@ -58,6 +60,8 @@ It is recommended to use a virtual environment. Then install in editable mode:
 ```bash
 pip install -e .
 ```
+
+Python 3.10 to 3.12 is required.
 
 ## 🚀 Quickstart
 
@@ -283,6 +287,32 @@ Once loaded you can export AFM stacks in the following formats:
   - Folder: `./output/`
   - Name: derived from input filename (with `_filtered` suffix if filters were used)
 
+## 🔍 Analysis Pipeline (Advanced)
+
+If using custom analysis modules:
+
+```bash
+from playNano.analysis.pipeline import AnalysisPipeline
+
+pipeline = AnalysisPipeline()
+pipeline.add("detect_particles", threshold=5)
+pipeline.add("track_particles", max_distance=3)
+
+record = pipeline.run(stack, log_to="analysis.json")
+```
+
+Each step is recorded with:
+
+- Module name and parameters
+
+- Execution timestamp
+
+- Optional version info
+
+- Analysis output (in stack.analysis)
+
+- All metadata in stack.provenance["analysis"]
+
 ## Logging Level
 
 Control verbosity with:
@@ -327,17 +357,18 @@ playnano run sample.h5 \
 
 ```text
 playNano/
-├── io/              # I/O utilities (e.g. file loaders and exports)
-├── playback/        # Interactive window
-├── processing/      # Image flattening, filters, and processing logic
-├── utils/           # Utility functions
-├── cli/             # CLI entry point and functions
-└── afm_stack.py     # AFMImageStack class and metadata handling
+├── afm_stack.py       # Core AFM stack object
+├── analysis/          # Analysis pipeline & modules
+├── processing/        # Filters, masks, and processing logic
+├── io/                # File I/O loaders and writers
+├── cli/               # CLI interface
+├── playback/          # OpenCV-based viewer
+├── utils/             # Common utilities
 ```
 
 ## 🧩 Dependencies
 
-Requires Python 3.10 or newer.
+Requires Python 3.10, 3.11 or 3.12.
 
 This project requires the following Python packages:
 

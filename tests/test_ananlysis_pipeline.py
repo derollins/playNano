@@ -68,21 +68,25 @@ def test_run_executes_steps(dummy_stack, dummy_module):
 
     # Top-level keys
     assert "environment" in result
-    assert "analysis_steps" in result
-    assert "results_by_name" in result
+    assert "provenance" in result
+    assert "analysis" in result
 
     # Check recorded step
-    step0 = result["analysis_steps"][0]
-    assert step0["name"] == "dummy"
-    assert step0["outputs"]["result"] == 42
-    assert step0["outputs"]["params"] == {"a": 5}
+    step0_p = result["provenance"]["steps"][0]
+    step0_o = result["analysis"]
 
-    # Check stack.analysis_results attached
-    assert dummy_stack.analysis_results is result
+    assert step0_p["name"] == "dummy"
+    assert step0_o["step_1_dummy"]["result"] == 42
+    assert step0_o["step_1_dummy"]["params"] == {"a": 5}
+
+    # Check provenance is attached to the stack
+    assert dummy_stack.provenance["environment"] is result["environment"]
+    assert dummy_stack.provenance["analysis"] is result["provenance"]
+    assert dummy_stack.analysis is result["analysis"]
 
     # Check results_by_name
-    assert "dummy" in result["results_by_name"]
-    assert result["results_by_name"]["dummy"][0]["result"] == 42
+    assert "dummy" in result["provenance"]["results_by_name"]
+    assert result["provenance"]["results_by_name"]["dummy"][0]["result"] == 42
 
 
 def test_module_is_cached(dummy_stack, dummy_module):
@@ -151,9 +155,7 @@ def test_run_saves_to_log_file(tmp_path, dummy_stack, dummy_module):
     pipeline.add("dummy")
 
     log_path = tmp_path / "analysis_record.json"
-    result = pipeline.run(                          # noqa: F841
-        dummy_stack, log_to=str(log_path)
-    )
+    result = pipeline.run(dummy_stack, log_to=str(log_path))  # noqa: F841
     assert log_path.exists()
     content = log_path.read_text()
     # Should contain module name and result key
@@ -187,7 +189,7 @@ def ensure_masking_funcs(monkeypatch):
     Here we monkeypatch the module-level MASKING_FUNCS.
     """
     # Example: register_masking() returns {"dummy_mask": callable}
-    dummy = lambda arr, **kw: np.zeros_like(arr, dtype=bool)    # noqa
+    dummy = lambda arr, **kw: np.zeros_like(arr, dtype=bool)  # noqa
     monkeypatch.setattr(apipeline_mod, "MASKING_FUNCS", {"dummy_mask": dummy})
     yield
 
@@ -237,33 +239,36 @@ def test_run_empty_pipeline(stack_with_times):
     pipeline = AnalysisPipeline()
     record = pipeline.run(stack_with_times)
     assert "environment" in record
-    assert record["analysis_steps"] == []
-    assert record["results_by_name"] == {}
+    assert record["provenance"]["steps"] == []
+    assert record["provenance"]["results_by_name"] == {}
     # frame_times should be present
-    assert "frame_times" in record and isinstance(record["frame_times"], list)
-    assert record["frame_times"] == stack_with_times.get_frame_times()
+    assert "frame_times" in record["provenance"] and isinstance(
+        record["provenance"]["frame_times"], list
+    )
+    assert record["provenance"]["frame_times"] == stack_with_times.get_frame_times()
 
 
 def test_run_single_step(dummy_registry, stack_with_times, tmp_path):
-    """Running one dummy module records output and frame_times, writes log if requested.""" # noqa
+    """Running one dummy module records output and frame_times, writes log if requested."""  # noqa
     pipeline = AnalysisPipeline()
     pipeline.add("dummy", alpha=5)
     record = pipeline.run(stack_with_times)
     # check structure
     assert "environment" in record
-    assert record["analysis_steps"][0]["name"] == "dummy"
-    assert record["analysis_steps"][0]["outputs"]["marker"] is True
-    assert record["analysis_steps"][0]["outputs"]["params"] == {"alpha": 5}
-    assert "dummy" in record["results_by_name"]
+
+    assert "step_1_dummy" in record["analysis"]
+    assert record["analysis"]["step_1_dummy"]["marker"] is True
+    assert record["analysis"]["step_1_dummy"]["params"] == {"alpha": 5}
+    assert "dummy" in record["provenance"]["results_by_name"]
     # frame_times included
-    assert record["frame_times"] == stack_with_times.get_frame_times()
+    assert record["provenance"]["frame_times"] == stack_with_times.get_frame_times()
 
     # test log_to writing
     log_file = tmp_path / "out.json"
     _ = pipeline.run(stack_with_times, log_to=str(log_file))
     assert log_file.exists()
     content = json.loads(log_file.read_text())
-    assert content["analysis_steps"][0]["name"] == "dummy"
+    assert content["provenance"]["steps"][0]["name"] == "dummy"
     log_file.unlink()
 
 
@@ -301,8 +306,8 @@ def test_run_multiple_steps(monkeypatch, stack_with_times):
     pipeline.add("firstmod")
     pipeline.add("secondmod")
     rec = pipeline.run(stack_with_times)
-    assert "firstmod" in rec["results_by_name"]
-    assert "secondmod" in rec["results_by_name"]
+    assert "firstmod" in rec["provenance"]["results_by_name"]
+    assert "secondmod" in rec["provenance"]["results_by_name"]
 
 
 def test_run_missing_module(monkeypatch, stack_with_times):

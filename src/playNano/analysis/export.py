@@ -2,12 +2,12 @@
 
 import json
 import os
-from typing import Any, Dict
+from typing import Any
 
 from playNano.analysis.utils import NumpyEncoder
 
 
-def export_analysis_to_json(out_path: str, analysis_record: Dict[str, Any]) -> None:
+def export_analysis_to_json(out_path: str, analysis_record: dict[str, Any]) -> None:
     """
     Write the analysis_record (as returned by AnalysisPipeline.run) to a JSON file.
     """

@@ -214,6 +214,10 @@ def test_pipeline_combines_multiple_masks():
 
     # Setup mock AFMImageStack
     stack = MagicMock(spec=AFMImageStack)
+    stack.provenance = {}
+    stack.provenance["processing"] = {}
+    stack.provenance["processing"]["steps"] = []
+    stack.provenance["processing"]["keys_by_name"] = []
     stack.data = data.copy()
     stack.processed = {}
     stack.masks = {}
@@ -258,6 +262,10 @@ def test_mask_overlay_fallback_name_without_error():
     mask2[:, 2:4, 2:4] = True
 
     stack = MagicMock(spec=AFMImageStack)
+    stack.provenance = {}
+    stack.provenance["processing"] = {}
+    stack.provenance["processing"]["steps"] = []
+    stack.provenance["processing"]["keys_by_name"] = []
     stack.data = data.copy()
     stack.processed = {}
     stack.masks = {}  # <- No previously saved masks
@@ -290,6 +298,10 @@ def test_mask_overlay_raises_value_error_if_previous_mask_missing():
     mask2[:, 2:4, 2:4] = True
 
     stack = MagicMock(spec=AFMImageStack)
+    stack.provenance = {}
+    stack.provenance["processing"] = {}
+    stack.provenance["processing"]["steps"] = []
+    stack.provenance["processing"]["keys_by_name"] = []
     stack.data = data.copy()
     stack.processed = {}
 
@@ -326,10 +338,12 @@ def mock_stack():
     stack.data = np.ones((2, 4, 4), dtype=float)
     stack.processed = {}
     stack.masks = {}
+    stack.provenance = {}
+    stack.provenance["processing"] = {"steps": [], "keys_by_name": []}
     return stack
 
 
-def test_processing_history_recorded(mock_stack):
+def test_stack_provenance_processing_steps_recorded(mock_stack):
     """Test that processing history records filter name and snapshot key."""
 
     def dummy_filter(data, **kwargs):
@@ -345,8 +359,9 @@ def test_processing_history_recorded(mock_stack):
     pipeline.add_filter("add_one", amount=1)
     result = pipeline.run()  # noqa
 
-    assert "processing_history" in mock_stack.__dict__
-    history = mock_stack.processing_history
+    assert "steps" in mock_stack.provenance["processing"].keys()
+    assert "keys_by_name" in mock_stack.provenance["processing"].keys()
+    history = mock_stack.provenance["processing"]["steps"]
     assert isinstance(history, list)
     assert history[0]["name"] == "add_one"
     assert "processed_key" in history[0]
@@ -373,7 +388,7 @@ def test_mask_step_records_correct_key(mock_stack):
     pipeline.add_mask("mask_top_left")
     pipeline.run()
 
-    history = mock_stack.processing_history
+    history = mock_stack.provenance["processing"]["steps"]
     assert history[0]["name"] == "mask_top_left"
     assert "mask_key" in history[0]
     key = history[0]["mask_key"]
@@ -431,10 +446,11 @@ def test_processing_keys_by_name_structure(mock_stack):
     )
 
     pipeline = ProcessingPipeline(mock_stack)
-    pipeline.add_filter("scale").add_filter("scale")
+    pipeline.add_filter("scale")
+    pipeline.add_filter("scale")
     pipeline.run()
 
-    keymap = mock_stack.processing_keys_by_name
+    keymap = mock_stack.provenance["processing"]["keys_by_name"]
     assert "scale" in keymap
     assert isinstance(keymap["scale"], list)
     assert len(keymap["scale"]) == 2
@@ -451,7 +467,7 @@ def test_clear_mask_records_history(mock_stack):
     pipeline.clear_mask()
     pipeline.run()
 
-    history = mock_stack.processing_history
+    history = mock_stack.provenance["processing"]["steps"]
     assert len(history) == 1
     assert history[0]["step_type"] == "clear"
     assert history[0].get("mask_cleared", False) is True
@@ -507,7 +523,7 @@ def test_stack_data_matches_final_history_output(mock_stack):
     final_result = pipeline.run()
 
     # Get final snapshot key from history
-    last_step = mock_stack.processing_history[-1]
+    last_step = mock_stack.provenance["processing"]["steps"][-1]
     key = last_step["processed_key"]
     assert np.allclose(mock_stack.processed[key], final_result)
     assert np.allclose(mock_stack.data, final_result)
@@ -521,11 +537,12 @@ def test_history_length_matches_steps(mock_stack):
     )
 
     pipeline = ProcessingPipeline(mock_stack)
-    pipeline.add_filter("step1").add_filter("step2").add_filter("step3")
+    pipeline.add_filter("step1")
+    pipeline.add_filter("step2")
+    pipeline.add_filter("step3")
     pipeline.run()
-
-    assert len(mock_stack.processing_history) == 3
-    names = [step["name"] for step in mock_stack.processing_history]
+    assert len(mock_stack.provenance["processing"]["steps"]) == 3
+    names = [step["name"] for step in mock_stack.provenance["processing"]["steps"]]
     assert names == ["step1", "step2", "step3"]
 
 
@@ -541,7 +558,9 @@ def test_all_snapshot_keys_are_unique(mock_stack):
         pipeline.add_filter("noop")
     pipeline.run()
 
-    keys = [step["processed_key"] for step in mock_stack.processing_history]
+    keys = [
+        step["processed_key"] for step in mock_stack.provenance["processing"]["steps"]
+    ]
     assert len(keys) == len(set(keys))  # No duplicates
 
 
@@ -562,6 +581,7 @@ def test_processing_keys_by_name_handles_duplicates(mock_stack):
     pipeline.add_filter("adjust", offset=2)
     pipeline.run()
 
-    keys = mock_stack.processing_keys_by_name["adjust"]
+    keys = mock_stack.provenance["processing"]["keys_by_name"]["adjust"]
+    print(keys)
     assert len(keys) == 2
     assert keys[0] != keys[1]

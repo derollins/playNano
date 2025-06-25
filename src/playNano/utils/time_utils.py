@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 import cv2
@@ -139,3 +139,8 @@ def draw_scale_and_timestamp(
     )
 
     return image
+
+
+def utc_now_iso() -> str:
+    """Return a ISO 8601 UTC timestamp"""
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")

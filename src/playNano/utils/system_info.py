@@ -3,14 +3,15 @@
 import importlib.metadata
 import platform
 import sys
-from datetime import UTC, datetime
+
+from playNano.utils.time_utils import utc_now_iso
 
 KEY_DEPENDENCIES = ["numpy", "h5py", "scipy", "opencv-python", "scikit-image", "pandas"]
 
 
 def gather_environment_info() -> dict:
     info = {
-        "timestamp": datetime.now(UTC).isoformat() + "Z",
+        "timestamp": utc_now_iso(),
         "python_version": sys.version.replace("\n", " "),
         "platform": platform.platform(),
     }

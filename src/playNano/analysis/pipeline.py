@@ -3,7 +3,6 @@
 import importlib.metadata
 import logging
 from collections import defaultdict
-from datetime import UTC, datetime
 from typing import Any, Optional
 
 from playNano.afm_stack import AFMImageStack
@@ -12,6 +11,7 @@ from playNano.analysis.base import AnalysisModule
 from playNano.analysis.utils import NumpyEncoder
 from playNano.processing.mask_generators import register_masking
 from playNano.utils.system_info import gather_environment_info
+from playNano.utils.time_utils import utc_now_iso
 
 MASKING_FUNCS = register_masking()
 
@@ -21,44 +21,44 @@ AnalysisRecord = dict[str, Any]
 """
 Structured output of an AnalysisPipeline run.
 
-This record contains environment metadata, a detailed step-by-step log of the
-analysis workflow, and access to all module outputs grouped by name.
-
-Keys
-----
-environment : dict
+This record contains:
+- environment : dict
     Metadata about the runtime environment (e.g. Python version, library versions).
-frame_times : list[float] or None
-    List of timestamps (in seconds) for each frame in the stack.
-    Used for time-aware analysis and visualization. If unavailable, None.
-analysis_steps : list of dict
-    Ordered list of executed analysis steps. Each entry contains:
-        - index : int
-            1-based index of the step in the pipeline.
-        - name : str
-            The name of the analysis module used.
-        - params : dict
-            Parameters passed to the module.
-        - timestamp : str
-            ISO 8601 UTC timestamp when the step was executed.
-        - module_version : str or None
-            Optional version string provided by the module.
-        - outputs : dict
-            Result returned by the module's run() method.
-results_by_name : dict[str, list[dict]]
-    Maps module names to lists of outputs from each occurrence.
-    Useful for retrieving results when modules are reused.
-
-Notes
------
-This structure is attached to `stack.analysis_results` after execution,
-and may optionally be saved to disk via `log_to`.
+- analysis : dict
+    Results of each analysis module run, with keys 'step_<n>_<module_name>'.
+- provenance : dict
+    Metadata about the provenance of the analysis steps, with keys:
+      - steps : list of dict
+          Ordered list of executed analysis steps. Each entry contains:
+            - index : int
+                1-based index of the step in the pipeline.
+            - name : str
+                The name of the analysis module used.
+            - params : dict
+                Parameters passed to the module.
+            - timestamp : str
+                ISO 8601 UTC timestamp when the step was executed.
+            - version : str or None
+                Optional version string provided by the module instance.
+            - analysis_key : str
+                Key under which this step's outputs are stored in the `analysis` dict.
+      - results_by_name : dict[str, list]
+          Maps module names to lists of outputs from each occurrence.
+      - frame_times : list[float] or None
+          Timestamps for each frame in the stack, from `stack.get_frame_times()`,
+          or None if unavailable.
 
 Examples
 --------
->>> record = pipeline.run(stack)
->>> record["results_by_name"]["feature_detection"][0]["summary"]
-{'total_features': 23, 'avg_features_per_frame': 3.8, ...}
+>>> pipeline = AnalysisPipeline()
+>>> pipeline.add("feature_detection", threshold=5)
+>>> record = pipeline.run(stack, log_to="out.json")
+>>> # Access outputs:
+>>> record["analysis"]["step_1_feature_detection"]["summary"]
+{'total_features': 23, 'avg_per_frame': 3.8}
+>>> # Inspect provenance:
+>>> record["provenance"]["results_by_name"]["feature_detection"][0]["summary"]
+{'total_features': 23, 'avg_per_frame': 3.8}
 """
 
 
@@ -66,12 +66,12 @@ class AnalysisPipeline:
     """
     Orchestrates a sequence of analysis steps on an AFMImageStack.
 
-    This class manages the configuration and execution of modular, reusable
-    analysis routines. Each step is defined by a registered analysis module
-    (subclass of `AnalysisModule`) and its parameters.
-
-    Analysis results are collected in order and optionally logged to disk.
-    Outputs from previous steps can be accessed by subsequent modules.
+    Each step corresponds to an AnalysisModule (built-in or entry-point), invoked
+    in order with the given parameters. Outputs of each step are stored in
+    `stack.analysis` under keys 'step_<n>_<module_name>'. Detailed provenance
+    (timestamps, parameters, version, linking keys) is recorded in
+    `stack.provenance["analysis"]`. The run() method returns a dict containing
+    environment info, the `analysis` dict, and its `provenance`.
     """
 
     def __init__(self):
@@ -213,48 +213,46 @@ class AnalysisPipeline:
         """
         Execute all added analysis steps on the given AFMImageStack.
 
-        Each step invokes a registered AnalysisModule, passing in the AFMImageStack
-        and outputs of prior steps. Results from each module are recorded in order,
-        and grouped by module name for easy access. Also captures frame timestamps
-        if available.
+        Each step:
+          - is resolved to an AnalysisModule instance
+          - invoked with `(stack, previous_results=..., **params)`
+          - its outputs are stored under `stack.analysis["step_<n>_<module_name>"]`
+          - provenance is recorded in `stack.provenance["analysis"]["steps"]`
+
+        The overall provenance sub-dict also collects:
+          - results_by_name: mapping module name to list of outputs
+          - frame_times: result of `stack.get_frame_times()`, or None
+
+        The environment info (via gather_environment_info) is stored at
+        `stack.provenance["environment"]` (if not already set).
 
         Parameters
         ----------
         stack : AFMImageStack
-            The AFM data object to analyze.
+            The AFMImageStack to analyze.
         log_to : str, optional
-            Path to a JSON file where the analysis record will be saved.
+            Path to a JSON file where the combined record will be saved.
 
         Returns
         -------
         AnalysisRecord : dict
-            A dict containing:
-            - environment : dict
-                Metadata about the runtime environment
-                (Python version, package versions, etc.).
-            - frame_times : list of float or None
-                Timestamps for each frame, from stack.get_frame_times(),
-                or None if unavailable.
-            - analysis_steps : list of dict
-                Ordered list of executed analysis steps. Each entry has:
-                * index : int (1-based)
-                * name : str (module_name)
-                * params : dict (parameters passed)
-                * timestamp : str (ISO 8601 UTC when step ran)
-                * module_version : str or None
-                * outputs : dict (module.run(...) return value)
-            - results_by_name : dict[str, list of dict]
-                Maps module names to lists of their outputs from each invocation.
+            {
+                "environment": <dict of environment metadata>,
+                "analysis": <dict of outputs per step>,
+                "provenance": <dict with keys "steps", "results_by_name", "frame_times">
+            }
 
         Notes
         -----
-        This record is attached to `stack.analysis_results`. If log_to is provided,
-        the record is written as JSON using NumpyEncoder (arrays serialized properly).
+        - Raw outputs: accessible via `stack.analysis["step_<n>_<module_name>"]`.
+        - Provenance: in `stack.provenance["analysis"]`, with a list of step records.
+        - If stack.provenance or stack.analysis is absent, they are created.
+        - If log_to is provided, the same record dict is JSON-dumped using NumpyEncoder.
 
         Raises
         ------
         Exception
-            Any exception raised by a module.run(...) call is propagated after logging.
+            Propagates any exception from module.run(...), after logging.
 
         Examples
         --------
@@ -262,12 +260,42 @@ class AnalysisPipeline:
         >>> pipeline.add("count_nonzero")
         >>> pipeline.add("feature_detection", mask_fn="threshold_mask", min_size=5)
         >>> record = pipeline.run(stack, log_to="out.json")
-        >>> record["frame_times"][:3]
-        [0.0, 0.5, 1.0]
-        >>> record["analysis_steps"][1]["outputs"]["summary"]["total_features"]
-        42
+        >>> # Access the outputs:
+        >>> record["analysis"]["step_1_count_nonzero"]
+        {'counts': [...], ...}
+        >>> # Inspect provenance:
+        >>> for step_info in record["provenance"]["steps"]:
+        ...     print(step_info["name"], step_info["analysis_key"])
+        count_nonzero step_1_count_nonzero
+        feature_detection step_2_feature_detection
         """
-        env_info = gather_environment_info()
+        # Ensure stack.provenance is a dict
+        if not hasattr(stack, "provenance") or not isinstance(stack.provenance, dict):
+            stack.provenance = {}
+        # Ensure 'analysis' sub-dict exists
+        if "analysis" not in stack.provenance or not isinstance(
+            stack.provenance["analysis"], dict
+        ):
+            stack.provenance["analysis"] = {
+                "steps": [],
+                "results_by_name": {},
+                "frame_times": None,
+            }
+        if not hasattr(stack, "analysis") or not isinstance(stack.analysis, dict):
+            stack.analysis = {}
+
+        env = gather_environment_info()
+        # If provenance already has environment from processing, you may choose to
+        # merge or keep first;
+        # For simplicity, you can overwrite or check if empty.
+        if not stack.provenance.get("environment"):
+            stack.provenance["environment"] = env
+
+        # Clear analysis provenance record
+        stack.provenance["analysis"]["steps"].clear()
+        stack.provenance["analysis"]["results_by_name"].clear()
+        stack.provenance["analysis"]["frame_times"] = None
+
         step_results: list[dict[str, Any]] = []
         results_by_name: defaultdict[str, list] = defaultdict(list)
         previous_latest: dict[str, dict[str, Any]] = {}
@@ -278,7 +306,7 @@ class AnalysisPipeline:
             )
             module = self._load_module(module_name)
             # timestamp
-            timestamp = datetime.now(UTC).isoformat() + "Z"
+            timestamp = utc_now_iso()
 
             if "mask_fn" in params and isinstance(params["mask_fn"], str):
                 params = self._resolve_mask_fn(params)
@@ -291,40 +319,49 @@ class AnalysisPipeline:
                     f"Module '{module_name}' failed at step {idx}: {e}", exc_info=True
                 )
                 raise
-
+            # Store snapshot under unique key
+            safe_name = module_name.replace(" ", "_")
+            analysis_key = f"step_{idx}_{safe_name}"
+            stack.analysis[analysis_key] = outputs
             # record this step
             step_record: dict[str, Any] = {
                 "index": idx,
                 "name": module_name,
                 "params": params,
                 "timestamp": timestamp,
-                "module_version": getattr(module, "version", None),
-                "outputs": outputs,
+                "version": getattr(module, "version", None),
+                "analysis_key": analysis_key,
             }
             step_results.append(step_record)
-
             # update previous_results structures
             results_by_name[module_name].append(outputs)
             # allow downstream modules to use latest result
             previous_latest[module_name] = outputs
 
-        # build final record
-        analysis_record: AnalysisRecord = {
-            "environment": env_info,
-            "frame_times": (
-                stack.get_frame_times() if hasattr(stack, "get_frame_times") else None
-            ),
-            "analysis_steps": step_results,
-            "results_by_name": results_by_name,
+        # Build the updated provedence record
+        stack.provenance["analysis"]["steps"] = step_results
+        stack.provenance["analysis"]["results_by_name"] = dict(results_by_name)
+
+        frame_times = (
+            stack.get_frame_times() if hasattr(stack, "get_frame_times") else None
+        )
+        stack.provenance["analysis"]["frame_times"] = frame_times
+
+        record = {
+            "environment": stack.provenance["environment"],
+            "analysis": stack.analysis,
+            "provenance": stack.provenance["analysis"],
         }
-        # attach to stack
-        stack.analysis_results = analysis_record
+
         # write to file if requested
         if log_to:
             import json
             import os
 
-            os.makedirs(os.path.dirname(log_to), exist_ok=True)
+            dirpath = os.path.dirname(log_to)
+            if dirpath:
+                os.makedirs(dirpath, exist_ok=True)
             with open(log_to, "w") as file:
-                json.dump(analysis_record, file, indent=2, cls=NumpyEncoder)
-        return analysis_record
+                json.dump(record, file, indent=2, cls=NumpyEncoder)
+        # Add record
+        return record
