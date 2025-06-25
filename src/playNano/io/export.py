@@ -15,6 +15,33 @@ from playNano.utils.io_utils import prepare_output_directory, sanitize_output_na
 logger = logging.getLogger(__name__)
 
 
+def check_path_is_path(path):
+    """
+    Ensure the input is a pathlib.Path object.
+
+    If the input is a string, it will be converted to a Path object.
+    If the input is already a Path object, it will be returned as-is.
+    If the input is neither, a TypeError is raised.
+
+    Parameters:
+        path (str or Path): The input path to validate or convert.
+
+    Returns:
+        Path: A pathlib.Path object representing the input path.
+
+    Raises:
+        TypeError: If the input is not a string or a Path object.
+    """
+    if isinstance(path, str):
+        logger.debug(f"Converting {path} to Path object.")
+        path = Path(path)
+    elif isinstance(path, Path):
+        pass
+    else:
+        raise TypeError(f"{path} is not a string or a Path.")
+    return path
+
+
 def save_ome_tiff_stack(
     path: Path,
     stack: np.ndarray,
@@ -32,6 +59,7 @@ def save_ome_tiff_stack(
     - timestamps: list of length n_frames
     - channel: string channel name (stored in OME metadata)
     """
+    path = check_path_is_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     # tifffile’s OME writer expects a 5D array in TCZYX or TZYX format.
     # We have a purely 2D grayscale stack over time (no channels or Z),
@@ -83,6 +111,9 @@ def save_npz_bundle(
 
     - path: Path to “.npz” (no suffix needed; do path.with_suffix(".npz"))
     """
+    print(type(path))
+    path = check_path_is_path(path)
+    print(type(path))
     path = path.with_suffix(".npz")
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -113,6 +144,7 @@ def save_h5_bundle(
     - path: Path to “.h5” (we'll force .h5 suffix).
     - frame_metadata: full list of dicts (one dict per frame).
     """
+    path = check_path_is_path(path)
     path = path.with_suffix(".h5")
     path.parent.mkdir(parents=True, exist_ok=True)
 
