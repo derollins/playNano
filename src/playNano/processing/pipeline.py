@@ -1,25 +1,74 @@
-"""Module containing the ProcessingPipeline class for AFMImageStack processing."""
+"""Module containing the ProcessingPipeline class for AFMImageStack processing.
+
+This module provides ProcessingPipeline, which runs a sequence of
+mask/filter/method/plugin steps on an AFMImageStack. Each step's output is stored
+in `stack.processed` (for filters) or `stack.masks` (for masks), and detailed
+provenance (timestamps, parameters, step type, version info, keys) is recorded in
+`stack.provenance["processing"]`. Environment metadata at pipeline start is recorded in
+`stack.provenance["environment"]`.
+"""
 
 from __future__ import annotations
 
+import importlib.metadata
+import inspect
 import logging
-from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
 
 from playNano.afm_stack import AFMImageStack
 from playNano.utils.system_info import gather_environment_info
+from playNano.utils.time_utils import utc_now_iso
 
 logger = logging.getLogger(__name__)
 
 
+def _get_plugin_version(fn) -> str | None:
+    """
+    Attempt to determine the package version for a plugin function.
+
+    This inspects the module in which `fn` is defined, extracts the top-level
+    package name, and returns its version via importlib.metadata. If any step
+    fails (e.g., module not found, package not installed), returns None.
+
+    Parameters
+    ----------
+    fn : Callable
+        The function object for which to infer the package version. Typically
+        a plugin filter or similar user-provided function.
+
+    Returns
+    -------
+    str or None
+        The version string of the package containing `fn`, or None if it cannot
+        be determined.
+    """
+    try:
+        module = inspect.getmodule(fn)
+        if module and hasattr(module, "__name__"):
+            pkg_name = module.__name__.split(".")[0]
+            return importlib.metadata.version(pkg_name)
+    except Exception:
+        return None
+
+
 class ProcessingPipeline:
     """
-    A simple orchestrator for running a sequence of masks/filters on an AFMImageStack.
+    Orchestrates a sequence of masks and filters (or other processing steps).
 
-    Steps are (step_name, kwargs) pairs.
-    Available step types: 'clear', mask, filter, plugin, method.
+    Acts on an AFMImageStack, recording outputs and detailed provenance.
+    Each step is specified by name and kwargs:
+      - “clear” resets any active mask
+      - mask steps compute boolean masks stored under `stack.masks[...]`
+      - filter/method/plugin steps apply to the current data (and mask if present),
+        storing results in `stack.processed[...]`
+    Provenance for each step (index, name, params, timestamp, step_type, version,
+    keys, summaries) is appended to `stack.provenance["processing"]["steps"]`. A
+    mapping from step name to list of snapshot keys is built as
+    `stack.provenance["processing"]["keys_by_name"]`. The final processed array
+    overwrites `stack.data`. Environment info is captured once under
+    `stack.provenance["environment"]`.
     """
 
     def __init__(self, stack: AFMImageStack) -> None:
@@ -102,62 +151,95 @@ class ProcessingPipeline:
 
     def run(self) -> np.ndarray:
         """
-        Execute all configured steps on the underlying AFMImageStack.
+        Execute configured steps on the AFMImageStack, stores outputs and provenance.
 
-        This method runs the processing pipeline step-by-step, applying filters,
-        masks, or other operations in order. During execution:
-
-        - A snapshot of the original data is saved under the key "raw"
-        in `stack.processed` (if not already present).
-        - Each processing step stores its output in `stack.processed` (for filters) or
-        `stack.masks` (for masks), using a unique key with the step index.
-        - A detailed, ordered history of all executed steps is recorded in
-        `stack.processing_history`, where each entry contains metadata about the step
-        (e.g., name, parameters, timestamp, output reference key).
+        Behavior:
+        1. Record or update environment metadata via `gather_environment_info()`
+           into `stack.provenance["environment"]`.
+        2. Reset previous processing provenance under `stack.provenance["processing"]`,
+           ensuring keys `"steps"` (list) and `"keys_by_name"` (dict) exist
+           and are cleared.
+        3. If not already present, snapshot the original data as `"raw"` in
+        `stack.processed`.
+        4. Iterate over self.steps in order (1-based index):
+           - Resolve step type via `stack._resolve_step(step_name)`, yielding
+           (step_type, fn).
+           - Record a timestamp (`utc_now_iso()`), index, name, params, step_type,
+            function version (via `fn.__version__` or plugin lookup), and module name.
+           - If step_type == "clear":
+               * reset current mask to None
+               * record `"mask_cleared": True` in provenance entry
+           - If step_type == "mask":
+               * call `stack._execute_mask_step(fn, arr, **kwargs)` to get a boolean
+               mask array
+               * if no existing mask: store under a new key `step_<idx>_<mask_name>`
+               in `stack.masks`
+                 else overlay with previous mask (logical OR) under derived key
+               * update current mask, record `"mask_key"` and `"mask_summary"` in
+               provenance
+           - Else (filter/method/plugin):
+               * call `stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)`
+               to get new array
+               * store result under `stack.processed["step_<idx>_<safe_name>"]`,
+               update arr
+               * record `"processed_key"` and `"output_summary"` in provenance
+        5. After all steps, overwrite `stack.data = arr`.
+        6. Build `stack.provenance["processing"]["keys_by_name"]` mapping each
+        step name to the list of stored keys (processed_key or mask_key) in order.
+        7. Return the final processed array.
 
         Returns
         -------
         np.ndarray
-            The final processed array (last output of the pipeline). Also sets
-            `stack.data = result`.
-            Raises
+            The final processed data array (shape (n_frames, height, width)), now
+            stored as `stack.data`.
+
+        Raises
         ------
         RuntimeError
             If a step cannot be resolved or executed due to misconfiguration.
         ValueError
-            If a mask overlay is attempted without a valid previous mask key.
+            If overlaying a mask fails due to missing previous mask key (propagated).
         Exception
-            Any other exceptions raised by individual processing steps will be
-            propagated with full tracebacks.
+            Any exception from individual steps is logged then re-raised.
 
         Examples
         --------
-        >>> stack = AFMImageStack(data)  # your AFM 3D array
+        >>> stack = AFMImageStack(data, pixel_size_nm=1.0, channel="h", file_path=".")
         >>> pipeline = ProcessingPipeline(stack)
         >>> pipeline.add_filter("gaussian_filter", sigma=1.0)
-        >>> pipeline.add_mask("mask_threshold", threshold=0.5)
+        >>> pipeline.add_mask("threshold_mask", threshold=0.5)
         >>> result = pipeline.run()
+        >>> # Final array in stack.data:
         >>> result.shape
         (n_frames, height, width)
-
-        >>> stack.processing_history[0]["name"]
-        'gaussian_filter'
-        >>> stack.processed[stack.processing_history[0]["processed_key"]].shape
-        (n_frames, height, width)
-
-        Notes
-        -----
-        - All snapshots are stored with unique keys (e.g., 'step_1_gaussian_filter').
-        - This function also attaches a dictionary `stack.processing_keys_by_name`
-        mapping step names to lists of snapshot keys for easy access.
+        >>> # Provenance entries:
+        >>> for rec in stack.provenance["processing"]["steps"]:
+        ...     print(
+        ...         rec["index"],
+        ...         rec["name"],
+        ...         rec.get("processed_key") or rec.get("mask_key")
+        ...     )
+        >>> # Keys by name:
+        >>> print(stack.provenance["processing"]["keys_by_name"])
+        >>> # Environment info:
+        >>> print(stack.provenance["environment"])
         """
+        # Record environment info (overwrite or only if empty)
+        env = gather_environment_info()
+        self.stack.provenance["environment"] = env
+
+        # Reset previous processing history
+        proc_prov = self.stack.provenance["processing"]
+        proc_prov["steps"].clear()
+        proc_prov["keys_by_name"].clear()
+
         # Snapshot raw once
         if "raw" not in self.stack.processed:
             self.stack.processed["raw"] = self.stack.data.copy()
 
         arr = self.stack.data
         mask = None  # current mask or None
-        processing_history: list[dict[str, Any]] = []
         step_idx = 0
 
         for step_name, kwargs in self.steps:
@@ -166,7 +248,7 @@ class ProcessingPipeline:
                 f"[processing] Applying step {step_idx}: '{step_name}' with args {kwargs}"  # noqa
             )
             # Prepare record for this step
-            timestamp = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+            timestamp = utc_now_iso()
             step_record: dict[str, Any] = {
                 "index": step_idx,
                 "name": step_name,
@@ -182,12 +264,18 @@ class ProcessingPipeline:
                 raise
             step_record["step_type"] = step_type
 
+            func_version = getattr(fn, "__version__", None)
+            if func_version is None and step_type == "plugin":
+                func_version = _get_plugin_version(fn)
+            step_record["version"] = func_version
+            step_record["function_module"] = getattr(fn, "__module__", None)
+
             if step_type == "clear":
                 mask = None
                 # No snapshot stored in stack.processed/masks
                 # Record that mask was cleared
                 step_record["mask_cleared"] = True
-                processing_history.append(step_record)
+                self.stack.provenance["processing"]["steps"].append(step_record)
                 continue
 
             if step_type == "mask":
@@ -219,7 +307,7 @@ class ProcessingPipeline:
                     "shape": new_mask.shape,
                     "dtype": str(new_mask.dtype),
                 }
-                processing_history.append(step_record)
+                self.stack.provenance["processing"]["steps"].append(step_record)
                 continue
 
             # Else: filter/method/plugin
@@ -231,7 +319,8 @@ class ProcessingPipeline:
                 logger.error(f"Failed to apply filter '{step_name}': {e}")
                 raise
             # Store snapshot under unique key
-            proc_key = f"step_{step_idx}_{step_name}"
+            safe_name = step_name.replace(" ", "_")
+            proc_key = f"step_{step_idx}_{safe_name}"
             self.stack.processed[proc_key] = new_arr.copy()
             # Update arr for next steps
             arr = new_arr
@@ -241,23 +330,20 @@ class ProcessingPipeline:
                 "shape": new_arr.shape,
                 "dtype": str(new_arr.dtype),
             }
-            processing_history.append(step_record)
+            self.stack.provenance["processing"]["steps"].append(step_record)
 
         # After all steps, overwrite stack.data
         self.stack.data = arr
         logger.info("Processing pipeline completed successfully.")
-        # Attach the ordered history list to stack for later inspection
-        self.stack.processing_history = processing_history
         # Optionally also attach a name→list-of-keys view
         from collections import defaultdict
 
         keys_by_name: dict[str, list[str]] = defaultdict(list)
-        for rec in processing_history:
-            nm = rec["name"]
+        for rec in self.stack.provenance["processing"]["steps"]:
+            name = rec["name"]
             if "processed_key" in rec:
-                keys_by_name[nm].append(rec["processed_key"])
+                keys_by_name[name].append(rec["processed_key"])
             elif "mask_key" in rec:
-                keys_by_name[nm].append(rec["mask_key"])
-        self.stack.processing_keys_by_name = dict(keys_by_name)
-        self.stack.processing_environment = gather_environment_info()
+                keys_by_name[name].append(rec["mask_key"])
+        self.stack.provenance["processing"]["keys_by_name"] = dict(keys_by_name)
         return arr
