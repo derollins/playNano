@@ -10,11 +10,11 @@ KEY_DEPENDENCIES = ["numpy", "h5py", "scipy", "opencv-python", "scikit-image", "
 
 
 def gather_environment_info() -> dict:
-    """Gather the system info for prevenance records."""
+    """Gather the system info for provenance records."""
     info = {
         "timestamp": utc_now_iso(),
         "python_version": sys.version.replace("\n", " "),
-        "platform": platform.platform(),
+        "platform": f"{platform.system()}-{platform.release()}-{platform.machine()}",
     }
     try:
         info["playNano_version"] = importlib.metadata.version("playNano")

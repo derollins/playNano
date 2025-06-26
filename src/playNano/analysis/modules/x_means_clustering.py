@@ -229,7 +229,9 @@ class XMeansClusteringModule(AnalysisModule):
         # 5) X-Means
         # Initialise centers for min_k clusters
         init_centers = kmeans_plusplus_initializer(data, min_k).initialize()
-        xm = xmeans(data.tolist(), init_centers, kmax=max_k, ccore=False, **xmeans_kwargs)
+        xm = xmeans(
+            data.tolist(), init_centers, kmax=max_k, ccore=False, **xmeans_kwargs
+        )
         xm.process()
         cluster_idxs = xm.get_clusters()
         centers = np.array(xm.get_centers())
