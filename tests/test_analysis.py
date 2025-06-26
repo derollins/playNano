@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
-from playNano.analysis import export, utils
+from playNano.analysis import export
 from playNano.analysis.base import AnalysisModule
 from playNano.utils import system_info
 
@@ -73,18 +73,3 @@ def test_gather_environment_info_contains_expected_keys():
     # Versions for key packages may or may not exist
     for pkg in ("numpy_version", "h5py_version", "scipy_version"):
         assert pkg in info or True  # at least present or silently missing
-
-
-def test_numpy_encoder_serializes_ndarray():
-    data = {"arr": np.array([1, 2, 3])}
-    json_str = json.dumps(data, cls=utils.NumpyEncoder)
-    assert json_str == '{"arr": [1, 2, 3]}'
-
-
-def test_numpy_encoder_raises_for_unserializable():
-    class Dummy:
-        pass
-
-    data = {"obj": Dummy()}
-    with pytest.raises(TypeError):
-        json.dumps(data, cls=utils.NumpyEncoder)

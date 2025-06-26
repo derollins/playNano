@@ -8,7 +8,7 @@ from typing import Any, Optional
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis import BUILTIN_ANALYSIS_MODULES
 from playNano.analysis.base import AnalysisModule
-from playNano.analysis.utils import NumpyEncoder
+from playNano.analysis.utils.common import NumpyEncoder
 from playNano.processing.mask_generators import register_masking
 from playNano.utils.system_info import gather_environment_info
 from playNano.utils.time_utils import utc_now_iso
@@ -305,6 +305,14 @@ class AnalysisPipeline:
                 f"Running analysis step {idx}: {module_name} with params {params!r}"
             )
             module = self._load_module(module_name)
+            # check any declared requirements
+            reqs = getattr(module, "requires", ())
+            missing = [r for r in reqs if r not in previous_latest]
+            if missing:
+                raise RuntimeError(
+                    f"Analysis step '{module_name}' requires prior modules {missing!r}"
+                    f"Make sure to add them before '{module_name}'."
+                )
             # timestamp
             timestamp = utc_now_iso()
 

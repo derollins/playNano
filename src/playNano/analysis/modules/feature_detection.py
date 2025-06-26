@@ -9,6 +9,73 @@ from playNano.analysis.base import AnalysisModule
 
 
 class FeatureDetectionModule(AnalysisModule):
+    """
+    Detect contiguous features in each frame of an AFM image stack.
+
+    This module takes either a user-supplied mask function or a pre-computed boolean
+    mask array, labels connected regions in each frame, filters them by size and edge
+    contact, optionally fills holes, and returns per-frame feature statistics and
+    labeled masks.
+
+    Parameters
+    ----------
+    mask_fn : callable, optional
+        A function `frame -> bool_2D_array` used to generate a mask for each frame.
+        Required if `mask_key` is not provided.
+    mask_key : str, optional
+        Name of a boolean mask array from a previous analysis (e.g.
+        `previous_results["your_mask_key"]`). Required if `mask_fn` is not provided.
+    min_size : int, default=10
+        Minimum area (in pixels) for a region to be kept.
+    remove_edge : bool, default=True
+        If True, discard any region that touches the frame boundary.
+    fill_holes : bool, default=False
+        If True, fill holes in each mask before labeling.
+    hole_area : int or None, default=None
+        If set, only fills holes smaller than this area.
+    **mask_kwargs
+        Additional keyword arguments forwarded to `mask_fn(frame, **mask_kwargs)`.
+
+    Raises
+    ------
+    ValueError
+        If neither `mask_fn` nor `mask_key` is provided, or if the mask array
+        has the wrong shape/dtype.
+    KeyError
+        If `mask_key` is not found in `previous_results`.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary with keys:
+
+        - **features_per_frame** : list of list of dict
+          Per-frame list of feature stats dicts, each with:
+            - `"frame_timestamp"` : float
+            - `"label"`           : int
+            - `"area"`            : int
+            - `"min"`, `"max"`, `"mean"` : float
+            - `"bbox"`            : (min_row, min_col, max_row, max_col)
+            - `"centroid"`        : (row, col)
+
+        - **labeled_masks** : list of np.ndarray
+          The final labeled mask (integer labels) for each frame.
+
+        - **summary** : dict
+          Aggregate metrics:
+            - `"total_frames"` : int
+            - `"total_features"` : int
+            - `"avg_features_per_frame"` : float
+
+    Examples
+    --------
+    >>> pipeline.add("feature_detection", mask_fn=otsu_mask, min_size=20,
+    ...              fill_holes=True, hole_area=50)
+    >>> result = pipeline.run(stack)
+    >>> result["summary"]["total_features"]
+    123
+    """
+
     @property
     def name(self) -> str:
         return "feature_detection"
