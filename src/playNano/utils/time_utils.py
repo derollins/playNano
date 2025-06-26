@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
+# Allow compatability with Python 3.10
 try:
     from datetime import UTC
 except ImportError:
     from datetime import timezone
+
     UTC = timezone.utc
 
 from typing import Any
