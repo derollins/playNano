@@ -15,8 +15,9 @@ def frame_summary_to_dataframe(
     features_per_frame: Sequence[Sequence[dict]],
 ) -> pd.DataFrame:
     """
-    Build a DataFrame with one row per frame summarizing
-    number of features, total area, mean intensity, etc.
+    Build a DataFrame with one row per frame.
+
+    Summarises number of features, total area, mean intensity, etc.
 
     Parameters
     ----------

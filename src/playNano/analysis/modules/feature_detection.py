@@ -78,6 +78,14 @@ class FeatureDetectionModule(AnalysisModule):
 
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module: "dbscan_clustering".
+        """
         return "feature_detection"
 
     def run(

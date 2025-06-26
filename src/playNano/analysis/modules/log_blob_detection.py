@@ -16,6 +16,14 @@ from playNano.analysis.base import AnalysisModule
 class LoGBlobDetectionModule(AnalysisModule):
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module: "dbscan_clustering".
+        """
         return "log_blob_detection"
 
     def run(

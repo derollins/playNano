@@ -28,6 +28,14 @@ class ParticleTrackingModule(AnalysisModule):
 
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module: "dbscan_clustering".
+        """
         return "particle_tracking"
 
     # Declare that we need cooridinate output from a previous module,

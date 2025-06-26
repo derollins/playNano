@@ -22,6 +22,7 @@ from playNano.analysis.modules.x_means_clustering import XMeansClusteringModule
 def stack_1frame_with_timestamps():
     """
     AFMImageStack with 1 frame of 3x3 data and an explicit timestamp.
+
     frame_metadata contains a 'timestamp' key.
     """
     data = np.arange(9, dtype=float).reshape(1, 3, 3)
@@ -40,7 +41,8 @@ def stack_1frame_with_timestamps():
 @pytest.fixture
 def stack_2frames_no_timestamps():
     """
-    AFMImageStack with 2 frames of 3×3 data, but missing timestamps in metadata.
+    AFMImageStack with 2 frames of 3x3 data, but missing timestamps in metadata.
+
     time_for_frame will return None, module should default timestamp to frame index.
     """
     data = np.stack([np.zeros((3, 3)), np.ones((3, 3))], axis=0)
@@ -58,9 +60,7 @@ def stack_2frames_no_timestamps():
 
 
 def simple_center_mask(frame: np.ndarray, **kwargs) -> np.ndarray:
-    """
-    Mask only the center pixel of a 3x3 frame.
-    """
+    """Mask only the center pixel of a 3x3 frame."""
     H, W = frame.shape
     mask = np.zeros((H, W), dtype=bool)
     # center at index (1,1)
@@ -69,9 +69,7 @@ def simple_center_mask(frame: np.ndarray, **kwargs) -> np.ndarray:
 
 
 def full_mask(frame: np.ndarray, **kwargs) -> np.ndarray:
-    """
-    Mask all pixels True.
-    """
+    """Mask all pixels True."""
     return np.ones_like(frame, dtype=bool)
 
 
@@ -581,9 +579,7 @@ def test_tracking_overlapping_centroids(mock_stack):
 
 
 class DummyStack2:
-    """
-    Stub mimicking AFMImageStack: holds 3D .data and timestamps via time_for_frame.
-    """
+    """Stub mimicking AFMImageStack: holds 3D .data and timestamps."""
 
     def __init__(self, data=None, times=None):
         """Initialise the dummy class."""
@@ -759,6 +755,7 @@ def test_invalid_data_shape_logblog():
 
 
 def test_time_for_frame_out_of_range(single_blob_stack):
+    """Raises IndexError if frame timestamp is requested out of range."""
     mod = LoGBlobDetectionModule()
     # corrupt times
     single_blob_stack._times = []
@@ -771,6 +768,7 @@ def test_time_for_frame_out_of_range(single_blob_stack):
 
 @pytest.fixture(autouse=True)
 def patch_numpy_warnings():
+    """Monkeypatch NumPy warnings for cleaner test output."""
     import numpy as _np
 
     _np.warnings = warnings
@@ -780,6 +778,8 @@ def patch_numpy_warnings():
 
 # A minimal “stack” stub:
 class DummyStack:
+    """Minimal AFMImageStack stub with only .time_for_frame support."""
+
     def __init__(self, times):
         # times: list of timestamps, one per frame
         self._times = times
@@ -790,6 +790,7 @@ class DummyStack:
 
 @pytest.fixture
 def simple_per_frame():
+    """Make two-frame, two-feature-per-frame mock data for clustering tests."""
     # two frames, two features each, forming two separable clusters in x-y
     # frame 0: cluster A at (0,0), cluster B at (10,10)
     # frame 1: same clusters moved slightly
@@ -806,6 +807,7 @@ def simple_per_frame():
 
 
 def make_prev(simple_per_frame, key="features_per_frame"):
+    """Create helper to wrap features into feature_detection previous_results dict."""
     return {"feature_detection": {key: simple_per_frame}}
 
 
@@ -813,12 +815,14 @@ def make_prev(simple_per_frame, key="features_per_frame"):
 
 
 def test_missing_dependency():
+    """Test XMeans raises if 'feature_detection' is missing from previous_results."""
     mod = XMeansClusteringModule()
     with pytest.raises(RuntimeError):
         mod.run(stack=None, previous_results={})  # no 'feature_detection'
 
 
 def test_empty_input():
+    """Test XMeans returns zero clusters on empty input."""
     stack = DummyStack([0.0, 1.0])
     empty_prev = {"feature_detection": {"features_per_frame": [[], []]}}
     mod = XMeansClusteringModule()
@@ -839,6 +843,7 @@ def test_empty_input():
 def test_basic_two_clusters(
     simple_per_frame, normalise, time_weight, expected_clusters
 ):
+    """Test XMeans detects 2 expected clusters in separable synthetic data."""
     # build dummy stack with arbitrary times
     stack = DummyStack([0.0, 1.0])
     prev = make_prev(simple_per_frame)
@@ -857,6 +862,7 @@ def test_basic_two_clusters(
 
 
 def test_coord_columns_override(simple_per_frame):
+    """Test XMeans uses provided coord_columns instead of default centroid."""
     # test that giving coord_columns works (explicit centroid_x,centroid_y)
     # first massage the features to have explicit keys
     pf = [
@@ -884,6 +890,7 @@ def test_coord_columns_override(simple_per_frame):
 
 
 def test_centroid_fallback(simple_per_frame):
+    """Test that XMeans falls back to 'centroid' if coord_columns are missing."""
     # ensure that missing coord_columns triggers fallback to 'centroid' tuple
     stack = DummyStack([0.0])
     prev = make_prev([simple_per_frame[0]])  # only one frame
@@ -904,6 +911,7 @@ def test_centroid_fallback(simple_per_frame):
 
 
 def test_time_weight_effect(simple_per_frame):
+    """Test XMeans time_weight controls clustering across identical XY positions."""
     # make two clusters separated only in time, not in x-y;
     # with time_weight=0 they collapse to single cluster, with large weight they split.
     pf = [
@@ -924,6 +932,7 @@ def test_time_weight_effect(simple_per_frame):
 
 
 def test_missing_coord_keys_raises_keyerror():
+    """Test that XMeans raises KeyError if feature lacks required coordinate keys."""
     stack = DummyStack([0.0])
     # Feature with no required keys and no fallback centroid
     per_frame = [[{"area": 123}]]
@@ -947,6 +956,7 @@ def test_missing_coord_keys_raises_keyerror():
     ],
 )
 def test_kmeans_two_clusters(normalise, time_weight):
+    """Test that KMeans correctly separates two spatially distinct clusters."""
     # two well-separated clusters in XY
     per_frame = [
         [{"centroid": (0.0, 0.0)}, {"centroid": (10.0, 10.0)}],
@@ -972,6 +982,7 @@ def test_kmeans_two_clusters(normalise, time_weight):
 
 
 def test_kmeans_empty():
+    """Test that KMeans returns empty results for no input features."""
     # no features at all
     per_frame = [[], []]
     stack = DummyStack([0.0, 1.0])
@@ -985,6 +996,7 @@ def test_kmeans_empty():
 
 
 def test_kmeans_missing_dependency():
+    """Test that KMeans raises if 'feature_detection' is missing."""
     stack = DummyStack([0.0])
     mod = KMeansClusteringModule()
     with pytest.raises(RuntimeError):
@@ -992,6 +1004,7 @@ def test_kmeans_missing_dependency():
 
 
 def test_kmeans_missing_keys():
+    """Test KMeans raises if coordinate keys are missing and no fallback present."""
     # feature dict missing centroid_x/centroid_y and no 'centroid' fallback
     per_frame = [[{"foo": 1}]]
     stack = DummyStack([0.0])
@@ -1015,6 +1028,7 @@ def test_kmeans_missing_keys():
     ],
 )
 def test_dbscan_basic(eps, min_samples, expected_n):
+    """Tets DBSCAN forms clusters based on eps and min_samples parameters."""
     per_frame = [
         [{"centroid": (0.0, 0.0)}],
         [{"centroid": (10.0, 0.0)}],
@@ -1033,6 +1047,7 @@ def test_dbscan_basic(eps, min_samples, expected_n):
 
 
 def test_dbscan_empty():
+    """Test DBSCAN returns zero clusters when no features are present."""
     per_frame = [[], []]
     stack = DummyStack([0.0, 1.0])
     prev = make_prev(per_frame)
@@ -1045,6 +1060,7 @@ def test_dbscan_empty():
 
 
 def test_dbscan_missing_dependency():
+    """Test DBSCAN raises if required previous_results are missing."""
     stack = DummyStack([0.0])
     mod = DBSCANClusteringModule()
     with pytest.raises(RuntimeError):
@@ -1052,6 +1068,7 @@ def test_dbscan_missing_dependency():
 
 
 def test_dbscan_missing_keys():
+    """Test DBSCAN raises if coordinate keys are missing in features."""
     per_frame = [[{"foo": 1}]]
     stack = DummyStack([0.0])
     prev = make_prev(per_frame)
@@ -1069,6 +1086,7 @@ def test_dbscan_missing_keys():
     ],
 )
 def test_dbscan_time_weight_effect(time_weight, expected_n):
+    """Test DBSCAN splits clusters over time based on time_weight sensitivity."""
     # three identical-XY features on frames 0,1,2
     per_frame = [
         [{"centroid": (0.0, 0.0)}],

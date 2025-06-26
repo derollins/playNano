@@ -1,9 +1,10 @@
-"""Module for applying verision numbes to filters and masks"""
+"""Module for applying verision numbes to filters and masks."""
 
 
 def versioned_filter(version: str):
     """
-    Decorator to tag a filter or mask function with a __version__ attribute.
+    Adds decorator tag to a filter or mask function with a __version__ attribute.
+
     Usage:
         @versioned_filter("1.0.0")
         def gaussian_filter(frame, sigma=1.0):

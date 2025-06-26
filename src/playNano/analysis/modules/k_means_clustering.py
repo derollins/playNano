@@ -34,8 +34,41 @@ from playNano.analysis.base import AnalysisModule
 
 
 class KMeansClusteringModule(AnalysisModule):
+    """
+    Cluster features across all frames using K-Means in 2D or 3D (x, y, [time]).
+
+    Extracts point coordinates from per-frame features, applies optional normalization
+    and time weighting, then performs K-Means clustering. Returns cluster assignments,
+    centers in original scale, and a summary report.
+
+    Parameters
+    ----------
+    coord_key : str
+        Key in previous_results pointing to 'features_per_frame' structure.
+    coord_columns : Sequence[str]
+        Keys to extract coordinates from each feature (e.g. ("x", "y")).
+    use_time : bool
+        If True, appends frame timestamp as a third clustering dimension.
+    k : int
+        Number of clusters to fit.
+    normalise : bool
+        If True, normalize each axis to [0, 1] before clustering.
+    time_weight : float or None
+        Optional multiplier for time axis after normalization.
+    **kmeans_kwargs
+        Additional keyword arguments passed to sklearn.cluster.KMeans.
+    """
+
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module.
+        """
         return "k_means_clustering"
 
     requires = ["feature_detection", "log_blob_detection"]
@@ -54,6 +87,73 @@ class KMeansClusteringModule(AnalysisModule):
         time_weight: Optional[float] = None,
         **kmeans_kwargs: Any,
     ) -> dict[str, Any]:
+        """
+        Perform K-Means clustering on features extracted from a stack.
+
+        Constructs a coordinate array from features (x, y[, t]), optionally applies
+        normalization and time weighting, and fits k-means to assign clusters.
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            The input image stack providing frame times and data context.
+
+        previous_results : dict of str to Any, optional
+            Dictionary containing outputs from previous analysis steps.
+            Must contain the selected detection_module and coord_key.
+
+        detection_module : str, default="feature_detection"
+            Key identifying which previous module’s output to use.
+
+        coord_key : str, default="features_per_frame"
+            Key under the detection module that holds per-frame feature dicts.
+
+        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+            Keys to extract from each feature for clustering coordinates.
+            If missing, fallback to the "centroid" tuple is attempted.
+
+        use_time : bool, default=True
+            If True and `coord_columns` is 2D, append frame timestamp as third
+            dimension.
+
+        k : int
+            Number of clusters to compute.
+
+        normalise : bool, default=True
+            Whether to min-max normalize each axis of the feature points before
+            clustering.
+
+        time_weight : float or None, optional
+            Weighting factor for time axis (applied after normalization).
+            Only used if time is included as a third dimension.
+
+        **kmeans_kwargs : dict
+            Additional arguments forwarded to `sklearn.cluster.KMeans`.
+
+        Returns
+        -------
+        dict
+            A dictionary with the following keys:
+
+            - "clusters" : list of dicts, each with:
+                - id : int
+                - frames : list of int
+                - point_indices : list of int
+                - coords : list of tuple (normalized x, y, [t])
+            - "cluster_centers" : ndarray of shape (k, D)
+                Cluster centers in original coordinate units.
+            - "summary" : dict
+                - "n_clusters" : int
+                - "members_per_cluster" : dict mapping cluster id to point count
+
+        Raises
+        ------
+        RuntimeError
+            If the required `detection_module` output is not found in previous_results.
+
+        KeyError
+            If the required coordinate keys are missing in any feature dictionary.
+        """
         if previous_results is None or detection_module not in previous_results:
             raise RuntimeError(f"{self.name!r} requires output from {detection_module}")
 

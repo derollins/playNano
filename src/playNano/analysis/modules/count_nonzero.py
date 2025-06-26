@@ -6,15 +6,46 @@ from playNano.analysis.base import AnalysisModule
 
 
 class CountNonzeroModule(AnalysisModule):
+    """
+    Count non-zero pixels in each frame of an AFMImageStack.
+
+    This simple analysis module computes the number of non-zero pixels
+    per frame and returns the result as a 1D array.
+    """
+
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module.
+        """
         return "count_nonzero"
 
     def run(self, stack, previous_results=None, **params) -> dict[str, Any]:
         """
         Count non-zero pixels per frame in the AFMImageStack.
-        Returns:
-          - "counts": numpy array of shape (n_frames,)
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            Stack of AFM frames with `.data` of shape (n_frames, H, W).
+
+        previous_results : dict, optional
+            Ignored by this module. Included for API compatibility.
+
+        **params : dict
+            Additional parameters (unused).
+
+        Returns
+        -------
+        dict
+            Dictionary with key:
+                - "counts": np.ndarray of shape (n_frames,), number of non-zero
+                  pixels per frame.
         """
         data = stack.data  # shape (n_frames, H, W)
         # Compute counts

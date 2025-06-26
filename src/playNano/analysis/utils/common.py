@@ -1,3 +1,5 @@
+"""Common utility functions for analysis."""
+
 import json
 from pathlib import Path
 from typing import Any, Mapping

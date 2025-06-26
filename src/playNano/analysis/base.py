@@ -11,6 +11,7 @@ AnalysisOutputs = dict[str, Any]
 class AnalysisModule(ABC):
     """
     Abstract base class for analysis steps.
+
     Subclasses must implement:
       - a `name` property returning a unique string identifier
       - a `run(stack, previous_results=None, **params) -> dict` method
@@ -21,6 +22,7 @@ class AnalysisModule(ABC):
     def name(self) -> str:
         """
         Unique name for this analysis module, e.g. "particle_detect".
+
         Used by pipeline to identify and refer to the module.
         """
         ...

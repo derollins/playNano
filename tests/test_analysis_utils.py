@@ -1,4 +1,4 @@
-"""Tests for analysis utils"""
+"""Tests for analysis utils."""
 
 import json
 from pathlib import Path
@@ -20,12 +20,15 @@ matplotlib.use("Agg")  # Use a non-interactive backend suitable for testing
 
 
 def test_numpy_encoder_serializes_ndarray():
+    """Test that numpy encoder serializes a numpy array."""
     data = {"arr": np.array([1, 2, 3])}
     json_str = json.dumps(data, cls=common.NumpyEncoder)
     assert json_str == '{"arr": [1, 2, 3]}'
 
 
 def test_numpy_encoder_raises_for_unserializable():
+    """Test that numpy encoder raises error for unserializable."""
+
     class Dummy:
         pass
 
@@ -42,7 +45,7 @@ sample_record = {
 
 
 def test_export_to_hdf5_creates_file():
-    """export_to_hdf5 creates an HDF5 file on disk."""
+    """Test export_to_hdf5 creates an HDF5 file on disk."""
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test.h5"
         common.export_to_hdf5(sample_record, out_path)
@@ -50,7 +53,7 @@ def test_export_to_hdf5_creates_file():
 
 
 def test_export_to_hdf5_structure_and_values():
-    """export_to_hdf5 writes correct structure and values."""
+    """Test export_to_hdf5 writes correct structure and values."""
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test.h5"
         common.export_to_hdf5(sample_record, out_path)
@@ -186,14 +189,14 @@ def test_frame_summary_to_dataframe_structure():
 
 
 def test_plot_frame_histogram_returns_axes():
-    """plot_frame_histogram returns a matplotlib Axes object."""
+    """Test plot_frame_histogram returns a matplotlib Axes object."""
     df = frames.frame_summary_to_dataframe(mock_features_per_frame)
     ax = frames.plot_frame_histogram(df, column="n_features")
     assert isinstance(ax, plt.Axes)
 
 
 def test_plot_frame_histogram_saves_file():
-    """plot_frame_histogram saves a file if save_to is provided."""
+    """Test plot_frame_histogram saves a file if save_to is provided."""
     df = frames.frame_summary_to_dataframe(mock_features_per_frame)
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "hist.png"
