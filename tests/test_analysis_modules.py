@@ -8,6 +8,7 @@ import pytest
 
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis.modules.feature_detection import FeatureDetectionModule
+from playNano.analysis.modules.particle_tracking import ParticleTrackingModule
 
 # --- Tests for feature_detection ---
 
@@ -439,3 +440,136 @@ def test_two_separate_regions(stack_1frame_with_timestamps):
         lm = out["labeled_masks"][0]
         assert lm.shape == (4, 4)
         assert np.count_nonzero(lm) == 2
+
+
+# --- Tests for particle_tracking ---
+
+
+class MockAFMImageStack:
+    """Mock AFMImageStack for testing."""
+
+    def __init__(self, n_frames):
+        self.n_frames = n_frames
+
+
+@pytest.fixture
+def mock_stack():
+    """Provides a mock AFMImageStack with 3 frames."""
+    return MockAFMImageStack(n_frames=3)
+
+
+@pytest.fixture
+def mock_feature_detection_outputs():
+    """Provides mock feature detection outputs with centroids and labels."""
+    return {
+        "features_per_frame": [
+            [{"centroid": (0, 0), "label": 1}],
+            [{"centroid": (1, 1), "label": 2}],
+            [{"centroid": (2, 2), "label": 3}],
+        ],
+        "labeled_masks": [
+            np.array([[0, 1], [1, 0]]),
+            np.array([[0, 2], [2, 0]]),
+            np.array([[0, 3], [3, 0]]),
+        ],
+    }
+
+
+def test_tracking_module_name():
+    """Returns correct module name."""
+    mod = ParticleTrackingModule()
+    assert mod.name == "particle_tracking"
+
+
+def test_tracking_requires_feature_detection():
+    """Requires 'feature_detection' in previous_results."""
+    mod = ParticleTrackingModule()
+    assert "feature_detection" in mod.requires
+
+
+def test_tracking_raises_without_feature_detection(mock_stack):
+    """Raises error if 'feature_detection' is missing."""
+    mod = ParticleTrackingModule()
+    with pytest.raises(RuntimeError):
+        mod.run(mock_stack, previous_results={})
+
+
+def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
+    """Returns expected keys and track structure."""
+    mod = ParticleTrackingModule()
+    result = mod.run(
+        mock_stack,
+        previous_results={"feature_detection": mock_feature_detection_outputs},
+    )
+    assert "tracks" in result
+    assert "track_masks" in result
+    assert "n_tracks" in result
+    assert isinstance(result["tracks"], list)
+    assert isinstance(result["track_masks"], dict)
+    assert isinstance(result["n_tracks"], int)
+
+
+def test_tracking_links_features(mock_stack):
+    """Links features across frames by nearest neighbor."""
+    fd_out = {
+        "features_per_frame": [
+            [{"centroid": (0, 0), "label": 1}],
+            [{"centroid": (0.5, 0.5), "label": 2}],
+            [{"centroid": (1, 1), "label": 3}],
+        ],
+        "labeled_masks": [
+            np.array([[0, 1], [1, 0]]),
+            np.array([[0, 2], [2, 0]]),
+            np.array([[0, 3], [3, 0]]),
+        ],
+    }
+    mod = ParticleTrackingModule()
+    result = mod.run(
+        mock_stack, previous_results={"feature_detection": fd_out}, max_distance=2.0
+    )
+    assert result["n_tracks"] == 1
+    track = result["tracks"][0]
+    assert track["frames"] == [0, 1, 2]
+    assert track["labels"] == [1, 2, 3]
+
+
+def test_tracking_handles_empty_frames(mock_stack):
+    """Handles frames with no features."""
+    fd_out = {
+        "features_per_frame": [
+            [{"centroid": (0, 0), "label": 1}],
+            [],
+            [{"centroid": (2, 2), "label": 2}],
+        ],
+        "labeled_masks": [
+            np.array([[0, 1], [1, 0]]),
+            np.array([[0, 0], [0, 0]]),
+            np.array([[0, 2], [2, 0]]),
+        ],
+    }
+    mod = ParticleTrackingModule()
+    result = mod.run(
+        mock_stack, previous_results={"feature_detection": fd_out}, max_distance=2.0
+    )
+    assert result["n_tracks"] == 2
+    track_ids = [trk["id"] for trk in result["tracks"]]
+    assert set(track_ids) == {0, 1}
+
+
+def test_tracking_overlapping_centroids(mock_stack):
+    """Handles multiple features with same centroid."""
+    fd_out = {
+        "features_per_frame": [
+            [{"centroid": (1, 1), "label": 1}, {"centroid": (1, 1), "label": 2}],
+            [{"centroid": (1, 1), "label": 3}],
+        ],
+        "labeled_masks": [np.array([[0, 1], [1, 2]]), np.array([[0, 3], [3, 0]])],
+    }
+    mod = ParticleTrackingModule()
+    result = mod.run(
+        mock_stack, previous_results={"feature_detection": fd_out}, max_distance=1.0
+    )
+    assert result["n_tracks"] >= 1
+    for trk in result["tracks"]:
+        assert isinstance(trk["centroids"], list)
+        assert isinstance(trk["labels"], list)

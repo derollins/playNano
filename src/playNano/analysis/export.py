@@ -4,7 +4,7 @@ import json
 import os
 from typing import Any
 
-from playNano.analysis.utils import NumpyEncoder
+from playNano.analysis.utils.common import NumpyEncoder
 
 
 def export_analysis_to_json(out_path: str, analysis_record: dict[str, Any]) -> None:

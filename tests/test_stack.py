@@ -840,7 +840,7 @@ def test_export_analysis_log(tmp_path, monkeypatch):
         },
     }
 
-    monkeypatch.setattr("playNano.analysis.utils.NumpyEncoder", json.JSONEncoder)
+    monkeypatch.setattr("playNano.analysis.utils.common.NumpyEncoder", json.JSONEncoder)
 
     nested_path = tmp_path / "subdir" / "log.json"
     stack.export_analysis_log(str(nested_path))

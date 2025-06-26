@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from importlib import metadata
 from pathlib import Path
 from typing import Any
@@ -567,10 +569,7 @@ class AFMImageStack:
         path : str
             File path to write the JSON log. Creates parent dirs as needed.
         """
-        import json
-        import os
-
-        from playNano.analysis.utils import NumpyEncoder
+        from playNano.analysis.utils.common import NumpyEncoder
 
         record = {
             "environment": self.stack.provenance.get("environment", {}),
@@ -611,10 +610,7 @@ class AFMImageStack:
         ValueError
             If no analysis results found on this stack.
         """
-        import json
-        import os
-
-        from playNano.analysis.utils import NumpyEncoder
+        from playNano.analysis.utils.common import NumpyEncoder
 
         if not hasattr(self, "analysis_results") or not self.analysis_results:
             raise ValueError(
