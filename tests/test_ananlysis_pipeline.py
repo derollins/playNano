@@ -165,7 +165,7 @@ def test_run_saves_to_log_file(tmp_path, dummy_stack, dummy_module):
 
 @pytest.fixture
 def stack_with_times():
-    """AFMImageStack with explicit and implicit timestamps."""
+    """Test AFMImageStack with explicit and implicit timestamps."""
     data = np.zeros((4, 2, 2), dtype=float)
     meta = [{"timestamp": 0.0}, {}, {"timestamp": 2.5}, {}]
     with TemporaryDirectory() as td:
@@ -186,6 +186,7 @@ def stack_with_times():
 def ensure_masking_funcs(monkeypatch):
     """
     Ensure MASKING_FUNCS is a dict with known entries for testing.
+
     Here we monkeypatch the module-level MASKING_FUNCS.
     """
     # Example: register_masking() returns {"dummy_mask": callable}

@@ -707,6 +707,7 @@ def test_apply_clear_does_not_crash_and_skips_processing(monkeypatch):
 
 
 def test_execute_mask_step_typeerror_then_failure(caplog):
+    """Test that execute_mask_step raises typeError and fails."""
     # Input: a 3D array (2 frames, 3x3 each)
     arr = np.ones((2, 3, 3))
 
@@ -765,7 +766,7 @@ def test_execute_mask_step_typeerror_then_failure(caplog):
 
 @pytest.fixture
 def stack_with_times():
-    """AFMImageStack with explicit and implicit timestamps."""
+    """Test AFMImageStack with explicit and implicit timestamps."""
     # Create small data and metadata
     data = np.zeros((4, 2, 2), dtype=float)
     # frame_metadata: first has timestamp 0.0, second missing, third 2.5, fourth missing

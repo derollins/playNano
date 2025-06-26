@@ -406,13 +406,13 @@ def test_mask_overlay_combines_masks(mock_stack):
         return m
 
     def mask2(data, **kwargs):
-        """add mask for testing."""
+        """Add mask for testing."""
         m = np.zeros_like(data, dtype=bool)
         m[:, 1, 1] = True
         return m
 
     def resolve_step(name):
-        """resolve test for testing."""
+        """Resolve test for testing."""
         if name == "mask1":
             return ("mask", mask1)
         else:

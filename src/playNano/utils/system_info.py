@@ -1,4 +1,4 @@
-"""Module contianing helper funcitons for collecting system info"""
+"""Module contianing helper funcitons for collecting system info."""
 
 import importlib.metadata
 import platform
@@ -10,6 +10,7 @@ KEY_DEPENDENCIES = ["numpy", "h5py", "scipy", "opencv-python", "scikit-image", "
 
 
 def gather_environment_info() -> dict:
+    """Gather the system info for prevenance records."""
     info = {
         "timestamp": utc_now_iso(),
         "python_version": sys.version.replace("\n", " "),

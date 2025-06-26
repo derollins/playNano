@@ -36,8 +36,25 @@ from playNano.analysis.base import AnalysisModule
 
 
 class DBSCANClusteringModule(AnalysisModule):
+    """
+    DBSCAN clustering of features across an AFMImageStack in (x, y, time) space.
+
+    This module extracts coordinates from per-frame features, optionally adds time
+    as a third dimension, normalizes the space, and applies DBSCAN clustering.
+    It returns clusters with point metadata, core point means as cluster centers,
+    and a summary of cluster sizes.
+    """
+
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module: "dbscan_clustering".
+        """
         return "dbscan_clustering"
 
     requires = ["feature_detection", "log_blob_detection"]
@@ -57,6 +74,64 @@ class DBSCANClusteringModule(AnalysisModule):
         time_weight: Optional[float] = None,
         **dbscan_kwargs: Any,
     ) -> dict[str, Any]:
+        """
+        Perform DBSCAN clustering on detected features in (x, y[, t]) space.
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            The input stack with `.data` and `.time_for_frame()` method.
+
+        previous_results : dict of str to Any, optional
+            Output from previous analysis steps. Must contain features under
+            the given `detection_module` and `coord_key`.
+
+        detection_module : str, default="feature_detection"
+            Which module's output to use from `previous_results`.
+
+        coord_key : str, default="features_per_frame"
+            Key in `previous_results[detection_module]` containing the list
+            of per-frame features.
+
+        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+            Keys to extract coordinates from each feature. If missing, will fall back
+            to `centroid` tuple.
+
+        use_time : bool, default=True
+            Whether to append frame timestamp as a third coordinate.
+
+        eps : float, default=0.3
+            Maximum distance for neighborhood inclusion (in normalized units if
+            `normalise=True`).
+
+        min_samples : int, default=5
+            Minimum number of points in a neighborhood to form a core point.
+
+        normalise : bool, default=True
+            If True, normalize coordinate axes to [0, 1] range before clustering.
+
+        time_weight : float or None, optional
+            Scaling factor for the time axis (after normalization). If None,
+            no weighting is applied.
+
+        **dbscan_kwargs : dict
+            Additional keyword arguments forwarded to `sklearn.cluster.DBSCAN`.
+
+        Returns
+        -------
+        dict
+            Output dictionary with the following keys:
+                - "clusters": list of dicts, one per cluster, containing:
+                    - "id": cluster ID (int)
+                    - "frames": list of frame indices
+                    - "point_indices": list of feature indices within frames
+                    - "coords": list of 2D or 3D coordinates (post-normalization)
+                - "cluster_centers": np.ndarray of shape (n_clusters, D)
+                    Mean location of each cluster in original coordinate units.
+                - "summary": dict with:
+                    - "n_clusters": total number of clusters found
+                    - "members_per_cluster": dict of cluster ID to count
+        """
         if previous_results is None or detection_module not in previous_results:
             raise RuntimeError(f"{self.name!r} requires output from {detection_module}")
 

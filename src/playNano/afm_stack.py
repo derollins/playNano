@@ -169,8 +169,7 @@ class AFMImageStack:
 
     def _resolve_step(self, step: str) -> tuple[str, callable]:
         """
-        Determine the type of a processing step and return its callable (or None
-        for 'clear').
+        Determine the type of a step and return its callable (or None for 'clear').
 
         Resolution order:
           1. "clear"
@@ -398,7 +397,7 @@ class AFMImageStack:
     @property
     def height(self) -> int:
         """
-        Frame height (pixel rows).
+        Get the frame height (i.e. pixel rows).
 
         Returns
         -------
@@ -410,7 +409,7 @@ class AFMImageStack:
     @property
     def width(self) -> int:
         """
-        Frame width (pixel columns).
+        Get the frame width (pixel columns).
 
         Returns
         -------

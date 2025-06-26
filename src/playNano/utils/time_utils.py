@@ -142,5 +142,5 @@ def draw_scale_and_timestamp(
 
 
 def utc_now_iso() -> str:
-    """Return a ISO 8601 UTC timestamp"""
+    """Return a ISO 8601 UTC timestamp."""
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")

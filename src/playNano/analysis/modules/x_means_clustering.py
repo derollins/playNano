@@ -79,6 +79,14 @@ class XMeansClusteringModule(AnalysisModule):
 
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module: "dbscan_clustering".
+        """
         return "x_means_clustering"
 
     # Declare that we need cooridinate output from a previous module,
@@ -100,6 +108,61 @@ class XMeansClusteringModule(AnalysisModule):
         time_weight: Optional[float] = None,
         **xmeans_kwargs: Any,
     ) -> dict[str, Any]:
+        """
+        Run X-Means clustering on feature coordinates from the full stack.
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            The input data stack providing `.data` and `.time_for_frame()`.
+
+        previous_results : dict of str to Any, optional
+            Analysis results containing per-frame features. Must include output from
+            `detection_module`.
+
+        detection_module : str, default="feature_detection"
+            Which previous analysis result to use for extracting features.
+
+        coord_key : str, default="features_per_frame"
+            Key in `previous_results[detection_module]` for accessing the feature list.
+
+        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+            Keys to use from each feature dict to extract coordinates. If not found,
+            will fall back to `centroid` tuple.
+
+        use_time : bool, default=True
+            If True and coord_columns has only (x, y), append frame timestamp as t.
+
+        min_k : int, default=1
+            Minimum number of clusters to allow.
+
+        max_k : int, default=10
+            Maximum number of clusters to allow.
+
+        normalise : bool, default=True
+            Whether to min-max normalize each coordinate axis to [0, 1].
+
+        time_weight : float or None, optional
+            Multiplier applied to time dimension after normalization.
+
+        **xmeans_kwargs : dict
+            Extra parameters passed to `xmeans(...).process()`.
+
+        Returns
+        -------
+        dict
+            A dictionary containing:
+              - "clusters" : list of dicts per cluster with:
+                    - id : int
+                    - frames : list of int
+                    - point_indices : list of int
+                    - coords : list of 2D/3D coordinates (normalized)
+              - "cluster_centers" : np.ndarray of shape (n_clusters, D)
+                    Cluster means in original units
+              - "summary" : dict with:
+                    - "n_clusters": int
+                    - "members_per_cluster": dict of int to int
+        """
         # 1) Dependency check
         if previous_results is None or detection_module not in previous_results:
             raise RuntimeError(
