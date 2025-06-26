@@ -307,12 +307,12 @@ class AnalysisPipeline:
             module = self._load_module(module_name)
             # check any declared requirements
             reqs = getattr(module, "requires", ())
-            missing = [r for r in reqs if r not in previous_latest]
-            if missing:
-                raise RuntimeError(
-                    f"Analysis step '{module_name}' requires prior modules {missing!r}"
-                    f"Make sure to add them before '{module_name}'."
-                )
+            if reqs:
+                if not any(r in previous_latest for r in reqs):
+                    raise RuntimeError(
+                        f"Analysis step '{module_name}' requires one of {reqs!r}; "
+                        f"make sure to add at least one before '{module_name}'."
+                    )
             # timestamp
             timestamp = utc_now_iso()
 

@@ -1,3 +1,10 @@
+"""
+Module for threshold based feature detection.
+
+Module: ParticleTrackingModule
+Detect "features" in each frame of an AFM image stack with a image mask.
+"""
+
 from typing import Any, Optional
 
 import numpy as np
@@ -23,8 +30,9 @@ class ParticleTrackingModule(AnalysisModule):
     def name(self) -> str:
         return "particle_tracking"
 
-    # Declare that we need centroids from a previous module
-    requires = ["feature_detection"]
+    # Declare that we need cooridinate output from a previous module,
+    # i.e. feature_detection.
+    requires = ["feature_detection", "log_blob_detection"]
 
     def run(
         self,

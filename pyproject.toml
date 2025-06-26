@@ -39,6 +39,7 @@ dependencies = [
   "python-dateutil>=2.8",
   "scipy",
   "pyyaml>=6.0",
+  "pyclustering"
 ]
 
 [project.optional-dependencies]
