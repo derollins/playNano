@@ -679,7 +679,6 @@ def test_apply_clear_mask_filter_sequence(monkeypatch):
             stack, "_execute_filter_step", wraps=stack._execute_filter_step
         ) as mock_filter,
     ):
-
         result = stack.apply(["clear", "mask_dummy", "filter_dummy"])
 
         assert mock_mask.called
@@ -699,7 +698,6 @@ def test_apply_clear_does_not_crash_and_skips_processing(monkeypatch):
         patch.object(stack, "_execute_mask_step") as mask_mock,
         patch.object(stack, "_execute_filter_step") as filter_mock,
     ):
-
         stack.apply(["clear"])
 
         mask_mock.assert_not_called()
