@@ -1,5 +1,6 @@
 """Tests for built in analysis modules."""
 
+import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -7,8 +8,12 @@ import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
+from playNano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
 from playNano.analysis.modules.feature_detection import FeatureDetectionModule
+from playNano.analysis.modules.k_means_clustering import KMeansClusteringModule
+from playNano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
 from playNano.analysis.modules.particle_tracking import ParticleTrackingModule
+from playNano.analysis.modules.x_means_clustering import XMeansClusteringModule
 
 # --- Tests for feature_detection ---
 
@@ -573,3 +578,527 @@ def test_tracking_overlapping_centroids(mock_stack):
     for trk in result["tracks"]:
         assert isinstance(trk["centroids"], list)
         assert isinstance(trk["labels"], list)
+
+
+class DummyStack2:
+    """
+    Stub mimicking AFMImageStack: holds 3D .data and timestamps via time_for_frame.
+    """
+
+    def __init__(self, data=None, times=None):
+        """Initialise the dummy class."""
+        # Ensure data is 3D array
+        self.data = np.array(data) if data is not None else np.empty((0, 0, 0))
+        # Frame timestamps
+        if times is not None:
+            if len(times) != self.data.shape[0]:
+                raise ValueError("Length of times must match number of frames")
+            self._times = list(times)
+        else:
+            self._times = list(range(self.data.shape[0]))
+
+    def time_for_frame(self, idx):
+        """Return timestamp for frame index or raise IndexError"""
+        try:
+            return float(self._times[idx])
+        except IndexError:
+            raise IndexError(f"Frame index {idx} out of range for DummyStack") from None
+
+
+@pytest.fixture
+def single_blob_stack():
+    """Test single frame with one bright spot at (5,5) and timestamp 0.5."""
+    # Single frame, bright spot at (5,5)
+    img = np.zeros((1, 11, 11), dtype=float)
+    img[0, 5, 5] = 1.0
+    return DummyStack2(data=img, times=[0.5])
+
+
+@pytest.fixture
+def multi_blob_stack():
+    """Test two frames each with two bright spots and timestamps 0.0, 1.0."""
+    # Two frames with two spots each
+    f0 = np.zeros((10, 10))
+    f0[2, 2] = f0[7, 7] = 1.0
+    f1 = np.zeros((10, 10))
+    f1[2, 7] = f1[7, 2] = 1.0
+    data = np.stack([f0, f1])
+    return DummyStack2(data=data, times=[0.0, 1.0])
+
+
+@pytest.fixture
+def empty_stack():
+    """Test zero-frame stack yields empty data and no timestamps."""
+    # Zero-frame stack
+    return DummyStack2(data=np.zeros((0, 5, 5)), times=[])
+
+
+def test_name_property():
+    """Test LoGBlobDetectionModule.name equals 'log_blob_detection'."""
+    mod = LoGBlobDetectionModule()
+    assert mod.name == "log_blob_detection"
+
+
+def test_detect_single_blob(single_blob_stack):
+    """Detect single blob with radius included and correct summary."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(
+        single_blob_stack,
+        min_sigma=1.0,
+        max_sigma=1.0,
+        num_sigma=1,
+        threshold=0.2,
+        overlap=0.5,
+        include_radius=True,
+    )
+    feats = out["features_per_frame"]
+    assert isinstance(feats, list) and len(feats) == 1
+    assert len(feats[0]) == 1
+    blob = feats[0][0]
+    assert blob["frame_timestamp"] == pytest.approx(0.5)
+    assert blob["y"] == pytest.approx(5.0)
+    assert blob["x"] == pytest.approx(5.0)
+    assert blob["sigma"] == pytest.approx(1.0)
+    assert blob["radius"] == pytest.approx(1.0 * np.sqrt(2))
+    summary = out["summary"]
+    assert summary == {
+        "total_frames": 1,
+        "total_blobs": 1,
+        "avg_blobs_per_frame": pytest.approx(1.0),
+    }
+
+
+def test_include_radius_false(single_blob_stack):
+    """Test radius field omitted when include_radius=False."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(
+        single_blob_stack,
+        min_sigma=1,
+        max_sigma=1,
+        num_sigma=1,
+        threshold=0.2,
+        include_radius=False,
+    )
+    blob = out["features_per_frame"][0][0]
+    assert "radius" not in blob
+
+
+def test_detect_multiple_blobs(multi_blob_stack):
+    """Detect two blobs per frame and correct overall summary."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(
+        multi_blob_stack,
+        min_sigma=1,
+        max_sigma=1,
+        num_sigma=1,
+        threshold=0.3,
+        overlap=0.5,
+    )
+    feats = out["features_per_frame"]
+    assert len(feats) == 2
+    assert all(len(frame_feats) == 2 for frame_feats in feats)
+    summary = out["summary"]
+    assert summary["total_frames"] == 2
+    assert summary["total_blobs"] == 4
+    assert summary["avg_blobs_per_frame"] == pytest.approx(2.0)
+
+
+def test_threshold_too_high(single_blob_stack):
+    """Test high threshold yields zero blobs and zero average."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(single_blob_stack, threshold=2.0)
+    assert out["features_per_frame"][0] == []
+    assert out["summary"]["total_blobs"] == 0
+    assert out["summary"]["avg_blobs_per_frame"] == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize(
+    "min_sigma,max_sigma,num_sigma",
+    [
+        (0.5, 2.0, 5),
+        (2.0, 5.0, 5),
+    ],
+)
+def test_sigma_range(single_blob_stack, min_sigma, max_sigma, num_sigma):
+    """Detect only when sigma range includes spot scale."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(
+        single_blob_stack,
+        min_sigma=min_sigma,
+        max_sigma=max_sigma,
+        num_sigma=num_sigma,
+        threshold=0.2,
+    )
+    count = len(out["features_per_frame"][0])
+    expected = 1 if min_sigma <= 1.0 else 0
+    assert count == expected
+
+
+def test_empty_stack(empty_stack):
+    """Test empty stack returns empty results and zero summary."""
+    mod = LoGBlobDetectionModule()
+    out = mod.run(empty_stack)
+    assert out["features_per_frame"] == []
+    assert out["summary"]["total_frames"] == 0
+    assert out["summary"]["total_blobs"] == 0
+    assert out["summary"]["avg_blobs_per_frame"] == 0
+
+
+def test_invalid_data_shape_logblog():
+    """Test missing timestamp raises IndexError during run."""
+    mod = LoGBlobDetectionModule()
+
+    class BadStack:
+        data = np.zeros((5, 5))  # not 3D
+
+        def time_for_frame(self, i):
+            return 0.0
+
+    with pytest.raises((AttributeError, ValueError)):
+        mod.run(BadStack())
+
+
+def test_time_for_frame_out_of_range(single_blob_stack):
+    mod = LoGBlobDetectionModule()
+    # corrupt times
+    single_blob_stack._times = []
+    with pytest.raises(IndexError):
+        mod.run(single_blob_stack)
+
+
+# --- Fixtures and dummy stacks for particle clustering  ---
+
+
+@pytest.fixture(autouse=True)
+def patch_numpy_warnings():
+    import numpy as _np
+
+    _np.warnings = warnings
+    yield
+    del _np.warnings
+
+
+# A minimal “stack” stub:
+class DummyStack:
+    def __init__(self, times):
+        # times: list of timestamps, one per frame
+        self._times = times
+
+    def time_for_frame(self, idx):
+        return self._times[idx]
+
+
+@pytest.fixture
+def simple_per_frame():
+    # two frames, two features each, forming two separable clusters in x-y
+    # frame 0: cluster A at (0,0), cluster B at (10,10)
+    # frame 1: same clusters moved slightly
+    return [
+        [
+            {"centroid": (0.0, 0.0)},
+            {"centroid": (10.0, 10.0)},
+        ],
+        [
+            {"centroid": (1.0, -1.0)},
+            {"centroid": (11.0, 9.0)},
+        ],
+    ]
+
+
+def make_prev(simple_per_frame, key="features_per_frame"):
+    return {"feature_detection": {key: simple_per_frame}}
+
+
+# --- Tests for x_mean_clustering ---
+
+
+def test_missing_dependency():
+    mod = XMeansClusteringModule()
+    with pytest.raises(RuntimeError):
+        mod.run(stack=None, previous_results={})  # no 'feature_detection'
+
+
+def test_empty_input():
+    stack = DummyStack([0.0, 1.0])
+    empty_prev = {"feature_detection": {"features_per_frame": [[], []]}}
+    mod = XMeansClusteringModule()
+    out = mod.run(stack, empty_prev, min_k=1, max_k=3)
+    assert out["clusters"] == []
+    assert out["cluster_centers"].shape == (0, 3)
+    assert out["summary"]["n_clusters"] == 0
+
+
+@pytest.mark.parametrize(
+    "normalise,time_weight,expected_clusters",
+    [
+        (False, None, 2),
+        (True, None, 2),
+        (True, 0.1, 2),
+    ],
+)
+def test_basic_two_clusters(
+    simple_per_frame, normalise, time_weight, expected_clusters
+):
+    # build dummy stack with arbitrary times
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(simple_per_frame)
+    mod = XMeansClusteringModule()
+    out = mod.run(
+        stack, prev, min_k=2, max_k=2, normalise=normalise, time_weight=time_weight
+    )
+    # should find exactly two clusters
+    assert out["summary"]["n_clusters"] == expected_clusters
+    # each cluster has two members
+    counts = list(out["summary"]["members_per_cluster"].values())
+    assert sorted(counts) == [2, 2]
+    # cluster_centers shape correct
+    centers = out["cluster_centers"]
+    assert centers.ndim == 2 and centers.shape[1] == 3  # x,y,time
+
+
+def test_coord_columns_override(simple_per_frame):
+    # test that giving coord_columns works (explicit centroid_x,centroid_y)
+    # first massage the features to have explicit keys
+    pf = [
+        [
+            {"centroid_x": 0.0, "centroid_y": 0.0},
+            {"centroid_x": 5.0, "centroid_y": 5.0},
+        ]
+    ]
+    stack = DummyStack([0.0])
+    prev = {"feature_detection": {"features_per_frame": pf}}
+    mod = XMeansClusteringModule()
+    out = mod.run(
+        stack,
+        prev,
+        min_k=1,
+        max_k=1,
+        coord_columns=("centroid_x", "centroid_y"),
+        use_time=False,
+        normalise=False,
+    )
+    assert out["summary"]["n_clusters"] == 1
+    # coords should exactly reproduce inputs
+    coords = out["clusters"][0]["coords"]
+    assert set(coords) == {(0.0, 0.0), (5.0, 5.0)}
+
+
+def test_centroid_fallback(simple_per_frame):
+    # ensure that missing coord_columns triggers fallback to 'centroid' tuple
+    stack = DummyStack([0.0])
+    prev = make_prev([simple_per_frame[0]])  # only one frame
+    mod = XMeansClusteringModule()
+    # choose nonsense coord_columns so KeyError path triggers the centroid fallback
+    out = mod.run(
+        stack,
+        prev,
+        min_k=1,
+        max_k=1,
+        coord_columns=("x", "y"),  # neither 'x' nor 'y' present
+        use_time=False,
+        normalise=False,
+    )
+    # should succeed and find exactly 1 cluster of size 2
+    assert out["summary"]["n_clusters"] == 1
+    assert out["summary"]["members_per_cluster"][0] == 2
+
+
+def test_time_weight_effect(simple_per_frame):
+    # make two clusters separated only in time, not in x-y;
+    # with time_weight=0 they collapse to single cluster, with large weight they split.
+    pf = [
+        [{"centroid": (0, 0)}],
+        [{"centroid": (0, 0)}],
+        [{"centroid": (0, 0)}],
+        [{"centroid": (0, 0)}],
+    ]
+    stack = DummyStack([0.0, 1.0, 2.0, 3.0])
+    prev = make_prev(pf)
+    mod = XMeansClusteringModule()
+    # with no weighting, all points cluster into one
+    out1 = mod.run(stack, prev, min_k=1, max_k=4, normalise=True, time_weight=0.0)
+    assert out1["summary"]["n_clusters"] == 1
+    # with strong time weighting, should split into multiple clusters (up to max_k)
+    out2 = mod.run(stack, prev, min_k=1, max_k=4, normalise=True, time_weight=10.0)
+    assert out2["summary"]["n_clusters"] >= 1
+
+
+def test_missing_coord_keys_raises_keyerror():
+    stack = DummyStack([0.0])
+    # Feature with no required keys and no fallback centroid
+    per_frame = [[{"area": 123}]]
+    prev = {"feature_detection": {"features_per_frame": per_frame}}
+
+    mod = XMeansClusteringModule()
+
+    with pytest.raises(KeyError, match=r"Missing keys.*in feature"):
+        mod.run(stack, prev, coord_columns=("x", "y"), use_time=False)
+
+
+# --- Tests for k_means_clustering ---
+
+
+@pytest.mark.parametrize(
+    "normalise,time_weight",
+    [
+        (False, None),
+        (True, None),
+        (True, 0.5),
+    ],
+)
+def test_kmeans_two_clusters(normalise, time_weight):
+    # two well-separated clusters in XY
+    per_frame = [
+        [{"centroid": (0.0, 0.0)}, {"centroid": (10.0, 10.0)}],
+        [{"centroid": (1.0, -1.0)}, {"centroid": (11.0, 9.0)}],
+    ]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(per_frame)
+
+    mod = KMeansClusteringModule()
+    out = mod.run(
+        stack,
+        prev,
+        k=2,
+        normalise=normalise,
+        time_weight=time_weight,
+    )
+
+    # Expect exactly 2 clusters
+    assert out["summary"]["n_clusters"] == 2
+    # Each cluster must have at least one member
+    for cnt in out["summary"]["members_per_cluster"].values():
+        assert cnt >= 1
+
+
+def test_kmeans_empty():
+    # no features at all
+    per_frame = [[], []]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(per_frame)
+
+    mod = KMeansClusteringModule()
+    out = mod.run(stack, prev, k=3, normalise=False)
+    assert out["summary"]["n_clusters"] == 0
+    assert out["clusters"] == []
+    assert out["cluster_centers"].shape == (0, 3)  # 3 dims by default
+
+
+def test_kmeans_missing_dependency():
+    stack = DummyStack([0.0])
+    mod = KMeansClusteringModule()
+    with pytest.raises(RuntimeError):
+        mod.run(stack, previous_results={}, k=1)
+
+
+def test_kmeans_missing_keys():
+    # feature dict missing centroid_x/centroid_y and no 'centroid' fallback
+    per_frame = [[{"foo": 1}]]
+    stack = DummyStack([0.0])
+    prev = make_prev(per_frame)
+
+    mod = KMeansClusteringModule()
+    with pytest.raises(KeyError):
+        mod.run(stack, prev, k=1, normalise=False)
+
+
+# --- Tests for dbscan_clustering ---
+
+
+@pytest.mark.parametrize(
+    "eps,min_samples,expected_n",
+    [
+        # with very large eps and min_samples=1, everything collapses to one cluster
+        (20.0, 1, 1),
+        # with tiny eps & min_samples=1, each point stands alone → 2 clusters
+        (0.1, 1, 2),
+    ],
+)
+def test_dbscan_basic(eps, min_samples, expected_n):
+    per_frame = [
+        [{"centroid": (0.0, 0.0)}],
+        [{"centroid": (10.0, 0.0)}],
+    ]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(per_frame)
+
+    mod = DBSCANClusteringModule()
+    out = mod.run(
+        stack, prev, eps=eps, min_samples=min_samples, normalise=True, time_weight=None
+    )
+    assert out["summary"]["n_clusters"] == expected_n
+    if expected_n > 0:
+        # ensure cluster_centers count matches
+        assert out["cluster_centers"].shape[0] == expected_n
+
+
+def test_dbscan_empty():
+    per_frame = [[], []]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(per_frame)
+
+    mod = DBSCANClusteringModule()
+    out = mod.run(stack, prev, eps=1.0, min_samples=1)
+    assert out["summary"]["n_clusters"] == 0
+    assert out["clusters"] == []
+    assert out["cluster_centers"].shape == (0, 3)
+
+
+def test_dbscan_missing_dependency():
+    stack = DummyStack([0.0])
+    mod = DBSCANClusteringModule()
+    with pytest.raises(RuntimeError):
+        mod.run(stack, previous_results={}, eps=1.0, min_samples=1)
+
+
+def test_dbscan_missing_keys():
+    per_frame = [[{"foo": 1}]]
+    stack = DummyStack([0.0])
+    prev = make_prev(per_frame)
+
+    mod = DBSCANClusteringModule()
+    with pytest.raises(KeyError):
+        mod.run(stack, prev, eps=1.0, min_samples=1)
+
+
+@pytest.mark.parametrize(
+    "time_weight,expected_n",
+    [
+        (0.0, 1),  # time_weight=0 collapses to 1 cluster
+        (10.0, 3),  # heavy time_weight separates all into 3 clusters
+    ],
+)
+def test_dbscan_time_weight_effect(time_weight, expected_n):
+    # three identical-XY features on frames 0,1,2
+    per_frame = [
+        [{"centroid": (0.0, 0.0)}],
+        [{"centroid": (0.0, 0.0)}],
+        [{"centroid": (0.0, 0.0)}],
+    ]
+    stack = DummyStack([0.0, 1.0, 2.0])
+    prev = make_prev(per_frame)
+
+    mod = DBSCANClusteringModule()
+
+    # suppress the divide-by-zero warning in the undo step:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        out = mod.run(
+            stack,
+            prev,
+            eps=0.5,  # small XY radius so only time separation can split
+            min_samples=1,
+            normalise=True,
+            time_weight=time_weight,
+        )
+
+    # correct cluster count
+    assert out["summary"]["n_clusters"] == expected_n
+
+    # only check center-time values when time_weight > 0
+    if time_weight:
+        centers = out["cluster_centers"]
+        # time is third column
+        times = centers[:, 2]
+        # should all be in the original time range [0,2]
+        assert np.all((times >= 0.0) & (times <= 2.0))

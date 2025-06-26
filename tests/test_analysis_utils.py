@@ -11,9 +11,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from playNano.analysis.utils import common, frames, particles
+
 matplotlib.use("Agg")  # Use a non-interactive backend suitable for testing
 
-from playNano.analysis.utils import common, frames, particles
 
 # --- Common Utils ---
 
@@ -115,7 +116,7 @@ detection_outputs = {
 
 def test_flatten_tracks_returns_dataframe():
     """Test flatten_tracks returns a DataFrame with expected columns."""
-    df = particles.flatten_tracks(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
     expected_cols = {
         "track_id",
         "frame",
@@ -134,23 +135,23 @@ def test_flatten_tracks_returns_dataframe():
 
 def test_plot_tracks_3d_returns_axes():
     """Test plot_tracks_3d returns a matplotlib Axes object."""
-    df = particles.flatten_tracks(tracking_outputs, detection_outputs)
-    ax = particles.plot_tracks_3d(df)
+    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
+    ax = particles.plot_particle_labels_3d(df)
     assert isinstance(ax, plt.Axes)
 
 
 def test_plot_tracks_3d_saves_file():
     """Test plot_tracks_3d saves a file if save_to is provided."""
-    df = particles.flatten_tracks(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "plot.png"
-        particles.plot_tracks_3d(df, save_to=out_path)
+        particles.plot_particle_labels_3d(df, save_to=out_path)
         assert out_path.exists()
 
 
 def test_export_particle_csv_creates_file():
     """Test export_particle_csv writes a CSV file to disk."""
-    df = particles.flatten_tracks(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "tracks.csv"
         particles.export_particle_csv(df, out_path)
