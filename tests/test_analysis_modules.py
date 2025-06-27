@@ -27,12 +27,11 @@ def test_unimplemented_analysismodule_raises():
     class RawModule(AnalysisModule):
         pass  # implements nothing
 
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(
+        TypeError,
+        match=r"abstract class .* (with|without) (an implementation for )?abstract method[s]? (name|run|'name'(, 'run')?)",  # noqa: E501
+    ):
         RawModule()
-
-    msg = str(excinfo.value)
-    assert "abstract methods name, run" in msg
-    assert "RawModule" in msg
 
 
 def test_missing_name_property_raises():
@@ -44,7 +43,7 @@ def test_missing_name_property_raises():
 
     with pytest.raises(
         TypeError,
-        match="Can't instantiate abstract class .* with abstract method name",  # noqa
+        match=r"abstract class .* (with|without) (an implementation for )?abstract method[s]? '?name'?",  # noqa: E501
     ):
         MissingName()
 
@@ -53,14 +52,13 @@ def test_missing_run_method_raises():
     """Test that subclass without `run()` method raises TypeError."""
 
     class MissingRun(AnalysisModule):
-        """Dummy class that is missing the run method."""
-
         @property
         def name(self):
             return "dummy"
 
     with pytest.raises(
-        TypeError, match="Can't instantiate abstract class .* with abstract method run"
+        TypeError,
+        match=r"abstract class .* (with|without) (an implementation for )?abstract method[s]? '?run'?",  # noqa: E501
     ):
         MissingRun()
 
@@ -88,9 +86,11 @@ class DummyModule(AnalysisModule):
 
     @property
     def name(self):
+        """Define the name of the module."""
         return super().name  # Calls the base abstract property to cover it
 
     def run(self, stack, previous_results=None, **params):
+        """Define the run method of this dummy module."""
         return super().run(
             stack, previous_results, **params
         )  # Calls base abstract method to cover it
@@ -110,6 +110,8 @@ def test_abstract_methods_raise():
 
 
 class DummyStackNoData:
+    """Create dummy class with no data."""
+
     data = None
 
 
@@ -147,7 +149,6 @@ def test_mask_fn_type_error_fallback():
 
 def test_skip_empty_vals_region():
     """Test that empty values are skipped."""
-    import numpy as np
 
     class DummyStack:
         def __init__(self, data):
@@ -166,8 +167,6 @@ def test_skip_empty_vals_region():
 
     # Instead, test code path executes without error when vals.size == 0, so
     # patch regionprops to return a prop with empty mask_pixels
-
-    from playNano.analysis.modules import feature_detection
 
     fd = FeatureDetectionModule()
 
@@ -207,6 +206,7 @@ def test_skip_empty_vals_region():
 
 def test_time_for_frame_exception():
     """Test that time_for_frame raises an exception."""
+
     class DummyStack:
         def __init__(self, data):
             self.data = data
