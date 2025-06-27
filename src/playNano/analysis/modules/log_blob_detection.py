@@ -14,13 +14,12 @@ from playNano.analysis.base import AnalysisModule
 
 
 class LoGBlobDetectionModule(AnalysisModule):
-
     """
     Detect blobs in AFM image stacks using the Laplacian-of-Gaussian (LoG) method.
 
     This module applies multi-scale blob detection to each frame in an AFM image stack
-    using the Laplacian-of-Gaussian algorithm from `skimage.feature.blob_log`. It supports
-    automatic scale selection and optional estimation of blob radii.
+    using the Laplacian-of-Gaussian algorithm from `skimage.feature.blob_log`. It
+    supports automatic scale selection and optional estimation of blob radii.
 
     Attributes
     ----------
@@ -31,8 +30,8 @@ class LoGBlobDetectionModule(AnalysisModule):
     -------
     run(stack, previous_results=None, *, min_sigma=1.0, max_sigma=5.0, num_sigma=10,
         threshold=0.1, overlap=0.5, include_radius=True)
-        Detects blobs in each frame of the AFM image stack and returns per-frame features
-        and a summary.
+        Detects blobs in each frame of the AFM image stack and returns per-frame
+        features and a summary.
 
     Version
     -------
