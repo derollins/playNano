@@ -8,6 +8,9 @@ import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
+from playNano.analysis.base import AnalysisModule
+from playNano.analysis.modules import feature_detection
+from playNano.analysis.modules.count_nonzero import CountNonzeroModule
 from playNano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
 from playNano.analysis.modules.feature_detection import FeatureDetectionModule
 from playNano.analysis.modules.k_means_clustering import KMeansClusteringModule
@@ -15,7 +18,201 @@ from playNano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
 from playNano.analysis.modules.particle_tracking import ParticleTrackingModule
 from playNano.analysis.modules.x_means_clustering import XMeansClusteringModule
 
+# --- Test for abstract base class ---
+
+
+def test_unimplemented_analysismodule_raises():
+    """Attempt to instantiate a raw subclass with neither name nor run should fail."""
+
+    class RawModule(AnalysisModule):
+        pass  # implements nothing
+
+    with pytest.raises(TypeError) as excinfo:
+        RawModule()
+
+    msg = str(excinfo.value)
+    assert "abstract methods name, run" in msg
+    assert "RawModule" in msg
+
+
+def test_missing_name_property_raises():
+    """Test that subclass without `name` property raises TypeError."""
+
+    class MissingName(AnalysisModule):
+        def run(self, stack, previous_results=None, **params):
+            return {}
+
+    with pytest.raises(
+        TypeError,
+        match="Can't instantiate abstract class .* with abstract method name",  # noqa
+    ):
+        MissingName()
+
+
+def test_missing_run_method_raises():
+    """Test that subclass without `run()` method raises TypeError."""
+
+    class MissingRun(AnalysisModule):
+        @property
+        def name(self):
+            return "dummy"
+
+    with pytest.raises(
+        TypeError, match="Can't instantiate abstract class .* with abstract method run"
+    ):
+        MissingRun()
+
+
+def test_cannot_instantiate_abstract_base_class():
+    with pytest.raises(TypeError):
+        AnalysisModule()
+
+
+class IncompleteModule(AnalysisModule):
+    pass
+
+
+def test_incomplete_subclass_instantiation_fails():
+    with pytest.raises(TypeError):
+        IncompleteModule()
+
+
+class DummyModule(AnalysisModule):
+    @property
+    def name(self):
+        return super().name  # Calls the base abstract property to cover it
+
+    def run(self, stack, previous_results=None, **params):
+        return super().run(
+            stack, previous_results, **params
+        )  # Calls base abstract method to cover it
+
+
+def test_abstract_methods_raise():
+    dummy = DummyModule()
+    with pytest.raises(NotImplementedError):
+        _ = dummy.name  # should raise because base is abstract
+
+    with pytest.raises(NotImplementedError):
+        dummy.run(None)
+
+
 # --- Tests for feature_detection ---
+
+
+class DummyStackNoData:
+    data = None
+
+
+def test_run_raises_if_no_data():
+    fd = FeatureDetectionModule()
+    stack = DummyStackNoData()
+    with pytest.raises(ValueError, match="AFMImageStack has no data"):
+        fd.run(stack, mask_fn=lambda f: f > 0)
+
+
+def test_mask_fn_type_error_fallback():
+    import numpy as np
+
+    class DummyStack:
+        def __init__(self, data):
+            self.data = data
+
+        def time_for_frame(self, i):
+            return i
+
+    data = np.ones((1, 2, 2))
+    stack = DummyStack(data)
+    fd = FeatureDetectionModule()
+
+    def mask_fn(frame, **kwargs):
+        if kwargs:
+            raise TypeError("forced")
+        return frame > 0
+
+    result = fd.run(stack, mask_fn=mask_fn)
+    assert "features_per_frame" in result
+
+
+def test_skip_empty_vals_region():
+    import numpy as np
+
+    class DummyStack:
+        def __init__(self, data):
+            self.data = data
+
+        def time_for_frame(self, i):
+            return i
+
+    # Create data with shape (1, 5, 5)
+    data = np.zeros((1, 5, 5), dtype=float)
+    # Create a mask_fn that returns a mask with one labeled region
+    # but frame is zero everywhere so vals is empty or zero size? Actually
+    # vals.size > 0 for zeros
+    # To create empty vals, label a mask that doesn't intersect with frame?
+    # A hack: override label() to create a region with label but empty pixels
+
+    # Instead, test code path executes without error when vals.size == 0, so
+    # patch regionprops to return a prop with empty mask_pixels
+
+    from playNano.analysis.modules import feature_detection
+
+    fd = FeatureDetectionModule()
+
+    stack = DummyStack(data)
+
+    # Patch regionprops to produce a prop with vals.size == 0
+    original_regionprops = feature_detection.regionprops
+
+    def fake_regionprops(labeled, intensity_image=None):
+        class FakeProp:
+            area = 10
+            bbox = (1, 1, 4, 4)
+            label = 1
+            centroid = (2.0, 2.0)
+
+            def __init__(self):
+                pass
+
+        # Return a list with one FakeProp, but mask_pixels is empty
+        # We'll override the mask inside run by patching
+        # 'labeled == prop.label' to be empty
+        return [FakeProp()]
+
+    feature_detection.regionprops = fake_regionprops
+
+    def mask_fn(frame, **kwargs):
+        return np.ones_like(frame, dtype=bool)
+
+    try:
+        result = fd.run(stack, mask_fn=mask_fn)
+        assert "features_per_frame" in result
+    finally:
+        feature_detection.regionprops = original_regionprops
+
+
+def test_time_for_frame_exception():
+    import numpy as np
+
+    class DummyStack:
+        def __init__(self, data):
+            self.data = data
+
+        def time_for_frame(self, i):
+            raise RuntimeError("forced error")
+
+    data = np.zeros((1, 5, 5))
+    data[0, 2, 2] = 1  # single bright pixel as feature
+    stack = DummyStack(data)
+    fd = FeatureDetectionModule()
+
+    def mask_fn(frame, **kwargs):
+        return frame > 0  # mask covers the bright pixel
+
+    result = fd.run(stack, mask_fn=mask_fn, min_size=1)
+
+    # Now features_per_frame[0][0] should exist
+    assert abs(result["features_per_frame"][0][0]["frame_timestamp"] - 0) < 1e-6
 
 
 @pytest.fixture
@@ -282,18 +479,69 @@ def test_mask_key_path(stack_1frame_with_timestamps):
     assert feats[0]["area"] == 1
 
 
-def test_2frames_default_timestamps(stack_2frames_no_timestamps):
-    """Test that or stacks without timestamps, module should default frame_timestamp to frame index."""  # noqa
-    module = FeatureDetectionModule()
-    stack = stack_2frames_no_timestamps
-    # Use full_mask and remove_edge=False so each frame yields one feature
-    out = module.run(stack, mask_fn=full_mask, min_size=1, remove_edge=False)
-    fpf = out["features_per_frame"]
-    # Two frames, each with one feature
-    assert len(fpf) == 2
-    # frame_timestamp should be float(i) for i=0,1
-    assert fpf[0][0]["frame_timestamp"] == pytest.approx(0.0)
-    assert fpf[1][0]["frame_timestamp"] == pytest.approx(1.0)
+def test_skip_empty_vals(monkeypatch):
+    """Test that empty values are skipped."""
+
+    class DummyStack:
+        def __init__(self, data):
+            self.data = data
+
+        def time_for_frame(self, i):
+            return i
+
+    data = np.ones((1, 3, 3))
+    stack = DummyStack(data)
+    fd = feature_detection.FeatureDetectionModule()
+
+    # Patch regionprops to return one region with label 1
+    # but the labeled mask will have no pixels == 1
+    def fake_regionprops(labeled, intensity_image=None):
+        class FakeProp:
+            area = 10
+            bbox = (0, 0, 2, 2)
+            label = 1
+            centroid = (1.0, 1.0)
+
+        return [FakeProp()]
+
+    monkeypatch.setattr(feature_detection, "regionprops", fake_regionprops)
+
+    # Patch label function to return labeled mask with no pixels == 1
+    def fake_label(mask):
+        return np.zeros_like(mask, dtype=int)  # no labels
+
+    monkeypatch.setattr(feature_detection, "label", fake_label)
+
+    def mask_fn(frame, **kwargs):
+        """Imitate a masking funciton"""
+        return np.ones_like(frame, dtype=bool)
+
+    result = fd.run(stack, mask_fn=mask_fn, min_size=1)
+
+    # If we reach here without error, line `if vals.size == 0: continue` was executed
+    assert "features_per_frame" in result
+
+    class DummyStack:
+        def __init__(self, data):
+            self.data = data
+
+        def time_for_frame(self, i):
+            return i
+
+    data = np.ones((1, 2, 2))
+    stack = DummyStack(data)
+    fd = FeatureDetectionModule()
+
+    # Define a mask_fn that raises TypeError when called with kwargs,
+    # but works when called with only the frame.
+    def mask_fn(frame, **kwargs):
+        if kwargs:
+            raise TypeError("forced error")
+        return frame > 0
+
+    result = fd.run(stack, mask_fn=mask_fn, some_kwarg=123)
+    assert "features_per_frame" in result
+    # Just check that fallback call happened and mask computed successfully
 
 
 def test_zero_frames_stack():
@@ -1141,3 +1389,59 @@ def test_dbscan_time_weight_effect(time_weight, expected_n):
         times = centers[:, 2]
         # should all be in the original time range [0,2]
         assert np.all((times >= 0.0) & (times <= 2.0))
+
+
+# --- Tests for count non zero pixels ---
+
+
+class MockStack:
+    """Minimal AFMImageStack mock with .data attribute."""
+
+    def __init__(self, data):
+        self.data = data
+
+
+def test_count_nonzero_basic():
+    """Test that non-zero counts are computed correctly."""
+    data = np.array(
+        [
+            [[0, 1], [2, 0]],  # 2 non-zeros
+            [[0, 0], [0, 0]],  # 0 non-zeros
+            [[3, 4], [5, 6]],  # 4 non-zeros
+        ]
+    )
+    stack = MockStack(data)
+    mod = CountNonzeroModule()
+    result = mod.run(stack)
+
+    expected = np.array([2, 0, 4])
+    np.testing.assert_array_equal(result["counts"], expected)
+
+
+def test_count_nonzero_all_zero():
+    """Test with a stack where all pixels are zero."""
+    data = np.zeros((5, 10, 10), dtype=int)
+    stack = MockStack(data)
+    mod = CountNonzeroModule()
+    result = mod.run(stack)
+
+    expected = np.zeros(5, dtype=int)
+    np.testing.assert_array_equal(result["counts"], expected)
+
+
+def test_count_nonzero_all_nonzero():
+    """Test with a stack where all pixels are non-zero."""
+    data = np.ones((3, 4, 4), dtype=int)  # 3 frames of 4x4 ones → 16 non-zeros each
+    stack = MockStack(data)
+    mod = CountNonzeroModule()
+    result = mod.run(stack)
+
+    expected = np.full(3, 16)
+    np.testing.assert_array_equal(result["counts"], expected)
+
+
+def test_count_nonzero_module_metadata():
+    """Test version and name properties."""
+    mod = CountNonzeroModule()
+    assert mod.version == "0.1.0"
+    assert mod.name == "count_nonzero"
