@@ -53,6 +53,8 @@ def test_missing_run_method_raises():
     """Test that subclass without `run()` method raises TypeError."""
 
     class MissingRun(AnalysisModule):
+        """Dummy class that is missing the run method."""
+
         @property
         def name(self):
             return "dummy"
@@ -64,20 +66,26 @@ def test_missing_run_method_raises():
 
 
 def test_cannot_instantiate_abstract_base_class():
+    """Test that ABC raises error if not instantiated correctly."""
     with pytest.raises(TypeError):
         AnalysisModule()
 
 
 class IncompleteModule(AnalysisModule):
+    """Create a in incomplete analysis module class."""
+
     pass
 
 
 def test_incomplete_subclass_instantiation_fails():
+    """Test that an inclomplete subclass causes instantiation failure."""
     with pytest.raises(TypeError):
         IncompleteModule()
 
 
 class DummyModule(AnalysisModule):
+    """Dummy module for testing analysis module initilisation."""
+
     @property
     def name(self):
         return super().name  # Calls the base abstract property to cover it
@@ -89,6 +97,7 @@ class DummyModule(AnalysisModule):
 
 
 def test_abstract_methods_raise():
+    """Test that an error is raised if a module doesn't follow the ABC."""
     dummy = DummyModule()
     with pytest.raises(NotImplementedError):
         _ = dummy.name  # should raise because base is abstract
@@ -105,6 +114,7 @@ class DummyStackNoData:
 
 
 def test_run_raises_if_no_data():
+    """Test that run raises a ValueError if there is no data attribute."""
     fd = FeatureDetectionModule()
     stack = DummyStackNoData()
     with pytest.raises(ValueError, match="AFMImageStack has no data"):
@@ -112,6 +122,7 @@ def test_run_raises_if_no_data():
 
 
 def test_mask_fn_type_error_fallback():
+    """Test for something to do with a type error."""
     import numpy as np
 
     class DummyStack:
@@ -135,6 +146,7 @@ def test_mask_fn_type_error_fallback():
 
 
 def test_skip_empty_vals_region():
+    """Test that empty values are skipped."""
     import numpy as np
 
     class DummyStack:
@@ -165,6 +177,8 @@ def test_skip_empty_vals_region():
     original_regionprops = feature_detection.regionprops
 
     def fake_regionprops(labeled, intensity_image=None):
+        """Create a fake region prop."""
+
         class FakeProp:
             area = 10
             bbox = (1, 1, 4, 4)
@@ -192,8 +206,7 @@ def test_skip_empty_vals_region():
 
 
 def test_time_for_frame_exception():
-    import numpy as np
-
+    """Test that time_for_frame raises an exception."""
     class DummyStack:
         def __init__(self, data):
             self.data = data
@@ -513,7 +526,7 @@ def test_skip_empty_vals(monkeypatch):
     monkeypatch.setattr(feature_detection, "label", fake_label)
 
     def mask_fn(frame, **kwargs):
-        """Imitate a masking funciton"""
+        """Imitate a masking funciton."""
         return np.ones_like(frame, dtype=bool)
 
     result = fd.run(stack, mask_fn=mask_fn, min_size=1)
@@ -1398,6 +1411,7 @@ class MockStack:
     """Minimal AFMImageStack mock with .data attribute."""
 
     def __init__(self, data):
+        """Initialise the MockStack class with data."""
         self.data = data
 
 
