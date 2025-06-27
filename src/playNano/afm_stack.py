@@ -397,7 +397,7 @@ class AFMImageStack:
     @property
     def height(self) -> int:
         """
-        Get the frame height (i.e. pixel rows).
+        Get the frame number of pixel rows.
 
         Returns
         -------
@@ -409,7 +409,7 @@ class AFMImageStack:
     @property
     def width(self) -> int:
         """
-        Get the frame width (pixel columns).
+        Get the frame number of pixel columns.
 
         Returns
         -------
