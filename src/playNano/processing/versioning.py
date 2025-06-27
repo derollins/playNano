@@ -3,7 +3,7 @@
 
 def versioned_filter(version: str):
     """
-    Adds decorator tag to a filter or mask function with a __version__ attribute.
+    Add decorator tag to a filter or mask function with a __version__ attribute.
 
     Usage:
         @versioned_filter("1.0.0")

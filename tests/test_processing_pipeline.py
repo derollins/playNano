@@ -400,7 +400,7 @@ def test_mask_overlay_combines_masks(mock_stack):
     """Test that applying two masks overlays them using logical OR."""
 
     def mask1(data, **kwargs):
-        """add mask for testing."""
+        """Add mask for testing."""
         m = np.zeros_like(data, dtype=bool)
         m[:, 0, 0] = True
         return m

@@ -1,3 +1,10 @@
+"""
+Module for threshold based feature detection.
+
+Module: FeatureDetectionModule
+Detect features in each frame of an AFM image stack through thresholding methods.
+"""
+
 from typing import Any, Optional
 
 import numpy as np

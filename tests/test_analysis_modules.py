@@ -21,7 +21,7 @@ from playNano.analysis.modules.x_means_clustering import XMeansClusteringModule
 @pytest.fixture
 def stack_1frame_with_timestamps():
     """
-    AFMImageStack with 1 frame of 3x3 data and an explicit timestamp.
+    Create AFMImageStack with 1 frame of 3x3 data and an explicit timestamp.
 
     frame_metadata contains a 'timestamp' key.
     """
@@ -41,7 +41,7 @@ def stack_1frame_with_timestamps():
 @pytest.fixture
 def stack_2frames_no_timestamps():
     """
-    AFMImageStack with 2 frames of 3x3 data, but missing timestamps in metadata.
+    Make AFMImageStack with 2 frames of 3x3 data, but missing timestamps in metadata.
 
     time_for_frame will return None, module should default timestamp to frame index.
     """
@@ -450,20 +450,25 @@ def test_two_separate_regions(stack_1frame_with_timestamps):
 
 class MockAFMImageStack:
     """Mock AFMImageStack for testing."""
-
     def __init__(self, n_frames):
+        """
+        Initialize the mock AFM image stack.
+
+        Parameters:
+            n_frames (int): Number of frames in the mock image stack.
+        """
         self.n_frames = n_frames
 
 
 @pytest.fixture
 def mock_stack():
-    """Provides a mock AFMImageStack with 3 frames."""
+    """Provide a mock AFMImageStack with 3 frames."""
     return MockAFMImageStack(n_frames=3)
 
 
 @pytest.fixture
 def mock_feature_detection_outputs():
-    """Provides mock feature detection outputs with centroids and labels."""
+    """Provide mock feature detection outputs with centroids and labels."""
     return {
         "features_per_frame": [
             [{"centroid": (0, 0), "label": 1}],
@@ -479,26 +484,26 @@ def mock_feature_detection_outputs():
 
 
 def test_tracking_module_name():
-    """Returns correct module name."""
+    """Return correct module name."""
     mod = ParticleTrackingModule()
     assert mod.name == "particle_tracking"
 
 
 def test_tracking_requires_feature_detection():
-    """Requires 'feature_detection' in previous_results."""
+    """Require 'feature_detection' in previous_results."""
     mod = ParticleTrackingModule()
     assert "feature_detection" in mod.requires
 
 
 def test_tracking_raises_without_feature_detection(mock_stack):
-    """Raises error if 'feature_detection' is missing."""
+    """Raise error if 'feature_detection' is missing."""
     mod = ParticleTrackingModule()
     with pytest.raises(RuntimeError):
         mod.run(mock_stack, previous_results={})
 
 
 def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
-    """Returns expected keys and track structure."""
+    """Return expected keys and track structure."""
     mod = ParticleTrackingModule()
     result = mod.run(
         mock_stack,
@@ -513,7 +518,7 @@ def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
 
 
 def test_tracking_links_features(mock_stack):
-    """Links features across frames by nearest neighbor."""
+    """Link features across frames by nearest neighbor."""
     fd_out = {
         "features_per_frame": [
             [{"centroid": (0, 0), "label": 1}],
@@ -537,7 +542,7 @@ def test_tracking_links_features(mock_stack):
 
 
 def test_tracking_handles_empty_frames(mock_stack):
-    """Handles frames with no features."""
+    """Handle frames with no features."""
     fd_out = {
         "features_per_frame": [
             [{"centroid": (0, 0), "label": 1}],
@@ -560,7 +565,7 @@ def test_tracking_handles_empty_frames(mock_stack):
 
 
 def test_tracking_overlapping_centroids(mock_stack):
-    """Handles multiple features with same centroid."""
+    """Handle multiple features with same centroid."""
     fd_out = {
         "features_per_frame": [
             [{"centroid": (1, 1), "label": 1}, {"centroid": (1, 1), "label": 2}],
@@ -594,7 +599,7 @@ class DummyStack2:
             self._times = list(range(self.data.shape[0]))
 
     def time_for_frame(self, idx):
-        """Return timestamp for frame index or raise IndexError"""
+        """Return timestamp for frame index or raise IndexError."""
         try:
             return float(self._times[idx])
         except IndexError:
@@ -781,10 +786,25 @@ class DummyStack:
     """Minimal AFMImageStack stub with only .time_for_frame support."""
 
     def __init__(self, times):
+        """
+        Initialize the dummy stack with frame timestamps.
+
+        Parameters:
+            times (list): List of timestamps, one per frame.
+        """
         # times: list of timestamps, one per frame
         self._times = times
 
     def time_for_frame(self, idx):
+        """
+        Return the timestamp for a given frame index.
+
+        Parameters:
+            idx (int): Index of the frame.
+
+        Returns:
+            The timestamp corresponding to the given frame index.
+        """
         return self._times[idx]
 
 

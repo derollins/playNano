@@ -33,7 +33,6 @@ def dummy_stack():
 @pytest.fixture
 def dummy_module():
     """Fixture for a dummy AnalysisModule with a working run() method."""
-
     # Define a simple AnalysisModule subclass
     class DummyMod(AnalysisModule):
         version = "1.0"
@@ -219,7 +218,6 @@ def test_resolve_mask_fn_invalid():
 @pytest.fixture
 def dummy_registry(monkeypatch):
     """Monkeypatch BUILTIN_ANALYSIS_MODULES to include 'dummy' -> DummyModule."""
-
     # Define DummyModule subclass
     class DummyModule(AnalysisModule):
         version = "0.1"
@@ -275,7 +273,6 @@ def test_run_single_step(dummy_registry, stack_with_times, tmp_path):
 
 def test_run_multiple_steps(monkeypatch, stack_with_times):
     """Outputs of earlier step should appear in previous_results for next."""
-
     # Define two AnalysisModule subclasses
     class FirstMod(AnalysisModule):
         version = "1"
