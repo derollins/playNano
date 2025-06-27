@@ -25,7 +25,7 @@ class AnalysisModule(ABC):
 
         Used by pipeline to identify and refer to the module.
         """
-        ...
+        raise NotImplementedError("Subclasses must implement 'name' property")
 
     @abstractmethod
     def run(
@@ -56,4 +56,4 @@ class AnalysisModule(ABC):
                 ...
             }
         """
-        ...
+        raise NotImplementedError("Subclasses must implement 'run' method")

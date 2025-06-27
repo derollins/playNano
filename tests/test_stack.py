@@ -893,3 +893,123 @@ def test_export_processing_log_creates_json_file(tmp_path, stack_with_times):
 
     assert data["environment"] == dummy_env
     assert data["processing"] == dummy_processing
+
+
+@pytest.fixture
+def dummy_stack(tmp_path):
+    """Create dummy stack for testing."""
+    data = np.random.rand(3, 4, 4)
+    meta = [{"timestamp": float(i)} for i in range(3)]
+    return AFMImageStack(
+        data=data,
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path=tmp_path,
+        frame_metadata=meta,
+    )
+
+
+def test_export_processing_log_creates_file_and_dir(tmp_path, dummy_stack):
+    """Test that export_processng_log creates file and folder."""
+    dummy_stack.provenance["processing"]["steps"].append({"step": "dummy"})
+    dummy_stack.provenance["environment"] = {"python": "3.11"}
+
+    # Create nested path
+    log_path = tmp_path / "logs" / "proc.json"
+    dummy_stack.stack = dummy_stack  # simulate self.stack access inside method
+    dummy_stack.export_processing_log(str(log_path))
+
+    assert log_path.exists()
+    with open(log_path) as f:
+        content = json.load(f)
+    assert "processing" in content
+    assert "environment" in content
+
+
+def test_restore_raw_missing_key_raises(dummy_stack):
+    """Test that restore_raw raises error when missing key."""
+    dummy_stack.processed.pop("raw", None)
+    with pytest.raises(KeyError, match="No raw data snapshot available"):
+        dummy_stack.restore_raw()
+
+
+def test_frames_with_metadata_skips_none_frame(caplog):
+    """Test that frames with None are skipped."""
+    # Step 1: create a valid AFMImageStack
+    data = np.stack([np.ones((2, 2)), np.ones((2, 2)), np.zeros((2, 2))])
+    meta = [{"timestamp": 0.0}, {"timestamp": 1.0}, {"timestamp": 2.0}]
+    stack = AFMImageStack(
+        data=data,
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=meta,
+    )
+
+    # Step 2: overwrite .data with object array containing real None
+    obj_data = np.empty(3, dtype=object)
+    obj_data[0] = np.ones((2, 2))
+    obj_data[1] = None  # <-- this will trigger the warning
+    obj_data[2] = np.zeros((2, 2))
+    stack.data = obj_data  # bypass validation — OK for this test
+
+    # Step 3: trigger the method
+    caplog.set_level("WARNING", logger="playNano.afm_stack")
+    results = list(stack.frames_with_metadata())
+
+    # Step 4: assert warning was issued and frame 1 was skipped
+    assert len(results) == 2
+    assert results[0][0] == 0
+    assert results[1][0] == 2
+    assert "Frame 1 is None and skipped" in caplog.text
+
+
+def test_resolve_step_method_returns_bound_method():
+    """Test that resolve_step method returns method."""
+    # Set up a basic stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # 'get_frame' is a real method on AFMImageStack
+    step_type, fn = stack._resolve_step("get_frame")
+
+    assert step_type == "method"
+    assert callable(fn)
+    assert fn.__name__ == "get_frame"
+
+
+def test_resolve_step_plugin(monkeypatch):
+    """Test that plugin steps are resolved."""
+    # Create dummy stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Create mock entry point with .name and .load()
+    mock_fn = lambda x: x  # noqa
+    mock_ep = Mock()
+    mock_ep.name = "mock_filter"
+    mock_ep.load.return_value = mock_fn
+
+    # Patch importlib.metadata.entry_points to return our mock
+    mock_eps = Mock()
+    mock_eps.__iter__ = lambda self: iter([mock_ep])
+    monkeypatch.setattr(
+        "playNano.afm_stack.metadata.entry_points",
+        lambda group=None: [mock_ep] if group == "playNano.filters" else [],
+    )
+
+    # Call _resolve_step and assert behavior
+    step_type, fn = stack._resolve_step("mock_filter")
+    assert step_type == "plugin"
+    assert fn is mock_fn
+    mock_ep.load.assert_called_once()
