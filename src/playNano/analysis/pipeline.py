@@ -297,7 +297,7 @@ class AnalysisPipeline:
         stack.provenance["analysis"]["frame_times"] = None
 
         step_results: list[dict[str, Any]] = []
-        results_by_name: defaultdict[str, list] = defaultdict(list)
+        results_by_name: defaultdict[str, list] = defaultdict(dict)
         previous_latest: dict[str, dict[str, Any]] = {}
         # module cache unchanged
         for idx, (module_name, params) in enumerate(self.steps, start=1):
@@ -342,7 +342,7 @@ class AnalysisPipeline:
             }
             step_results.append(step_record)
             # update previous_results structures
-            results_by_name[module_name].append(outputs)
+            results_by_name[module_name] = outputs
             # allow downstream modules to use latest result
             previous_latest[module_name] = outputs
 

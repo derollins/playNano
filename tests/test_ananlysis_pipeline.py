@@ -86,7 +86,7 @@ def test_run_executes_steps(dummy_stack, dummy_module):
 
     # Check results_by_name
     assert "dummy" in result["provenance"]["results_by_name"]
-    assert result["provenance"]["results_by_name"]["dummy"][0]["result"] == 42
+    assert result["provenance"]["results_by_name"]["dummy"]["result"] == 42
 
 
 def test_module_is_cached(dummy_stack, dummy_module):
