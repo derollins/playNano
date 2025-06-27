@@ -450,6 +450,7 @@ def test_two_separate_regions(stack_1frame_with_timestamps):
 
 class MockAFMImageStack:
     """Mock AFMImageStack for testing."""
+
     def __init__(self, n_frames):
         """
         Initialize the mock AFM image stack.

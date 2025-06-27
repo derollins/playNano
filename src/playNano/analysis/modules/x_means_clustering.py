@@ -75,7 +75,14 @@ class XMeansClusteringModule(AnalysisModule):
     ----------
     requires : list[str]
         Names of analysis modules whose outputs this module depends on.
+
+    Version
+    -------
+    0.1.0
+        Initial implementation.
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:
