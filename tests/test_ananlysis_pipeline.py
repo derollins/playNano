@@ -33,6 +33,7 @@ def dummy_stack():
 @pytest.fixture
 def dummy_module():
     """Fixture for a dummy AnalysisModule with a working run() method."""
+
     # Define a simple AnalysisModule subclass
     class DummyMod(AnalysisModule):
         version = "1.0"
@@ -218,6 +219,7 @@ def test_resolve_mask_fn_invalid():
 @pytest.fixture
 def dummy_registry(monkeypatch):
     """Monkeypatch BUILTIN_ANALYSIS_MODULES to include 'dummy' -> DummyModule."""
+
     # Define DummyModule subclass
     class DummyModule(AnalysisModule):
         version = "0.1"

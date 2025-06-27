@@ -1,6 +1,6 @@
 # .flake8
 [flake8]
-extend-ignore = E203, D203, D213
+extend-ignore = D202, D203, D211, D213, E203, E213, E266, E501, W503
 max-line-length = 88
 exclude = .git,__pycache__,build,dist,.venv
 max-complexity = 50
