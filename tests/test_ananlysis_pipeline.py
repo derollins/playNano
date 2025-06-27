@@ -273,6 +273,7 @@ def test_run_single_step(dummy_registry, stack_with_times, tmp_path):
 
 def test_run_multiple_steps(monkeypatch, stack_with_times):
     """Outputs of earlier step should appear in previous_results for next."""
+
     # Define two AnalysisModule subclasses
     class FirstMod(AnalysisModule):
         version = "1"

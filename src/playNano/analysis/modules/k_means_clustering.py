@@ -57,7 +57,14 @@ class KMeansClusteringModule(AnalysisModule):
         Optional multiplier for time axis after normalization.
     **kmeans_kwargs
         Additional keyword arguments passed to sklearn.cluster.KMeans.
+
+    Version
+    -------
+    0.1.0
+        Initial implementation.
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:

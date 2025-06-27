@@ -33,7 +33,14 @@ class LoGBlobDetectionModule(AnalysisModule):
         threshold=0.1, overlap=0.5, include_radius=True)
         Detects blobs in each frame of the AFM image stack and returns per-frame features
         and a summary.
+
+    Version
+    -------
+    0.1.0
+        Initial implementation.
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:

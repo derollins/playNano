@@ -43,7 +43,14 @@ class DBSCANClusteringModule(AnalysisModule):
     as a third dimension, normalizes the space, and applies DBSCAN clustering.
     It returns clusters with point metadata, core point means as cluster centers,
     and a summary of cluster sizes.
+
+    Version
+    -------
+    0.1.0
+        Initial implementation.
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:

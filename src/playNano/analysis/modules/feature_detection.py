@@ -74,6 +74,11 @@ class FeatureDetectionModule(AnalysisModule):
             - `"total_features"` : int
             - `"avg_features_per_frame"` : float
 
+    Version
+    -------
+    0.1.0
+        Initial implementation.
+
     Examples
     --------
     >>> pipeline.add("feature_detection", mask_fn=otsu_mask, min_size=20,
@@ -82,6 +87,8 @@ class FeatureDetectionModule(AnalysisModule):
     >>> result["summary"]["total_features"]
     123
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:

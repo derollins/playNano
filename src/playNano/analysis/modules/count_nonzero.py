@@ -11,7 +11,14 @@ class CountNonzeroModule(AnalysisModule):
 
     This simple analysis module computes the number of non-zero pixels
     per frame and returns the result as a 1D array.
+
+    Version
+    -------
+    0.1.0
+        Initial implementation.
     """
+
+    version = "0.1.0"
 
     @property
     def name(self) -> str:
