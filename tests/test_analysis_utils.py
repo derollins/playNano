@@ -262,7 +262,7 @@ mock_features_per_frame = [
 
 
 def test_frame_summary_to_dataframe_structure():
-    """frame_summary_to_dataframe returns expected DataFrame structure."""
+    """Test frame_summary_to_dataframe returns expected DataFrame structure."""
     df = frames.frame_summary_to_dataframe(mock_features_per_frame)
     expected_cols = {
         "frame_index",
