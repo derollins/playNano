@@ -202,7 +202,7 @@ class KMeansClusteringModule(AnalysisModule):
                 data[:, 2] *= time_weight
 
         # run KMeans
-        km = KMeans(n_clusters=k, **kmeans_kwargs)
+        km = KMeans(n_clusters=k, random_state=42, **kmeans_kwargs)
         labels = km.fit_predict(data)
         centers = km.cluster_centers_.copy()
 

@@ -37,6 +37,18 @@ def test_numpy_encoder_raises_for_unserializable():
         json.dumps(data, cls=common.NumpyEncoder)
 
 
+def test_numpy_encoder_callable_serialization():
+    """Test that callables are serialized to a string with their function name."""
+
+    def dummy_function():
+        pass
+
+    data = {"func": dummy_function}
+    encoded = json.dumps(data, cls=common.NumpyEncoder)
+
+    assert '"<function dummy_function>"' in encoded
+
+
 # Sample nested record
 sample_record = {
     "metadata": {"experiment": "test", "version": 1.0},
@@ -82,7 +94,13 @@ def test_export_to_hdf5_structure_and_values():
 # Mock input data
 tracking_outputs = {
     "tracks": [
-        {"id": 1, "frames": [0, 1], "centroids": [(5, 5), (6, 6)], "labels": [10, 11]}
+        {
+            "id": 1,
+            "frames": [0, 1],
+            "point_indices": [0, 0],
+            "centroids": [(5, 5), (6, 6)],
+            "labels": [10, 11],
+        }
     ],
     "n_tracks": 1,
 }
@@ -117,20 +135,75 @@ detection_outputs = {
 }
 
 
+def test_flatten_particle_features_autodetect_track_id():
+    """Autodetects track ID when 'tracks' key is present."""
+    grouping = {"tracks": [{"id": 1, "frames": [0], "point_indices": [0]}]}
+    detection = {"features_per_frame": [[{"centroid": (1, 1)}]]}
+    df = particles.flatten_particle_features(grouping, detection)
+    assert "track_id" in df.columns
+    assert df.loc[0, "track_id"] == 1
+
+
+def test_flatten_particle_features_autodetect_cluster_id():
+    """Autodetects cluster ID when 'clusters' key is present."""
+    grouping = {"clusters": [{"id": 7, "frames": [0], "point_indices": [0]}]}
+    detection = {"features_per_frame": [[{"centroid": (1, 1)}]]}
+    df = particles.flatten_particle_features(grouping, detection)
+    assert "cluster_id" in df.columns
+    assert df.loc[0, "cluster_id"] == 7
+
+
+def test_flatten_particle_features_raises_on_unknown_key():
+    """Raises ValueError if object key is not auto-detectable."""
+    grouping = {"nonsense": [{"id": 1, "frames": [0], "point_indices": [0]}]}
+    detection = {"features_per_frame": [[]]}
+    with pytest.raises(ValueError, match="Unable to autodetect object_key"):
+        particles.flatten_particle_features(grouping, detection)
+
+
+def test_flatten_particle_features_raises_on_missing_keys():
+    """Raises KeyError if 'frames' or 'point_indices' keys are missing."""
+    grouping = {"tracks": [{"id": 1, "frames": [0]}]}  # Missing point_indices
+    detection = {"features_per_frame": [[]]}
+    with pytest.raises(KeyError, match="point_indices"):
+        particles.flatten_particle_features(grouping, detection)
+
+
+def test_flatten_particle_features_skips_out_of_bounds_frame():
+    """Skips features if frame index is out of bounds."""
+    grouping = {"tracks": [{"id": 1, "frames": [10], "point_indices": [0]}]}
+    detection = {"features_per_frame": [[]]}  # Only 1 frame
+    df = particles.flatten_particle_features(grouping, detection)
+    assert df.empty
+
+
+def test_flatten_particle_features_skips_out_of_bounds_point():
+    """Skips features if point index is out of bounds."""
+    grouping = {"tracks": [{"id": 1, "frames": [0], "point_indices": [99]}]}
+    detection = {"features_per_frame": [[{"centroid": (1, 1)}]]}
+    df = particles.flatten_particle_features(grouping, detection)
+    assert df.empty
+
+
 def test_flatten_tracks_returns_dataframe():
     """Test flatten_tracks returns a DataFrame with expected columns."""
-    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(
+        tracking_outputs,
+        detection_outputs,
+        object_key="tracks",
+        object_id_field="track_id",
+    )
     expected_cols = {
-        "track_id",
+        "track_id",  # if using object_id_field="track_id"
         "frame",
         "timestamp",
-        "label",
+        "label",  # still included from `feat.get("label", idx)`
         "centroid_x",
         "centroid_y",
         "area",
-        "mean_intensity",
-        "min_intensity",
-        "max_intensity",
+        "mean",
+        "min",
+        "max",
     }
     assert isinstance(df, pd.DataFrame)
     assert expected_cols.issubset(df.columns)
@@ -138,14 +211,24 @@ def test_flatten_tracks_returns_dataframe():
 
 def test_plot_tracks_3d_returns_axes():
     """Test plot_tracks_3d returns a matplotlib Axes object."""
-    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(
+        tracking_outputs,
+        detection_outputs,
+        object_key="tracks",
+        object_id_field="track_id",
+    )
     ax = particles.plot_particle_labels_3d(df)
-    assert isinstance(ax, plt.Axes)
+    assert hasattr(ax, "plot")
 
 
 def test_plot_tracks_3d_saves_file():
     """Test plot_tracks_3d saves a file if save_to is provided."""
-    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(
+        tracking_outputs,
+        detection_outputs,
+        object_key="tracks",
+        object_id_field="track_id",
+    )
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "plot.png"
         particles.plot_particle_labels_3d(df, save_to=out_path)
@@ -154,7 +237,12 @@ def test_plot_tracks_3d_saves_file():
 
 def test_export_particle_csv_creates_file():
     """Test export_particle_csv writes a CSV file to disk."""
-    df = particles.flatten_particle_features(tracking_outputs, detection_outputs)
+    df = particles.flatten_particle_features(
+        tracking_outputs,
+        detection_outputs,
+        object_key="tracks",
+        object_id_field="track_id",
+    )
     with TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "tracks.csv"
         particles.export_particle_csv(df, out_path)

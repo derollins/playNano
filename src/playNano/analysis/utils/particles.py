@@ -15,62 +15,104 @@ import pandas as pd
 
 
 def flatten_particle_features(
-    object_outputs: Mapping[str, Any],
-    detection_outputs: Mapping[str, Any],
+    grouping_output: Mapping[str, Any],
+    detection_output: Mapping[str, Any],
     *,
-    object_key: str = "tracks",
-    object_id_field: str = "track_id",  # or "cluster_id"
+    object_key: Optional[str] = None,
+    object_id_field: str = "cluster_id",
     frame_key: str = "frames",
-    label_key: str = "labels",
+    index_key: str = "point_indices",
 ) -> pd.DataFrame:
     """
-    Build a long-form DataFrame from a particle-based analysis result.
+    Build a DataFrame linking each grouping analysis results to detected features.
+
+    Each object (e.g. cluster or track) is linked to its corresponding detected
+    feature metadata using (frame index, point index) pairs to locate features in
+    the output of a feature detection step and merges metadata into one flattened
+    table.
 
     Parameters
     ----------
-    object_outputs : dict
-        Output from a particle analysis module (e.g. 'tracks' or 'clusters').
-    detection_outputs : dict
-        Output from feature detection, must include 'features_per_frame'.
-    object_key : str
-        Key in object_outputs (e.g. "tracks" or "clusters").
-    object_id_field : str
-        Name to use for object identifier column in the output
-        (e.g. "track_id" or "cluster_id").
-    frame_key : str
-        Key in each object pointing to a list of frame indices.
-    label_key : str
-        Key in each object pointing to a list of detection labels.
+    grouping_output : dict
+        Dictionary from a grouping module (e.g. clustering or tracking).
+        Must contain a list of group objects under the `object_key`, where each
+        object has lists of `frames` and `point_indices`.
+    detection_output : dict
+        Dictionary from a detection module (e.g. feature_detection), which must
+        contain the key 'features_per_frame': a list of feature dicts per frame.
+    object_key : str, optional
+        Key in `grouping_output` pointing to the list of group objects.
+        Default is "clusters".
+    object_id_field : str, optional
+        Column name to use in the output DataFrame to identify the group,
+        e.g., "cluster_id" or "track_id". Default is "cluster_id".
+    frame_key : str, optional
+        Key in each group object listing the frames the object appears in.
+        Default is "frames".
+    index_key : str, optional
+        Key in each group object listing the per-frame point indices (used
+        to match detections in `features_per_frame`). Default is "point_indices".
 
     Returns
     -------
     pd.DataFrame
-        Flattened table with detection + object metadata per frame.
+        Flattened DataFrame linking features to group membership.
+        Includes feature metadata and:
+            - object_id_field (e.g. "cluster_id")
+            - frame
+            - timestamp
+            - label
+            - centroid_x, centroid_y
+            - area
+            - mean_intensity
+            - min_intensity
+            - max_intensity
     """
-    rows = []
-    det_index = {}
-    for frame_idx, feats in enumerate(detection_outputs["features_per_frame"]):
-        for feat in feats:
-            det_index[(frame_idx, feat["label"])] = feat
+    if object_key is None:
+        if "tracks" in grouping_output:
+            object_key = "tracks"
+            object_id_field = "track_id"
+        elif "clusters" in grouping_output:
+            object_key = "clusters"
+            object_id_field = "cluster_id"
+        else:
+            raise ValueError("Unable to autodetect object_key. Please specify.")
 
-    for obj in object_outputs[object_key]:
-        oid = obj["id"]
-        for frame_idx, label in zip(obj[frame_key], obj[label_key], strict=False):
-            feat = det_index.get((frame_idx, label), {})
-            rows.append(
-                {
-                    object_id_field: oid,
-                    "frame": frame_idx,
-                    "timestamp": feat.get("frame_timestamp", np.nan),
-                    "label": label,
-                    "centroid_x": feat.get("centroid", (np.nan, np.nan))[0],
-                    "centroid_y": feat.get("centroid", (np.nan, np.nan))[1],
-                    "area": feat.get("area", np.nan),
-                    "mean_intensity": feat.get("mean", np.nan),
-                    "min_intensity": feat.get("min", np.nan),
-                    "max_intensity": feat.get("max", np.nan),
-                }
+    features_per_frame = detection_output.get("features_per_frame", [])
+    rows = []
+
+    for obj in grouping_output.get(object_key, []):
+        cid = obj["id"]
+        frames = obj.get(frame_key)
+        point_indices = obj.get(index_key)
+        if frames is None or point_indices is None:
+            raise KeyError(
+                f"Grouping objects must have '{frame_key}' and '{index_key}' lists"
             )
+
+        for frame_idx, pt_idx in zip(frames, point_indices, strict=False):
+            # Defensive: skip if index out of range
+            if frame_idx >= len(features_per_frame):
+                continue
+            frame_features = features_per_frame[frame_idx]
+            if pt_idx >= len(frame_features):
+                continue
+            feat = frame_features[pt_idx]
+
+            # Build row dict
+            row = row = {
+                object_id_field: cid,
+                "frame": frame_idx,
+                "timestamp": feat.get("frame_timestamp", np.nan),
+                "label": feat.get("label", None),
+                "centroid_x": feat["centroid"][0],  # x
+                "centroid_y": feat["centroid"][1],  # y
+                "area": feat.get("area", np.nan),
+                "mean": feat.get("mean", np.nan),
+                "min": feat.get("min", np.nan),
+                "max": feat.get("max", np.nan),
+            }
+            rows.append(row)
 
     return pd.DataFrame(rows)
 
