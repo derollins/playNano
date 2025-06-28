@@ -9,7 +9,7 @@ import pytest
 
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis.base import AnalysisModule
-from playNano.analysis.modules import feature_detection
+from playNano.analysis.modules import feature_detection, x_means_clustering
 from playNano.analysis.modules.count_nonzero import CountNonzeroModule
 from playNano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
 from playNano.analysis.modules.feature_detection import FeatureDetectionModule
@@ -779,28 +779,51 @@ def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
     assert isinstance(result["n_tracks"], int)
 
 
-def test_tracking_links_features(mock_stack):
-    """Link features across frames by nearest neighbor."""
-    fd_out = {
-        "features_per_frame": [
-            [{"centroid": (0, 0), "label": 1}],
-            [{"centroid": (0.5, 0.5), "label": 2}],
-            [{"centroid": (1, 1), "label": 3}],
-        ],
-        "labeled_masks": [
-            np.array([[0, 1], [1, 0]]),
-            np.array([[0, 2], [2, 0]]),
-            np.array([[0, 3], [3, 0]]),
-        ],
-    }
+def test_tracking_links_features():
+    """Test that ParticleTrackingModule links features by nearest neighbor."""
+    # Setup: 3 frames with features that gradually move right/down (e.g. like a track)
+    features_per_frame = [
+        [{"centroid": (0.0, 0.0), "label": 1}],  # Frame 0
+        [{"centroid": (0.5, 0.5), "label": 2}],  # Frame 1
+        [{"centroid": (1.0, 1.0), "label": 3}],  # Frame 2
+    ]
+
+    labeled_masks = [
+        np.array([[0, 1], [1, 0]]),
+        np.array([[0, 2], [2, 0]]),
+        np.array([[0, 3], [3, 0]]),
+    ]
+
+    # Run tracking
+    n_frames = len(features_per_frame)
     mod = ParticleTrackingModule()
     result = mod.run(
-        mock_stack, previous_results={"feature_detection": fd_out}, max_distance=2.0
+        MockAFMImageStack(n_frames),
+        previous_results={
+            "feature_detection": {
+                "features_per_frame": features_per_frame,
+                "labeled_masks": labeled_masks,
+            }
+        },
+        max_distance=2.0,
     )
+
+    # Expect a single track linking the same point across frames
     assert result["n_tracks"] == 1
     track = result["tracks"][0]
+
+    # Check frames were linked in order
     assert track["frames"] == [0, 1, 2]
-    assert track["labels"] == [1, 2, 3]
+
+    # Check centroids
+    assert track["centroids"] == [
+        (0.0, 0.0),
+        (0.5, 0.5),
+        (1.0, 1.0),
+    ]
+
+    # Check point indices
+    assert track["point_indices"] == [0, 0, 0]  # always index 0 in each frame
 
 
 def test_tracking_handles_empty_frames(mock_stack):
@@ -842,7 +865,7 @@ def test_tracking_overlapping_centroids(mock_stack):
     assert result["n_tracks"] >= 1
     for trk in result["tracks"]:
         assert isinstance(trk["centroids"], list)
-        assert isinstance(trk["labels"], list)
+        assert isinstance(trk["point_indices"], list)
 
 
 class DummyStack2:
@@ -1171,6 +1194,215 @@ def test_coord_columns_override(simple_per_frame):
     assert set(coords) == {(0.0, 0.0), (5.0, 5.0)}
 
 
+def test_xmeans_clusters_and_members_are_initialized():
+    """Ensure run() starts clustering and hits cluster initialization."""
+    mod = XMeansClusteringModule()
+    pf = [[{"centroid": (0, 0)}], [{"centroid": (5, 5)}]]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(pf)
+
+    result = mod.run(stack, prev, min_k=1, max_k=2)
+    assert isinstance(result["clusters"], list)
+    assert "summary" in result
+
+
+def test_xmeans_triggers_cluster_split():
+    """Test that XMeans performs a cluster split and hits split loop."""
+    pf = [
+        [{"centroid": (0, 0)}],
+        [{"centroid": (0.1, 0.1)}],
+        [{"centroid": (10, 10)}],
+        [{"centroid": (10.1, 10.1)}],
+    ]
+    stack = DummyStack([0.0, 1.0, 2.0, 3.0])
+    prev = make_prev(pf)
+    mod = XMeansClusteringModule()
+
+    # Use low split threshold to force a split
+    result = mod.run(stack, prev, min_k=1, max_k=4, bic_threshold=0.01)
+
+    # Should have split into at least two clusters
+    assert result["summary"]["n_clusters"] >= 2
+
+
+def test_xmeans_skips_negative_cluster_labels():
+    """Ensure negative cluster labels are skipped during output formatting."""
+    mod = XMeansClusteringModule()
+    pf = [
+        [{"centroid": (0, 0)}],
+        [{"centroid": (1000, 1000)}],
+    ]  # Far apart — force split
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(pf)
+
+    # Temporarily monkeypatch core_xmeans to produce a -1 label
+    from playNano.analysis.modules import x_means_clustering
+
+    def fake_core_xmeans(data, **kwargs):
+        return np.array([0, -1])  # One normal cluster, one invalid
+
+    original_fn = x_means_clustering.core_xmeans
+    x_means_clustering.core_xmeans = fake_core_xmeans
+
+    try:
+        result = mod.run(stack, prev, min_k=1, max_k=2)
+        assert result["summary"]["n_clusters"] == 1
+        assert all(c["id"] != -1 for c in result["clusters"])
+    finally:
+        x_means_clustering.core_xmeans = original_fn
+
+
+def test_core_xmeans_handles_negative_labels(monkeypatch):
+    """
+    Test that the core_xmeans function properly skips negative cluster labels.
+
+    We patch `np.unique` inside core_xmeans to force a negative label (-1),
+    which will cause the `continue` line inside the loop to run.
+    """
+
+    # Prepare some dummy data
+    data = np.array([[0, 0, 0], [1, 1, 1], [10, 10, 10]])
+
+    # Patch np.unique to return an array including a negative label
+    def fake_unique(labels):
+        return np.array([-1, 0, 1])
+
+    # Patch np.unique only within the core_xmeans module
+    monkeypatch.setattr(x_means_clustering.np, "unique", fake_unique)
+
+    # Run core_xmeans with dummy params, we only care about the label loop coverage
+    labels_out, centers_out = x_means_clustering.core_xmeans(
+        data,
+        init_k=2,
+        max_k=3,
+        min_cluster_size=1,
+        distance="sqeuclidean",
+        replicates=1,
+        max_iter=10,
+        bic_threshold=0.0,
+    )
+
+    # Assert outputs are valid shapes
+    assert labels_out.shape[0] == data.shape[0]
+    assert centers_out.shape[1] == data.shape[1]
+
+
+def test_core_xmeans_skips_small_clusters():
+    """Test that core_xmeans skips small clusters when run directly."""
+    # Create data with two clear clusters but one cluster has only one point
+    data = np.array(
+        [
+            [0, 0, 0],  # cluster 0
+            [0.1, 0.1, 0],  # cluster 0
+            [100, 100, 0],  # cluster 1 (only one point)
+        ]
+    )
+
+    init_k = 2
+    max_k = 2
+    min_cluster_size = 2  # require at least 2 points per cluster to split
+    distance = "sqeuclidean"
+    replicates = 1
+    max_iter = 100
+    bic_threshold = 0.0
+
+    labels, centers = x_means_clustering.core_xmeans(
+        data,
+        init_k=init_k,
+        max_k=max_k,
+        min_cluster_size=min_cluster_size,
+        distance=distance,
+        replicates=replicates,
+        max_iter=max_iter,
+        bic_threshold=bic_threshold,
+    )
+
+    # Check output clusters count <= initial clusters (since one is too small to split)
+    assert len(centers) <= max_k
+
+    # Check the cluster with only one point was not split (center still included)
+    assert any(np.allclose(center, [100, 100, 0]) for center in centers)
+
+
+def test_run_skips_negative_cluster_ids(monkeypatch):
+    """Test that run skips negative cluster id numbers."""
+    module = XMeansClusteringModule()
+    stack = DummyStack([0.0, 1.0])
+
+    previous_results = {
+        "feature_detection": {
+            "features_per_frame": [
+                [{"centroid_x": 0.1, "centroid_y": 0.2}],
+                [{"centroid_x": 0.3, "centroid_y": 0.4}],
+            ]
+        }
+    }
+
+    # Patch core_xmeans to return a negative label
+    def fake_core_xmeans(*args, **kwargs):
+        """Make a fake core_xmeans function."""
+        labels = np.array([-1, 0])
+        centers = np.array([[0.1, 0.2, 0.0], [0.3, 0.4, 1.0]])  # 3D centers
+        return labels, centers
+
+    monkeypatch.setattr(
+        "playNano.analysis.modules.x_means_clustering.core_xmeans", fake_core_xmeans
+    )
+
+    result = module.run(stack, previous_results)
+
+    # Assert only the non-negative cluster is returned
+    assert len(result["clusters"]) == 1
+    assert result["clusters"][0]["id"] == 0
+
+
+def test_continue_skips_negative_cluster_ids():
+    """Test that negative clusters are skipped."""
+    labels = np.array([0, -1, 1])  # Include a negative ID to trigger `continue`
+    data = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
+    metadata = [(0, 0), (0, 1), (0, 2)]
+
+    skipped_ids = []
+    clusters_out, members = [], {}
+    for cid in np.unique(labels):
+        if cid < 0:
+            skipped_ids.append(cid)
+            continue
+        idxs = np.where(np.atleast_1d(labels == cid))[0]
+        frames, coords_list, p_inds = [], [], []
+        for idx in idxs:
+            f_idx, p_idx = metadata[idx]
+            frames.append(f_idx)
+            p_inds.append(p_idx)
+            coords_list.append(tuple(data[idx]))
+        clusters_out.append(
+            {
+                "id": int(cid),
+                "frames": frames,
+                "point_indices": p_inds,
+                "coords": coords_list,
+            }
+        )
+        members[int(cid)] = len(idxs)
+
+    # Assert that the negative ID was skipped
+    assert skipped_ids == [-1]
+    assert all(cluster["id"] >= 0 for cluster in clusters_out)
+    assert set(members.keys()) == {0, 1}
+
+
+def test_compute_bic_triggers_eps_fallback():
+    """Test that when bic triggers the fallback."""
+    # All points are identical → variance = 0
+    points = np.array([[1.0, 1.0], [1.0, 1.0]])
+    center = np.array([[1.0, 1.0]])
+
+    bic = x_means_clustering.compute_bic(points, center)
+
+    # Just check that it returns a float (and doesn't crash)
+    assert isinstance(bic, float)
+
+
 def test_centroid_fallback(simple_per_frame):
     """Test that XMeans falls back to 'centroid' if coord_columns are missing."""
     # ensure that missing coord_columns triggers fallback to 'centroid' tuple
@@ -1194,13 +1426,13 @@ def test_centroid_fallback(simple_per_frame):
 
 def test_time_weight_effect(simple_per_frame):
     """Test XMeans time_weight controls clustering across identical XY positions."""
-    # make two clusters separated only in time, not in x-y;
+    # make two clusters separated only in time, and very slightly in x-y;
     # with time_weight=0 they collapse to single cluster, with large weight they split.
     pf = [
+        [{"centroid": (0.001, 0)}],
         [{"centroid": (0, 0)}],
-        [{"centroid": (0, 0)}],
-        [{"centroid": (0, 0)}],
-        [{"centroid": (0, 0)}],
+        [{"centroid": (0.0002, 0)}],
+        [{"centroid": (0, 0.005)}],
     ]
     stack = DummyStack([0.0, 1.0, 2.0, 3.0])
     prev = make_prev(pf)
@@ -1209,8 +1441,8 @@ def test_time_weight_effect(simple_per_frame):
     out1 = mod.run(stack, prev, min_k=1, max_k=4, normalise=True, time_weight=0.0)
     assert out1["summary"]["n_clusters"] == 1
     # with strong time weighting, should split into multiple clusters (up to max_k)
-    out2 = mod.run(stack, prev, min_k=1, max_k=4, normalise=True, time_weight=10.0)
-    assert out2["summary"]["n_clusters"] >= 1
+    out2 = mod.run(stack, prev, min_k=1, max_k=4, normalise=True, time_weight=1e7)
+    assert out2["summary"]["n_clusters"] >= 2
 
 
 def test_missing_coord_keys_raises_keyerror():

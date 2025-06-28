@@ -214,13 +214,11 @@ class FeatureDetectionModule(AnalysisModule):
 
         for i in range(n_frames):
             frame = data[i]
-            for i in range(n_frames):
-                frame = data[i]
-                try:
-                    ts = stack.time_for_frame(i)
-                    frame_ts = float(ts)
-                except Exception:
-                    frame_ts = float(i)
+            try:
+                ts = stack.time_for_frame(i)
+                frame_ts = float(ts)
+            except Exception:
+                frame_ts = float(i)
 
             mask_frame = mask_arr[i].copy()
 

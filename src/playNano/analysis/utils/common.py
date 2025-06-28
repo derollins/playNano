@@ -37,6 +37,8 @@ class NumpyEncoder(json.JSONEncoder):
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        if callable(obj):
+            return f"<function {obj.__name__}>"
         return super().default(obj)
 
 
