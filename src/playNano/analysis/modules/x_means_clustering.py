@@ -68,6 +68,14 @@ class XMeansClusteringModule(AnalysisModule):
 
     @property
     def name(self) -> str:
+        """
+        Name of the analysis module.
+
+        Returns
+        -------
+        str
+            The string identifier for this module.
+        """
         return "x_means_clustering"
 
     requires = ["feature_detection", "log_blob_detection"]
@@ -89,7 +97,83 @@ class XMeansClusteringModule(AnalysisModule):
         max_iter: int = 300,
         bic_threshold: float = 0.0,
     ) -> dict[str, Any]:
+        """
+        Perform X-Means clustering on features extracted from an AFM stack.
 
+        This method extracts (x, y[, t]) coordinates from detected features,
+        optionally normalizes and time-weights them, and applies the X-Means algorithm
+        to automatically select the number of clusters based on the BIC score.
+
+        Parameters
+        ----------
+        stack : AFMImageStack
+            The input image stack providing frame timing and metadata context.
+
+        previous_results : dict of str to Any, optional
+            Dictionary containing outputs from previous analysis steps.
+            Must contain the selected detection_module and coord_key.
+
+        detection_module : str, default="feature_detection"
+            Key identifying which previous module’s output to use.
+
+        coord_key : str, default="features_per_frame"
+            Key under the detection module that holds per-frame feature dicts.
+
+        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+            Keys to extract from each feature for clustering coordinates.
+            If missing, will fall back to using the "centroid" tuple if available.
+
+        use_time : bool, default=True
+            If True and `coord_columns` only gives 2D coordinates, appends the
+            frame timestamp as a third dimension.
+
+        min_k : int, default=1
+            Initial number of clusters to start with.
+
+        max_k : int, default=10
+            Maximum number of clusters allowed.
+
+        normalise : bool, default=True
+            Whether to normalize the feature coordinate axes to the [0, 1] range
+            before clustering.
+
+        time_weight : float or None, optional
+            Multiplicative factor applied to the time axis (after normalization).
+            Used only if time is included as a third coordinate.
+
+        replicates : int, default=3
+            Number of times to run k-means internally to choose the best split.
+
+        max_iter : int, default=300
+            Maximum number of iterations for each k-means call.
+
+        bic_threshold : float, default=0.0
+            Minimum improvement in BIC required to split a cluster.
+
+        Returns
+        -------
+        dict
+            A dictionary with the following keys:
+
+            - "clusters" : list of dicts, each with:
+                - id : int
+                - frames : list of int
+                - point_indices : list of int
+                - coords : list of tuple (normalized x, y, [t])
+            - "cluster_centers" : ndarray of shape (k, D)
+                Final cluster centers in original (denormalized) coordinates.
+            - "summary" : dict
+                - "n_clusters" : int
+                - "members_per_cluster" : dict mapping cluster ID to point count.
+
+        Raises
+        ------
+        RuntimeError
+            If the required detection module output is missing from previous_results.
+
+        KeyError
+            If the expected coordinate keys are missing from any feature dictionary.
+        """
         # Validate input dependencies
         if previous_results is None or detection_module not in previous_results:
             raise RuntimeError(f"Missing output from '{detection_module}' module.")
@@ -232,10 +316,8 @@ def core_xmeans(
 
             bic_parent = compute_bic(pts, centers[j : j + 1])
             bic_children = sum(
-                compute_bic(
-                    pts[labels2 == lab],
-                    centers2[lab : lab + 1]
-                ) for lab in [0, 1]
+                compute_bic(pts[labels2 == lab], centers2[lab : lab + 1])
+                for lab in [0, 1]
             )
 
             if bic_children - bic_parent > bic_threshold:
