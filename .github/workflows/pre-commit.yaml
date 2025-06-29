@@ -46,22 +46,3 @@ jobs:
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
-
-jobs:
-  docs:
-    runs-on: ubuntu-latest
-    name: Build Sphinx Docs
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-      - name: Install dependencies
-        run: |
-          pip install -e .[docs]
-          pip install sphinx
-      - name: Build HTML docs
-        run: |
-          cd docs
-          make html
