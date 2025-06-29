@@ -20,7 +20,6 @@ repos:
         language_version: python3.11
         exclude: ^docs/         # don’t run this hook on anything in docs/
 
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.7
     hooks:
@@ -43,11 +42,9 @@ repos:
         additional_dependencies: [flake8-docstrings]
         exclude: ^docs/         # don’t run this hook on anything in docs/
 
-
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
         args: [-- fix]
         exclude: ^docs/         # don’t run this hook on anything in docs/
-
