@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>playNano.io.formats.read_asd &#8212; playNano 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for playNano.io.formats.read_asd</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module to decode and load .asd high speed AFM data files into Python NumPy arrays.</span>
+
+<span class="sd">Files containing multiple image frames are read together.</span>
+<span class="sd">Converts the height data into nm from another metric unit (e.g. m).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFMReader.asd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_asd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">playNano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playNano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_height_units_to_nm</span><span class="p">,</span> <span class="n">guess_height_data_units</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert height data to nanometers if the channel is topography (&quot;TP&quot;).</span>
+
+<span class="sd">    Attempts to guess the unit from data range; defaults to &#39;nm&#39; on failure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_stack : np.ndarray</span>
+<span class="sd">        AFM height data array (2D or 3D).</span>
+<span class="sd">    channel : str</span>
+<span class="sd">        Channel name; must be &quot;TP&quot; to trigger conversion.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">height_unit</span> <span class="o">=</span> <span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">image_stack</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">&quot;nm&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to guess height unit, defaulting to &#39;nm&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s2">&quot;TP&quot;</span><span class="p">:</span>
+        <span class="n">image_stack</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">height_unit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image_stack</span>
+
+
+<div class="viewcode-block" id="load_asd_file">
+<a class="viewcode-back" href="../../../../api/playNano.io.formats.html#playNano.io.formats.read_asd.load_asd_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_asd_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load image stack from an .asd file scaled to nanometers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file_path : Path | str</span>
+<span class="sd">        Path to the .asd file.</span>
+<span class="sd">    channel : str</span>
+<span class="sd">        Channel to extract.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AFMImageStack</span>
+<span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+    <span class="c1"># Read .asd data and header</span>
+    <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">asd_metadata</span> <span class="o">=</span> <span class="n">load_asd</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+
+    <span class="n">image_stack</span> <span class="o">=</span> <span class="n">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+
+    <span class="n">frame_time</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;frame_time&quot;</span><span class="p">]</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;y_pixels&quot;</span><span class="p">]</span>
+    <span class="n">num_frames</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;num_frames&quot;</span><span class="p">]</span>
+
+    <span class="n">line_rate</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="p">(</span><span class="n">frame_time</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># lines per second</span>
+    <span class="n">frame_interval</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="n">line_rate</span>  <span class="c1"># seconds per frame (lines / lines per second)</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame_interval</span>
+
+    <span class="c1"># Compose per-frame metadata list</span>
+    <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
+        <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">image_stack</span><span class="p">,</span>
+        <span class="n">pixel_size_nm</span><span class="o">=</span><span class="n">pixel_size_nm</span><span class="p">,</span>
+        <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span>
+        <span class="n">frame_metadata</span><span class="o">=</span><span class="n">frame_metadata</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">playNano</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/playNano.html">playNano package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Daniel E. Rollins.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

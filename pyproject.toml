@@ -53,6 +53,15 @@ dev = [
     "black",
 ]
 
+docs = [
+    "sphinx",
+    "furo",  # or your theme
+    "myst-parser",
+    "sphinx-autoapi",  # or autodoc/autosummary
+    "numpy",
+    "h5py",
+]
+
 [project.scripts]
 playnano = "playNano.cli.entrypoint:main"
 

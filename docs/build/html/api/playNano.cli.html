@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>playNano.cli package &#8212; playNano 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="playNano.io package" href="playNano.io.html" />
+    <link rel="prev" title="playNano.analysis.utils package" href="playNano.analysis.utils.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="playnano-cli-package">
+<h1>playNano.cli package<a class="headerlink" href="#playnano-cli-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-playNano.cli.actions">
+<span id="playnano-cli-actions-module"></span><h2>playNano.cli.actions module<a class="headerlink" href="#module-playNano.cli.actions" title="Link to this heading">¶</a></h2>
+<p>Core logic for CLI actions in playNano.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.actions.play_pipeline_mode">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">play_pipeline_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/actions.html#play_pipeline_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.actions.play_pipeline_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Load an AFM file and display it interactively with optional filters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – Path to the AFM input file.</p></li>
+<li><p><strong>channel</strong> (<em>str</em>) – Data channel to extract from the file.</p></li>
+<li><p><strong>processing_str</strong> (<em>str</em><em> or </em><em>None</em>) – Inline filter string (e.g., “gaussian_filter:sigma=2”).</p></li>
+<li><p><strong>processing_file</strong> (<em>str</em><em> or </em><em>None</em>) – YAML or JSON file describing processing steps.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em><em> or </em><em>None</em>) – Directory for saving on-the-fly exports (if enabled in viewer).</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em> or </em><em>None</em>) – Base name for exports generated from the viewer.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<em>int</em><em> or </em><em>None</em>) – Scale bar length in nanometers for visualization.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.actions.print_env_info">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">print_env_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/cli/actions.html#print_env_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.actions.print_env_info" title="Link to this definition">¶</a></dt>
+<dd><p>Print the current playNano environment metadata.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.actions.run_pipeline_mode">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">run_pipeline_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_gif</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/actions.html#run_pipeline_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.actions.run_pipeline_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Load an AFM file, apply processing, and optionally export results and GIF.</p>
+<dl class="simple">
+<dt>Priority for parsing steps:</dt><dd><ol class="arabic simple">
+<li><p>If –processing-file is provided, read YAML/JSON from that file.</p></li>
+<li><p>Else if –processing is provided, parse the processing string.</p></li>
+</ol>
+</dd>
+</dl>
+<p>After building the ordered list of (step_name, kwargs),
+we build a ProcessingPipeline and run it. Finally, handle
+exports and GIF as before.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – Path to the AFM input file.</p></li>
+<li><p><strong>channel</strong> (<em>str</em>) – Data channel to extract from the file (e.g., “height_trace”).</p></li>
+<li><p><strong>processing_str</strong> (<em>str</em><em> or </em><em>None</em>) – Optional inline string defining filters,
+e.g., “remove_plane; gaussian_filter:sigma=2”.</p></li>
+<li><p><strong>processing_file</strong> (<em>str</em><em> or </em><em>None</em>) – Path to a YAML or JSON file specifying processing steps.</p></li>
+<li><p><strong>export</strong> (<em>str</em><em> or </em><em>None</em>) – Comma-separated list of export formats (e.g., “tif,npz,h5”).</p></li>
+<li><p><strong>make_gif</strong> (<em>bool</em>) – Whether to create a GIF of the filtered data.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em><em> or </em><em>None</em>) – Output directory for exports. Defaults to “output/”.</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em> or </em><em>None</em>) – Optional override for output file base name.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<em>int</em><em> or </em><em>None</em>) – Length of scale bar for GIF. Defaults to 100 nm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.actions.wizard_mode">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">wizard_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/actions.html#wizard_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.actions.wizard_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Launch an interactive REPL for building and applying a processing pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – Path to the AFM input file.</p></li>
+<li><p><strong>channel</strong> (<em>str</em>) – Channel to extract (e.g., “height_trace”).</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em><em> or </em><em>None</em>) – Directory to save exports or GIFs.</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em> or </em><em>None</em>) – Optional override for base output name.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<em>int</em><em> or </em><em>None</em>) – Length of scale bar in nanometers for GIF export.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.actions.write_exports">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">write_exports</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/actions.html#write_exports"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.actions.write_exports" title="Link to this definition">¶</a></dt>
+<dd><p>Write out requested bundles from an AFM stack (.data must be final version).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel</p></li>
+<li><p><strong>out_folder</strong> (<em>Path</em>) – Directory to write export files (will be created if needed)</p></li>
+<li><p><strong>base_name</strong> (<em>str</em>) – Base file name (no extension) for each export, e.g. “sample_01”</p></li>
+<li><p><strong>formats</strong> (<em>list</em><em> of </em><em>str</em>) – Which formats to write; valid set = {“tif”, “npz”, “h5”}.</p></li>
+<li><p><strong>raw</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use the raw data from <cite>afm_stack.processed[“raw”]</cite>.
+If False, use the final processed data in <cite>afm_stack.data</cite>.
+Default is False (use processed data).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>SystemExit</strong> – If any element of <cite>formats</cite> is not in {“tif”,”npz”,”h5”}.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.cli.entrypoint">
+<span id="playnano-cli-entrypoint-module"></span><h2>playNano.cli.entrypoint module<a class="headerlink" href="#module-playNano.cli.entrypoint" title="Link to this heading">¶</a></h2>
+<p>Entry point for the playNano CLI.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.entrypoint.main">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/entrypoint.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.entrypoint.main" title="Link to this definition">¶</a></dt>
+<dd><p>Parse command-line arguments and dispatch to the appropriate CLI subcommand.</p>
+<p>This function sets up the top-level argparse parser, configures logging,
+and then calls the appropriate handler function (<cite>handle_play</cite>, <cite>handle_run</cite>,
+or <cite>handle_processing_wizard</cite>) based on the chosen subcommand.</p>
+<ul class="simple">
+<li><p>Set up argument parsing for ‘play’, ‘run’ and ‘wizard’ subcommands,</p></li>
+</ul>
+<p>each with their own options.
+- Configure logging level based on user input.
+- Show help and exit if no subcommand is provided.
+- Call the handler function associated with the chosen subcommand.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><dl class="simple">
+<dt>playnano play  &lt;input_file&gt; [–processing …] [–output-folder …] [–output-name …]</dt><dd><p>[–scale-bar-nm …] [–channel …]</p>
+</dd>
+<dt>playnano run   &lt;input_file&gt; [–processing …] [–export …] [–make-gif]</dt><dd><p>[–output-folder …] [–output-name …] [–scale-bar-nm …] [–channel …]</p>
+</dd>
+<dt>playnano wizard &lt;input_file&gt; [–channel …] [–scale-bar-nm …]</dt><dd><p>[–output-folder …] [–output-name …]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.entrypoint.setup_logging">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/entrypoint.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.entrypoint.setup_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Configure the logging format and level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>level</strong> (<em>int</em><em>, </em><em>optional</em>) – Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.cli.handlers">
+<span id="playnano-cli-handlers-module"></span><h2>playNano.cli.handlers module<a class="headerlink" href="#module-playNano.cli.handlers" title="Link to this heading">¶</a></h2>
+<p>Handlers for the playNano CLI commands.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.handlers.handle_play">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/handlers.html#handle_play"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.handlers.handle_play" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the ‘play’ subcommand: feed arguments into the run_pipeline_mode function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>argparse.Namespace</em>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- processing_str (str or None)
+- processing_file (str or None)
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 turns off scale bar</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.handlers.handle_processing_wizard">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_processing_wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/handlers.html#handle_processing_wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.handlers.handle_processing_wizard" title="Link to this definition">¶</a></dt>
+<dd><p>Interactive “wizard” for building a processing processing step by step.</p>
+<dl>
+<dt>Usage:</dt><dd><p>playnano processing &lt;input_file&gt;  [–channel …]                                         [–output-folder …]                                         [–output-name …]</p>
+</dd>
+<dt>The user then interacts with a simple REPL:</dt><dd><p>add remove_plane
+add gaussian_filter</p>
+<blockquote>
+<div><p>sigma: 2.0</p>
+</div></blockquote>
+<p>list
+run
+quit</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>argparse.Namespace</em>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 turns off scale bar</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.handlers.handle_run">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/handlers.html#handle_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.handlers.handle_run" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the ‘run’ subcommand: feed arguments into the run_pipeline_mode function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>argparse.Namespace</em>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- processing_str (str or None)
+- processing_file (str or None)
+- export (str or None), comma-separated formats like “tif,npz,h5”
+- make_gif (bool), whether to create a GIF
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 turns off scale bar</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.handlers.setup_logging">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/cli/handlers.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.handlers.setup_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Configure the logging format and level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>level</strong> (<em>int</em><em>, </em><em>optional</em>) – Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.cli.utils">
+<span id="playnano-cli-utils-module"></span><h2>playNano.cli.utils module<a class="headerlink" href="#module-playNano.cli.utils" title="Link to this heading">¶</a></h2>
+<p>Utility functions for the playNano CLI.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.utils.is_valid_step">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">is_valid_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#is_valid_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.is_valid_step" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if <cite>name</cite> is a built-in filter, mask, plugin or the ‘clear’ step.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.utils.parse_processing_file">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_file" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</p>
+<dl class="simple">
+<dt>Expected YAML schema:</dt><dd><dl class="simple">
+<dt>filters:</dt><dd><ul class="simple">
+<li><p>name: remove_plane</p></li>
+<li><p>name: gaussian_filter
+sigma: 2.0</p></li>
+<li><p>name: threshold_mask
+threshold: 2</p></li>
+<li><p>name: polynomial_flatten
+order: 2</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns a list in the order listed under <cite>filters</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.cli.utils.parse_processing_string">
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_string" title="Link to this definition">¶</a></dt>
+<dd><p>Parse ; delimited processing strings into a list of (step_name, kwargs) tuples.</p>
+<dl class="simple">
+<dt>Each segment in <cite>processing_str</cite> is of the form:</dt><dd><p>filter_name
+filter_name:param=value
+filter_name:param1=value1,param2=value2</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>“remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”</p>
+<dl class="simple">
+<dt>Returns a list in the order encountered, e.g.:</dt><dd><dl class="simple">
+<dt>[(“remove_plane”, {}),</dt><dd><p>(“gaussian_filter”, {“sigma”: 2.0}),
+(“threshold_mask”, {“threshold”: 2})]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.cli">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playNano.cli" title="Link to this heading">¶</a></h2>
+<p>Public package initialization.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">playNano</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="playNano.html">playNano package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="playNano.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.afm_stack">playNano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.errors">playNano.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="playNano.html">playNano package</a><ul>
+      <li>Previous: <a href="playNano.analysis.utils.html" title="previous chapter">playNano.analysis.utils package</a></li>
+      <li>Next: <a href="playNano.io.html" title="next chapter">playNano.io package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Daniel E. Rollins.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/playNano.cli.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
