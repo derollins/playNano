@@ -3,9 +3,13 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^docs/         # don’t run this hook on anything in docs/
       - id: end-of-file-fixer
+        exclude: ^docs/         # don’t run this hook on anything in docs/
       - id: check-yaml
+        exclude: ^docs/         # don’t run this hook on anything in docs/
       - id: check-added-large-files
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -14,7 +18,7 @@ repos:
         args: ["--profile", "black"]
         name: isort (python import sorting)
         language_version: python3.11
-    exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -23,21 +27,21 @@ repos:
       - id: ruff
         args: ["--fix"]
         additional_dependencies: [ "ruff>=0.0.285" ]
-    exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
       - id: black
         language_version: python3.11  # match setup-python version
-    exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
         additional_dependencies: [flake8-docstrings]
-    exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
@@ -45,5 +49,5 @@ repos:
     hooks:
       - id: markdownlint-cli2
         args: [-- fix]
-    exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^docs/         # don’t run this hook on anything in docs/
 
