@@ -25,4 +25,5 @@ jobs:
       - name: Build HTML docs
         run: |
           cd docs
+
           make html
