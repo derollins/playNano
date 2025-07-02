@@ -48,3 +48,8 @@ repos:
       - id: markdownlint-cli2
         args: [-- fix]
         exclude: ^docs/         # don’t run this hook on anything in docs/
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: v0.5.0
+    hooks:
+      - id: nbstripout

@@ -353,6 +353,11 @@ playnano run sample.h5 \
 - For .h5-jpk and other multi-frame formats, a single file is loaded. For formats like .jpk or .spm, provide a folder
     containing the frame files.
 
+## Examples
+
+- `notebooks/playnano_demo_notebook.ipynb`: step‑by‑step demo of loading, processing, analysing, and exporting time-series
+ AFM data with playNano.
+
 ## 📁 Project Structure
 
 ```text
@@ -364,6 +369,7 @@ playNano/
 ├── cli/               # CLI interface
 ├── playback/          # OpenCV-based viewer
 ├── utils/             # Common utilities
+└── notebooks/         # Example and demostration notebooks
 ```
 
 ## 🧩 Dependencies
