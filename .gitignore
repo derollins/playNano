@@ -17,3 +17,10 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# Docs
+docs/build/
+
+# ignore notebook check‑points
+**/.ipynb_checkpoints
+# do NOT ignore the notebooks/ folder itself

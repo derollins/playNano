@@ -13,6 +13,7 @@ from PIL import Image, ImageSequence
 
 from playNano.afm_stack import AFMImageStack
 from playNano.io.export import (
+    check_path_is_path,
     export_bundles,
     save_h5_bundle,
     save_npz_bundle,
@@ -670,6 +671,26 @@ def test_export_bundles_all_formats_filtered(afm_stack_obj):
         assert (out_dir / "test_stack_filtered.ome.tif").exists()
         assert (out_dir / "test_stack_filtered.npz").exists()
         assert (out_dir / "test_stack_filtered.h5").exists()
+
+
+def test_accepts_path_object():
+    """Returns Path unchanged if input is already a Path."""
+    p = Path("/some/path")
+    assert check_path_is_path(p) == p
+
+
+def test_converts_string_to_path():
+    """Converts string input to a Path object."""
+    path_str = "/some/path"
+    result = check_path_is_path(path_str)
+    assert isinstance(result, Path)
+    assert result == Path(path_str)
+
+
+def test_raises_type_error_on_invalid_type():
+    """Raises TypeError for unsupported input types."""
+    with pytest.raises(TypeError):
+        check_path_is_path(123)
 
 
 def test_export_bundles_invalid_format_raises(afm_stack_obj):

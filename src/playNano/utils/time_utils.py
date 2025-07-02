@@ -3,6 +3,15 @@
 from __future__ import annotations
 
 from datetime import datetime
+
+# Allow compatability with Python 3.10
+try:
+    from datetime import UTC
+except ImportError:
+    from datetime import timezone
+
+    UTC = timezone.utc
+
 from typing import Any
 
 import cv2
@@ -104,6 +113,7 @@ def draw_scale_and_timestamp(
     px_per_nm = 1.0 / pixel_size_nm
     if bar_length_nm > 0:
         bar_length_px = int(bar_length_nm * px_per_nm * scale)
+        print(f"{bar_length_px}, {px_per_nm}, {scale}, {pixel_size_nm}")
         bar_height = 5
 
         bar_x = 10
@@ -115,8 +125,8 @@ def draw_scale_and_timestamp(
             (bar_x, bar_y),
             (bar_x + bar_length_px, bar_y + bar_height),
             color,
-            -1,  # noqa
-        )  # noqa
+            -1,
+        )
         cv2.putText(
             image,
             f"{bar_length_nm} nm",
@@ -127,11 +137,15 @@ def draw_scale_and_timestamp(
             font_thickness,
         )
 
+    timestamp_org_top = int(
+        45 * font_scale
+    )  # make the position from the top scale with fornt size.
+
     # Draw timestamp
     cv2.putText(
         image,
         f"Time: {timestamp:.2f} s",
-        (10, 45),
+        (10, timestamp_org_top),  # org
         cv2.FONT_HERSHEY_SIMPLEX,
         font_scale + 0.1,
         color,
@@ -139,3 +153,8 @@ def draw_scale_and_timestamp(
     )
 
     return image
+
+
+def utc_now_iso() -> str:
+    """Return a ISO 8601 UTC timestamp."""
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")

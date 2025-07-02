@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>playNano.processing package &#8212; playNano 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="playNano.io.formats package" href="playNano.io.formats.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="playnano-processing-package">
+<h1>playNano.processing package<a class="headerlink" href="#playnano-processing-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-playNano.processing.core">
+<span id="playnano-processing-core-module"></span><h2>playNano.processing.core module<a class="headerlink" href="#module-playNano.processing.core" title="Link to this heading">¶</a></h2>
+<p>Core functions for loading and processing AFMImageStacks.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.core.process_stack">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.core.</span></span><span class="sig-name descname"><span class="pre">process_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playNano/processing/core.html#process_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.core.process_stack" title="Link to this definition">¶</a></dt>
+<dd><p>Load an AFMImageStack, apply the given steps, and return it.</p>
+<p>Raises LoadError on load failure.</p>
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing.filters">
+<span id="playnano-processing-filters-module"></span><h2>playNano.processing.filters module<a class="headerlink" href="#module-playNano.processing.filters" title="Link to this heading">¶</a></h2>
+<p>Module for applying flattening and filtering to AFM images in Numpy arrays.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.gaussian_filter">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">gaussian_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/filters.html#gaussian_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.gaussian_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a Gaussian low-pass filter to smooth high-frequency noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Standard deviation for Gaussian kernel, in pixels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Smoothed image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.polynomial_flatten">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/filters.html#polynomial_flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.polynomial_flatten" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract a 2D polynomial surface of given order to flatten AFM image data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – Polynomial order for surface fitting (e.g., 1 for linear, 2 for quadratic).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened image with polynomial background removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If data is not a 2D array or if order is not a positive integer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.register_filters">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">register_filters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/processing/filters.html#register_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.register_filters" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of filter options.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.remove_plane">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">remove_plane</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/filters.html#remove_plane"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.remove_plane" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a 2D plane to the image using linear regression and subtract it.</p>
+<p>Uses a 2D plane (z = ax + by + c) to remove to remove overall tilt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Plane-removed image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.row_median_align">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">row_median_align</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/filters.html#row_median_align"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.row_median_align" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the median of each row from that row to remove horizontal banding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Row-aligned image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.filters.zero_mean">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/filters.html#zero_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.filters.zero_mean" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the overall mean height to center the background around zero.</p>
+<p>If a mask is provided, mean is computed only over background (mask == False).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Boolean mask of same shape as data; True indicates region to exclude from mean.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Zero-mean image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing.mask_generators">
+<span id="playnano-processing-mask-generators-module"></span><h2>playNano.processing.mask_generators module<a class="headerlink" href="#module-playNano.processing.mask_generators" title="Link to this heading">¶</a></h2>
+<p>Module for masking features of AFM images in Numpy arrays.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.mask_adaptive">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_adaptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#mask_adaptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.mask_adaptive" title="Link to this definition">¶</a></dt>
+<dd><p>Adaptive local mean threshold per block.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.mask_below_threshold">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_below_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#mask_below_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.mask_below_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Mask where data &lt; threshold.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.mask_mean_offset">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_mean_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#mask_mean_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.mask_mean_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Mask values &gt; mean +/- factor*std.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.mask_morphological">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_morphological</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#mask_morphological"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.mask_morphological" title="Link to this definition">¶</a></dt>
+<dd><p>Threshold+closing to mask foreground.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.mask_threshold">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#mask_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.mask_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Mask where data &gt; threshold.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.mask_generators.register_masking">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">register_masking</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/processing/mask_generators.html#register_masking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.mask_generators.register_masking" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of masking options.</p>
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing.masked_filters">
+<span id="playnano-processing-masked-filters-module"></span><h2>playNano.processing.masked_filters module<a class="headerlink" href="#module-playNano.processing.masked_filters" title="Link to this heading">¶</a></h2>
+<p>Module for filtering AFM data in NumPy arrays with a boolean mask.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.masked_filters.polynomial_flatten_masked">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/masked_filters.html#polynomial_flatten_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.masked_filters.polynomial_flatten_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a 2D polynomial using background (mask==False) and subtract it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – Polynomial order. Default order=2.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polynomial-flattened image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If mask.shape != data.shape or order is not a positive integer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.masked_filters.register_mask_filters">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">register_mask_filters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/processing/masked_filters.html#register_mask_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.masked_filters.register_mask_filters" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of masking options.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.masked_filters.remove_plane_masked">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">remove_plane_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/masked_filters.html#remove_plane_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.masked_filters.remove_plane_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a 2D plane on background only and subtract it from the full image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground (excluded),
+False=background (used to fit).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Plane-removed image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If mask.shape != data.shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.masked_filters.row_median_align_masked">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">row_median_align_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/masked_filters.html#row_median_align_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.masked_filters.row_median_align_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Compute each row’s median using background pixels and subtract from each full row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Row-masked-alignment image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If mask.shape != data.shape.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing.pipeline">
+<span id="playnano-processing-pipeline-module"></span><h2>playNano.processing.pipeline module<a class="headerlink" href="#module-playNano.processing.pipeline" title="Link to this heading">¶</a></h2>
+<p>Module containing the ProcessingPipeline class for AFMImageStack processing.</p>
+<p>This module provides ProcessingPipeline, which runs a sequence of
+mask/filter/method/plugin steps on an AFMImageStack. Each step’s output is stored
+in <cite>stack.processed</cite> (for filters) or <cite>stack.masks</cite> (for masks), and detailed
+provenance (timestamps, parameters, step type, version info, keys) is recorded in
+<cite>stack.provenance[“processing”]</cite>. Environment metadata at pipeline start is recorded in
+<cite>stack.provenance[“environment”]</cite>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.processing.pipeline.ProcessingPipeline">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.processing.pipeline.</span></span><span class="sig-name descname"><span class="pre">ProcessingPipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/processing/pipeline.html#ProcessingPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.pipeline.ProcessingPipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Orchestrates a sequence of masks and filters (or other processing steps).</p>
+<p>Acts on an AFMImageStack, recording outputs and detailed provenance.
+Each step is specified by name and kwargs:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>“clear” resets any active mask</p></li>
+<li><p>mask steps compute boolean masks stored under <cite>stack.masks[…]</cite></p></li>
+<li><p>filter/method/plugin steps apply to the current data (and mask if present),
+storing results in <cite>stack.processed[…]</cite></p></li>
+</ul>
+</div></blockquote>
+<p>Provenance for each step (index, name, params, timestamp, step_type, version,
+keys, summaries) is appended to <cite>stack.provenance[“processing”][“steps”]</cite>. A
+mapping from step name to list of snapshot keys is built as
+<cite>stack.provenance[“processing”][“keys_by_name”]</cite>. The final processed array
+overwrites <cite>stack.data</cite>. Environment info is captured once under
+<cite>stack.provenance[“environment”]</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.processing.pipeline.ProcessingPipeline.add_filter">
+<span class="sig-name descname"><span class="pre">add_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline"><span class="pre">ProcessingPipeline</span></a></span></span><a class="reference internal" href="../_modules/playNano/processing/pipeline.html#ProcessingPipeline.add_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.pipeline.ProcessingPipeline.add_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Add a filter step to the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_name</strong> (<em>str</em>) – The name of the registered filter function to apply.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments for the filter function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The pipeline instance (for method chaining).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline">ProcessingPipeline</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If a mask is currently active, the pipeline will attempt to use a
+masked version of the filter (from <cite>MASK_FILTERS_MAP</cite>) if available.
+Otherwise, the unmasked filter is applied to the whole dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.processing.pipeline.ProcessingPipeline.add_mask">
+<span class="sig-name descname"><span class="pre">add_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline"><span class="pre">ProcessingPipeline</span></a></span></span><a class="reference internal" href="../_modules/playNano/processing/pipeline.html#ProcessingPipeline.add_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.pipeline.ProcessingPipeline.add_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Add a masking step to the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_name</strong> (<em>str</em>) – The name of the registered mask function to apply.</p></li>
+<li><p><strong>**kwargs</strong> – Additional parameters passed to the mask function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The pipeline instance (for method chaining).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline">ProcessingPipeline</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If a mask is currently active (i.e. not cleared), this new mask will be
+logically combined (ORed) with the existing one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.processing.pipeline.ProcessingPipeline.clear_mask">
+<span class="sig-name descname"><span class="pre">clear_mask</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline"><span class="pre">ProcessingPipeline</span></a></span></span><a class="reference internal" href="../_modules/playNano/processing/pipeline.html#ProcessingPipeline.clear_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.pipeline.ProcessingPipeline.clear_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Add a step to clear the current mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The pipeline instance (for method chaining).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#playNano.processing.pipeline.ProcessingPipeline" title="playNano.processing.pipeline.ProcessingPipeline">ProcessingPipeline</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Calling this resets the masking state, so subsequent filters will be
+applied to the entire dataset unless a new mask is added.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.processing.pipeline.ProcessingPipeline.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/pipeline.html#ProcessingPipeline.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.pipeline.ProcessingPipeline.run" title="Link to this definition">¶</a></dt>
+<dd><p>Execute configured steps on the AFMImageStack, stores outputs and provenance.</p>
+<p>Behavior:
+1. Record or update environment metadata via <cite>gather_environment_info()</cite></p>
+<blockquote>
+<div><p>into <cite>stack.provenance[“environment”]</cite>.</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Reset previous processing provenance under <cite>stack.provenance[“processing”]</cite>,
+ensuring keys <cite>“steps”</cite> (list) and <cite>“keys_by_name”</cite> (dict) exist
+and are cleared.</p></li>
+</ol>
+<p>3. If not already present, snapshot the original data as <cite>“raw”</cite> in
+<cite>stack.processed</cite>.
+4. Iterate over self.steps in order (1-based index):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Resolve step type via <cite>stack._resolve_step(step_name)</cite>, yielding</p></li>
+</ul>
+<p>(step_type, fn).
+- Record a timestamp (<cite>utc_now_iso()</cite>), index, name, params, step_type,</p>
+<blockquote>
+<div><p>function version (via <cite>fn.__version__</cite> or plugin lookup), and module name.</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>If step_type == “clear”:</dt><dd><ul class="simple">
+<li><p>reset current mask to None</p></li>
+<li><p>record <cite>“mask_cleared”: True</cite> in provenance entry</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>If step_type == “mask”:</dt><dd><ul class="simple">
+<li><p>call <cite>stack._execute_mask_step(fn, arr, **kwargs)</cite> to get a boolean</p></li>
+</ul>
+<p>mask array
+* if no existing mask: store under a new key <cite>step_&lt;idx&gt;_&lt;mask_name&gt;</cite>
+in <cite>stack.masks</cite></p>
+<blockquote>
+<div><p>else overlay with previous mask (logical OR) under derived key</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>update current mask, record <cite>“mask_key”</cite> and <cite>“mask_summary”</cite> in</p></li>
+</ul>
+<p>provenance</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Else (filter/method/plugin):</dt><dd><ul class="simple">
+<li><p>call <cite>stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)</cite></p></li>
+</ul>
+<p>to get new array
+* store result under <cite>stack.processed[“step_&lt;idx&gt;_&lt;safe_name&gt;”]</cite>,
+update arr
+* record <cite>“processed_key”</cite> and <cite>“output_summary”</cite> in provenance</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>After all steps, overwrite <cite>stack.data = arr</cite>.</p></li>
+</ol>
+<p>6. Build <cite>stack.provenance[“processing”][“keys_by_name”]</cite> mapping each
+step name to the list of stored keys (processed_key or mask_key) in order.
+7. Return the final processed array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The final processed data array (shape (n_frames, height, width)), now
+stored as <cite>stack.data</cite>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>RuntimeError</strong> – If a step cannot be resolved or executed due to misconfiguration.</p></li>
+<li><p><strong>ValueError</strong> – If overlaying a mask fails due to missing previous mask key (propagated).</p></li>
+<li><p><strong>Exception</strong> – Any exception from individual steps is logged then re-raised.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">ProcessingPipeline</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">&quot;gaussian_filter&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add_mask</span><span class="p">(</span><span class="s2">&quot;threshold_mask&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Final array in stack.data:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(n_frames, height, width)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Provenance entries:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">rec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processed_key&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">rec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mask_key&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Keys by name:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;keys_by_name&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Environment info:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;environment&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing.versioning">
+<span id="playnano-processing-versioning-module"></span><h2>playNano.processing.versioning module<a class="headerlink" href="#module-playNano.processing.versioning" title="Link to this heading">¶</a></h2>
+<p>Module for applying verision numbes to filters and masks.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.versioning.versioned_filter">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.versioning.</span></span><span class="sig-name descname"><span class="pre">versioned_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/processing/versioning.html#versioned_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.versioning.versioned_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Add decorator tag to a filter or mask function with a __version__ attribute.</p>
+<dl>
+<dt>Usage:</dt><dd><p>&#64;versioned_filter(“1.0.0”)
+def gaussian_filter(frame, sigma=1.0):</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.processing">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playNano.processing" title="Link to this heading">¶</a></h2>
+<p>Public package initialization.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">playNano</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="playNano.html">playNano package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="playNano.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.afm_stack">playNano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.errors">playNano.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="playNano.html">playNano package</a><ul>
+      <li>Previous: <a href="playNano.io.formats.html" title="previous chapter">playNano.io.formats package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Daniel E. Rollins.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/playNano.processing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
