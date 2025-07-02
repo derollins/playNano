@@ -7,10 +7,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 import playNano.processing.filters as filters
+from playNano.processing.versioning import versioned_filter
 
 logger = logging.getLogger(__name__)
 
 
+@versioned_filter("0.1.0")
 def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
     Fit a 2D plane on background only and subtract it from the full image.
@@ -51,6 +53,7 @@ def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return data - plane
 
 
+@versioned_filter("0.1.0")
 def polynomial_flatten_masked(
     data: np.ndarray,
     mask: np.ndarray,
@@ -114,6 +117,7 @@ def polynomial_flatten_masked(
     return flattened
 
 
+@versioned_filter("0.1.0")
 def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
     Compute each row's median using background pixels and subtract from each full row.

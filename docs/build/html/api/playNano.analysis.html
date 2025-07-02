@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>playNano.analysis package &#8212; playNano 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="playNano.analysis.utils package" href="playNano.analysis.utils.html" />
+    <link rel="prev" title="playNano package" href="playNano.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="playnano-analysis-package">
+<h1>playNano.analysis package<a class="headerlink" href="#playnano-analysis-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="playNano.analysis.utils.html">playNano.analysis.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="playNano.analysis.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.analysis.utils.html#module-playNano.analysis.utils.common">playNano.analysis.utils.common module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.common.NumpyEncoder"><code class="docutils literal notranslate"><span class="pre">NumpyEncoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.common.NumpyEncoder.default"><code class="docutils literal notranslate"><span class="pre">NumpyEncoder.default()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.common.export_to_hdf5"><code class="docutils literal notranslate"><span class="pre">export_to_hdf5()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.analysis.utils.html#module-playNano.analysis.utils.frames">playNano.analysis.utils.frames module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.frames.frame_summary_to_dataframe"><code class="docutils literal notranslate"><span class="pre">frame_summary_to_dataframe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.frames.plot_frame_histogram"><code class="docutils literal notranslate"><span class="pre">plot_frame_histogram()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.analysis.utils.html#module-playNano.analysis.utils.particles">playNano.analysis.utils.particles module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.particles.export_particle_csv"><code class="docutils literal notranslate"><span class="pre">export_particle_csv()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.particles.flatten_particle_features"><code class="docutils literal notranslate"><span class="pre">flatten_particle_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.analysis.utils.html#playNano.analysis.utils.particles.plot_particle_labels_3d"><code class="docutils literal notranslate"><span class="pre">plot_particle_labels_3d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.analysis.utils.html#module-playNano.analysis.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-playNano.analysis.base">
+<span id="playnano-analysis-base-module"></span><h2>playNano.analysis.base module<a class="headerlink" href="#module-playNano.analysis.base" title="Link to this heading">¶</a></h2>
+<p>Module holding the AnalysisModule base class.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.base.AnalysisModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.base.</span></span><span class="sig-name descname"><span class="pre">AnalysisModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/base.html#AnalysisModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.base.AnalysisModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for analysis steps.</p>
+<dl class="simple">
+<dt>Subclasses must implement:</dt><dd><ul class="simple">
+<li><p>a <cite>name</cite> property returning a unique string identifier</p></li>
+<li><p>a <cite>run(stack, previous_results=None, **params) -&gt; dict</cite> method</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.base.AnalysisModule.name">
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#playNano.analysis.base.AnalysisModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Unique name for this analysis module, e.g. “particle_detect”.</p>
+<p>Used by pipeline to identify and refer to the module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.base.AnalysisModule.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/base.html#AnalysisModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.base.AnalysisModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Perform the analysis on the given AFMImageStack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFMImageStack instance, containing <cite>.data</cite> and metadata.</p></li>
+<li><p><strong>previous_results</strong> (<em>dict</em><em> or </em><em>None</em>) – Outputs from earlier modules in the pipeline, if any.</p></li>
+<li><p><strong>**params</strong> (<em>module-specific parameters</em>) – E.g. threshold, min_size, etc.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary mapping output names (strings) to results, e.g.:
+{</p>
+<blockquote>
+<div><p>”coords”: numpy array of shape (N,3),
+“masks”: numpy array of shape (n_frames, H, W),
+…</p>
+</div></blockquote>
+<p>}</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.export">
+<span id="playnano-analysis-export-module"></span><h2>playNano.analysis.export module<a class="headerlink" href="#module-playNano.analysis.export" title="Link to this heading">¶</a></h2>
+<p>Functions for exporting ananlysis results.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.export.export_analysis_to_json">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.export.</span></span><span class="sig-name descname"><span class="pre">export_analysis_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/export.html#export_analysis_to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.export.export_analysis_to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Write the analysis_record (returned by AnalysisPipeline.run) to a JSON file.</p>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.pipeline">
+<span id="playnano-analysis-pipeline-module"></span><h2>playNano.analysis.pipeline module<a class="headerlink" href="#module-playNano.analysis.pipeline" title="Link to this heading">¶</a></h2>
+<p>Module for the AnalysisPipeline class for orchastration of analysis workflows.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.pipeline.AnalysisPipeline">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.pipeline.</span></span><span class="sig-name descname"><span class="pre">AnalysisPipeline</span></span><a class="reference internal" href="../_modules/playNano/analysis/pipeline.html#AnalysisPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.pipeline.AnalysisPipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Orchestrates a sequence of analysis steps on an AFMImageStack.</p>
+<p>Each step corresponds to an AnalysisModule (built-in or entry-point), invoked
+in order with the given parameters. Outputs of each step are stored in
+<cite>stack.analysis</cite> under keys ‘step_&lt;n&gt;_&lt;module_name&gt;’. Detailed provenance
+(timestamps, parameters, version, linking keys) is recorded in
+<cite>stack.provenance[“analysis”]</cite>. The run() method returns a dict containing
+environment info, the <cite>analysis</cite> dict, and its <cite>provenance</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.pipeline.AnalysisPipeline.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/pipeline.html#AnalysisPipeline.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.pipeline.AnalysisPipeline.add" title="Link to this definition">¶</a></dt>
+<dd><p>Add an analysis module to the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module_name</strong> (<em>str</em>) – The name of the analysis module to add (must be registered).</p></li>
+<li><p><strong>**params</strong> – Keyword arguments passed to the module’s <cite>run()</cite> method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;particle_detect&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;track_particles&quot;</span><span class="p">,</span> <span class="n">max_jump</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.pipeline.AnalysisPipeline.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/pipeline.html#AnalysisPipeline.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.pipeline.AnalysisPipeline.clear" title="Link to this definition">¶</a></dt>
+<dd><p>Remove all scheduled analysis steps and clear module cache.</p>
+<p>This allows reconfiguration of the pipeline without creating a new instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.pipeline.AnalysisPipeline.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/pipeline.html#AnalysisPipeline.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.pipeline.AnalysisPipeline.run" title="Link to this definition">¶</a></dt>
+<dd><p>Execute all added analysis steps on the given AFMImageStack.</p>
+<dl class="simple">
+<dt>Each step:</dt><dd><ul class="simple">
+<li><p>is resolved to an AnalysisModule instance</p></li>
+<li><p>invoked with <cite>(stack, previous_results=…, **params)</cite></p></li>
+<li><p>its outputs are stored under <cite>stack.analysis[“step_&lt;n&gt;_&lt;module_name&gt;”]</cite></p></li>
+<li><p>provenance is recorded in <cite>stack.provenance[“analysis”][“steps”]</cite></p></li>
+</ul>
+</dd>
+<dt>The overall provenance sub-dict also collects:</dt><dd><ul class="simple">
+<li><p>results_by_name: mapping module name to list of outputs</p></li>
+<li><p>frame_times: result of <cite>stack.get_frame_times()</cite>, or None</p></li>
+</ul>
+</dd>
+</dl>
+<p>The environment info (via gather_environment_info) is stored at
+<cite>stack.provenance[“environment”]</cite> (if not already set).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFMImageStack to analyze.</p></li>
+<li><p><strong>log_to</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to a JSON file where the combined record will be saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>AnalysisRecord</strong> –</p>
+<dl class="simple">
+<dt>{</dt><dd><p>“environment”: &lt;dict of environment metadata&gt;,
+“analysis”: &lt;dict of outputs per step&gt;,
+“provenance”: &lt;dict with keys “steps”, “results_by_name”, “frame_times”&gt;</p>
+</dd>
+</dl>
+<p>}</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Raw outputs: accessible via <cite>stack.analysis[“step_&lt;n&gt;_&lt;module_name&gt;”]</cite>.</p></li>
+<li><p>Provenance: in <cite>stack.provenance[“analysis”]</cite>, with a list of step records.</p></li>
+<li><p>If stack.provenance or stack.analysis is absent, they are created.</p></li>
+<li><p>If log_to is provided, the same record dict is JSON-dumped using NumpyEncoder.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Propagates any exception from module.run(…), after logging.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;count_nonzero&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">&quot;threshold_mask&quot;</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">&quot;out.json&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access the outputs:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;step_1_count_nonzero&quot;</span><span class="p">]</span>
+<span class="go">{&#39;counts&#39;: [...], ...}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect provenance:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">step_info</span> <span class="ow">in</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;provenance&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">step_info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">step_info</span><span class="p">[</span><span class="s2">&quot;analysis_key&quot;</span><span class="p">])</span>
+<span class="go">count_nonzero step_1_count_nonzero</span>
+<span class="go">feature_detection step_2_feature_detection</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="playNano.analysis.pipeline.AnalysisRecord">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.pipeline.</span></span><span class="sig-name descname"><span class="pre">AnalysisRecord</span></span><a class="headerlink" href="#playNano.analysis.pipeline.AnalysisRecord" title="Link to this definition">¶</a></dt>
+<dd><p>Structured output of an AnalysisPipeline run.</p>
+<p>This record contains:
+- environment : dict</p>
+<blockquote>
+<div><p>Metadata about the runtime environment (e.g. Python version, library versions).</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>analysis<span class="classifier">dict</span></dt><dd><p>Results of each analysis module run, with keys ‘step_&lt;n&gt;_&lt;module_name&gt;’.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>provenance<span class="classifier">dict</span></dt><dd><dl class="simple">
+<dt>Metadata about the provenance of the analysis steps, with keys:</dt><dd><ul>
+<li><dl class="simple">
+<dt>steps<span class="classifier">list of dict</span></dt><dd><dl class="simple">
+<dt>Ordered list of executed analysis steps. Each entry contains:</dt><dd><ul>
+<li><dl class="simple">
+<dt>index<span class="classifier">int</span></dt><dd><p>1-based index of the step in the pipeline.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>name<span class="classifier">str</span></dt><dd><p>The name of the analysis module used.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>Parameters passed to the module.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>timestamp<span class="classifier">str</span></dt><dd><p>ISO 8601 UTC timestamp when the step was executed.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>version<span class="classifier">str or None</span></dt><dd><p>Optional version string provided by the module instance.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>analysis_key<span class="classifier">str</span></dt><dd><p>Key under which this step’s outputs are stored in the <cite>analysis</cite> dict.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>results_by_name<span class="classifier">dict[str, list]</span></dt><dd><p>Maps module names to lists of outputs from each occurrence.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>frame_times<span class="classifier">list[float] or None</span></dt><dd><p>Timestamps for each frame in the stack, from <cite>stack.get_frame_times()</cite>,
+or None if unavailable.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">&quot;out.json&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access outputs:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;step_1_feature_detection&quot;</span><span class="p">][</span><span class="s2">&quot;summary&quot;</span><span class="p">]</span>
+<span class="go">{&#39;total_features&#39;: 23, &#39;avg_per_frame&#39;: 3.8}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect provenance:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;provenance&quot;</span><span class="p">][</span><span class="s2">&quot;results_by_name&quot;</span><span class="p">][</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;summary&quot;</span><span class="p">]</span>
+<span class="go">{&#39;total_features&#39;: 23, &#39;avg_per_frame&#39;: 3.8}</span>
+</pre></div>
+</div>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>]</p>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playNano.analysis" title="Link to this heading">¶</a></h2>
+<p>Public package initialization. Analysis modules live here.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">playNano</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="playNano.html">playNano package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="playNano.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.afm_stack">playNano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.errors">playNano.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="playNano.html">playNano package</a><ul>
+      <li>Previous: <a href="playNano.html" title="previous chapter">playNano package</a></li>
+      <li>Next: <a href="playNano.analysis.utils.html" title="next chapter">playNano.analysis.utils package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Daniel E. Rollins.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/playNano.analysis.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -30,6 +30,7 @@ keywords = [
 ]
 dependencies = [
   "numpy<2.0",
+  "pandas",
   "h5py",
   "Pillow",
   "tifffile",
@@ -38,6 +39,7 @@ dependencies = [
   "opencv-python",
   "python-dateutil>=2.8",
   "scipy",
+  "scikit-learn",
   "pyyaml>=6.0",
 ]
 
@@ -52,13 +54,26 @@ dev = [
     "black",
 ]
 
+docs = [
+    "sphinx",
+    "furo",  # or your theme
+    "myst-parser",
+    "sphinx-autoapi",  # or autodoc/autosummary
+    "numpy",
+    "h5py",
+]
+
+notebooks = ["jupyter"]
+
 [project.scripts]
 playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
-median_filter     = "playNano.processing.filters:median_filter"
-gaussian_filter   = "playNano.processing.filters:gaussian_filter"
-flatten_poly      = "playNano.processing.filters:flatten_poly"
+median_filter     = "playNano.processing.filters:median_filter" # Doesn't exist yet but used in testing
+
+[project.entry-points."playNano.analysis"]
+count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"
+particle_detect = "playNano.analysis.modules.detection:ParticleDetector"
 
 [project.urls]
 GitHub = "https://github.com/derollins/playNano"
@@ -92,6 +107,8 @@ exclude = '''
   | __pycache__
   | build
   | dist
+  |notebooks
+  |.*\.ipynb
 )/
 '''
 
