@@ -90,13 +90,14 @@ def create_gif_with_scale_and_timestamp(
                 timestamp = i
         else:
             timestamp = i
-
+        print(f"pxsize: {pixel_size_nm}")
         # Apply OpenCV overlay drawing
         frame_with_overlay = draw_scale_and_timestamp(
             color_frame.copy(),
             timestamp=timestamp,
             pixel_size_nm=pixel_size_nm,
             scale=1.0,  # no resizing in GIFs assumed
+            font_scale=frame.shape[0] / 512,
             bar_length_nm=scale_bar_length_nm,
         )
 
@@ -160,13 +161,15 @@ def export_gif(
 
     timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
 
+    pixel_to_nm = afm_stack.pixel_size_nm
+
     # default scale bar
     bar_nm = scale_bar_nm if scale_bar_nm is not None else 100
 
     logger.debug(f"[export] Writing GIF → {gif_path}")
     create_gif_with_scale_and_timestamp(
         stack_data,
-        bar_nm,
+        pixel_to_nm,
         timestamps,
         output_path=gif_path,
         scale_bar_length_nm=bar_nm,

@@ -4,7 +4,7 @@ K-Means clustering on features over the entire stack in 3D (x, y, time).
 This module extracts a point-cloud from per-frame feature dictionaries
 (e.g. coordinates + timestamps), optionally normalizes each axis to [0,1],
 applies K-Means with a user-supplied k, then returns cluster assignments,
-centers (in original units), and a summary.
+cluster centers (in original coordinate units), and a summary.
 
 Parameters
 ----------
@@ -110,7 +110,7 @@ class KMeansClusteringModule(AnalysisModule):
             Must contain the selected detection_module and coord_key.
 
         detection_module : str, default="feature_detection"
-            Key identifying which previous module’s output to use.
+            Key identifying which previous module's output to use.
 
         coord_key : str, default="features_per_frame"
             Key under the detection module that holds per-frame feature dicts.
@@ -146,7 +146,10 @@ class KMeansClusteringModule(AnalysisModule):
                 - id : int
                 - frames : list of int
                 - point_indices : list of int
-                - coords : list of tuple (normalized x, y, [t])
+                - coords : list of tuple
+                    The normalized coordinates used in clustering for each point
+                    in the cluster (e.g., (x, y[, t])).
+
             - "cluster_centers" : ndarray of shape (k, D)
                 Cluster centers in original coordinate units.
             - "summary" : dict
@@ -161,11 +164,23 @@ class KMeansClusteringModule(AnalysisModule):
         KeyError
             If the required coordinate keys are missing in any feature dictionary.
         """
-        if previous_results is None or detection_module not in previous_results:
-            raise RuntimeError(f"{self.name!r} requires output from {detection_module}")
+        if previous_results is None:
+            raise RuntimeError(f"{self.name!r} requires previous results to run.")
+
+        # Auto-detect the most recent available detection module
+        if detection_module not in previous_results:
+            available = [
+                mod for mod in reversed(self.requires) if mod in previous_results
+            ]
+            if not available:
+                raise RuntimeError(
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+                )
+            detection_module = available[0]
 
         per_frame = previous_results[detection_module][coord_key]
         points, metadata = [], []
+
         for f_idx, feats in enumerate(per_frame):
             t = stack.time_for_frame(f_idx)
             for p_idx, feat in enumerate(feats):

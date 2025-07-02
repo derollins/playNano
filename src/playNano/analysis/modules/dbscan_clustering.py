@@ -139,8 +139,19 @@ class DBSCANClusteringModule(AnalysisModule):
                     - "n_clusters": total number of clusters found
                     - "members_per_cluster": dict of cluster ID to count
         """
-        if previous_results is None or detection_module not in previous_results:
-            raise RuntimeError(f"{self.name!r} requires output from {detection_module}")
+        if previous_results is None:
+            raise RuntimeError(f"{self.name!r} requires previous results to run.")
+
+        # Auto-detect the most recent available detection module
+        if detection_module not in previous_results:
+            available = [
+                mod for mod in reversed(self.requires) if mod in previous_results
+            ]
+            if not available:
+                raise RuntimeError(
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+                )
+            detection_module = available[0]
 
         per_frame = previous_results[detection_module][coord_key]
         points, metadata = [], []
