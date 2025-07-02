@@ -744,6 +744,7 @@ def mock_feature_detection_outputs():
         ],
     }
 
+
 def make_dummy_stack(n_frames=3, H=2, W=2) -> AFMImageStack:
     """Provide the minimal required AFMImageStack constructor arguments here."""
     dummy_data = np.zeros((n_frames, H, W))
@@ -1735,6 +1736,7 @@ def test_count_nonzero_module_metadata():
 
 
 # --- Test the previous results detection ---
+
 
 @pytest.mark.parametrize(
     "ModuleClass",
