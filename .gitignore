@@ -20,3 +20,8 @@ coverage.xml
 
 # Docs
 docs/build/
+
+# ignore notebook check‑points
+**/.ipynb_checkpoints
+# do NOT ignore the notebooks/ folder itself
+
