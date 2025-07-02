@@ -17,7 +17,7 @@ Each resulting track includes:
 Optionally, per-track masks are extracted from the labeled feature masks.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 import numpy as np
 
@@ -29,7 +29,7 @@ class ParticleTrackingModule(AnalysisModule):
     """
     Link detected features frame-to-frame to produce particle trajectories.
 
-    This module links features detected by a prior "feature_detection" module
+    This module links features detected by a prior featuredetection module
     using nearest-neighbor centroid matching across adjacent frames. A new
     track is created for each unmatched feature.
 
@@ -63,6 +63,9 @@ class ParticleTrackingModule(AnalysisModule):
         self,
         stack: AFMImageStack,
         previous_results: Optional[dict[str, Any]] = None,
+        detection_module: str = "feature_detection",
+        coord_key: str = "features_per_frame",
+        coord_columns: Sequence[str] = ("centroid_x", "centroid_y"),
         max_distance: float = 5.0,
         **params,
     ) -> dict[str, Any]:
@@ -75,8 +78,17 @@ class ParticleTrackingModule(AnalysisModule):
             The input AFM image stack.
         previous_results : dict of str to Any, optional
             Must contain "feature_detection" results including:
-              - "features_per_frame": list of dicts with 'centroid' and 'label'
-              - "labeled_masks": per-frame mask of label regions
+            - coord_key (e.g., "features_per_frame"): list of dicts with per-frame
+            features.
+            - "labeled_masks": per-frame mask of label regions
+        detection_module : str, default="feature_detection"
+            Which module to read features from.
+        coord_key : str, default="features_per_frame"
+            Key in previous_results[detection_module] containing per-frame feature
+            dicts.
+        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+            Keys to extract coordinates from each feature. Falls back to "centroid"
+            if needed.
         max_distance : float, default=5.0
             Maximum allowed movement per frame (in coordinate units).
 
@@ -84,29 +96,49 @@ class ParticleTrackingModule(AnalysisModule):
         -------
         dict
             Dictionary with keys:
-              - "tracks": list of dicts per track with:
+            - "tracks": list of dicts per track with:
                     - "id": track ID
                     - "frames": list of frame indices
                     - "point_indices": list of indices into features_per_frame
                     - "centroids": list of (x, y) positions
-              - "track_masks": dict of int → 2D boolean arrays (last mask per track)
-              - "n_tracks": total number of tracks
+            - "track_masks": dict of int → 2D boolean arrays (last mask per track)
+            - "n_tracks": total number of tracks
         """
-        if previous_results is None or "feature_detection" not in previous_results:
-            raise RuntimeError(
-                f"{self.name!r} requires output from 'feature_detection' - please add it before tracking."  # noqa
-            )
+        if previous_results is None:
+            raise RuntimeError(f"{self.name!r} requires previous results to run.")
 
-        fd_out = previous_results["feature_detection"]
-        feats = fd_out["features_per_frame"]  # List[List[dict]]
+        # Auto-detect the most recent available detection module
+        if detection_module not in previous_results:
+            available = [
+                mod for mod in reversed(self.requires) if mod in previous_results
+            ]
+            if not available:
+                raise RuntimeError(
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+                )
+            detection_module = available[0]
+
+        fd_out = previous_results[detection_module]
+        feats = fd_out[coord_key]  # List[List[dict]]
         masks = fd_out["labeled_masks"]  # List[np.ndarray]
 
         n_frames = len(feats)
         tracks = []
         next_track_id = 0
 
-        # List of tuples (track_id, last_centroid)
+        # List of tuples (track_id, last_coord)
         active_tracks = []
+
+        def extract_coords(f: dict) -> tuple[float, float]:
+            try:
+                return tuple(float(f[k]) for k in coord_columns)
+            except KeyError:
+                c = f.get("centroid")
+                if not c or len(c) < 2:
+                    raise KeyError(
+                        f"Missing coordinate keys {coord_columns} and fallback 'centroid'"  # noqa
+                    ) from None
+                return tuple(c[:2])
 
         for t in range(n_frames):
             this_feats = feats[t]
@@ -114,7 +146,7 @@ class ParticleTrackingModule(AnalysisModule):
             new_active = []
 
             # Match existing tracks to nearest features
-            for trk_id, last_cent in active_tracks:
+            for trk_id, last_coord in active_tracks:
                 best = None
                 best_dist = max_distance
                 best_idx = None
@@ -122,33 +154,34 @@ class ParticleTrackingModule(AnalysisModule):
                 for i, f in enumerate(this_feats):
                     if i in assigned:
                         continue
+                    coords = extract_coords(f)
                     dist = np.hypot(
-                        f["centroid"][0] - last_cent[0],
-                        f["centroid"][1] - last_cent[1],
+                        coords[0] - last_coord[0], coords[1] - last_coord[1]
                     )
                     if dist < best_dist:
-                        best_dist, best, best_idx = dist, f, i
+                        best_dist, best, best_idx = dist, coords, i
 
                 if best is not None:
                     track = tracks[trk_id]
                     track["frames"].append(t)
-                    track["centroids"].append(best["centroid"])
+                    track["coords"].append(best)
                     track["point_indices"].append(best_idx)
                     assigned.add(best_idx)
-                    new_active.append((trk_id, best["centroid"]))
+                    new_active.append((trk_id, best))
 
             # Start new tracks for unmatched detections
             for i, f in enumerate(this_feats):
                 if i in assigned:
                     continue
+                coords = extract_coords(f)
                 trk = {
                     "id": next_track_id,
                     "frames": [t],
-                    "centroids": [f["centroid"]],
+                    "coords": [coords],
                     "point_indices": [i],
                 }
                 tracks.append(trk)
-                new_active.append((next_track_id, f["centroid"]))
+                new_active.append((next_track_id, coords))
                 next_track_id += 1
 
             active_tracks = new_active

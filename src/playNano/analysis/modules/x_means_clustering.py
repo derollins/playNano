@@ -175,8 +175,19 @@ class XMeansClusteringModule(AnalysisModule):
             If the expected coordinate keys are missing from any feature dictionary.
         """
         # Validate input dependencies
-        if previous_results is None or detection_module not in previous_results:
-            raise RuntimeError(f"Missing output from '{detection_module}' module.")
+        if previous_results is None:
+            raise RuntimeError(f"{self.name!r} requires previous results to run.")
+
+        # Auto-detect the most recent available detection module
+        if detection_module not in previous_results:
+            available = [
+                mod for mod in reversed(self.requires) if mod in previous_results
+            ]
+            if not available:
+                raise RuntimeError(
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+                )
+            detection_module = available[0]
 
         fd_out = previous_results[detection_module]
         per_frame = fd_out[coord_key]

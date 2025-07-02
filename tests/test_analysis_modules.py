@@ -744,6 +744,38 @@ def mock_feature_detection_outputs():
         ],
     }
 
+def make_dummy_stack(n_frames=3, H=2, W=2) -> AFMImageStack:
+    """Provide the minimal required AFMImageStack constructor arguments here."""
+    dummy_data = np.zeros((n_frames, H, W))
+    return AFMImageStack(
+        data=dummy_data, pixel_size_nm=1.0, channel="height", file_path="dummy.jpk"
+    )
+
+
+def test_missing_coordinate_keys_raise_keyerror():
+    """Test that a key error is raised when the coordinate key is missing."""
+    mod = ParticleTrackingModule()
+    stack = make_dummy_stack()
+
+    # Features missing both coord_columns keys and 'centroid'
+    previous_results = {
+        "feature_detection": {
+            "features_per_frame": [
+                [
+                    {"some_key": 123}
+                ],  # missing 'centroid_x', 'centroid_y', and 'centroid'
+            ],
+            "labeled_masks": [np.array([[0]])],
+        }
+    }
+
+    with pytest.raises(KeyError, match="Missing coordinate keys"):
+        mod.run(
+            stack,
+            previous_results=previous_results,
+            coord_columns=("centroid_x", "centroid_y"),
+        )
+
 
 def test_tracking_module_name():
     """Return correct module name."""
@@ -771,17 +803,29 @@ def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
         mock_stack,
         previous_results={"feature_detection": mock_feature_detection_outputs},
     )
+
+    # Top-level structure
     assert "tracks" in result
     assert "track_masks" in result
     assert "n_tracks" in result
+
+    # Type checks
     assert isinstance(result["tracks"], list)
     assert isinstance(result["track_masks"], dict)
     assert isinstance(result["n_tracks"], int)
 
+    # Check structure of first track (if any)
+    if result["tracks"]:
+        trk = result["tracks"][0]
+        assert "id" in trk
+        assert "frames" in trk
+        assert "point_indices" in trk
+        assert "coords" in trk
+        assert all(isinstance(coord, tuple) for coord in trk["coords"])
+
 
 def test_tracking_links_features():
     """Test that ParticleTrackingModule links features by nearest neighbor."""
-    # Setup: 3 frames with features that gradually move right/down (e.g. like a track)
     features_per_frame = [
         [{"centroid": (0.0, 0.0), "label": 1}],  # Frame 0
         [{"centroid": (0.5, 0.5), "label": 2}],  # Frame 1
@@ -794,11 +838,9 @@ def test_tracking_links_features():
         np.array([[0, 3], [3, 0]]),
     ]
 
-    # Run tracking
-    n_frames = len(features_per_frame)
     mod = ParticleTrackingModule()
     result = mod.run(
-        MockAFMImageStack(n_frames),
+        MockAFMImageStack(n_frames=3),
         previous_results={
             "feature_detection": {
                 "features_per_frame": features_per_frame,
@@ -808,22 +850,21 @@ def test_tracking_links_features():
         max_distance=2.0,
     )
 
-    # Expect a single track linking the same point across frames
     assert result["n_tracks"] == 1
     track = result["tracks"][0]
 
-    # Check frames were linked in order
+    # Frame order
     assert track["frames"] == [0, 1, 2]
 
-    # Check centroids
-    assert track["centroids"] == [
+    # Check coordinates
+    assert track["coords"] == [
         (0.0, 0.0),
         (0.5, 0.5),
         (1.0, 1.0),
     ]
 
     # Check point indices
-    assert track["point_indices"] == [0, 0, 0]  # always index 0 in each frame
+    assert track["point_indices"] == [0, 0, 0]
 
 
 def test_tracking_handles_empty_frames(mock_stack):
@@ -864,7 +905,7 @@ def test_tracking_overlapping_centroids(mock_stack):
     )
     assert result["n_tracks"] >= 1
     for trk in result["tracks"]:
-        assert isinstance(trk["centroids"], list)
+        assert isinstance(trk["coords"], list)
         assert isinstance(trk["point_indices"], list)
 
 
@@ -1691,3 +1732,43 @@ def test_count_nonzero_module_metadata():
     mod = CountNonzeroModule()
     assert mod.version == "0.1.0"
     assert mod.name == "count_nonzero"
+
+
+# --- Test the previous results detection ---
+
+@pytest.mark.parametrize(
+    "ModuleClass",
+    [
+        XMeansClusteringModule,
+        KMeansClusteringModule,
+        DBSCANClusteringModule,
+        ParticleTrackingModule,
+    ],
+)
+def test_fallback_logic(ModuleClass):
+    """Test The module fallback logic in grouping modules."""
+    mod = ModuleClass()
+    stack = make_dummy_stack()
+
+    # Prepare arguments for run
+    extra_kwargs = {}
+    if ModuleClass is KMeansClusteringModule:
+        extra_kwargs["k"] = 1  # required for KMeans
+
+    # Raises if previous_results is None
+    with pytest.raises(RuntimeError, match="requires previous results"):
+        mod.run(stack, previous_results=None, **extra_kwargs)
+
+    # Raises if required modules are missing
+    with pytest.raises(RuntimeError, match="requires one of"):
+        mod.run(stack, previous_results={"some_irrelevant_module": {}}, **extra_kwargs)
+
+    dummy_features = {
+        "features_per_frame": [[{"centroid": (0, 0), "label": 1}]],
+        "labeled_masks": [np.array([[0, 1]])],
+    }
+    fallback_module = mod.requires[-1]
+    previous_results = {fallback_module: dummy_features}
+
+    result = mod.run(stack, previous_results=previous_results, **extra_kwargs)
+    assert isinstance(result, dict)
