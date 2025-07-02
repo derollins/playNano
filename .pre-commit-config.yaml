@@ -50,6 +50,6 @@ repos:
         exclude: ^docs/         # don’t run this hook on anything in docs/
 
   - repo: https://github.com/kynan/nbstripout
-    rev: v0.5.0
+    rev: v0.5.1
     hooks:
       - id: nbstripout
