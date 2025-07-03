@@ -358,6 +358,8 @@ playnano run sample.h5 \
 - `notebooks/playnano_demo_notebook.ipynb`: step‑by‑step demo of loading, processing, analysing, and exporting time-series
  AFM data with playNano.
 
+Install playNano using `pip install .[notebooks]` to include the `jupyter` dependancy.
+
 ## 📁 Project Structure
 
 ```text
