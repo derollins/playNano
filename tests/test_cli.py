@@ -1,5 +1,6 @@
 """Tests for the playNano CLI."""
 
+import argparse
 import builtins
 import json
 import logging
@@ -12,6 +13,8 @@ import yaml
 
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
+from playNano.cli.actions import wizard_mode
+from playNano.cli.handlers import handle_processing_wizard, setup_logging
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -76,6 +79,200 @@ def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
             None,
         )
     assert "Failed to load in.jpk" in str(exc.value)
+
+
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_with_valid_zmin_zmax(
+    mock_load_data, mock_play_stack_cv, tmp_path
+):
+    """Test that play_pipeline_mode correctly handles valid zmin and zmax."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 512}]
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+
+    actions.play_pipeline_mode(
+        input_file="dummy.afm",
+        channel="height_trace",
+        processing_str=None,
+        processing_file=None,
+        output_folder=str(tmp_path),
+        output_name="test_output",
+        scale_bar_nm=100,
+        zmin="0.0",
+        zmax="1.0",
+    )
+
+    args, kwargs = mock_play_stack_cv.call_args
+    assert kwargs["zmin"] == 0.0
+    assert kwargs["zmax"] == 1.0
+
+
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_with_invalid_zmin_logs_error(
+    mock_load_data, mock_play_stack_cv, caplog, tmp_path
+):
+    """Test that play_pipeline_mode logs an error for invalid zmin."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 256}]
+    mock_stack.image_shape = (256, 256)
+    mock_load_data.return_value = mock_stack
+
+    with caplog.at_level("ERROR"):
+        actions.play_pipeline_mode(
+            input_file="dummy.afm",
+            channel="height_trace",
+            processing_str=None,
+            processing_file=None,
+            output_folder=str(tmp_path),
+            output_name="test_output",
+            scale_bar_nm=100,
+            zmin="not_a_number",
+            zmax="auto",
+        )
+
+    assert "zmin must be either a number or the string 'auto'" in caplog.text
+
+
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_with_invalid_zmax_logs_error(
+    mock_load_data, mock_play_stack_cv, caplog, tmp_path
+):
+    """Test that play_pipeline_mode logs an error for invalid zmax."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 512}]
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+
+    with caplog.at_level("ERROR"):
+        actions.play_pipeline_mode(
+            input_file="dummy.afm",
+            channel="height_trace",
+            processing_str=None,
+            processing_file=None,
+            output_folder=str(tmp_path),
+            output_name="test_output",
+            scale_bar_nm=100,
+            zmin="auto",
+            zmax="not_a_number",
+        )
+
+    assert "zmax must be either a number or the string 'auto'" in caplog.text
+
+
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_defaults_fps_when_line_rate_missing(
+    mock_load_data, mock_play_stack_cv, caplog
+):
+    """Test that play_pipeline_mode defaults to 1 fps when line_rate is missing."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{}]  # no line_rate
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+
+    with caplog.at_level("WARNING"):
+        actions.play_pipeline_mode(
+            input_file="dummy.afm",
+            channel="height_trace",
+            processing_str=None,
+            processing_file=None,
+            output_folder=None,
+            output_name=None,
+            scale_bar_nm=100,
+            zmin="auto",
+            zmax="auto",
+        )
+
+    assert "defaulting to 1 fps" in caplog.text
+    args, kwargs = mock_play_stack_cv.call_args
+    assert kwargs["fps"] == 1.0
+
+
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_computes_fps_from_line_rate(
+    mock_load_data, mock_play_stack_cv
+):
+    """Test that the fps is calculated from the line rate and image shape."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 2048}]
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+
+    actions.play_pipeline_mode(
+        input_file="dummy.afm",
+        channel="height_trace",
+        processing_str=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
+
+    args, kwargs = mock_play_stack_cv.call_args
+    assert kwargs["fps"] == 4.0  # 2048 / 512
+
+
+@patch("playNano.cli.actions.parse_processing_file")
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_uses_processing_file(
+    mock_load_data, mock_play_stack_cv, mock_parse_file
+):
+    """Test that play_pipeline_mode uses processing file correctly."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 512}]
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+    mock_parse_file.return_value = [("filter_name", {"param": 1})]
+
+    actions.play_pipeline_mode(
+        input_file="dummy.afm",
+        channel="height_trace",
+        processing_str=None,
+        processing_file="filters.yaml",
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
+
+    mock_parse_file.assert_called_once_with("filters.yaml")
+
+
+@patch("playNano.cli.actions.parse_processing_string")
+@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+def test_play_pipeline_mode_uses_processing_str(
+    mock_load_data, mock_play_stack_cv, mock_parse_str
+):
+    """Test that a processed string is used in play mode."""
+    mock_stack = MagicMock()
+    mock_stack.frame_metadata = [{"line_rate": 512}]
+    mock_stack.image_shape = (512, 512)
+    mock_load_data.return_value = mock_stack
+    mock_parse_str.return_value = [("filter_name", {"param": 1})]
+
+    actions.play_pipeline_mode(
+        input_file="dummy.afm",
+        channel="height_trace",
+        processing_str="gaussian_filter:sigma=2",
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
+
+    mock_parse_str.assert_called_once_with("gaussian_filter:sigma=2")
 
 
 def test_wizard_mode_file_not_found(monkeypatch, caplog):
@@ -324,3 +521,112 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
     bad_yaml.write_text(yaml.dump({"filters": [{"sigma": 1.0}]}))
     with pytest.raises(ValueError, match="must be a dict containing 'name'"):
         parse_processing_file(str(bad_yaml))
+
+
+def make_args(**kwargs) -> argparse.Namespace:
+    """Build a dummy argparse.Namespace."""
+    defaults = {
+        "input_file": "test_data/test.jpk",
+        "channel": "Height",
+        "output_folder": None,
+        "output_name": None,
+        "scale_bar_nm": 100,
+    }
+    defaults.update(kwargs)
+    return argparse.Namespace(**defaults)
+
+
+@patch("playNano.cli.handlers.wizard_mode")
+def test_handle_processing_wizard_success(mock_wizard):
+    """Test the processing wizard handler with valid arguments."""
+    args = make_args()
+    handle_processing_wizard(args)
+    mock_wizard.assert_called_once_with(
+        input_file="test_data/test.jpk",
+        channel="Height",
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+    )
+
+
+@patch("playNano.cli.handlers.wizard_mode", side_effect=RuntimeError("Test error"))
+def test_handle_processing_wizard_raises(mock_wizard, caplog):
+    """Test that an error is raised if wizard mode fails."""
+    args = make_args()
+
+    with caplog.at_level("ERROR"), pytest.raises(SystemExit) as exc_info:
+        handle_processing_wizard(args)
+
+    # Check that sys.exit was called with 1
+    assert exc_info.value.code == 1
+
+    # Check that an error was logged
+    assert "Test error" in caplog.text
+
+    # Optional: verify wizard_mode was actually called before the failure
+    mock_wizard.assert_called_once()
+
+
+@patch("playNano.cli.handlers.logging.basicConfig")
+def test_setup_logging_defaults(mock_basic_config):
+    """Test that setup_logging uses default logging configuration."""
+    setup_logging()  # uses default level=logging.INFO
+    mock_basic_config.assert_called_once_with(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+
+@patch("playNano.cli.handlers.logging.basicConfig")
+def test_setup_logging_debug(mock_basic_config):
+    """Test that setup_logging sets DEBUG level when specified."""
+    setup_logging(logging.DEBUG)
+    mock_basic_config.assert_called_once_with(
+        level=logging.DEBUG,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+
+@patch("playNano.cli.actions.export_gif")
+@patch("playNano.cli.actions.export_bundles")
+@patch("playNano.cli.actions.process_stack")
+@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("builtins.input")
+def test_wizard_mode_zscale_input(
+    mock_input, mock_load_data, mock_process_stack, mock_export_bundles, mock_export_gif
+):
+    """Test that wizard mode correctly accepts zmin and zmax."""
+    # Mock AFM stack
+    mock_stack = MagicMock()
+    mock_stack.n_frames = 2
+    mock_stack.image_shape = (512, 512)
+    mock_stack.frame_metadata = [{"timestamp": 0}, {"timestamp": 1}]
+    mock_load_data.return_value = mock_stack
+    mock_process_stack.return_value = mock_stack
+
+    # Simulate user input sequence
+    mock_input.side_effect = [
+        "add gaussian_filter",  # add a filter
+        "",  # accept default sigma
+        "run",  # run processing
+        "y",  # export results
+        "tif",  # export formats
+        "y",  # create GIF
+        "0.0",  # zmin
+        "1.0",  # zmax
+    ]
+
+    with pytest.raises(SystemExit) as exit_info:  # noqa
+        wizard_mode(
+            input_file="dummy.afm",
+            channel="height_trace",
+            output_folder="output",
+            output_name="test",
+            scale_bar_nm=100,
+        )
+
+    mock_export_gif.assert_called_once()
+    _, kwargs = mock_export_gif.call_args
+    assert kwargs["zmin"] == "0.0"
+    assert kwargs["zmax"] == "1.0"

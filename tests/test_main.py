@@ -210,6 +210,8 @@ def test_handle_play_file_not_found(tmp_path, caplog):
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,  # optional, but matches run handler
+        zmin="auto",
+        zmax="auto",
     )
 
     with pytest.raises(SystemExit):
@@ -237,6 +239,8 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
         output_folder=None,
         output_name=None,
         scale_bar_nm=None,
+        zmin="auto",
+        zmax="auto",
     )
 
     with pytest.raises(SystemExit):
@@ -266,6 +270,8 @@ def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
         make_gif=False,
         output_folder="bad|name",
         output_name=None,
+        zmin="auto",
+        zmax="auto",
     )
     (tmp_path / "test.jpk").write_text("data")
 
@@ -308,6 +314,8 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
         output_folder=str(tmp_path),
         output_name="outputname",
         scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
     )
     (tmp_path / "sample.jpk").write_text("x")
 

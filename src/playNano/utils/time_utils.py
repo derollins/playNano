@@ -113,7 +113,6 @@ def draw_scale_and_timestamp(
     px_per_nm = 1.0 / pixel_size_nm
     if bar_length_nm > 0:
         bar_length_px = int(bar_length_nm * px_per_nm * scale)
-        print(f"{bar_length_px}, {px_per_nm}, {scale}, {pixel_size_nm}")
         bar_height = 5
 
         bar_x = 10

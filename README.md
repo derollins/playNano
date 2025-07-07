@@ -106,6 +106,8 @@ playnano run /path/to/afm_file.h5-jpk \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME]
   [--scale-bar-nm SCALE_BAR_INT]
+  [--zmin MINIMUM_Z_SCALE_VALUE]
+  [--zmax MAXIMUM_Z_SCALE_VALUE]
 
 ```
 
@@ -127,6 +129,12 @@ playnano run /path/to/afm_file.h5-jpk \
 
 - `--processing-file`:  An alternative processing input feild which takes a yaml file listing filtering
                         steps and parameters.
+
+- `--zmin`: Minimum Z-value to map to colormap 0. Can also be 'auto' in which case it becomes the value of the
+            first percentile of the entire stack.
+
+- `--zmax`: Maxium Z-value to map to colormap 255. Can also be 'auto' in which case it becomes the value of the
+            99th percentile of the entire stack.
 
 > Expected YAML schema:
 
@@ -185,8 +193,14 @@ playnano play /path/to/afm_file.h5-jpk \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME] \
   [--scale-bar-nm SCALE_BAR_INT]
+  [--zmin MINIMUM_Z_SCALE_VALUE]
+  [--zmax MAXIMUM_Z_SCALE_VALUE]
 
 ```
+
+The `--zmin` and `--zmax` flags define the Z colour scale of the window and any GIF exports. The
+value can be either a float or the string, 'auto', to set the values as the 1st and 99th percentiles
+of the data respectively; this is the default behaviour.
 
 **Viewer key bindings:**
 
@@ -386,7 +400,7 @@ This project requires the following Python packages:
 - `matplotlib`
 - `opencv-python`
 - `scipy`
-- `pyclustering`
+- `scikit-learn`
 - `python-dateutil`
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files

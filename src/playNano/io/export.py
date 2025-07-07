@@ -111,9 +111,7 @@ def save_npz_bundle(
 
     - path: Path to “.npz” (no suffix needed; do path.with_suffix(".npz"))
     """
-    print(type(path))
     path = check_path_is_path(path)
-    print(type(path))
     path = path.with_suffix(".npz")
     path.parent.mkdir(parents=True, exist_ok=True)
 
