@@ -40,6 +40,11 @@ def get_loader_for_folder(
     for f in folder_path.iterdir():
         if f.is_file():
             ext = f.suffix.lower()
+
+            # Handle 'old' nanoscope numeric extensions like .001, .002 as ".spm"
+            if ext[1:].isdigit() and len(ext) == 4:
+                ext = ".spm"
+
             if ext in folder_loaders:
                 suffix_counts[ext] = suffix_counts.get(ext, 0) + 1
 

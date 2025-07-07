@@ -11,24 +11,6 @@ from playNano.afm_stack import AFMImageStack
 logger = logging.getLogger(__name__)
 
 
-def _extract_scan_rate(spm_file: Path) -> float:
-    """
-    Extract the scan rate in lines per second from a .spm image file.
-
-    Parameters
-    ----------
-    spm_file : Path
-        Path to a .spm file.
-
-    Returns
-    -------
-    float
-        The scan rate of the image in fast scan lines per second.
-    """
-    spm_scan_rate = None
-    return spm_scan_rate
-
-
 def parse_spm_header(file_path, max_bytes=65536):
     """
     Extract ASCII header key-value pairs from a .spm file.

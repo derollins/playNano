@@ -92,6 +92,24 @@ def test_get_loader_for_folder_detects_extensions(tmp_path, filename, expected_e
     assert callable(loader)
 
 
+def test_numeric_extension_treated_as_spm(tmp_path):
+    test_file = tmp_path / "image.001"
+    test_file.write_text("dummy")
+
+    # Dummy loader
+    called = {}
+
+    def fake_loader(folder_path, channel="height_trace"):
+        called["called"] = True
+        return "fake stack"
+
+    folder_loaders = {".spm": fake_loader}
+
+    ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
+    assert ext == ".spm"
+    assert loader is fake_loader
+
+
 def test_load_afm_stack_raises_on_unsupported_folder(tmp_path):
     """Test load_afm_stack raises error when folder contains only unsupported files."""
     (tmp_path / "data.txt").touch()
