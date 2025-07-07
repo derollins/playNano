@@ -206,7 +206,7 @@ def test_compute_zscale_invalid_zmax_type(zmax):
 
 
 def test_compute_zscale_zmin_greater_than_zmax():
-    """Test that compute_zscale raises a error is zmax is smaller than zmin"""
+    """Test that compute_zscale raises a error is zmax is smaller than zmin."""
     data = np.array([[1, 2], [3, 4]])
     with pytest.raises(ValueError, match="zmin must be less than or equal to zmax."):
         compute_zscale_range(data, zmin=5.0, zmax=1.0)
