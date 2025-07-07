@@ -253,6 +253,7 @@ def test_play_pipeline_mode_uses_processing_file(
 def test_play_pipeline_mode_uses_processing_str(
     mock_load_data, mock_play_stack_cv, mock_parse_str
 ):
+    """Test that a processed string is used in play mode."""
     mock_stack = MagicMock()
     mock_stack.frame_metadata = [{"line_rate": 512}]
     mock_stack.image_shape = (512, 512)
@@ -523,7 +524,7 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
 
 
 def make_args(**kwargs) -> argparse.Namespace:
-    """Helper to build a dummy argparse.Namespace."""
+    """Build a dummy argparse.Namespace."""
     defaults = {
         "input_file": "test_data/test.jpk",
         "channel": "Height",
@@ -551,6 +552,7 @@ def test_handle_processing_wizard_success(mock_wizard):
 
 @patch("playNano.cli.handlers.wizard_mode", side_effect=RuntimeError("Test error"))
 def test_handle_processing_wizard_raises(mock_wizard, caplog):
+    """Test that an error is raised if wizard mode fails."""
     args = make_args()
 
     with caplog.at_level("ERROR"), pytest.raises(SystemExit) as exc_info:
@@ -568,6 +570,7 @@ def test_handle_processing_wizard_raises(mock_wizard, caplog):
 
 @patch("playNano.cli.handlers.logging.basicConfig")
 def test_setup_logging_defaults(mock_basic_config):
+    """Test that setup_logging uses default logging configuration."""
     setup_logging()  # uses default level=logging.INFO
     mock_basic_config.assert_called_once_with(
         level=logging.INFO,
@@ -577,6 +580,7 @@ def test_setup_logging_defaults(mock_basic_config):
 
 @patch("playNano.cli.handlers.logging.basicConfig")
 def test_setup_logging_debug(mock_basic_config):
+    """Test that setup_logging sets DEBUG level when specified."""
     setup_logging(logging.DEBUG)
     mock_basic_config.assert_called_once_with(
         level=logging.DEBUG,
