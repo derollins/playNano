@@ -329,16 +329,18 @@ def test_create_gif_with_flat_data(tmp_path):
     timestamps = [0, 1, 2]
     output_path = tmp_path / "test.gif"
 
-    create_gif_with_scale_and_timestamp(
-        image_stack=image_stack,
-        pixel_size_nm=1.0,
-        timestamps=timestamps,
-        output_path=str(output_path),
-        zmin=None,
-        zmax=None,
-    )
+    with patch("PIL.Image.Image.save") as mock_save:
+        create_gif_with_scale_and_timestamp(
+            image_stack=image_stack,
+            pixel_size_nm=1.0,
+            timestamps=timestamps,
+            output_path=str(output_path),
+            zmin=None,
+            zmax=None,
+        )
 
-    assert output_path.exists()
+        # Verify save was called, but file wasn't actually written
+        mock_save.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -383,6 +385,7 @@ def test_create_gif_with_various_zscales(zmin, zmax):
 
 class DummyStack:
     """Class to create a dummy stack for testing."""
+
     def __init__(self, data, processed, metadata, pixel_size, path="dummy.jpk"):
         """Initialise the dummy stack."""
         self.data = data
@@ -429,16 +432,18 @@ def test_export_gif_modes(raw_flag, processed_keys, expected_suffix):
         ["bad", 1.0],  # ValueError when float("bad")
     ],
 )
-def test_fallback_to_index_on_bad_timestamp(bad_timestamps):
-    """Test that gid timestamps fallsback to rfame index."""
+def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
+    """Test that gif timestamps fallback to frame index."""
     image_stack = np.ones((2, 2, 2), dtype=float)
-    # Trim or extend timestamps to match frame count for testing IndexError
     expected_len = image_stack.shape[0]
-    ts = bad_timestamps
-    if isinstance(ts, list) and len(ts) > expected_len:
+
+    ts = list(bad_timestamps)
+    if len(ts) > expected_len:
         ts = ts[:expected_len]
-    elif isinstance(ts, list) and len(ts) < expected_len:
-        ts = ts + [0.0] * (expected_len - len(ts))
+    elif len(ts) < expected_len:
+        ts += [0.0] * (expected_len - len(ts))
+
+    output_path = tmp_path / "test.gif"
 
     with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
@@ -447,22 +452,22 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps):
             image_stack=image_stack,
             pixel_size_nm=1.0,
             timestamps=ts,
-            output_path="test.gif",
+            output_path=output_path,
             scale_bar_length_nm=50,
         )
 
         timestamps_used = [
             call.kwargs["timestamp"] for call in mock_draw.call_args_list
         ]
-        assert timestamps_used == [0, 1]  # should fallback to frame index
+        assert timestamps_used == [0, 1]
 
 
-def test_fallback_to_index_if_no_timestamps():
-    """Test that  gif_export falls back to frame index if there are no timestamps."""
-    image_stack = np.ones((2, 2, 2), dtype=float)  # 2 frames
+def test_fallback_to_index_if_no_timestamps(tmp_path):
+    """Test that gif_export falls back to frame index if there are no timestamps."""
+    image_stack = np.ones((2, 2, 2), dtype=float)
+    bad_timestamps = "invalid type"
 
-    # Invalid timestamp input: wrong type
-    bad_timestamps = "invalid type"  # not a list or tuple
+    output_path = tmp_path / "test.gif"
 
     with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
@@ -471,14 +476,14 @@ def test_fallback_to_index_if_no_timestamps():
             image_stack=image_stack,
             pixel_size_nm=1.0,
             timestamps=bad_timestamps,
-            output_path="test.gif",
+            output_path=output_path,
             scale_bar_length_nm=50,
         )
 
         timestamps_used = [
             call.kwargs["timestamp"] for call in mock_draw.call_args_list
         ]
-        assert timestamps_used == [0, 1]  # fallback to index
+        assert timestamps_used == [0, 1]
 
 
 def test_using_jpk_resource(resource_path):

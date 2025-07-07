@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from playNano.utils.io_utils import (
+    compute_zscale_range,
     convert_height_units_to_nm,
     guess_height_data_units,
     normalize_to_uint8,
@@ -183,3 +184,33 @@ def test_missing_dependency_skipped():
         info = gather_environment_info()
         assert "scipy_version" not in info
         assert "numpy_version" in info  # assuming numpy is in KEY_DEPENDENCIES
+
+
+# --- Test IO utils ---
+
+
+@pytest.mark.parametrize("zmin", [{"bad": "dict"}, object(), [1, 2]])
+def test_compute_zscale_invalid_zmin_type(zmin):
+    data = np.array([[1, 2], [3, 4]])
+    with pytest.raises(ValueError, match="zmin must be a float, 'auto', or None."):
+        compute_zscale_range(data, zmin=zmin, zmax="auto")
+
+
+@pytest.mark.parametrize("zmax", [{"bad": "dict"}, object(), [1, 2]])
+def test_compute_zscale_invalid_zmax_type(zmax):
+    data = np.array([[1, 2], [3, 4]])
+    with pytest.raises(ValueError, match="zmax must be a float, 'auto', or None."):
+        compute_zscale_range(data, zmin="auto", zmax=zmax)
+
+
+def test_compute_zscale_zmin_greater_than_zmax():
+    data = np.array([[1, 2], [3, 4]])
+    with pytest.raises(ValueError, match="zmin must be less than or equal to zmax."):
+        compute_zscale_range(data, zmin=5.0, zmax=1.0)
+
+
+def test_compute_zscale_valid_manual_values():
+    data = np.array([[1, 2], [3, 4]])
+    zmin, zmax = compute_zscale_range(data, zmin=1.0, zmax=4.0)
+    assert zmin == 1.0
+    assert zmax == 4.0
