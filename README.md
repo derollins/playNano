@@ -386,7 +386,7 @@ This project requires the following Python packages:
 - `matplotlib`
 - `opencv-python`
 - `scipy`
-- `pyclustering`
+- `scikit-learn`
 - `python-dateutil`
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files

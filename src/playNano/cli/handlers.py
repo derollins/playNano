@@ -41,6 +41,10 @@ def handle_play(args: argparse.Namespace) -> None:
         - output_folder (str or None)
         - output_name (str or None)
         - scale_bar_nm (int or None), 0 turns off scale bar
+        - zmin (float or str), minimum Z-value for normalization
+        ('auto` for 1st percentile)
+        - zmax (float or str), maximum Z-value for normalization
+        ('auto` for 99th percentile)
 
     Returns
     -------
@@ -55,6 +59,8 @@ def handle_play(args: argparse.Namespace) -> None:
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
+            zmin=args.zmin,
+            zmax=args.zmax,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
@@ -94,6 +100,8 @@ def handle_run(args: argparse.Namespace) -> None:
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
+            zmin=args.zmin,
+            zmax=args.zmax,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
