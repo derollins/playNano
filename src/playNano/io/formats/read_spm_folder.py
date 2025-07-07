@@ -89,7 +89,11 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     # Extract metadata from first image
     # Line rate and timestamps
     spm_header = parse_spm_header(spm_files[0])  # Read the file header
-    line_rate = float(spm_header.get("Scan Rate", 0))
+    line_rate_str = spm_header.get("Scan Rate")
+    try:
+        line_rate = float(line_rate_str)
+    except (TypeError, ValueError):
+        line_rate = None
 
     lines_per_frame = height_px  # number of fast scan lines in an image
     if line_rate is None or lines_per_frame is None:

@@ -1,5 +1,6 @@
 """Test for loading various file types."""
 
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -17,6 +18,7 @@ from playNano.io.formats.read_h5jpk import (
     load_h5jpk,
 )
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
+from playNano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
 from playNano.io.loader import get_loader_for_folder
 
 
@@ -293,7 +295,7 @@ def test_read_asd_valid_file(
     stack_sum: float,
     resource_path: Path,
 ) -> None:
-    """Test the normal operation of loading a .h5-jpk file."""
+    """Test the normal operation of loading a .asd file."""
     result = load_asd_file(resource_path / file_name, channel)
 
     assert isinstance(result, AFMImageStack)
@@ -379,7 +381,7 @@ def test_read_jpk_valid_files(
     stack_sum: float,
     resource_path: Path,
 ) -> None:
-    """Test the normal operation of loading a .h5-jpk file."""
+    """Test the normal operation of loading a .jpk folder."""
     result = load_jpk_folder(resource_path / folder_name, channel, flip_image)
 
     assert isinstance(result, AFMImageStack)
@@ -491,3 +493,160 @@ class TestZUnitBlock:
 
         np.testing.assert_allclose(result, [[1.0, 2.0]])
         mock_guess.assert_called_once()
+
+
+def test_parse_spm_header_skips_malformed_lines():
+    """Test that `parse_spm_header` skips malformed header lines."""
+    # Create a temporary file with malformed and valid header lines
+    malformed_header = (
+        "\\Scan Rate 2.0\n"  # Missing colon (malformed)
+        "\\Scan Size: 1.0\n"  # Valid
+        "\\AnotherMalformed\n"  # Also malformed
+        "\\Valid: entry\n"  # Valid
+    )
+
+    with tempfile.NamedTemporaryFile("w+b", delete=False) as temp:
+        temp.write(malformed_header.encode("latin1"))
+        temp_path = Path(temp.name)
+
+    # Run parser
+    header = parse_spm_header(temp_path)
+
+    # Check that only the valid lines were included
+    assert header == {
+        "Scan Size": "1.0",
+        "Valid": "entry",
+    }
+
+    # Clean up temp file
+    temp_path.unlink()
+
+
+def test_load_spm_folder_raises_if_not_directory(tmp_path):
+    """Test that `load_spm_folder` raises ValueError if the path is not a directory."""
+    fake_file = tmp_path / "not_a_dir.txt"
+    fake_file.write_text("I'm not a folder")
+
+    with pytest.raises(ValueError, match="is not a directory"):
+        load_spm_folder(fake_file, channel="height")
+
+
+def test_load_spm_folder_raises_if_no_spm_files(tmp_path):
+    """Test `load_spm_folder` raises FileNotFoundError if no .spm files are found."""
+    # Add unrelated file
+    (tmp_path / "something.txt").write_text("Not an spm file")
+
+    with pytest.raises(FileNotFoundError, match="No .spm files found"):
+        load_spm_folder(tmp_path, channel="height")
+
+
+@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+def test_load_spm_folder_missing_line_rate_raises(
+    mock_parse_header, mock_load_spm, tmp_path
+):
+    """Test `load_spm_folder` raises ValueError if 'Scan Rate' is missing in header."""
+    dummy_file = tmp_path / "frame1.spm"
+    dummy_file.write_text("placeholder")
+
+    # Mock image loading: valid shape and pixel size
+    mock_load_spm.return_value = (np.ones((10, 10)), 1.0)
+
+    # Simulate missing "Scan Rate" in header
+    mock_parse_header.return_value = {}
+
+    with pytest.raises(ValueError, match="Missing data: line_rate=None"):
+        load_spm_folder(tmp_path, channel="height")
+
+
+@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+def test_load_spm_folder_inconsistent_shape_raises(
+    mock_parse_header, mock_load_spm, tmp_path
+):
+    """Test `load_spm_folder` raises ValueError for inconsistent image shapes."""
+    # Create two dummy .spm files
+    f1 = tmp_path / "frame1.spm"
+    f2 = tmp_path / "frame2.spm"
+    f1.write_text("placeholder")
+    f2.write_text("placeholder")
+
+    # First image has 10x10, second has 8x8
+    mock_load_spm.side_effect = [
+        (np.ones((10, 10)), 1.0),
+        (np.ones((8, 8)), 1.0),
+    ]
+    mock_parse_header.return_value = {"Scan Rate": "10"}
+
+    with pytest.raises(ValueError, match="Inconsistent image shape"):
+        load_spm_folder(tmp_path, channel="height")
+
+
+@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+def test_load_spm_folder_inconsistent_pixel_size_raises(
+    mock_parse_header, mock_load_spm, tmp_path
+):
+    """Test `load_spm_folder` raises ValueError for inconsistent pixel sizes."""
+    # Create two dummy .spm files
+    f1 = tmp_path / "frame1.spm"
+    f2 = tmp_path / "frame2.spm"
+    f1.write_text("placeholder")
+    f2.write_text("placeholder")
+
+    # Same shape, but pixel sizes differ
+    mock_load_spm.side_effect = [
+        (np.ones((10, 10)), 1.0),
+        (np.ones((10, 10)), 2.0),
+    ]
+    mock_parse_header.return_value = {"Scan Rate": "10"}
+
+    with pytest.raises(ValueError, match="Inconsistent pixel size"):
+        load_spm_folder(tmp_path, channel="height")
+
+
+@pytest.mark.parametrize(
+    (
+        "folder_name",
+        "channel",
+        "pixel_to_nm_scaling",
+        "stack_shape",
+        "image_dtype",
+        "metadata_dtype",
+        "stack_sum",
+    ),
+    [
+        pytest.param(
+            "spm_folder_0",
+            "Height",
+            1.953125,
+            (4, 256, 512),
+            float,
+            dict,
+            -78983151.45184162,
+            id="test image 0",
+        )
+    ],
+)
+def test_read_spm_valid_files(
+    folder_name: str,
+    channel: str,
+    pixel_to_nm_scaling: float,
+    stack_shape: tuple[int, int, int],
+    image_dtype: type[np.floating],
+    metadata_dtype: type,
+    stack_sum: float,
+    resource_path: Path,
+) -> None:
+    """Test the normal operation of loading a .spm folder."""
+    result = load_spm_folder(resource_path / folder_name, channel)
+
+    assert isinstance(result, AFMImageStack)
+    assert result.pixel_size_nm == pixel_to_nm_scaling
+    assert isinstance(result.data, np.ndarray)
+    assert result.data.shape == stack_shape
+    assert result.data.dtype == np.dtype(image_dtype)
+    assert isinstance(result.frame_metadata, list)
+    assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
+    assert result.data.sum() == stack_sum
+    assert len(result.frame_metadata) == result.data.shape[0]

@@ -3,6 +3,7 @@
 import builtins
 import json
 import logging
+from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -12,6 +13,7 @@ import yaml
 
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
+from playNano.cli.handlers import handle_play
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -324,3 +326,24 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
     bad_yaml.write_text(yaml.dump({"filters": [{"sigma": 1.0}]}))
     with pytest.raises(ValueError, match="must be a dict containing 'name'"):
         parse_processing_file(str(bad_yaml))
+
+
+def test_handle_play_invalid_path_with_cli_flags():
+    bad_path = "C:\\Users\\test\\AFMdata\\ --channel Height"
+
+    args = Namespace(
+        input_file=bad_path,
+        channel="height_trace",
+        processing=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        handle_play(args)
+
+    assert "includes CLI flags" in str(excinfo.value)
+    assert "--channel" in str(excinfo.value)
+    assert "💡 FIX" in str(excinfo.value)
