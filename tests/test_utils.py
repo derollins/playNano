@@ -191,6 +191,7 @@ def test_missing_dependency_skipped():
 
 @pytest.mark.parametrize("zmin", [{"bad": "dict"}, object(), [1, 2]])
 def test_compute_zscale_invalid_zmin_type(zmin):
+    """Test that compute_zscale raises and error if zmin is invalid."""
     data = np.array([[1, 2], [3, 4]])
     with pytest.raises(ValueError, match="zmin must be a float, 'auto', or None."):
         compute_zscale_range(data, zmin=zmin, zmax="auto")
@@ -198,18 +199,21 @@ def test_compute_zscale_invalid_zmin_type(zmin):
 
 @pytest.mark.parametrize("zmax", [{"bad": "dict"}, object(), [1, 2]])
 def test_compute_zscale_invalid_zmax_type(zmax):
+    """Test that compute_zscale raises and error if zmax is invalid."""
     data = np.array([[1, 2], [3, 4]])
     with pytest.raises(ValueError, match="zmax must be a float, 'auto', or None."):
         compute_zscale_range(data, zmin="auto", zmax=zmax)
 
 
 def test_compute_zscale_zmin_greater_than_zmax():
+    """Test that compute_zscale raises a error is zmax is smaller than zmin"""
     data = np.array([[1, 2], [3, 4]])
     with pytest.raises(ValueError, match="zmin must be less than or equal to zmax."):
         compute_zscale_range(data, zmin=5.0, zmax=1.0)
 
 
 def test_compute_zscale_valid_manual_values():
+    """Test that manual z limits are returned by compute_zscale."""
     data = np.array([[1, 2], [3, 4]])
     zmin, zmax = compute_zscale_range(data, zmin=1.0, zmax=4.0)
     assert zmin == 1.0
