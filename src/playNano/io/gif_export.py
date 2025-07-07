@@ -1,5 +1,5 @@
 """
-Module for exporting a AFM image stack as a GIF
+Module for exporting a AFM image stack as a GIF.
 
 This module provides utility functions to create animated GIFs from AFM image stacks,
 with support for overlaying timestamps and scale bars. Frames can be scaled

@@ -382,7 +382,9 @@ def test_create_gif_with_various_zscales(zmin, zmax):
 
 
 class DummyStack:
+    """Class to create a dummy stack for testing."""
     def __init__(self, data, processed, metadata, pixel_size, path="dummy.jpk"):
+        """Initialise the dummy stack."""
         self.data = data
         self.processed = processed
         self.frame_metadata = metadata
@@ -399,6 +401,7 @@ class DummyStack:
     ],
 )
 def test_export_gif_modes(raw_flag, processed_keys, expected_suffix):
+    """Test that export_gif creates the expected path."""
     dummy_data = np.random.rand(2, 2, 2)
     dummy_meta = [{"timestamp": 0.0}, {"timestamp": 1.0}]
     dummy_stack = DummyStack(dummy_data, processed_keys, dummy_meta, pixel_size=1.0)
@@ -455,6 +458,7 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps):
 
 
 def test_fallback_to_index_if_no_timestamps():
+    """Test that  gif_export falls back to frame index if there are no timestamps."""
     image_stack = np.ones((2, 2, 2), dtype=float)  # 2 frames
 
     # Invalid timestamp input: wrong type
