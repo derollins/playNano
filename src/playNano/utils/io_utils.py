@@ -1,5 +1,6 @@
 """Utility functions for IO operations in playNano."""
 
+import logging
 from pathlib import Path
 
 import cv2
@@ -7,6 +8,9 @@ import numpy as np
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
+
+logger = logging.getLogger(__name__)
+
 
 height_units = ["m", "cm", "mm", "um", "nm", "pm"]
 
@@ -202,3 +206,69 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
             )
     folder_path.mkdir(parents=True, exist_ok=True)
     return folder_path
+
+
+def compute_zscale_range(
+    data: np.ndarray,
+    zmin: float | str = "auto",
+    zmax: float | str = "auto",
+    lower_percentile: int = 1,
+    upper_percentile: int = 99,
+) -> tuple[float, float]:
+    """
+    Compute robust Z-scale bounds (height or intensity range) for normalization.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D or 3D array of AFM image data.
+    zmin : float, "auto", or None
+        Lower bound: "auto" uses percentile, None uses data min, float uses value.
+    zmax : float or "auto"
+        Upper bound: "auto" uses percentile, None uses data max, float uses value.
+    lower_percentile : int, optional
+        Percentile to use for lower bound when zmin == "auto". Default is 1.
+    upper_percentile : int, optional
+        Percentile to use for upper bound when zmax == "auto". Default is 99.
+
+    Returns
+    -------
+    (float, float)
+        zmin and zmax values suitable for normalization.
+
+    Raises
+    ------
+    ValueError
+        If zmin > zmax after processing or invalid input types.
+    """
+    flat = data.ravel()
+    flat = flat[np.isfinite(flat)]
+
+    # Process zmin
+    if zmin == "auto":
+        zmin_val = np.percentile(flat, lower_percentile)
+    elif zmin is None:
+        zmin_val = np.min(flat)
+    else:
+        try:
+            zmin_val = float(zmin)
+        except (TypeError, ValueError):
+            raise ValueError("zmin must be a float, 'auto', or None.") from None
+
+    # Process zmax
+    if zmax == "auto":
+        zmax_val = np.percentile(flat, upper_percentile)
+    elif zmax is None:
+        zmax_val = np.max(flat)
+    else:
+        try:
+            zmax_val = float(zmax)
+        except (TypeError, ValueError):
+            raise ValueError("zmax must be a float, 'auto', or None.") from None
+
+    # Validation
+    if zmin_val > zmax_val:
+        raise ValueError("zmin must be less than or equal to zmax.") from None
+
+    logger.debug(f"[Z-scaling] zmin={zmin_val:.3f} nm, zmax={zmax_val:.3f} nm")
+    return zmin_val, zmax_val

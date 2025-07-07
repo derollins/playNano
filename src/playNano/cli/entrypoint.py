@@ -97,6 +97,18 @@ def main() -> None:
         default=None,
         help="Integer length of scale bar in nm (default=100) set to 0 to disable scale bar.",  # noqa
     )
+    play_parser.add_argument(
+        "--zmin",
+        type=str,
+        default="auto",
+        help="The minimum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    play_parser.add_argument(
+        "--zmax",
+        type=str,
+        default="auto",
+        help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
     # Mutually exclusive: either processing string or processing file (or none)
     group = play_parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -179,6 +191,18 @@ def main() -> None:
         "--scale-bar-nm",
         type=int,
         help="Interger length of scale bar in nm",
+    )
+    run_parser.add_argument(
+        "--zmin",
+        type=str,
+        default="auto",
+        help="The minimum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    run_parser.add_argument(
+        "--zmax",
+        type=str,
+        default="auto",
+        help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
     )
     # Mutually exclusive: either processing string or processing file (or none)
     group = run_parser.add_mutually_exclusive_group()

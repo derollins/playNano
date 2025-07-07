@@ -13,6 +13,7 @@ from playNano.io.export import export_bundles
 from playNano.io.gif_export import export_gif
 from playNano.processing.pipeline import ProcessingPipeline
 from playNano.utils.io_utils import (
+    compute_zscale_range,
     normalize_to_uint8,
     pad_to_square,
     prepare_output_directory,
@@ -39,6 +40,8 @@ def play_stack_cv(
     output_name: str = "",
     steps_with_kwargs: Optional[list[tuple[str, dict[str, object]]]] = None,
     scale_bar_nm: int = 100,
+    zmin: float | str | None = None,
+    zmax: float | str | None = None,
 ) -> None:
     """
     Pop up an OpenCV window and play a 3D AFM stack as video.
@@ -74,6 +77,16 @@ def play_stack_cv(
         A list of tuple containing filter names (in order) with keyword arguments
          to apply when 'f' is pressed If None or empty,
          defaults to [default_steps_with_kwargs].
+    zmin : float, "auto", or None, optional
+            Minimum Z-value to map to colormap 0.
+            - If "auto", uses the 1st percentile of the data.
+            - If None (default), uses the minimum value of the data.
+            - If a float, uses the specified value.
+    zmax : float, "auto", or None, optional
+            Maximum Z-value to map to colormap 255.
+            - If "auto", uses the 99th percentile of the data.
+            - If None (default), uses the maximum value of the data.
+            - If a float, uses the specified value.
 
     Returns
     -------
@@ -127,7 +140,25 @@ def play_stack_cv(
             continue
 
         # 3) Normalize and apply colormap
-        norm8 = normalize_to_uint8(square_img)
+
+        if showing_flat:
+            zmin_val, zmax_val = compute_zscale_range(flat_stack, zmin, zmax)
+        else:
+            zmin_val, zmax_val = compute_zscale_range(raw_data, zmin, zmax)
+
+        if zmin_val is not None and zmax_val is not None:
+            # Clip to [zmin, zmax], normalize to [0, 255]
+            if zmin_val == zmax_val:
+                # Avoid division by zero: render as black frame
+                norm8 = np.zeros_like(square_img, dtype=np.uint8)
+            else:
+                clipped = np.clip(square_img, zmin_val, zmax_val)
+                norm8 = ((clipped - zmin_val) / (zmax_val - zmin_val) * 255).astype(
+                    np.uint8
+                )
+        else:
+            norm8 = normalize_to_uint8(square_img)
+
         norm_float = norm8 / 255.0
         colored = (cmap(norm_float)[..., :3] * 255).astype(np.uint8)
         frame_bgr = cv2.cvtColor(colored, cv2.COLOR_RGB2BGR)
@@ -236,6 +267,8 @@ def play_stack_cv(
                 output_name,
                 scale_bar_nm=scale_bar_nm,
                 raw=raw,
+                zmin=zmin_val,
+                zmax=zmax_val,
             )
 
         # Advance to next frame
