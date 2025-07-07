@@ -59,7 +59,18 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     if not folder.is_dir():
         raise ValueError(f"{folder} is not a directory.")
 
-    spm_files = sorted(folder.glob("*.spm"))
+    # Include files with .spm or numeric extensions like .001, .002, etc.
+    spm_files = sorted(
+        [
+            f
+            for f in folder.iterdir()
+            if f.is_file()
+            and (
+                f.suffix.lower() == ".spm"
+                or (f.suffix[1:].isdigit() and len(f.suffix) == 4)
+            )
+        ]
+    )
 
     if not spm_files:
         raise FileNotFoundError(f"No .spm files found in {folder}.")
@@ -103,6 +114,10 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     frame_metadata = []
     for ts in timestamps:
         frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
+
+    logger.debug(
+        f"Loaded {num_frames} frames with shape {image_stack.shape} and pixel size"
+    )
 
     return AFMImageStack(
         data=image_stack,

@@ -4,6 +4,7 @@ Common loader for various high speed AFM video formats.
 Returns an AFMImageStack object
 """
 
+import logging
 from pathlib import Path
 
 from playNano.afm_stack import AFMImageStack
@@ -11,6 +12,8 @@ from playNano.io.formats.read_asd import load_asd_file
 from playNano.io.formats.read_h5jpk import load_h5jpk
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
 from playNano.io.formats.read_spm_folder import load_spm_folder
+
+logger = logging.getLogger(__name__)
 
 
 def get_loader_for_folder(
@@ -75,8 +78,8 @@ def get_loader_for_file(
 
     Returns
     -------
-    callable
-        The loader function for the file.
+    (str, callable)
+        The file extention string and the loader function for the file.
 
     Raises
     ------
@@ -86,7 +89,7 @@ def get_loader_for_file(
     ext = file_path.suffix.lower()
 
     if ext in file_loaders:
-        return file_loaders[ext]
+        return ext, file_loaders[ext]
     elif ext in folder_loaders:
         raise ValueError(
             f"The {ext} file type is typically a single-frame export."
@@ -136,11 +139,18 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     # Load folder
     if file_path.is_dir():
         ext, loader = get_loader_for_folder(file_path, folder_loaders)
+        logger.debug(
+            f"Loading folder {file_path} with loader {loader.__name__} for extension {ext}"  # noqa: E501
+        )
         return loader(file_path, channel=channel)
 
     # Load file
     elif file_path.is_file():
-        loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+        ext, loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+        logger.debug(
+            f"Loading file {file_path} with loader {loader.__name__} for extension {ext}"  # noqa: E501
+        )
+
         return loader(file_path, channel=channel)
 
     else:

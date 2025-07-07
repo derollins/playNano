@@ -44,6 +44,7 @@ def test_load_afm_stack_file_calls_correct_loader(tmp_path):
         "playNano.io.loader.load_h5jpk",
         return_value=dummy_stack,
     ) as mock_loader:
+        mock_loader.__name__ = "load_h5jpk_file"
         result = AFMImageStack.load_data(test_file)
 
         mock_loader.assert_called_once_with(test_file, channel="height_trace")
@@ -85,6 +86,7 @@ def test_load_afm_stack_file_calls_correct_folder_loader(
     patch_path = f"playNano.io.loader.{loader_func_name}"
 
     with patch(patch_path, return_value=dummy_stack) as mock_loader:
+        mock_loader.__name__ = loader_func_name
         result = AFMImageStack.load_data(tmp_path)
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
         assert isinstance(result, AFMImageStack)
@@ -119,6 +121,7 @@ def test_load_data_with_multiple_files(tmp_path):
     with patch(
         "playNano.io.loader.load_jpk_folder", return_value=dummy_stack
     ) as mock_loader:
+        mock_loader.__name__ = "load_jpk_folder"
         result = AFMImageStack.load_data(tmp_path)
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
         assert isinstance(result, AFMImageStack)
