@@ -14,13 +14,8 @@ import yaml
 
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
-
 from playNano.cli.actions import wizard_mode
-from playNano.cli.handlers import (
-  handle_processing_wizard,
-  setup_logging,
-  handle_play
-)
+from playNano.cli.handlers import handle_play, handle_processing_wizard, setup_logging
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -530,7 +525,7 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
 
 
 def test_handle_play_invalid_path_with_cli_flags():
-  """Test  handle_play provides infomative value error if cli flags in input_file"""
+    """Test handle_play provides infomative value error if cli flags in input_file."""
     bad_path = "C:\\Users\\test\\AFMdata\\ --channel Height"
     args = Namespace(
         input_file=bad_path,
@@ -548,6 +543,19 @@ def test_handle_play_invalid_path_with_cli_flags():
     assert "includes CLI flags" in str(excinfo.value)
     assert "--channel" in str(excinfo.value)
     assert "💡 FIX" in str(excinfo.value)
+
+
+def make_args(**kwargs) -> argparse.Namespace:
+    """Build a dummy argparse.Namespace."""
+    defaults = {
+        "input_file": "test_data/test.jpk",
+        "channel": "Height",
+        "output_folder": None,
+        "output_name": None,
+        "scale_bar_nm": 100,
+    }
+    defaults.update(kwargs)
+    return argparse.Namespace(**defaults)
 
 
 @patch("playNano.cli.handlers.wizard_mode")
