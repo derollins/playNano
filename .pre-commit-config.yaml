@@ -3,7 +3,8 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^docs/         # don’t run this hook on anything in docs/
+        exclude: ^(docs/|tests/resources/spm_folder_0)
+        # don’t run this hook on anything in docs/
       - id: end-of-file-fixer
         exclude: ^(docs/|tests/resources/spm_folder_0)
         # don’t run this hook on anything in docs/ or test resources
