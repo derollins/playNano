@@ -35,7 +35,7 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 
 ## ✨ Features
 
-- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` files.
+- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` and `.spm` files.
 - ▶️ **Animated image viewer** for high-speed AFM playback.
 - 🪟 **Applies basic filters** and ordered filter chains to image data.
 - 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
