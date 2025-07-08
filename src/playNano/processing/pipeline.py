@@ -296,6 +296,7 @@ class ProcessingPipeline:
                         logger.warning(
                             "No previous mask found when overlaying; using 'overlay'"
                         )
+
                     key = f"step_{step_idx}_{last_mask_part}_{step_name}"
                     self.stack.masks[key] = combined.copy()
                     new_mask = combined

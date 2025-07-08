@@ -1,5 +1,6 @@
 """Tests for the functions within io module."""
 
+import re
 import tempfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -66,6 +67,19 @@ class DummyAFM:
         return self.data  # fallback for dict-like access if used in your code
 
 
+def test_get_loader_for_file_with_no_extension_raises(tmp_path):
+    """Test that get_loader_for_file raises ValueError for files with no extension."""
+    no_ext_file = tmp_path / "afm_stackfile"
+    no_ext_file.write_text("dummy content")
+
+    file_loaders = {".asd": lambda x: x, ".h5-jpk": lambda x: x}
+    folder_loaders = {".jpk": lambda x: x, ".spm": lambda x: x}
+
+    expected_pattern = re.escape(f"{no_ext_file} has no extension")
+    with pytest.raises(ValueError, match=expected_pattern):
+        get_loader_for_file(no_ext_file, file_loaders, folder_loaders)
+
+
 def create_dummy_afm():
     """Create a dummy AFMImageStack for testing purposes."""
     return DummyAFM()
@@ -92,6 +106,49 @@ def test_get_loader_for_folder_detects_extensions(tmp_path, filename, expected_e
     ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
     assert ext.lower() == expected_ext
     assert callable(loader)
+
+
+def test_numeric_extension_treated_as_spm(tmp_path):
+    """Test that numeric extensions like .001 are treated as .spm."""
+    test_file = tmp_path / "image.001"
+    test_file.write_text("dummy")
+
+    # Dummy loader
+    called = {}
+
+    def fake_loader(folder_path, channel="Height"):
+        called["called"] = True
+        return "fake stack"
+
+    folder_loaders = {".spm": fake_loader}
+
+    ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
+    assert ext == ".spm"
+    assert loader is fake_loader
+
+
+def test_load_spm_folder_handles_numeric_extensions(tmp_path):
+    """Test that load_spm_folder can handle numeric extensions like .001."""
+    # Create dummy .001 file
+    test_file = tmp_path / "frame.001"
+    test_file.write_bytes(b"\\Scan Rate: 2.0\n")  # minimal valid header
+
+    # Patch spm.load_spm to return dummy data
+    import numpy as np
+
+    dummy_img = np.ones((5, 5), dtype=np.float32)
+    dummy_pixel_size = 1.0
+
+    from playNano.io.formats import read_spm_folder
+
+    read_spm_folder.spm.load_spm = lambda f, channel: (dummy_img, dummy_pixel_size)
+
+    # Load
+    stack = load_spm_folder(tmp_path, channel="Height")
+
+    assert stack.data.shape == (1, 5, 5)
+    assert stack.pixel_size_nm == 1.0
+    assert stack.frame_metadata[0]["timestamp"] == 0.0
 
 
 def test_load_afm_stack_raises_on_unsupported_folder(tmp_path):
@@ -189,8 +246,9 @@ def test_get_loader_for_file_detects_extensions(tmp_path, filename, expected_ext
         ".jpk": load_jpk_folder,
         ".spm": load_spm_folder,
     }
-    loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+    ext, loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
     assert callable(loader)
+    assert ext.lower() == expected_ext
 
 
 def test_get_loader_for_file_known_extension():
@@ -206,9 +264,10 @@ def test_get_loader_for_file_known_extension():
         ".spm": load_spm_folder,
     }
 
-    loader = get_loader_for_file(fake_path, file_loaders, folder_loaders)
+    ext, loader = get_loader_for_file(fake_path, file_loaders, folder_loaders)
     assert callable(loader)
     assert loader == load_h5jpk
+    assert ext == ".h5-jpk"
 
 
 def test_get_loader_for_file_folder_extension_raises():
@@ -258,6 +317,7 @@ def test_load_afm_stack_folder_calls_correct_loader(tmp_path):
     with patch(
         "playNano.io.loader.load_jpk_folder", return_value=mock_stack
     ) as mock_loader:
+        mock_loader.__name__ = "load_jpk_folder"
         result = load_afm_stack(tmp_path)
 
         mock_loader.assert_called_once_with(tmp_path, channel="height_trace")
@@ -660,12 +720,13 @@ def test_get_loader_for_file_prioritizes_file_loader():
     """File extension loader should be used even if folder loader exists."""
     fake_path = Path("/path/sample.h5-jpk")
 
-    loader = get_loader_for_file(
+    ext, loader = get_loader_for_file(
         fake_path,
         file_loaders={".h5-jpk": load_h5jpk},
         folder_loaders={".jpk": load_jpk_folder},
     )
     assert loader == load_h5jpk
+    assert ext == ".h5-jpk"
 
 
 def test_load_afm_stack_unsupported_file(tmp_path):

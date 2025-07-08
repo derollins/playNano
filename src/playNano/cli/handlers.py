@@ -3,6 +3,7 @@
 import argparse
 import logging
 import sys
+from pathlib import Path
 
 from playNano.cli.actions import play_pipeline_mode, run_pipeline_mode, wizard_mode
 
@@ -50,9 +51,30 @@ def handle_play(args: argparse.Namespace) -> None:
     -------
     None
     """
+    if isinstance(args.input_file, str):
+        raw_input = args.input_file.strip()
+
+        # Check if known argument flags are embedded in the path
+        # (user forgot closing quote)
+        if "--channel" in raw_input or "--" in raw_input:
+            raise ValueError(
+                f"\nInvalid input path: '{raw_input}'\n"
+                "⚠️  It looks like your input path includes CLI flags (e.g., '--channel').\n"  # noqa: E501
+                "This usually happens when a quoted Windows path ends with a backslash, "  # noqa: E501
+                "which escapes the closing quote.\n\n"
+                "💡 FIX: Either:\n"
+                '  - Add another backslash: "C:\\path\\to\\folder\\\\"\n'
+                '  - Remove the trailing backslash: "C:\\path\\to\\folder"\n'
+                '  - Use forward slashes: "C:/path/to/folder"\n'
+            )
+
+        file_path = Path(raw_input).expanduser()
+    else:
+        file_path = Path(args.input_file)
+
     try:
         play_pipeline_mode(
-            input_file=args.input_file,
+            input_file=file_path,
             channel=args.channel,
             processing_str=args.processing,
             processing_file=args.processing_file,

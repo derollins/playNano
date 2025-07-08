@@ -22,7 +22,7 @@ HDF5 bundles, and animated GIFs.
 **Files read:**
 <div align="center">
 
-**`.h5-jpk`, `.jpk`, `.asd`**
+**`.h5-jpk`, `.jpk`, `.asd`, `.spm`**
 
 </div>
 
@@ -403,8 +403,7 @@ This project requires the following Python packages:
 - `scikit-learn`
 - `python-dateutil`
 - `tifffile`
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files
-    (also planned for use in future for `.spm` loading).
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
 
 ## 🤝 Related Software
 

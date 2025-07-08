@@ -4,6 +4,7 @@ Common loader for various high speed AFM video formats.
 Returns an AFMImageStack object
 """
 
+import logging
 from pathlib import Path
 
 from playNano.afm_stack import AFMImageStack
@@ -11,6 +12,8 @@ from playNano.io.formats.read_asd import load_asd_file
 from playNano.io.formats.read_h5jpk import load_h5jpk
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
 from playNano.io.formats.read_spm_folder import load_spm_folder
+
+logger = logging.getLogger(__name__)
 
 
 def get_loader_for_folder(
@@ -36,10 +39,16 @@ def get_loader_for_folder(
     FileNotFoundError
         If no known file types are found.
     """
+    logger.debug(f"Determining loader for folder {folder_path}")
     suffix_counts = {}
     for f in folder_path.iterdir():
         if f.is_file():
             ext = f.suffix.lower()
+
+            # Handle 'old' nanoscope numeric extensions like .001, .002 as ".spm"
+            if ext[1:].isdigit() and len(ext) == 4:
+                ext = ".spm"
+
             if ext in folder_loaders:
                 suffix_counts[ext] = suffix_counts.get(ext, 0) + 1
 
@@ -70,18 +79,21 @@ def get_loader_for_file(
 
     Returns
     -------
-    callable
-        The loader function for the file.
+    (str, callable)
+        The file extention string and the loader function for the file.
 
     Raises
     ------
     ValueError
         If the file type is unsupported or better handled as a folder.
     """
+    logger.debug(f"Determining loader for file {file_path}")
     ext = file_path.suffix.lower()
+    if not ext:
+        raise ValueError(f"{file_path} has no extension and cannot be identified.")
 
     if ext in file_loaders:
-        return file_loaders[ext]
+        return ext, file_loaders[ext]
     elif ext in folder_loaders:
         raise ValueError(
             f"The {ext} file type is typically a single-frame export."
@@ -114,7 +126,10 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     AFMImageStack
         Loaded image stack with metadata.
     """
-    file_path = Path(file_path)
+    logger.debug(f"Raw input path: {file_path}")
+    file_path = Path(file_path).resolve()
+    logger.debug(f"Resolved path: {file_path}")
+    logger.debug(f"Loading AFM stack from {file_path} for channel '{channel}'")
 
     folder_loaders = {
         ".jpk": load_jpk_folder,
@@ -130,12 +145,21 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
 
     # Load folder
     if file_path.is_dir():
+        logger.debug(f"Loading folder {file_path}")
         ext, loader = get_loader_for_folder(file_path, folder_loaders)
+        logger.debug(
+            f"Loading folder {file_path} with loader {loader.__name__} for extension {ext}"  # noqa: E501
+        )
         return loader(file_path, channel=channel)
 
     # Load file
     elif file_path.is_file():
-        loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+        logger.debug(f"Loading file {file_path}")
+        ext, loader = get_loader_for_file(file_path, file_loaders, folder_loaders)
+        logger.debug(
+            f"Loading file {file_path} with loader {loader.__name__} for extension {ext}"  # noqa: E501
+        )
+
         return loader(file_path, channel=channel)
 
     else:

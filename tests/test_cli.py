@@ -4,6 +4,7 @@ import argparse
 import builtins
 import json
 import logging
+from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -14,7 +15,7 @@ import yaml
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
 from playNano.cli.actions import wizard_mode
-from playNano.cli.handlers import handle_processing_wizard, setup_logging
+from playNano.cli.handlers import handle_play, handle_processing_wizard, setup_logging
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -521,6 +522,54 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
     bad_yaml.write_text(yaml.dump({"filters": [{"sigma": 1.0}]}))
     with pytest.raises(ValueError, match="must be a dict containing 'name'"):
         parse_processing_file(str(bad_yaml))
+
+
+def test_handle_play_accepts_path_object():
+    """Test handle_play accepts a Path object as input_file."""
+    # input_file is a Path object, not a string
+    input_path = Path("some/fake/path")
+
+    args = Namespace(
+        input_file=input_path,
+        channel="height",
+        processing=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
+
+    with patch("playNano.cli.handlers.play_pipeline_mode") as mock_play:
+        handle_play(args)
+
+        # Check that the Path object was passed directly
+        mock_play.assert_called_once()
+        called_path = mock_play.call_args.kwargs["input_file"]
+        assert isinstance(called_path, Path)
+        assert called_path == input_path
+
+
+def test_handle_play_invalid_path_with_cli_flags():
+    """Test handle_play provides infomative value error if cli flags in input_file."""
+    bad_path = "C:\\Users\\test\\AFMdata\\ --channel Height"
+    args = Namespace(
+        input_file=bad_path,
+        channel="height_trace",
+        processing=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        handle_play(args)
+
+    assert "includes CLI flags" in str(excinfo.value)
+    assert "--channel" in str(excinfo.value)
+    assert "💡 FIX" in str(excinfo.value)
 
 
 def make_args(**kwargs) -> argparse.Namespace:
