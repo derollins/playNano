@@ -70,7 +70,7 @@ def handle_play(args: argparse.Namespace) -> None:
 
         file_path = Path(raw_input).expanduser()
     else:
-        file_path = Path(args.input)
+        file_path = Path(args.input_file)
 
     try:
         play_pipeline_mode(

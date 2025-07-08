@@ -1,5 +1,6 @@
 """Tests for the functions within io module."""
 
+import re
 import tempfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -64,6 +65,19 @@ class DummyAFM:
     def __getitem__(self, key):
         """Allow dict-like access to data."""
         return self.data  # fallback for dict-like access if used in your code
+
+
+def test_get_loader_for_file_with_no_extension_raises(tmp_path):
+    """Test that get_loader_for_file raises ValueError for files with no extension."""
+    no_ext_file = tmp_path / "afm_stackfile"
+    no_ext_file.write_text("dummy content")
+
+    file_loaders = {".asd": lambda x: x, ".h5-jpk": lambda x: x}
+    folder_loaders = {".jpk": lambda x: x, ".spm": lambda x: x}
+
+    expected_pattern = re.escape(f"{no_ext_file} has no extension")
+    with pytest.raises(ValueError, match=expected_pattern):
+        get_loader_for_file(no_ext_file, file_loaders, folder_loaders)
 
 
 def create_dummy_afm():

@@ -524,6 +524,33 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
         parse_processing_file(str(bad_yaml))
 
 
+def test_handle_play_accepts_path_object():
+    """Test handle_play accepts a Path object as input_file."""
+    # input_file is a Path object, not a string
+    input_path = Path("some/fake/path")
+
+    args = Namespace(
+        input_file=input_path,
+        channel="height",
+        processing=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
+
+    with patch("playNano.cli.handlers.play_pipeline_mode") as mock_play:
+        handle_play(args)
+
+        # Check that the Path object was passed directly
+        mock_play.assert_called_once()
+        called_path = mock_play.call_args.kwargs["input_file"]
+        assert isinstance(called_path, Path)
+        assert called_path == input_path
+
+
 def test_handle_play_invalid_path_with_cli_flags():
     """Test handle_play provides infomative value error if cli flags in input_file."""
     bad_path = "C:\\Users\\test\\AFMdata\\ --channel Height"
