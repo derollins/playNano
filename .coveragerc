@@ -1,0 +1,5 @@
+[run]
+# Don’t measure coverage in the notebooks/ folder or any .ipynb files
+omit =
+    notebooks/*
+    */notebooks/*.ipynb

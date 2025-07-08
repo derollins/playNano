@@ -15,8 +15,8 @@
 </div>
 
 **playNano** is a Python tool for loading, filtering, visualising, and exporting time-series AFM data,
-such as high-speed AFM (HS-AFM) videos. It supports interactive playback of AFM video data, application
-of processing filters, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
+such as high-speed AFM (HS-AFM) videos. It supports interactive playback, flexible processing pipelines,
+and provenance-aware analysis tracking, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
 HDF5 bundles, and animated GIFs.
 
 **Files read:**
@@ -40,6 +40,8 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 - 🪟 **Applies basic filters** and ordered filter chains to image data.
 - 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
 - 🎞️ **Generates animated GIFs** of AFM stacks with annotations.
+- 📒 **Tracks** full processing and analysis provenance for reproducibility.
+- 🔌 **Plugin system** for custom filters.
 - 🧠 Built for integration with analysis pipelines and tools like `TopoStats`.
 
 ---
@@ -58,6 +60,8 @@ It is recommended to use a virtual environment. Then install in editable mode:
 ```bash
 pip install -e .
 ```
+
+Python 3.10 to 3.12 is required.
 
 ## 🚀 Quickstart
 
@@ -102,6 +106,8 @@ playnano run /path/to/afm_file.h5-jpk \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME]
   [--scale-bar-nm SCALE_BAR_INT]
+  [--zmin MINIMUM_Z_SCALE_VALUE]
+  [--zmax MAXIMUM_Z_SCALE_VALUE]
 
 ```
 
@@ -123,6 +129,12 @@ playnano run /path/to/afm_file.h5-jpk \
 
 - `--processing-file`:  An alternative processing input feild which takes a yaml file listing filtering
                         steps and parameters.
+
+- `--zmin`: Minimum Z-value to map to colormap 0. Can also be 'auto' in which case it becomes the value of the
+            first percentile of the entire stack.
+
+- `--zmax`: Maxium Z-value to map to colormap 255. Can also be 'auto' in which case it becomes the value of the
+            99th percentile of the entire stack.
 
 > Expected YAML schema:
 
@@ -181,8 +193,14 @@ playnano play /path/to/afm_file.h5-jpk \
   [--output-folder OUTPUT_DIR] \
   [--output-name BASE_NAME] \
   [--scale-bar-nm SCALE_BAR_INT]
+  [--zmin MINIMUM_Z_SCALE_VALUE]
+  [--zmax MAXIMUM_Z_SCALE_VALUE]
 
 ```
+
+The `--zmin` and `--zmax` flags define the Z colour scale of the window and any GIF exports. The
+value can be either a float or the string, 'auto', to set the values as the 1st and 99th percentiles
+of the data respectively; this is the default behaviour.
 
 **Viewer key bindings:**
 
@@ -283,6 +301,32 @@ Once loaded you can export AFM stacks in the following formats:
   - Folder: `./output/`
   - Name: derived from input filename (with `_filtered` suffix if filters were used)
 
+## 🔍 Analysis Pipeline (Advanced)
+
+If using custom analysis modules:
+
+```bash
+from playNano.analysis.pipeline import AnalysisPipeline
+
+pipeline = AnalysisPipeline()
+pipeline.add("detect_particles", threshold=5)
+pipeline.add("track_particles", max_distance=3)
+
+record = pipeline.run(stack, log_to="analysis.json")
+```
+
+Each step is recorded with:
+
+- Module name and parameters
+
+- Execution timestamp
+
+- Optional version info
+
+- Analysis output (in stack.analysis)
+
+- All metadata in stack.provenance["analysis"]
+
 ## Logging Level
 
 Control verbosity with:
@@ -323,21 +367,30 @@ playnano run sample.h5 \
 - For .h5-jpk and other multi-frame formats, a single file is loaded. For formats like .jpk or .spm, provide a folder
     containing the frame files.
 
+## Examples
+
+- `notebooks/playnano_demo_notebook.ipynb`: step‑by‑step demo of loading, processing, analysing, and exporting time-series
+ AFM data with playNano.
+
+Install playNano using `pip install .[notebooks]` to include the `jupyter` dependancy.
+
 ## 📁 Project Structure
 
 ```text
 playNano/
-├── io/              # I/O utilities (e.g. file loaders and exports)
-├── playback/        # Interactive window
-├── processing/      # Image flattening, filters, and processing logic
-├── utils/           # Utility functions
-├── cli/             # CLI entry point and functions
-└── afm_stack.py     # AFMImageStack class and metadata handling
+├── afm_stack.py       # Core AFM stack object
+├── analysis/          # Analysis pipeline & modules
+├── processing/        # Filters, masks, and processing logic
+├── io/                # File I/O loaders and writers
+├── cli/               # CLI interface
+├── playback/          # OpenCV-based viewer
+├── utils/             # Common utilities
+└── notebooks/         # Example and demostration notebooks
 ```
 
 ## 🧩 Dependencies
 
-Requires Python 3.10 or newer.
+Requires Python 3.10, 3.11 or 3.12.
 
 This project requires the following Python packages:
 
@@ -347,6 +400,7 @@ This project requires the following Python packages:
 - `matplotlib`
 - `opencv-python`
 - `scipy`
+- `scikit-learn`
 - `python-dateutil`
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk` and `.asd` files

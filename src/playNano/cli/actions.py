@@ -34,6 +34,8 @@ def run_pipeline_mode(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    zmin: str = "auto",
+    zmax: str = "auto",
 ) -> None:
     """
     Load an AFM file, apply processing, and optionally export results and GIF.
@@ -94,7 +96,9 @@ def run_pipeline_mode(
         export_bundles(afm_stack, output_folder, output_name, formats)
 
     # 4) GIF
-    export_gif(afm_stack, make_gif, output_folder, output_name, scale_bar_nm)
+    export_gif(
+        afm_stack, make_gif, output_folder, output_name, scale_bar_nm, zmin, zmax
+    )
 
 
 def play_pipeline_mode(
@@ -105,6 +109,8 @@ def play_pipeline_mode(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    zmin: str = "auto",
+    zmax: str = "auto",
 ) -> None:
     """
     Load an AFM file and display it interactively with optional filters.
@@ -125,6 +131,10 @@ def play_pipeline_mode(
         Base name for exports generated from the viewer.
     scale_bar_nm : int or None
         Scale bar length in nanometers for visualization.
+    zmin : str, optional
+        Minimum Z-value to map to colormap 0. If "auto", use 1st percentile.
+    zmax : str, optional
+        Maximum Z-value to map to colormap 255. If "auto", use 99th percentile.
     """
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
@@ -137,6 +147,9 @@ def play_pipeline_mode(
         fps = 1.0
     else:
         fps = line_rate / afm_stack.image_shape[0]
+        logger.debug(
+            f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
+        )
 
     if processing_file:
         steps_with_kwargs = parse_processing_file(processing_file)
@@ -145,6 +158,22 @@ def play_pipeline_mode(
     else:
         steps_with_kwargs = []
 
+    if zmin != "auto":
+        try:
+            zmin = float(zmin)
+        except (TypeError, ValueError):
+            logger.error(
+                "The value of zmin must be either a number or the string 'auto'."
+            )
+
+    if zmax != "auto":
+        try:
+            zmax = float(zmax)
+        except (TypeError, ValueError):
+            logger.error(
+                "The value of zmax must be either a number or the string 'auto'."
+            )
+
     play_stack_cv(
         afm_stack,
         fps=fps,
@@ -152,6 +181,8 @@ def play_pipeline_mode(
         output_name=output_name,
         steps_with_kwargs=steps_with_kwargs,
         scale_bar_nm=scale_bar_nm or 100,
+        zmin=zmin,
+        zmax=zmax,
     )
 
 
@@ -220,7 +251,7 @@ def wizard_mode(
     print(f"\nLoaded AFM stack: {input_path}")
     print(
         f"Channel: {channel}, frames={afm_stack.n_frames}, shape={afm_stack.image_shape}\n"  # noqa
-    )  # noqa
+    )
     print("Enter `help` for a list of commands.\n")
 
     while True:
@@ -372,7 +403,25 @@ def wizard_mode(
             # Ask if user wants to make a GIF
             gif_choice = input("Create a GIF? (y/n): ").strip().lower()
             if gif_choice in ("y", "yes"):
-                export_gif(afm_stack, True, output_folder, output_name, scale_bar_nm)
+                zmin_choice = (
+                    input("Enter a minimum value for the Z scale (or auto): ")
+                    .strip()
+                    .lower()
+                )
+                zmax_choice = (
+                    input("Enter a maxiumum value for the Z scale (or auto): ")
+                    .strip()
+                    .lower()
+                )
+                export_gif(
+                    afm_stack,
+                    True,
+                    output_folder,
+                    output_name,
+                    scale_bar_nm,
+                    zmin=zmin_choice,
+                    zmax=zmax_choice,
+                )
 
             print("Wizard finished. Exiting.\n")
             sys.exit(0)
@@ -462,3 +511,13 @@ def write_exports(
             frame_metadata=afm_stack.frame_metadata,
             channel=channel,
         )
+
+
+def print_env_info():
+    """Print the current playNano environment metadata."""
+    import json
+
+    from playNano.utils.system_info import gather_environment_info
+
+    env = gather_environment_info()
+    print(json.dumps(env, indent=2))

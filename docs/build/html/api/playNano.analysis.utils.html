@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>playNano.analysis.utils package &#8212; playNano 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="playNano.cli package" href="playNano.cli.html" />
+    <link rel="prev" title="playNano.analysis package" href="playNano.analysis.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="playnano-analysis-utils-package">
+<h1>playNano.analysis.utils package<a class="headerlink" href="#playnano-analysis-utils-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-playNano.analysis.utils.common">
+<span id="playnano-analysis-utils-common-module"></span><h2>playNano.analysis.utils.common module<a class="headerlink" href="#module-playNano.analysis.utils.common" title="Link to this heading">¶</a></h2>
+<p>Common utility functions for analysis.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.utils.common.NumpyEncoder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">NumpyEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/analysis/utils/common.html#NumpyEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.common.NumpyEncoder" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">JSONEncoder</span></code></p>
+<p>Custom JSON encoder for serializing NumPy ndarray objects.</p>
+<p>This encoder converts NumPy arrays to native Python lists so they can be
+serialized by the standard <cite>json</cite> module. It can be used with <cite>json.dump</cite>
+or <cite>json.dumps</cite> by passing it as the <cite>cls</cite> argument.</p>
+<p class="rubric">Example</p>
+<p>json.dump(data, file, cls=NumpyEncoder)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.utils.common.NumpyEncoder.default">
+<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playNano/analysis/utils/common.html#NumpyEncoder.default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.common.NumpyEncoder.default" title="Link to this definition">¶</a></dt>
+<dd><p>Override the default method to convert NumPy arrays to lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – The object to be serialized.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A JSON-serializable version of the object. If the object is a NumPy
+ndarray, it is converted to a list. Otherwise, the superclass’s
+default method is used.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the object cannot be serialized by the superclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.common.export_to_hdf5">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">export_to_hdf5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'analysis_record'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/common.html#export_to_hdf5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.common.export_to_hdf5" title="Link to this definition">¶</a></dt>
+<dd><p>Save a nested dict of lists/arrays to HDF5.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<em>dict</em>) – E.g. the AnalysisRecord dict returned by <cite>AnalysisPipeline.run()</cite>.</p></li>
+<li><p><strong>out_path</strong> (<em>Path</em>)</p></li>
+<li><p><strong>dataset_name</strong> (<em>str</em>) – Root group name.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.utils.frames">
+<span id="playnano-analysis-utils-frames-module"></span><h2>playNano.analysis.utils.frames module<a class="headerlink" href="#module-playNano.analysis.utils.frames" title="Link to this heading">¶</a></h2>
+<p>Frame-based post-processing helpers.</p>
+<p>E.g. summarize per-frame statistics or produce histograms.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.frames.frame_summary_to_dataframe">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.frames.</span></span><span class="sig-name descname"><span class="pre">frame_summary_to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features_per_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/frames.html#frame_summary_to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.frames.frame_summary_to_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Build a DataFrame with one row per frame.</p>
+<p>Summarises number of features, total area, mean intensity, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features_per_frame</strong> (<em>list</em><em> of </em><em>lists</em><em> of </em><em>dict</em>) – As returned by <cite>FeatureDetectionModule.run()[“features_per_frame”]</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Columns:</dt><dd><ul class="simple">
+<li><p>frame_index (int)</p></li>
+<li><p>n_features  (int)</p></li>
+<li><p>total_area  (int)</p></li>
+<li><p>mean_area   (float)</p></li>
+<li><p>mean_intensity (float)</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.frames.plot_frame_histogram">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.frames.</span></span><span class="sig-name descname"><span class="pre">plot_frame_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Axes</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/frames.html#plot_frame_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.frames.plot_frame_histogram" title="Link to this definition">¶</a></dt>
+<dd><p>Plot a histogram of a per-frame summary metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – As returned by <cite>frame_summary_to_dataframe</cite>.</p></li>
+<li><p><strong>column</strong> (<em>str</em>) – Which column to histogram (e.g. ‘n_features’).</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>save_to</strong> (<em>Path</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>bins</strong> (<em>int</em>) – Number of histogram bins.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ax</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib Axes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.utils.particles">
+<span id="playnano-analysis-utils-particles-module"></span><h2>playNano.analysis.utils.particles module<a class="headerlink" href="#module-playNano.analysis.utils.particles" title="Link to this heading">¶</a></h2>
+<p>Particle-based postprocessing helpers.</p>
+<p>These functions take the raw outputs of feature detection and
+particle tracking modules and turn them into tabular data,
+plots, and CSV/HDF5 exports.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.particles.export_particle_csv">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">export_particle_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/particles.html#export_particle_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.particles.export_particle_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Write the flattened track DataFrame to CSV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>)</p></li>
+<li><p><strong>out_path</strong> (<em>Path</em>) – Path to write the .csv file (will create parent dirs).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.particles.flatten_particle_features">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">flatten_particle_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grouping_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cluster_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'frames'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'point_indices'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/particles.html#flatten_particle_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.particles.flatten_particle_features" title="Link to this definition">¶</a></dt>
+<dd><p>Build a DataFrame linking each grouping analysis results to detected features.</p>
+<p>Each object (e.g. cluster or track) is linked to its corresponding detected
+feature metadata using (frame index, point index) pairs to locate features in
+the output of a feature detection step and merges metadata into one flattened
+table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grouping_output</strong> (<em>dict</em>) – Dictionary from a grouping module (e.g. clustering or tracking).
+Must contain a list of group objects under the <cite>object_key</cite>, where each
+object has lists of <cite>frames</cite> and <cite>point_indices</cite>.</p></li>
+<li><p><strong>detection_output</strong> (<em>dict</em>) – Dictionary from a detection module (e.g. feature_detection), which must
+contain the key ‘features_per_frame’: a list of feature dicts per frame.</p></li>
+<li><p><strong>object_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key in <cite>grouping_output</cite> pointing to the list of group objects.
+Default is “clusters”.</p></li>
+<li><p><strong>object_id_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Column name to use in the output DataFrame to identify the group,
+e.g., “cluster_id” or “track_id”. Default is “cluster_id”.</p></li>
+<li><p><strong>frame_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key in each group object listing the frames the object appears in.
+Default is “frames”.</p></li>
+<li><p><strong>index_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key in each group object listing the per-frame point indices (used
+to match detections in <cite>features_per_frame</cite>). Default is “point_indices”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Flattened DataFrame linking features to group membership.
+Includes feature metadata and:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>object_id_field (e.g. “cluster_id”)</p></li>
+<li><p>frame</p></li>
+<li><p>timestamp</p></li>
+<li><p>label</p></li>
+<li><p>centroid_x, centroid_y</p></li>
+<li><p>area</p></li>
+<li><p>mean_intensity</p></li>
+<li><p>min_intensity</p></li>
+<li><p>max_intensity</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.utils.particles.plot_particle_labels_3d">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">plot_particle_labels_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'track_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tab10'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Axes</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/utils/particles.html#plot_particle_labels_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.utils.particles.plot_particle_labels_3d" title="Link to this definition">¶</a></dt>
+<dd><p>Plot particle ids in 3D (x, y, time), colored by object ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Must contain [‘centroid_x’,’centroid_y’,’timestamp’, object_id_field]</p></li>
+<li><p><strong>object_id_field</strong> (<em>str</em>) – Column to use for color grouping (e.g. “track_id”, “cluster_id”)</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – A 3D Axes to draw into, or None to create a new one.</p></li>
+<li><p><strong>save_to</strong> (<em>Path</em><em>, </em><em>optional</em>) – If given, save the figure to file.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em>) – Colormap name for particle group colors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ax</strong> – The 3D axes used.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Axes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playNano.analysis.utils" title="Link to this heading">¶</a></h2>
+<p>Public package initialization.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">playNano</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="playNano.html">playNano package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="playNano.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.afm_stack">playNano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano.errors">playNano.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playNano.html#module-playNano">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="playNano.html">playNano package</a><ul>
+  <li><a href="playNano.analysis.html">playNano.analysis package</a><ul>
+      <li>Previous: <a href="playNano.analysis.html" title="previous chapter">playNano.analysis package</a></li>
+      <li>Next: <a href="playNano.cli.html" title="next chapter">playNano.cli package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Daniel E. Rollins.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/playNano.analysis.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

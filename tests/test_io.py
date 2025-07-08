@@ -2,6 +2,7 @@
 
 import tempfile
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import cv2
@@ -13,6 +14,7 @@ from PIL import Image, ImageSequence
 
 from playNano.afm_stack import AFMImageStack
 from playNano.io.export import (
+    check_path_is_path,
     export_bundles,
     save_h5_bundle,
     save_npz_bundle,
@@ -367,6 +369,169 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
         assert all(f.mode in ("P", "RGB", "RGBA") for f in frames)  # Flexible for GIFs
 
 
+def test_create_gif_with_flat_data(tmp_path):
+    """Test that GIF creation handles flat data without crashing."""
+    image_stack = np.zeros((3, 4, 4))  # flat stack
+    timestamps = [0, 1, 2]
+    output_path = tmp_path / "test.gif"
+
+    with patch("PIL.Image.Image.save") as mock_save:
+        create_gif_with_scale_and_timestamp(
+            image_stack=image_stack,
+            pixel_size_nm=1.0,
+            timestamps=timestamps,
+            output_path=str(output_path),
+            zmin=None,
+            zmax=None,
+        )
+
+        # Verify save was called, but file wasn't actually written
+        mock_save.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "zmin,zmax",
+    [
+        (0.0, 1.0),  # normal case
+        ("auto", "auto"),  # auto percentiles
+        (1.0, 1.0),  # flat image: triggers black frame
+        (None, None),  # fallback path (normalize_to_uint8)
+    ],
+)
+def test_create_gif_with_various_zscales(zmin, zmax):
+    """Test GIF creation with various zmin/zmax values."""
+    # Setup: tiny stack of 2x2 images
+    stack = np.stack(
+        [
+            np.array([[0.0, 0.5], [0.5, 1.0]]),
+            np.array([[0.2, 0.2], [0.2, 0.2]]),  # flat if zmin == zmax == 0.2
+        ]
+    )
+
+    timestamps = [0.0, 1.0]
+
+    with TemporaryDirectory() as tmp:
+        out_path = Path(tmp) / "test.gif"
+
+        create_gif_with_scale_and_timestamp(
+            image_stack=stack,
+            pixel_size_nm=1.0,
+            timestamps=timestamps,
+            scale_bar_length_nm=50,
+            output_path=str(out_path),
+            duration=0.1,
+            cmap_name="viridis",
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+        assert out_path.exists()
+        assert out_path.stat().st_size > 0
+
+
+class DummyStack:
+    """Class to create a dummy stack for testing."""
+
+    def __init__(self, data, processed, metadata, pixel_size, path="dummy.jpk"):
+        """Initialise the dummy stack."""
+        self.data = data
+        self.processed = processed
+        self.frame_metadata = metadata
+        self.pixel_size_nm = pixel_size
+        self.file_path = path
+
+
+@pytest.mark.parametrize(
+    "raw_flag,processed_keys,expected_suffix",
+    [
+        (False, {"raw": np.ones((2, 2, 2)), "other": np.ones((2, 2, 2))}, "_filtered"),
+        (True, {"raw": np.ones((2, 2, 2))}, ""),  # use raw
+        (True, {}, ""),  # fallback to stack.data
+    ],
+)
+def test_export_gif_modes(raw_flag, processed_keys, expected_suffix):
+    """Test that export_gif creates the expected path."""
+    dummy_data = np.random.rand(2, 2, 2)
+    dummy_meta = [{"timestamp": 0.0}, {"timestamp": 1.0}]
+    dummy_stack = DummyStack(dummy_data, processed_keys, dummy_meta, pixel_size=1.0)
+
+    with TemporaryDirectory() as tmp:
+        export_gif(
+            afm_stack=dummy_stack,
+            make_gif=True,
+            output_folder=tmp,
+            output_name="test_gif",
+            scale_bar_nm=50,
+            raw=raw_flag,
+            zmin=None,
+            zmax=None,
+        )
+        expected_path = Path(tmp) / f"test_gif{expected_suffix}.gif"
+        assert expected_path.exists()
+        assert expected_path.stat().st_size > 0
+
+
+@pytest.mark.parametrize(
+    "bad_timestamps",
+    [
+        [{}, 1.0],  # TypeError when float({}) is attempted
+        ["bad", 1.0],  # ValueError when float("bad")
+    ],
+)
+def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
+    """Test that gif timestamps fallback to frame index."""
+    image_stack = np.ones((2, 2, 2), dtype=float)
+    expected_len = image_stack.shape[0]
+
+    ts = list(bad_timestamps)
+    if len(ts) > expected_len:
+        ts = ts[:expected_len]
+    elif len(ts) < expected_len:
+        ts += [0.0] * (expected_len - len(ts))
+
+    output_path = tmp_path / "test.gif"
+
+    with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+        mock_draw.side_effect = lambda img, timestamp, **kwargs: img
+
+        create_gif_with_scale_and_timestamp(
+            image_stack=image_stack,
+            pixel_size_nm=1.0,
+            timestamps=ts,
+            output_path=output_path,
+            scale_bar_length_nm=50,
+        )
+
+        timestamps_used = [
+            call.kwargs["timestamp"] for call in mock_draw.call_args_list
+        ]
+        assert timestamps_used == [0, 1]
+
+
+def test_fallback_to_index_if_no_timestamps(tmp_path):
+    """Test that gif_export falls back to frame index if there are no timestamps."""
+    image_stack = np.ones((2, 2, 2), dtype=float)
+    bad_timestamps = "invalid type"
+
+    output_path = tmp_path / "test.gif"
+
+    with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+        mock_draw.side_effect = lambda img, timestamp, **kwargs: img
+
+        create_gif_with_scale_and_timestamp(
+            image_stack=image_stack,
+            pixel_size_nm=1.0,
+            timestamps=bad_timestamps,
+            output_path=output_path,
+            scale_bar_length_nm=50,
+        )
+
+        timestamps_used = [
+            call.kwargs["timestamp"] for call in mock_draw.call_args_list
+        ]
+        assert timestamps_used == [0, 1]
+
+
 def test_using_jpk_resource(resource_path):
     """Test that the jpk_folder_0 can be found."""
     resource_dir = resource_path / "jpk_folder_0"
@@ -518,24 +683,6 @@ def test_normalize_to_uint8_large_image():
     out = normalize_to_uint8(img)
     assert out.shape == img.shape
     assert out.dtype == np.uint8
-
-
-def test_create_gif_with_mismatched_timestamps(tmp_path):
-    """Test GIF creation with fewer timestamps than frames."""
-    stack = np.random.rand(3, 10, 10)
-    timestamps = [0.0]  # only 1 timestamp
-    output_path = tmp_path / "bad_timestamps.gif"
-
-    with pytest.raises(ValueError, match="timestamps.*length"):
-        create_gif_with_scale_and_timestamp(
-            image_stack=stack,
-            pixel_size_nm=1.0,
-            timestamps=timestamps,
-            scale_bar_length_nm=5,
-            output_path=output_path,
-            duration=0.2,
-            cmap_name="afmhot",
-        )
 
 
 def test_pad_to_square_color_image():
@@ -717,6 +864,26 @@ def test_export_bundles_all_formats_filtered(afm_stack_obj):
         assert (out_dir / "test_stack_filtered.ome.tif").exists()
         assert (out_dir / "test_stack_filtered.npz").exists()
         assert (out_dir / "test_stack_filtered.h5").exists()
+
+
+def test_accepts_path_object():
+    """Returns Path unchanged if input is already a Path."""
+    p = Path("/some/path")
+    assert check_path_is_path(p) == p
+
+
+def test_converts_string_to_path():
+    """Converts string input to a Path object."""
+    path_str = "/some/path"
+    result = check_path_is_path(path_str)
+    assert isinstance(result, Path)
+    assert result == Path(path_str)
+
+
+def test_raises_type_error_on_invalid_type():
+    """Raises TypeError for unsupported input types."""
+    with pytest.raises(TypeError):
+        check_path_is_path(123)
 
 
 def test_export_bundles_invalid_format_raises(afm_stack_obj):

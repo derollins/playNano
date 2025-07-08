@@ -5,24 +5,30 @@ import logging
 import numpy as np
 from scipy import ndimage
 
+from playNano.processing.versioning import versioned_filter
+
 logger = logging.getLogger(__name__)
 
 
+@versioned_filter("0.1.0")
 def mask_threshold(data: np.ndarray, threshold: float = 0.0) -> np.ndarray:
     """Mask where data > threshold."""
     return (data > threshold) & np.isfinite(data)
 
 
+@versioned_filter("0.1.0")
 def mask_below_threshold(data: np.ndarray, threshold: float = 0.0) -> np.ndarray:
     """Mask where data < threshold."""
     return (data < threshold) & np.isfinite(data)
 
 
+@versioned_filter("0.1.0")
 def mask_mean_offset(data: np.ndarray, factor: float = 1.0) -> np.ndarray:
     """Mask values > mean +/- factor*std."""
     return (data - np.mean(data)) > factor * np.std(data)
 
 
+@versioned_filter("0.1.0")
 def mask_morphological(
     data: np.ndarray, threshold: float, structure_size: int = 3
 ) -> np.ndarray:
@@ -32,6 +38,7 @@ def mask_morphological(
     return ndimage.binary_closing(binary, structure=structure)
 
 
+@versioned_filter("0.1.0")
 def mask_adaptive(
     data: np.ndarray, block_size: int = 15, offset: float = 0.0
 ) -> np.ndarray:

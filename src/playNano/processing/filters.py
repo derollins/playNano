@@ -7,9 +7,12 @@ from scipy import ndimage
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
+from playNano.processing.versioning import versioned_filter
+
 logger = logging.getLogger(__name__)
 
 
+@versioned_filter("0.1.0")
 def row_median_align(data: np.ndarray) -> np.ndarray:
     """
     Subtract the median of each row from that row to remove horizontal banding.
@@ -32,6 +35,7 @@ def row_median_align(data: np.ndarray) -> np.ndarray:
     return aligned
 
 
+@versioned_filter("0.1.0")
 def remove_plane(data: np.ndarray) -> np.ndarray:
     """
     Fit a 2D plane to the image using linear regression and subtract it.
@@ -66,6 +70,7 @@ def remove_plane(data: np.ndarray) -> np.ndarray:
     return data - plane
 
 
+@versioned_filter("0.1.0")
 def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     """
     Subtract a 2D polynomial surface of given order to flatten AFM image data.
@@ -121,6 +126,7 @@ def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     return flattened
 
 
+@versioned_filter("0.1.0")
 def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
     Subtract the overall mean height to center the background around zero.
@@ -157,6 +163,7 @@ def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     return img - mean_val
 
 
+@versioned_filter("0.1.0")
 def gaussian_filter(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
     Apply a Gaussian low-pass filter to smooth high-frequency noise.
