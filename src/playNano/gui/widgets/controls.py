@@ -1,10 +1,14 @@
 """Widget for playback controls in the playNano GUI."""
 
-from PySide6.QtWidgets import QPushButton, QSlider, QDoubleSpinBox, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDoubleSpinBox, QPushButton, QSlider, QVBoxLayout, QWidget
+
 
 class PlaybackControls(QWidget):
+    """Widget containing playback controls; play button, slider, and FPS control."""
+
     def __init__(self):
+        """Initialize the playback controls widget."""
         super().__init__()
         layout = QVBoxLayout(self)
         self.play_btn = QPushButton("▶️ Play")

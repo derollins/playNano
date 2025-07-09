@@ -1,6 +1,5 @@
 """Constants and default configurations for the playNano application."""
 
-
 default_steps_with_kwargs = [
     ("remove_plane", {}),
     ("polynomial_flatten", {"order": 2}),

@@ -1,28 +1,29 @@
-"""Main window for the playNano GUI application"""
+"""Main window for the playNano GUI application."""
 
 import sys
 from typing import Optional
 
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QTabWidget,
-    QPushButton,
-    QSizePolicy,
-    QLabel,
-    QSlider
-)
 import matplotlib
 import numpy as np
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QSizePolicy,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
+)
 
 from playNano.afm_stack import AFMImageStack
-from playNano.processing.pipeline import ProcessingPipeline
-from playNano.gui.widgets.viewer import ViewerWidget
 from playNano.gui.widgets.controls import PlaybackControls
-from playNano.utils.constants import default_steps_with_kwargs  # define or import your defaults
+from playNano.gui.widgets.viewer import ViewerWidget
+from playNano.processing.pipeline import ProcessingPipeline
+from playNano.utils.constants import (  # define or import your defaults
+    default_steps_with_kwargs,
+)
 from playNano.utils.io_utils import compute_zscale_range
 
 
@@ -43,14 +44,16 @@ class MainWindow(QMainWindow):
 
         # viewer state
         self._idx = 0
-        self._frames = self.afm_stack.data       # loaded frames (N, H, W)
-        self._vmin_raw, self._vmax_raw = compute_zscale_range(self._frames, "auto", "auto")
+        self._frames = self.afm_stack.data  # loaded frames (N, H, W)
+        self._vmin_raw, self._vmax_raw = compute_zscale_range(
+            self._frames, "auto", "auto"
+        )
         # percentile (0–100) used for background color
         self._percentile_P = 25
         self._zperc_raw = float(np.percentile(self._frames, self._percentile_P))
         self._zperc_flat = None
         self._vmin_flat, self._vmax_flat = None, None  # not available yet
-        self._flat: Optional[np.ndarray] = None        # will hold filtered stack
+        self._flat: Optional[np.ndarray] = None  # will hold filtered stack
         self._show_flat = False  # Start in raw view mode
 
         # set up UI
@@ -63,7 +66,7 @@ class MainWindow(QMainWindow):
 
         # ─── Top‐level container ─────────────────────────────────
         container = QWidget()
-        main_layout = QHBoxLayout(container)
+        main_layout = QVBoxLayout(container)
 
         # ─── Left panel: viewer + playback controls below ───────────
         left_panel = QWidget()
@@ -90,8 +93,8 @@ class MainWindow(QMainWindow):
         fps_label = QLabel("FPS:")
         # assume PlaybackControls uses a QHBoxLayout as its top‐level layout:
         self.controls.layout().insertWidget(
-            2,            # right after the play button
-            fps_label,    # the new label
+            2,  # right after the play button
+            fps_label,  # the new label
         )
         left_layout.addWidget(self.controls, 0)
         self.controls.play_btn.clicked.connect(self.toggle_play)
@@ -106,11 +109,10 @@ class MainWindow(QMainWindow):
         slider.valueChanged.connect(self.show_frame)
         slider.setValue(0)
 
-
         # wrap it with numeric labels
         slider_hbox = QHBoxLayout()
         slider_hbox.addWidget(QLabel("0"))
-        slider_hbox.addWidget(slider, 1)                      # stretch in middle
+        slider_hbox.addWidget(slider, 1)  # stretch in middle
         slider_hbox.addWidget(QLabel(str(n_frames - 1)))
 
         left_layout.addLayout(slider_hbox)
@@ -119,28 +121,17 @@ class MainWindow(QMainWindow):
         self.toggle_proc_btn = QPushButton("Toggle Raw/Processed (R)")
         left_layout.addWidget(self.toggle_proc_btn, 0)
 
-        main_layout.addWidget(left_panel, stretch=1)
+        main_layout.addWidget(left_panel)
         left_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # ─── Right panel: tabs ─────────────────────────────────────
-        self.tabs = QTabWidget()
-        for name in ["Load", "Process", "Analyze", "Export"]:
-            self.tabs.addTab(QWidget(), name)
-        main_layout.addWidget(self.tabs, 0)
 
         self.setCentralWidget(container)
 
         self._update_background_color()
 
-        # ── Process Tab ──────────────────────────────────────────────────────────
-
-        proc_tab = self.tabs.widget(1)
-        proc_tab.layout = QVBoxLayout(proc_tab)
-
-        # Apply Filters button
-        self.process_apply_btn = QPushButton("Apply Filters (F)")
-        proc_tab.layout.addWidget(self.process_apply_btn)
-        self.process_apply_btn.clicked.connect(self.apply_filters)
+        # “Apply Filters” button:
+        self.apply_btn = QPushButton("Apply Filters (F)")
+        left_layout.addWidget(self.apply_btn)
+        self.apply_btn.clicked.connect(self.apply_filters)
 
         # ── Timer for playback ───────────────────────────────────────────────────
 
@@ -170,7 +161,9 @@ class MainWindow(QMainWindow):
         self._flat = self.afm_stack.data
 
         # recompute display range for the new (filtered) data
-        self._vmin_flat, self._vmax_flat = compute_zscale_range(self._flat, "auto", "auto")
+        self._vmin_flat, self._vmax_flat = compute_zscale_range(
+            self._flat, "auto", "auto"
+        )
         self._zperc_flat = float(np.percentile(self._flat, self._percentile_P))
         # switch to showing flattened
         self._show_flat = True  # ← this ensures flattened view is active
@@ -200,10 +193,8 @@ class MainWindow(QMainWindow):
         self._idx = idx
         self._update_background_color()  # ensure background tracks toggle state
         arr = (
-            self._flat if (
-                self._show_flat and self._flat is not None
-                ) else self._frames
-            )[idx]
+            self._flat if (self._show_flat and self._flat is not None) else self._frames
+        )[idx]
         # convert arr → RGB uint8 with your colormap & normalization
         rgb = self._colormap_and_normalize(arr)
 
@@ -212,8 +203,10 @@ class MainWindow(QMainWindow):
 
     def _colormap_and_normalize(self, arr):
         """
-        Placeholder: apply z-scaling, normalize to 0-255,
-        apply a matplotlib colormap, and return a HxWx3 uint8.
+        Convert a 2D array to RGB uint8 using a colormap.
+
+        Apply z-scaling, normalize to 0-255, apply a matplotlib
+        colormap, and return a HxWx3 uint8.
         """
         if self._show_flat and self._flat is not None:
             zmin, zmax = self._vmin_flat, self._vmax_flat
@@ -244,10 +237,7 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(ev)
 
     def toggle_processed(self):
-        """
-        Flip between processed frames (self._flat) and raw frames (self._frames).
-        Same as SPACE in the old version.
-        """
+        """Flip between processed frames (self._flat) and raw frames (self._frames)."""
         # If we've never applied filters, nothing to toggle
         if self._flat is None:
             return
@@ -285,7 +275,10 @@ def z_to_rgb(z_value, vmin, vmax, cmap_name="afmhot"):
 # If you want to launch this window standalone:
 if __name__ == "__main__":
     from PySide6.QtWidgets import QApplication
+
     app = QApplication(sys.argv)
-    win = MainWindow(afm_path=r"C:\Users\ggjh246\OneDrive - University of Leeds\Code\playNano_testdata\save-2025.06.06-17.47.19.349.h5-jpk")
+    win = MainWindow(
+        afm_path=r"C:\Users\ggjh246\OneDrive - University of Leeds\Code\playNano_testdata\save-2025.06.06-17.47.19.349.h5-jpk"  # noqa
+    )
     win.show()
     sys.exit(app.exec())

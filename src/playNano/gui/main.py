@@ -1,7 +1,9 @@
 """Main entry point for the playNano GUI application."""
 
 import sys
+
 from PySide6.QtWidgets import QApplication
+
 from playNano.gui.window import MainWindow
 
 
