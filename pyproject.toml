@@ -41,6 +41,7 @@ dependencies = [
   "scipy",
   "scikit-learn",
   "pyyaml>=6.0",
+  "PySide6",
 ]
 
 [project.optional-dependencies]

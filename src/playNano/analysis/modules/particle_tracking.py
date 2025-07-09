@@ -12,7 +12,7 @@ Each resulting track includes:
 - A unique track ID
 - A list of frames where the particle appears
 - A list of point indices referencing the original features
-- A list of centroids describing the particle’s positions
+- A list of centroids describing the particle's positions
 
 Optionally, per-track masks are extracted from the labeled feature masks.
 """
