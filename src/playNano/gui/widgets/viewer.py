@@ -5,7 +5,7 @@ from typing import Optional
 
 import numpy as np
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QImage, QPainter, QPixmap, QResizeEvent, QFont
+from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPixmap, QResizeEvent
 from PySide6.QtWidgets import QWidget
 
 log = logging.getLogger(__name__)

@@ -2,32 +2,34 @@
 
 import logging
 import sys
-from typing import Optional
 from importlib.resources import files
+from typing import Optional
 
 import matplotlib
 import numpy as np
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QFont, QFontDatabase
 from PySide6.QtWidgets import (
+    QButtonGroup,
     QCheckBox,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
     QPushButton,
+    QRadioButton,
     QSizePolicy,
     QSlider,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
-from PySide6.QtGui import QFontDatabase, QFont
 
 from playNano.afm_stack import AFMImageStack
 from playNano.gui.widgets.controls import PlaybackControls
 from playNano.gui.widgets.viewer import ViewerWidget
 from playNano.processing.pipeline import ProcessingPipeline
-from playNano.utils.constants import (  # define or import your defaults
-    default_steps_with_kwargs,
-)
+from playNano.utils.constants import default_steps_with_kwargs
 from playNano.utils.io_utils import compute_zscale_range
 
 logging.basicConfig(level=logging.INFO)
@@ -45,43 +47,33 @@ class MainWindow(QMainWindow):
         font_path = files("playNano.fonts").joinpath("Steps-Mono.otf")
         font_id = QFontDatabase.addApplicationFont(str(font_path))
 
-        # Load your AFM stack here (replace with however you load)
         self.afm_stack: AFMImageStack = AFMImageStack.load_data(afm_path)
 
-        margin_w = 150  # for UI controls horizontally
-        margin_h = 200  # for UI controls vertically, sliders etc.
+        self.resize(
+            int(self.afm_stack.width * 1.5),
+            self.afm_stack.height + 200,
+        )
 
-        initial_width = self.afm_stack.width + margin_w
-        initial_height = self.afm_stack.height + margin_h
-
-        self.resize(initial_width, initial_height)
-
-        # keep track of which filters the user has configured
-        # e.g. list of tuples: [("gaussian_filter", {"sigma":2.0}), ...]
         self.processing_steps: list[tuple[str, dict]] = []
-
-        # viewer state
         self._idx = 0
-        self._frames = self.afm_stack.data  # loaded frames (N, H, W)
+        self._frames = self.afm_stack.data
         self._vmin_raw, self._vmax_raw = compute_zscale_range(
             self._frames, "auto", "auto"
         )
-        # percentile (0–100) used for background color
         self._percentile_P = 25
         self._zperc_raw = float(np.percentile(self._frames, self._percentile_P))
         self._zperc_flat = None
-        self._vmin_flat, self._vmax_flat = None, None  # not available yet
-        self._flat: Optional[np.ndarray] = None  # will hold filtered stack
-        self._show_flat = False  # Start in raw view mode
+        self._vmin_flat, self._vmax_flat = None, None
+        self._flat: Optional[np.ndarray] = None
+        self._show_flat = False
+
         if font_id == -1:
             logger.warning("Failed to load Steps Mono! Falling back to Arial.")
             self.custom_font = QFont("Arial", 12)
         else:
             font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-            logger.debug(f"Loaded font: {font_family}")
             self.custom_font = QFont(font_family, 12)
 
-        # set up UI
         self._init_ui()
 
     def _init_ui(self):
@@ -89,127 +81,159 @@ class MainWindow(QMainWindow):
 
         # ─── Top‐level container ─────────────────────────────────
         container = QWidget()
-        main_layout = QVBoxLayout(container)
+        main_layout = QHBoxLayout(container)
 
-        # ─── Left panel: viewer + playback controls below ───────────
+        # ─── Left Panel ─────────────────────────────────────
         left_panel = QWidget()
         left_layout = QVBoxLayout(left_panel)
 
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(4)  # optional, make it neat
-
-        # 1) The image viewer (start at 100% image size)
         self.viewer = ViewerWidget()
-        image_w, image_h = self.afm_stack.width, self.afm_stack.height
-
-        # Set minimum size (what you had before, e.g., 256)
-        min_size = min(image_w, 256)
-        self.viewer.setMinimumSize(min_size, min_size)
-
-        # Set initial size to 100% image size
-        self.viewer.resize(image_w, image_h)
-
+        self.viewer.setMinimumSize(min(self.afm_stack.width, 256), 256)
         self.viewer.set_annotation_font(self.custom_font)
-
         self.viewer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        bg_rgb = z_to_rgb(self._zperc_raw, self._vmin_raw, self._vmax_raw)
-        self.viewer.set_background_color(bg_rgb)
-
-        left_layout.addWidget(self.viewer, 1)
-
-        # 2) Tickboxes for annotations
-        # ── Add timestamp + scale bar toggles in a horizontal layout ──
-        annotation_hbox = QHBoxLayout()
-        annotation_hbox.setSpacing(5)  # Optional: space between checkboxes
+        self.viewer.set_background_color(
+            z_to_rgb(self._zperc_raw, self._vmin_raw, self._vmax_raw)
+        )
+        left_layout.addWidget(self.viewer)
 
         self.show_timestamp_box = QCheckBox("Show Timestamp")
         self.show_timestamp_box.setChecked(True)
-
         self.show_scale_bar_box = QCheckBox("Show Scale Bar")
         self.show_scale_bar_box.setChecked(True)
 
+        annotation_hbox = QHBoxLayout()
         annotation_hbox.addWidget(self.show_timestamp_box)
         annotation_hbox.addWidget(self.show_scale_bar_box)
-
         left_layout.addLayout(annotation_hbox)
 
-        # 3) Your playback controls (fixed height)
-        # ── Playback controls layout: [Play] [FPS:] [SpinBox] ──
-        playback_hbox = QHBoxLayout()
-        playback_hbox_left = QHBoxLayout()
-        playback_hbox_right = QHBoxLayout()
         self.controls = PlaybackControls()
-
-        # Access subwidgets (assumes you expose them in PlaybackControls)
         play_btn = self.controls.play_btn
-        fps_box = self.controls.fps_box
-
         fps_label = QLabel("FPS:")
         fps_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
 
-        # Add widgets horizontally
-        playback_hbox_left.addWidget(play_btn, 1)
-        playback_hbox_right.addWidget(fps_label, 1)
-        playback_hbox_right.addWidget(fps_box, 1)
-
-        playback_hbox.addLayout(playback_hbox_left)
-        playback_hbox.addLayout(playback_hbox_right)
-
+        playback_hbox = QHBoxLayout()
+        playback_hbox.addWidget(play_btn)
+        playback_hbox.addWidget(fps_label)
+        playback_hbox.addWidget(self.controls.fps_box)
         left_layout.addLayout(playback_hbox)
 
         self.controls.play_btn.clicked.connect(self.toggle_play)
         self.controls.fps_box.valueChanged.connect(self._update_timer_interval)
 
-        # 4) Slider with 0—N ticks below and numeric end‐labels
         n_frames = self._frames.shape[0]
-
-        # Refresh the current frame when tickbox checked or unchecked
         self.show_timestamp_box.toggled.connect(lambda: self.show_frame(self._idx))
         self.show_scale_bar_box.toggled.connect(lambda: self.show_frame(self._idx))
 
-        # configure the slider itself
         slider = self.controls.slider
         slider.setRange(0, n_frames - 1)
-        slider.setTickPosition(QSlider.TickPosition.TicksBelow)  # draw tick marks
-        slider.setTickInterval(max(1, n_frames // 10))  # Tick every 10 frames
+        slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        slider.setTickInterval(max(1, n_frames // 10))
         slider.valueChanged.connect(self.show_frame)
         slider.setValue(0)
 
-        # wrap it with numeric labels
         slider_hbox = QHBoxLayout()
         slider_hbox.addWidget(QLabel("0"))
-        slider_hbox.addWidget(slider, 1)  # stretch in middle
+        slider_hbox.addWidget(slider, 1)
         slider_hbox.addWidget(QLabel(str(n_frames - 1)))
-
         left_layout.addLayout(slider_hbox)
 
-        # 5) Button row: Apply Filters + Toggle Raw/Processed ──
-        button_hbox = QHBoxLayout()
         self.apply_btn = QPushButton("Apply Filters (F)")
         self.toggle_proc_btn = QPushButton("Toggle Raw/Processed (R)")
 
-        button_hbox.addWidget(self.apply_btn)
-        button_hbox.addWidget(self.toggle_proc_btn)
-        left_layout.addLayout(button_hbox)
+        filter_hbox = QHBoxLayout()
+        filter_hbox.addWidget(self.apply_btn)
+        filter_hbox.addWidget(self.toggle_proc_btn)
+        left_layout.addLayout(filter_hbox)
 
-        # Add the left panel to the main layout
-        main_layout.addWidget(left_panel, 1)
-
-        container.setLayout(main_layout)
-
-        # Set the central widget so it appears!
-        self.setCentralWidget(container)
-
-        # Connect buttons
         self.apply_btn.clicked.connect(self.apply_filters)
         self.toggle_proc_btn.clicked.connect(self.toggle_processed)
 
-        # ── Timer for playback ───────────────────────────────────────────────────
+        left_panel.setLayout(left_layout)
+        main_layout.addWidget(left_panel, 2)
+
+        # ─── Right Panel ─────────────────────────────────────────────────────
+        right_tabs = QTabWidget()
+        right_tabs.setMinimumWidth(250)
+        right_tabs.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+
+        # ── Export Tab ───────────────────────────────────────────────────────
+        export_tab = QWidget()
+        export_layout = QVBoxLayout(export_tab)
+
+        # ── Group: GIF Export ────────────────────────────────────────────────
+        gif_group = QGroupBox("Save Animated GIF")
+        gif_layout = QVBoxLayout()
+
+        self.gif_raw_radio = QRadioButton("Save Raw")
+        self.gif_processed_radio = QRadioButton("Save Processed")
+        self.gif_processed_radio.setChecked(True)
+
+        gif_radio_group = QButtonGroup(self)
+        gif_radio_group.addButton(self.gif_raw_radio)
+        gif_radio_group.addButton(self.gif_processed_radio)
+
+        self.save_gif_btn = QPushButton("Save GIF")
+
+        radio_row = QHBoxLayout()
+        radio_row.addWidget(self.gif_raw_radio)
+        radio_row.addWidget(self.gif_processed_radio)
+
+        gif_layout.addLayout(radio_row)
+        gif_layout.addWidget(self.save_gif_btn)
+        gif_group.setLayout(gif_layout)
+
+        # ── Group: Data Export ───────────────────────────────────────────────
+        data_group = QGroupBox("Data Export Formats")
+        data_layout = QVBoxLayout()
+
+        # Add radio buttons for processed/raw selection
+        self.data_raw_radio = QRadioButton("Export Raw")
+        self.data_processed_radio = QRadioButton("Export Processed")
+        self.data_processed_radio.setChecked(True)
+
+        data_radio_group = QButtonGroup(self)
+        data_radio_group.addButton(self.data_raw_radio)
+        data_radio_group.addButton(self.data_processed_radio)
+
+        radio_row = QHBoxLayout()
+        radio_row.addWidget(self.data_raw_radio)
+        radio_row.addWidget(self.data_processed_radio)
+        data_layout.addLayout(radio_row)
+
+        # Format checkboxes in a horizontal layout
+        format_hbox = QHBoxLayout()
+        self.export_npz_cb = QCheckBox("NPZ")
+        self.export_ome_tiff_cb = QCheckBox("OME-TIFF")
+        self.export_h5_cb = QCheckBox("HDF5")
+
+        for cb in [self.export_npz_cb, self.export_ome_tiff_cb, self.export_h5_cb]:
+            cb.setChecked(True)
+            format_hbox.addWidget(cb)
+
+        data_layout.addLayout(format_hbox)
+
+        # Export button
+        self.export_btn = QPushButton("Export Selected")
+        data_layout.addWidget(self.export_btn)
+        data_group.setLayout(data_layout)
+
+        # ── Add to right tab layout ──────────────────────────────────────────
+        export_layout.addWidget(gif_group)
+        export_layout.addSpacing(10)
+        export_layout.addWidget(data_group)
+        export_layout.addStretch(1)
+
+        right_tabs.addTab(export_tab, "Export")
+        main_layout.addWidget(right_tabs, 1)
+
+        self.setCentralWidget(container)
+
+        self.save_gif_btn.clicked.connect(self._export_gif)
+        self.export_btn.clicked.connect(self._export_checked)
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._next_frame)
-
-        # show the very first frame
+        self._update_export_options()
         self.show_frame(0)
 
     def apply_filters(self):
@@ -241,6 +265,11 @@ class MainWindow(QMainWindow):
         self._update_background_color()
         # redraw current frame
         self.show_frame(self._idx)
+
+        self._update_export_options()
+        # Select processed for both GIF and data after filtering
+        self.gif_processed_radio.setChecked(True)
+        self.data_processed_radio.setChecked(True)
 
     def toggle_play(self):
         """Start or stop the automatic frame-advancing timer."""
@@ -354,6 +383,80 @@ class MainWindow(QMainWindow):
             interval_ms = int(1000 / fps) if fps > 0 else 50
             self._timer.start(interval_ms)
 
+    def _export_gif(self):
+        """Export current view as an animated GIF."""
+        from playNano.io.gif_export import export_gif
+        from playNano.utils.io_utils import prepare_output_directory
+
+        raw = self.gif_raw_radio.isChecked()
+        save_dir = prepare_output_directory(".", "output")
+
+        export_gif(
+            self.afm_stack,
+            True,
+            save_dir,
+            "gui_export",
+            scale_bar_nm=100,
+            raw=raw,
+            zmin=self._vmin_flat if not raw else self._vmin_raw,
+            zmax=self._vmax_flat if not raw else self._vmax_raw,
+        )
+        logger.info("Exported GIF.")
+
+    def _export_checked(self):
+        """Export selected formats (NPZ, OME-TIFF, HDF5)."""
+        from playNano.io.export import export_bundles
+        from playNano.utils.io_utils import prepare_output_directory
+
+        formats = []
+        if self.export_npz_cb.isChecked():
+            formats.append("npz")
+        if self.export_ome_tiff_cb.isChecked():
+            formats.append("tif")
+        if self.export_h5_cb.isChecked():
+            formats.append("h5")
+
+        if not formats:
+            logger.info("No export formats selected.")
+            return
+
+        raw = not self._show_flat
+
+        # Check for presence of raw data if user requests it
+        if raw and "raw" not in self.afm_stack.processed:
+            logger.debug("Data is unprocessed, exporting the unprocessed data.")
+            raw = False
+
+        save_dir = prepare_output_directory(".", "output")
+
+        try:
+            export_bundles(
+                self.afm_stack,
+                save_dir,
+                "gui_export",
+                formats,
+                raw=raw,
+            )
+            logger.info(f"Exported: {', '.join(formats)}")
+        except Exception as e:
+            logger.error(f"Export failed: {e}")
+
+    def _update_export_options(self):
+        """Enable or disable processed export options based on processing state."""
+        has_filtered = "raw" in self.afm_stack.processed and any(
+            key != "raw" for key in self.afm_stack.processed
+        )
+
+        # For GIF export
+        self.gif_processed_radio.setEnabled(has_filtered)
+        if not has_filtered:
+            self.gif_raw_radio.setChecked(True)
+
+        # For data export
+        self.data_processed_radio.setEnabled(has_filtered)
+        if not has_filtered:
+            self.data_raw_radio.setChecked(True)
+
 
 def z_to_rgb(z_value, vmin, vmax, cmap_name="afmhot"):
     """Map a data value z_value → RGB via the colormap."""
@@ -372,7 +475,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     win = MainWindow(
-        afm_path=r"C:\Users\ggjh246\OneDrive - University of Leeds\Code\playNano_testdata\save-2025.05.20-12.57.06.187.h5-jpk"  # noqa
+        afm_path=r"C:\\Users\\ggjh246\\OneDrive - University of Leeds\\Code\\playNano_testdata\\save-2025.05.20-12.57.06.187.h5-jpk"  # noqa
     )
     win.show()
     sys.exit(app.exec())
