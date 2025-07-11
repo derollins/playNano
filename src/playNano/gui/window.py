@@ -1,5 +1,6 @@
 """Main window for the playNano GUI application."""
 
+import logging
 import sys
 from typing import Optional
 
@@ -7,6 +8,7 @@ import matplotlib
 import numpy as np
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
+    QCheckBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -25,6 +27,9 @@ from playNano.utils.constants import (  # define or import your defaults
     default_steps_with_kwargs,
 )
 from playNano.utils.io_utils import compute_zscale_range
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -101,6 +106,22 @@ class MainWindow(QMainWindow):
         # 3) Slider with 0—N ticks below and numeric end‐labels
         n_frames = self._frames.shape[0]
 
+        # 4) Tickboxes for annotations
+        self.show_timestamp_box = QCheckBox("Show Timestamp")
+        self.show_timestamp_box.setChecked(True)
+        self.show_timestamp_box.stateChanged.connect(
+            lambda _: self.show_frame(self._idx)
+        )  # update immediately
+
+        self.show_scale_bar_box = QCheckBox("Show Scale Bar")
+        self.show_scale_bar_box.setChecked(True)
+        self.show_scale_bar_box.stateChanged.connect(
+            lambda _: self.show_frame(self._idx)
+        )  # update immediately
+
+        left_layout.addWidget(self.show_timestamp_box)
+        left_layout.addWidget(self.show_scale_bar_box)
+
         # configure the slider itself
         slider = self.controls.slider
         slider.setRange(0, n_frames - 1)
@@ -117,7 +138,7 @@ class MainWindow(QMainWindow):
 
         left_layout.addLayout(slider_hbox)
 
-        # 3) Add toggle to swap between raw and filtered
+        # Add toggle to swap between raw and filtered
         self.toggle_proc_btn = QPushButton("Toggle Raw/Processed (R)")
         left_layout.addWidget(self.toggle_proc_btn, 0)
 
@@ -190,16 +211,34 @@ class MainWindow(QMainWindow):
 
     def show_frame(self, idx: int):
         """Render frame #idx (filtered if available, else raw) in viewer widget."""
+        log.debug(f"[show_frame] Showing index {idx}")
         self._idx = idx
-        self._update_background_color()  # ensure background tracks toggle state
         arr = (
             self._flat if (self._show_flat and self._flat is not None) else self._frames
         )[idx]
-        # convert arr → RGB uint8 with your colormap & normalization
         rgb = self._colormap_and_normalize(arr)
 
-        # hand it off to the viewer canvas
+        # Read timestamp
+        timestamp = self.afm_stack.time_for_frame(idx)
+
+        pixel_size_nm = self.afm_stack.pixel_size_nm
+        if not isinstance(pixel_size_nm, (float, int)) or pixel_size_nm <= 0:
+            pixel_size_nm = 1.0  # fallback or disable scale bar
+
+        # Draw with annotations
+        try:
+            self.viewer.set_annotations(
+                timestamp=timestamp,
+                draw_ts=self.show_timestamp_box.isChecked(),
+                draw_scale=self.show_scale_bar_box.isChecked(),
+                pixel_size_nm=self.afm_stack.pixel_size_nm,
+                scale_bar_nm=100,
+            )
+        except Exception as e:
+            log.error(f"[MainWindow] Failed to set annotations: {e}")
+
         self.viewer.display_frame(rgb)
+        print(f"[show_frame] rgb shape={rgb.shape}, dtype={rgb.dtype}")
 
     def _colormap_and_normalize(self, arr):
         """
@@ -278,7 +317,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     win = MainWindow(
-        afm_path=r"C:\Users\ggjh246\OneDrive - University of Leeds\Code\playNano_testdata\save-2025.06.06-17.47.19.349.h5-jpk"  # noqa
+        afm_path=r"C:\Users\ggjh246\OneDrive - University of Leeds\Code\playNano_testdata\save-2025.05.20-12.57.06.187.h5-jpk"  # noqa
     )
     win.show()
     sys.exit(app.exec())
