@@ -5,7 +5,7 @@ from typing import Optional
 
 import numpy as np
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QImage, QPainter, QPixmap, QResizeEvent
+from PySide6.QtGui import QColor, QImage, QPainter, QPixmap, QResizeEvent, QFont
 from PySide6.QtWidgets import QWidget
 
 log = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ class ViewerWidget(QWidget):
         self._scale_bar_nm: Optional[int] = None
         self._draw_timestamp = False
         self._draw_scale_bar = False
+        self.custom_font = QFont("Arial", 14)  # fallback font
 
     def display_frame(self, arr: np.ndarray):
         """Display a frame with arr: HxWx3 uint8 RGB."""
@@ -67,9 +68,14 @@ class ViewerWidget(QWidget):
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setPen(Qt.white)
 
+            # Set font with desired size and family
+            font = QFont(self.custom_font)
+            font.setPointSize(18)
+            painter.setFont(font)
+
             # Timestamp
             if self._draw_timestamp and self._timestamp is not None:
-                painter.drawText(10, 20, f"{self._timestamp:.2f} s")
+                painter.drawText(10, 30, f"{self._timestamp:.2f} s")
 
             # Scale bar
             if self._original_pixmap and self._draw_scale_bar:
@@ -80,7 +86,10 @@ class ViewerWidget(QWidget):
                 if self._pixel_size_nm and self._scale_bar_nm:
                     try:
                         bar_px = self._scale_bar_nm / self._pixel_size_nm
-                        bar_width = int(bar_px * self.width() / pix_width)
+                        if self._scaled_pixmap:
+                            scaled_width = self._scaled_pixmap.width()
+                            scale = scaled_width / self._original_pixmap.width()
+                            bar_width = int(bar_px * scale)
                         bar_height = 5
                         x = 10
                         y = self.height() - 20
@@ -117,3 +126,7 @@ class ViewerWidget(QWidget):
         """Handle resize events to rescale the pixmap."""
         super().resizeEvent(event)
         self._rescale()
+
+    def set_annotation_font(self, font: QFont):
+        """Set the font used for annotations like timestamp and scale bar."""
+        self.custom_font = font

@@ -32,6 +32,10 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     mock_load_data.return_value = mock_stack
     mock_stack.analysis = {}
     mock_stack.add_analysis = MagicMock()
+    mock_stack.time_for_frame = MagicMock(return_value=0.1)
+    mock_load_data.return_value = mock_stack
+    mock_stack.pixel_size_nm = 1.0
+
     mock_stack.provenance = {
         "processing": {"steps": [], "keys_by_name": {}},
         "analysis": [],

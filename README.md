@@ -430,3 +430,10 @@ integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-02
 ## 📜 License
 
 This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Included Fonts
+
+This project bundles the “Steps Mono” font by [Velvetyne Type Foundry](https://velvetyne.fr/fonts/steps-mono/),
+licensed under the SIL Open Font License 1.1.
+
+See `src/playNano/fonts/LICENCE.txt` for full license terms and attribution.

@@ -23,7 +23,9 @@ classifiers = [
 ]
 keywords = [
   "afm",
+  "AFM",
   "atomic force microscopy",
+  "high-speed AFM",
   "image processing",
   "video analysis",
   "scientific visualization"
@@ -81,6 +83,9 @@ GitHub = "https://github.com/derollins/playNano"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"playNano.fonts" = ["*.ttf", "*.otf"]
 
 [build-system]
 requires = ["hatchling"]

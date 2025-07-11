@@ -3,6 +3,7 @@
 import logging
 import sys
 from typing import Optional
+from importlib.resources import files
 
 import matplotlib
 import numpy as np
@@ -18,6 +19,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from PySide6.QtGui import QFontDatabase, QFont
 
 from playNano.afm_stack import AFMImageStack
 from playNano.gui.widgets.controls import PlaybackControls
@@ -28,8 +30,8 @@ from playNano.utils.constants import (  # define or import your defaults
 )
 from playNano.utils.io_utils import compute_zscale_range
 
-logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -40,8 +42,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("playNano Player")
 
+        font_path = files("playNano.fonts").joinpath("Steps-Mono.otf")
+        font_id = QFontDatabase.addApplicationFont(str(font_path))
+
         # Load your AFM stack here (replace with however you load)
         self.afm_stack: AFMImageStack = AFMImageStack.load_data(afm_path)
+
+        margin_w = 150  # for UI controls horizontally
+        margin_h = 200  # for UI controls vertically, sliders etc.
+
+        initial_width = self.afm_stack.width + margin_w
+        initial_height = self.afm_stack.height + margin_h
+
+        self.resize(initial_width, initial_height)
 
         # keep track of which filters the user has configured
         # e.g. list of tuples: [("gaussian_filter", {"sigma":2.0}), ...]
@@ -60,11 +73,16 @@ class MainWindow(QMainWindow):
         self._vmin_flat, self._vmax_flat = None, None  # not available yet
         self._flat: Optional[np.ndarray] = None  # will hold filtered stack
         self._show_flat = False  # Start in raw view mode
+        if font_id == -1:
+            logger.warning("Failed to load Steps Mono! Falling back to Arial.")
+            self.custom_font = QFont("Arial", 12)
+        else:
+            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+            logger.debug(f"Loaded font: {font_family}")
+            self.custom_font = QFont(font_family, 12)
 
         # set up UI
         self._init_ui()
-
-        self.toggle_proc_btn.clicked.connect(self.toggle_processed)
 
     def _init_ui(self):
         """Set up the main window UI."""
@@ -80,47 +98,74 @@ class MainWindow(QMainWindow):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(4)  # optional, make it neat
 
-        # 1) The image viewer (expands)
+        # 1) The image viewer (start at 100% image size)
         self.viewer = ViewerWidget()
-        image_width_px = self.afm_stack.width
-        # Set minimum size to the image size in pixels or 512, whichever is smaller.
-        max_min_image_size = min(image_width_px, 512)
-        self.viewer.setMinimumSize(max_min_image_size, max_min_image_size)
+        image_w, image_h = self.afm_stack.width, self.afm_stack.height
+
+        # Set minimum size (what you had before, e.g., 256)
+        min_size = min(image_w, 256)
+        self.viewer.setMinimumSize(min_size, min_size)
+
+        # Set initial size to 100% image size
+        self.viewer.resize(image_w, image_h)
+
+        self.viewer.set_annotation_font(self.custom_font)
+
         self.viewer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         bg_rgb = z_to_rgb(self._zperc_raw, self._vmin_raw, self._vmax_raw)
         self.viewer.set_background_color(bg_rgb)
 
         left_layout.addWidget(self.viewer, 1)
 
-        # 2) Your playback controls (fixed height)
-        self.controls = PlaybackControls()
-        # insert an “FPS:” label before the fps spin‑box
-        fps_label = QLabel("FPS:")
-        # assume PlaybackControls uses a QHBoxLayout as its top‐level layout:
-        self.controls.layout().insertWidget(
-            2,  # right after the play button
-            fps_label,  # the new label
-        )
-        left_layout.addWidget(self.controls, 0)
-        self.controls.play_btn.clicked.connect(self.toggle_play)
-        # 3) Slider with 0—N ticks below and numeric end‐labels
-        n_frames = self._frames.shape[0]
+        # 2) Tickboxes for annotations
+        # ── Add timestamp + scale bar toggles in a horizontal layout ──
+        annotation_hbox = QHBoxLayout()
+        annotation_hbox.setSpacing(5)  # Optional: space between checkboxes
 
-        # 4) Tickboxes for annotations
         self.show_timestamp_box = QCheckBox("Show Timestamp")
         self.show_timestamp_box.setChecked(True)
-        self.show_timestamp_box.stateChanged.connect(
-            lambda _: self.show_frame(self._idx)
-        )  # update immediately
 
         self.show_scale_bar_box = QCheckBox("Show Scale Bar")
         self.show_scale_bar_box.setChecked(True)
-        self.show_scale_bar_box.stateChanged.connect(
-            lambda _: self.show_frame(self._idx)
-        )  # update immediately
 
-        left_layout.addWidget(self.show_timestamp_box)
-        left_layout.addWidget(self.show_scale_bar_box)
+        annotation_hbox.addWidget(self.show_timestamp_box)
+        annotation_hbox.addWidget(self.show_scale_bar_box)
+
+        left_layout.addLayout(annotation_hbox)
+
+        # 3) Your playback controls (fixed height)
+        # ── Playback controls layout: [Play] [FPS:] [SpinBox] ──
+        playback_hbox = QHBoxLayout()
+        playback_hbox_left = QHBoxLayout()
+        playback_hbox_right = QHBoxLayout()
+        self.controls = PlaybackControls()
+
+        # Access subwidgets (assumes you expose them in PlaybackControls)
+        play_btn = self.controls.play_btn
+        fps_box = self.controls.fps_box
+
+        fps_label = QLabel("FPS:")
+        fps_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
+
+        # Add widgets horizontally
+        playback_hbox_left.addWidget(play_btn, 1)
+        playback_hbox_right.addWidget(fps_label, 1)
+        playback_hbox_right.addWidget(fps_box, 1)
+
+        playback_hbox.addLayout(playback_hbox_left)
+        playback_hbox.addLayout(playback_hbox_right)
+
+        left_layout.addLayout(playback_hbox)
+
+        self.controls.play_btn.clicked.connect(self.toggle_play)
+        self.controls.fps_box.valueChanged.connect(self._update_timer_interval)
+
+        # 4) Slider with 0—N ticks below and numeric end‐labels
+        n_frames = self._frames.shape[0]
+
+        # Refresh the current frame when tickbox checked or unchecked
+        self.show_timestamp_box.toggled.connect(lambda: self.show_frame(self._idx))
+        self.show_scale_bar_box.toggled.connect(lambda: self.show_frame(self._idx))
 
         # configure the slider itself
         slider = self.controls.slider
@@ -138,21 +183,26 @@ class MainWindow(QMainWindow):
 
         left_layout.addLayout(slider_hbox)
 
-        # Add toggle to swap between raw and filtered
+        # 5) Button row: Apply Filters + Toggle Raw/Processed ──
+        button_hbox = QHBoxLayout()
+        self.apply_btn = QPushButton("Apply Filters (F)")
         self.toggle_proc_btn = QPushButton("Toggle Raw/Processed (R)")
-        left_layout.addWidget(self.toggle_proc_btn, 0)
 
-        main_layout.addWidget(left_panel)
-        left_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        button_hbox.addWidget(self.apply_btn)
+        button_hbox.addWidget(self.toggle_proc_btn)
+        left_layout.addLayout(button_hbox)
 
+        # Add the left panel to the main layout
+        main_layout.addWidget(left_panel, 1)
+
+        container.setLayout(main_layout)
+
+        # Set the central widget so it appears!
         self.setCentralWidget(container)
 
-        self._update_background_color()
-
-        # “Apply Filters” button:
-        self.apply_btn = QPushButton("Apply Filters (F)")
-        left_layout.addWidget(self.apply_btn)
+        # Connect buttons
         self.apply_btn.clicked.connect(self.apply_filters)
+        self.toggle_proc_btn.clicked.connect(self.toggle_processed)
 
         # ── Timer for playback ───────────────────────────────────────────────────
 
@@ -211,7 +261,7 @@ class MainWindow(QMainWindow):
 
     def show_frame(self, idx: int):
         """Render frame #idx (filtered if available, else raw) in viewer widget."""
-        log.debug(f"[show_frame] Showing index {idx}")
+        logger.debug(f"[show_frame] Showing index {idx}")
         self._idx = idx
         arr = (
             self._flat if (self._show_flat and self._flat is not None) else self._frames
@@ -235,10 +285,9 @@ class MainWindow(QMainWindow):
                 scale_bar_nm=100,
             )
         except Exception as e:
-            log.error(f"[MainWindow] Failed to set annotations: {e}")
+            logger.error(f"[MainWindow] Failed to set annotations: {e}")
 
         self.viewer.display_frame(rgb)
-        print(f"[show_frame] rgb shape={rgb.shape}, dtype={rgb.dtype}")
 
     def _colormap_and_normalize(self, arr):
         """
@@ -298,6 +347,12 @@ class MainWindow(QMainWindow):
 
         rgb = z_to_rgb(z_bg, vmin, vmax, cmap_name="afmhot")
         self.viewer.set_background_color(rgb)
+
+    def _update_timer_interval(self, fps: int):
+        """Update playback timer interval if playing."""
+        if self._timer.isActive():
+            interval_ms = int(1000 / fps) if fps > 0 else 50
+            self._timer.start(interval_ms)
 
 
 def z_to_rgb(z_value, vmin, vmax, cmap_name="afmhot"):
