@@ -44,8 +44,33 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("playNano Player")
 
-        font_path = files("playNano.fonts").joinpath("Steps-Mono.otf")
-        font_id = QFontDatabase.addApplicationFont(str(font_path))
+        steps_path = files("playNano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
+        steps_id = QFontDatabase.addApplicationFont(str(steps_path))
+
+        basic_path = files("playNano.fonts").joinpath("basic/basic_regular.ttf")
+        basic_id = QFontDatabase.addApplicationFont(str(basic_path))
+
+        steps_family = (
+            QFontDatabase.applicationFontFamilies(steps_id)[0]
+            if steps_id != -1
+            else None
+        )
+        basic_family = (
+            QFontDatabase.applicationFontFamilies(basic_id)[0]
+            if basic_id != -1
+            else None
+        )
+
+        if not steps_family:
+            logger.warning(
+                "Failed to load Steps Mono font. Falling back to Arial for annotations."
+            )
+            steps_family = "Arial"
+
+        if not basic_family:
+            logger.warning("Failed to load basic font. GUI stylesheet will fallback.")
+
+        self.annotation_font = QFont(steps_family, 18)
 
         self.afm_stack: AFMImageStack = AFMImageStack.load_data(afm_path)
 
@@ -67,13 +92,6 @@ class MainWindow(QMainWindow):
         self._flat: Optional[np.ndarray] = None
         self._show_flat = False
 
-        if font_id == -1:
-            logger.warning("Failed to load Steps Mono! Falling back to Arial.")
-            self.custom_font = QFont("Arial", 12)
-        else:
-            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-            self.custom_font = QFont(font_family, 12)
-
         self._init_ui()
 
     def _init_ui(self):
@@ -82,20 +100,35 @@ class MainWindow(QMainWindow):
         # ─── Top‐level container ─────────────────────────────────
         container = QWidget()
         main_layout = QHBoxLayout(container)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
         # ─── Left Panel ─────────────────────────────────────
         left_panel = QWidget()
         left_layout = QVBoxLayout(left_panel)
 
+        # Set zero margins and spacing so viewer is flush
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(0)
+
+        # Viewer widget stays at the top, no padding
         self.viewer = ViewerWidget()
+        self.viewer.setObjectName("viewer")
         self.viewer.setMinimumSize(min(self.afm_stack.width, 256), 256)
-        self.viewer.set_annotation_font(self.custom_font)
+        self.viewer.set_annotation_font(self.annotation_font)
         self.viewer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.viewer.set_background_color(
             z_to_rgb(self._zperc_raw, self._vmin_raw, self._vmax_raw)
         )
         left_layout.addWidget(self.viewer)
 
+        # Wrap the controls in a container widget with padding
+        controls_container = QWidget()
+        controls_layout = QVBoxLayout(controls_container)
+        controls_layout.setContentsMargins(10, 10, 10, 10)  # <-- padding here
+        controls_layout.setSpacing(8)  # spacing between controls
+
+        # Your existing controls and layouts
         self.show_timestamp_box = QCheckBox("Show Timestamp")
         self.show_timestamp_box.setChecked(True)
         self.show_scale_bar_box = QCheckBox("Show Scale Bar")
@@ -104,26 +137,14 @@ class MainWindow(QMainWindow):
         annotation_hbox = QHBoxLayout()
         annotation_hbox.addWidget(self.show_timestamp_box)
         annotation_hbox.addWidget(self.show_scale_bar_box)
-        left_layout.addLayout(annotation_hbox)
+        controls_layout.addLayout(annotation_hbox)
 
         self.controls = PlaybackControls()
         play_btn = self.controls.play_btn
         fps_label = QLabel("FPS:")
         fps_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
 
-        playback_hbox = QHBoxLayout()
-        playback_hbox.addWidget(play_btn)
-        playback_hbox.addWidget(fps_label)
-        playback_hbox.addWidget(self.controls.fps_box)
-        left_layout.addLayout(playback_hbox)
-
-        self.controls.play_btn.clicked.connect(self.toggle_play)
-        self.controls.fps_box.valueChanged.connect(self._update_timer_interval)
-
         n_frames = self._frames.shape[0]
-        self.show_timestamp_box.toggled.connect(lambda: self.show_frame(self._idx))
-        self.show_scale_bar_box.toggled.connect(lambda: self.show_frame(self._idx))
-
         slider = self.controls.slider
         slider.setRange(0, n_frames - 1)
         slider.setTickPosition(QSlider.TickPosition.TicksBelow)
@@ -131,11 +152,30 @@ class MainWindow(QMainWindow):
         slider.valueChanged.connect(self.show_frame)
         slider.setValue(0)
 
-        slider_hbox = QHBoxLayout()
-        slider_hbox.addWidget(QLabel("0"))
-        slider_hbox.addWidget(slider, 1)
-        slider_hbox.addWidget(QLabel(str(n_frames - 1)))
-        left_layout.addLayout(slider_hbox)
+        play_btn.setFixedSize(78, 30)
+        play_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        slider.setMinimumWidth(200)
+
+        fps_container = QWidget()
+        fps_layout = QHBoxLayout(fps_container)
+        fps_layout.setContentsMargins(0, 0, 0, 0)
+        fps_layout.setSpacing(5)
+        fps_layout.addWidget(fps_label)
+        fps_layout.addWidget(self.controls.fps_box)
+        fps_layout.addStretch(1)
+        self.controls.fps_box.setFixedWidth(80)
+
+        playback_hbox = QHBoxLayout()
+        playback_hbox.addWidget(play_btn)
+        playback_hbox.addSpacing(10)
+        playback_hbox.addWidget(slider, 1)
+        playback_hbox.addWidget(fps_container)
+
+        controls_layout.addLayout(playback_hbox)
+
+        self.controls.play_btn.clicked.connect(self.toggle_play)
+        self.controls.fps_box.valueChanged.connect(self._update_timer_interval)
 
         self.apply_btn = QPushButton("Apply Filters (F)")
         self.toggle_proc_btn = QPushButton("Toggle Raw/Processed (R)")
@@ -143,12 +183,14 @@ class MainWindow(QMainWindow):
         filter_hbox = QHBoxLayout()
         filter_hbox.addWidget(self.apply_btn)
         filter_hbox.addWidget(self.toggle_proc_btn)
-        left_layout.addLayout(filter_hbox)
+        controls_layout.addLayout(filter_hbox)
 
         self.apply_btn.clicked.connect(self.apply_filters)
         self.toggle_proc_btn.clicked.connect(self.toggle_processed)
 
-        left_panel.setLayout(left_layout)
+        # Add the controls container (with padding) below the viewer
+        left_layout.addWidget(controls_container)
+
         main_layout.addWidget(left_panel, 2)
 
         # ─── Right Panel ─────────────────────────────────────────────────────
@@ -163,6 +205,7 @@ class MainWindow(QMainWindow):
         # ── Group: GIF Export ────────────────────────────────────────────────
         gif_group = QGroupBox("Save Animated GIF")
         gif_layout = QVBoxLayout()
+        gif_layout.setContentsMargins(10, 25, 10, 10)
 
         self.gif_raw_radio = QRadioButton("Save Raw")
         self.gif_processed_radio = QRadioButton("Save Processed")
@@ -183,8 +226,9 @@ class MainWindow(QMainWindow):
         gif_group.setLayout(gif_layout)
 
         # ── Group: Data Export ───────────────────────────────────────────────
-        data_group = QGroupBox("Data Export Formats")
+        data_group = QGroupBox("Data Export")
         data_layout = QVBoxLayout()
+        data_layout.setContentsMargins(10, 25, 10, 10)
 
         # Add radio buttons for processed/raw selection
         self.data_raw_radio = QRadioButton("Export Raw")
@@ -349,6 +393,8 @@ class MainWindow(QMainWindow):
             self.apply_filters()
         elif k == Qt.Key_R:
             self.toggle_processed()
+        elif k == Qt.Key_G:
+            self._export_gif()
         # add more keys here (e.g. 'T' → export TIFF, etc.)
         else:
             super().keyPressEvent(ev)
@@ -471,9 +517,16 @@ def z_to_rgb(z_value, vmin, vmax, cmap_name="afmhot"):
 
 # If you want to launch this window standalone:
 if __name__ == "__main__":
+    from pathlib import Path
+
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
+
+    qss_path = Path("src/playNano/gui/styles/dark_bluegreen.qss").resolve()
+    if qss_path.exists():
+        with open(qss_path) as f:
+            app.setStyleSheet(f.read())
     win = MainWindow(
         afm_path=r"C:\\Users\\ggjh246\\OneDrive - University of Leeds\\Code\\playNano_testdata\\save-2025.05.20-12.57.06.187.h5-jpk"  # noqa
     )
