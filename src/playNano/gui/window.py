@@ -128,11 +128,13 @@ class MainWindow(QMainWindow):
         controls_layout.setContentsMargins(10, 10, 10, 10)  # <-- padding here
         controls_layout.setSpacing(8)  # spacing between controls
 
-        # Your existing controls and layouts
+        # Annotation controls
         self.show_timestamp_box = QCheckBox("Show Timestamp")
         self.show_timestamp_box.setChecked(True)
+        self.show_timestamp_box.toggled.connect(lambda: self.show_frame(self._idx))
         self.show_scale_bar_box = QCheckBox("Show Scale Bar")
         self.show_scale_bar_box.setChecked(True)
+        self.show_scale_bar_box.toggled.connect(lambda: self.show_frame(self._idx))
 
         annotation_hbox = QHBoxLayout()
         annotation_hbox.addWidget(self.show_timestamp_box)
