@@ -11,6 +11,7 @@ from playNano.cli.utils import (
     parse_processing_string,
 )
 from playNano.errors import LoadError
+from playNano.gui.main import gui_entry
 from playNano.io.export import (
     export_bundles,
     save_h5_bundle,
@@ -18,7 +19,6 @@ from playNano.io.export import (
     save_ome_tiff_stack,
 )
 from playNano.io.gif_export import export_gif
-from playNano.playback.vis import play_stack_cv
 from playNano.processing.core import process_stack
 
 logger = logging.getLogger(__name__)
@@ -174,9 +174,8 @@ def play_pipeline_mode(
                 "The value of zmax must be either a number or the string 'auto'."
             )
 
-    play_stack_cv(
+    gui_entry(
         afm_stack,
-        fps=fps,
         output_dir=output_folder,
         output_name=output_name,
         steps_with_kwargs=steps_with_kwargs,

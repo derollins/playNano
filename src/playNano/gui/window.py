@@ -1,7 +1,6 @@
 """Main window for the playNano GUI application."""
 
 import logging
-import sys
 from importlib.resources import files
 from typing import Optional
 
@@ -30,7 +29,7 @@ from playNano.gui.widgets.controls import PlaybackControls
 from playNano.gui.widgets.viewer import ViewerWidget
 from playNano.processing.pipeline import ProcessingPipeline
 from playNano.utils.constants import default_steps_with_kwargs
-from playNano.utils.io_utils import compute_zscale_range
+from playNano.utils.io_utils import compute_zscale_range, prepare_output_directory
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -39,7 +38,16 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     """Main window for the playNano GUI application."""
 
-    def __init__(self, afm_path: str):
+    def __init__(
+        self,
+        afm_stack: AFMImageStack,
+        processing_steps: Optional[list[tuple[str, dict]]] = None,
+        output_dir: Optional[str] = None,
+        output_name: str = "playNano_export",
+        scale_bar_nm: int = 100,
+        zmin: str = "auto",
+        zmax: str = "auto",
+    ):
         """Initialize the main window with the given AFM path."""
         super().__init__()
         self.setWindowTitle("playNano Player")
@@ -72,23 +80,30 @@ class MainWindow(QMainWindow):
 
         self.annotation_font = QFont(steps_family, 18)
 
-        self.afm_stack: AFMImageStack = AFMImageStack.load_data(afm_path)
+        self.afm_stack: AFMImageStack = afm_stack
 
         self.resize(
             int(self.afm_stack.width * 1.5),
             self.afm_stack.height + 200,
         )
 
-        self.processing_steps: list[tuple[str, dict]] = []
+        self.processing_steps: list[tuple[str, dict]] = processing_steps or []
+        self.output_dir = output_dir
+        self.output_name = output_name
+        self.scale_bar_nm = scale_bar_nm
+        self.zmin = zmin
+        self.zmax = zmax
         self._idx = 0
         self._frames = self.afm_stack.data
-        self._vmin_raw, self._vmax_raw = compute_zscale_range(
-            self._frames, "auto", "auto"
+        self._zmin_raw, self._zmax_raw = compute_zscale_range(
+            self._frames,
+            zmin=self.zmin,
+            zmax=self.zmax,
         )
         self._percentile_P = 25
         self._zperc_raw = float(np.percentile(self._frames, self._percentile_P))
         self._zperc_flat = None
-        self._vmin_flat, self._vmax_flat = None, None
+        self._zmin_flat, self._zmax_flat = None, None
         self._flat: Optional[np.ndarray] = None
         self._show_flat = False
 
@@ -118,7 +133,7 @@ class MainWindow(QMainWindow):
         self.viewer.set_annotation_font(self.annotation_font)
         self.viewer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.viewer.set_background_color(
-            z_to_rgb(self._zperc_raw, self._vmin_raw, self._vmax_raw)
+            z_to_rgb(self._zperc_raw, self._zmin_raw, self._zmax_raw)
         )
         left_layout.addWidget(self.viewer)
 
@@ -302,8 +317,10 @@ class MainWindow(QMainWindow):
         self._flat = self.afm_stack.data
 
         # recompute display range for the new (filtered) data
-        self._vmin_flat, self._vmax_flat = compute_zscale_range(
-            self._flat, "auto", "auto"
+        self._zmin_flat, self._zmax_flat = compute_zscale_range(
+            self._flat,
+            zmin=self.zmin,
+            zmax=self.zmax,
         )
         self._zperc_flat = float(np.percentile(self._flat, self._percentile_P))
         # switch to showing flattened
@@ -357,7 +374,7 @@ class MainWindow(QMainWindow):
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
                 pixel_size_nm=self.afm_stack.pixel_size_nm,
-                scale_bar_nm=100,
+                scale_bar_nm=self.scale_bar_nm,
             )
         except Exception as e:
             logger.error(f"[MainWindow] Failed to set annotations: {e}")
@@ -372,9 +389,9 @@ class MainWindow(QMainWindow):
         colormap, and return a HxWx3 uint8.
         """
         if self._show_flat and self._flat is not None:
-            zmin, zmax = self._vmin_flat, self._vmax_flat
+            zmin, zmax = self._zmin_flat, self._zmax_flat
         else:
-            zmin, zmax = self._vmin_raw, self._vmax_raw
+            zmin, zmax = self._zmin_raw, self._zmax_raw
 
         if zmin == zmax:
             norm8 = np.zeros_like(arr, dtype=np.uint8)
@@ -417,12 +434,12 @@ class MainWindow(QMainWindow):
         """Update viewer background based on current view (raw or filtered)."""
         if self._show_flat and self._flat is not None:
             z_bg = self._zperc_flat
-            vmin, vmax = self._vmin_flat, self._vmax_flat
+            zmin, zmax = self._zmin_flat, self._zmax_flat
         else:
             z_bg = self._zperc_raw
-            vmin, vmax = self._vmin_raw, self._vmax_raw
+            zmin, zmax = self._zmin_raw, self._zmax_raw
 
-        rgb = z_to_rgb(z_bg, vmin, vmax, cmap_name="afmhot")
+        rgb = z_to_rgb(z_bg, zmin, zmax, cmap_name="afmhot")
         self.viewer.set_background_color(rgb)
 
     def _update_timer_interval(self, fps: int):
@@ -434,10 +451,9 @@ class MainWindow(QMainWindow):
     def _export_gif(self):
         """Export current view as an animated GIF."""
         from playNano.io.gif_export import export_gif
-        from playNano.utils.io_utils import prepare_output_directory
 
         raw = self.gif_raw_radio.isChecked()
-        save_dir = prepare_output_directory(".", "output")
+        save_dir = prepare_output_directory(self.output_dir, "output")
 
         export_gif(
             self.afm_stack,
@@ -446,15 +462,14 @@ class MainWindow(QMainWindow):
             "gui_export",
             scale_bar_nm=100,
             raw=raw,
-            zmin=self._vmin_flat if not raw else self._vmin_raw,
-            zmax=self._vmax_flat if not raw else self._vmax_raw,
+            zmin=self._zmin_flat if not raw else self._zmin_raw,
+            zmax=self._zmax_flat if not raw else self._zmax_raw,
         )
         logger.info("Exported GIF.")
 
     def _export_checked(self):
         """Export selected formats (NPZ, OME-TIFF, HDF5)."""
         from playNano.io.export import export_bundles
-        from playNano.utils.io_utils import prepare_output_directory
 
         formats = []
         if self.export_npz_cb.isChecked():
@@ -475,7 +490,7 @@ class MainWindow(QMainWindow):
             logger.debug("Data is unprocessed, exporting the unprocessed data.")
             raw = False
 
-        save_dir = prepare_output_directory(".", "output")
+        save_dir = prepare_output_directory(self.output_dir, "output")
 
         try:
             export_bundles(
@@ -506,31 +521,12 @@ class MainWindow(QMainWindow):
             self.data_raw_radio.setChecked(True)
 
 
-def z_to_rgb(z_value, vmin, vmax, cmap_name="afmhot"):
+def z_to_rgb(z_value, zmin, zmax, cmap_name="afmhot"):
     """Map a data value z_value → RGB via the colormap."""
-    span = vmax - vmin
+    span = zmax - zmin
     if span <= 0:
         return (0, 0, 0)
-    normed = np.clip((z_value - vmin) / span, 0, 1)
+    normed = np.clip((z_value - zmin) / span, 0, 1)
     cmap = matplotlib.colormaps.get_cmap(cmap_name)
     rgba = cmap(normed)
     return tuple(int(255 * c) for c in rgba[:3])
-
-
-# If you want to launch this window standalone:
-if __name__ == "__main__":
-    from pathlib import Path
-
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-
-    qss_path = Path("src/playNano/gui/styles/dark_bluegreen.qss").resolve()
-    if qss_path.exists():
-        with open(qss_path) as f:
-            app.setStyleSheet(f.read())
-    win = MainWindow(
-        afm_path=r"C:\\Users\\ggjh246\\OneDrive - University of Leeds\\Code\\playNano_testdata\\save-2025.05.20-12.57.06.187.h5-jpk"  # noqa
-    )
-    win.show()
-    sys.exit(app.exec())
