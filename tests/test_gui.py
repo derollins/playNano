@@ -1,6 +1,6 @@
 """Test for playNano minimal UI."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import numpy as np
 
@@ -44,7 +44,7 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     mock_stack.processed = {}
 
     # Instantiate and show
-    wnd = MainWindow("dummy")
+    wnd = MainWindow(mock_stack)
     qtbot.addWidget(wnd)
     wnd.show()
     assert wnd.isVisible()
@@ -96,7 +96,16 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
 
     # Assert
     mock_qapplication.assert_called_once()
-    mock_main_window.assert_called_once_with("dummy/path.h5-jpk")
+
+    mock_main_window.assert_called_once_with(
+        afm_stack=ANY,
+        processing_steps=None,
+        output_dir=None,
+        output_name="playNano_export",
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+    )
     mock_window.show.assert_called_once()
     mock_app.exec.assert_called_once()
     mock_exit.assert_called_once()

@@ -82,10 +82,10 @@ def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
     assert "Failed to load in.jpk" in str(exc.value)
 
 
-@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.gui_entry")
 @patch("playNano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_valid_zmin_zmax(
-    mock_load_data, mock_play_stack_cv, tmp_path
+    mock_load_data, mock_gui_entry, tmp_path
 ):
     """Test that play_pipeline_mode correctly handles valid zmin and zmax."""
     mock_stack = MagicMock()
@@ -105,15 +105,15 @@ def test_play_pipeline_mode_with_valid_zmin_zmax(
         zmax="1.0",
     )
 
-    args, kwargs = mock_play_stack_cv.call_args
+    args, kwargs = mock_gui_entry.call_args
     assert kwargs["zmin"] == 0.0
     assert kwargs["zmax"] == 1.0
 
 
-@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.gui_entry")
 @patch("playNano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_invalid_zmin_logs_error(
-    mock_load_data, mock_play_stack_cv, caplog, tmp_path
+    mock_load_data, mock_gui_entry, caplog, tmp_path
 ):
     """Test that play_pipeline_mode logs an error for invalid zmin."""
     mock_stack = MagicMock()
@@ -137,10 +137,10 @@ def test_play_pipeline_mode_with_invalid_zmin_logs_error(
     assert "zmin must be either a number or the string 'auto'" in caplog.text
 
 
-@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.gui_entry")
 @patch("playNano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_invalid_zmax_logs_error(
-    mock_load_data, mock_play_stack_cv, caplog, tmp_path
+    mock_load_data, mock_gui_entry, caplog, tmp_path
 ):
     """Test that play_pipeline_mode logs an error for invalid zmax."""
     mock_stack = MagicMock()
@@ -164,67 +164,11 @@ def test_play_pipeline_mode_with_invalid_zmax_logs_error(
     assert "zmax must be either a number or the string 'auto'" in caplog.text
 
 
-@patch("playNano.cli.actions.play_stack_cv")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
-def test_play_pipeline_mode_defaults_fps_when_line_rate_missing(
-    mock_load_data, mock_play_stack_cv, caplog
-):
-    """Test that play_pipeline_mode defaults to 1 fps when line_rate is missing."""
-    mock_stack = MagicMock()
-    mock_stack.frame_metadata = [{}]  # no line_rate
-    mock_stack.image_shape = (512, 512)
-    mock_load_data.return_value = mock_stack
-
-    with caplog.at_level("WARNING"):
-        actions.play_pipeline_mode(
-            input_file="dummy.afm",
-            channel="height_trace",
-            processing_str=None,
-            processing_file=None,
-            output_folder=None,
-            output_name=None,
-            scale_bar_nm=100,
-            zmin="auto",
-            zmax="auto",
-        )
-
-    assert "defaulting to 1 fps" in caplog.text
-    args, kwargs = mock_play_stack_cv.call_args
-    assert kwargs["fps"] == 1.0
-
-
-@patch("playNano.cli.actions.play_stack_cv")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
-def test_play_pipeline_mode_computes_fps_from_line_rate(
-    mock_load_data, mock_play_stack_cv
-):
-    """Test that the fps is calculated from the line rate and image shape."""
-    mock_stack = MagicMock()
-    mock_stack.frame_metadata = [{"line_rate": 2048}]
-    mock_stack.image_shape = (512, 512)
-    mock_load_data.return_value = mock_stack
-
-    actions.play_pipeline_mode(
-        input_file="dummy.afm",
-        channel="height_trace",
-        processing_str=None,
-        processing_file=None,
-        output_folder=None,
-        output_name=None,
-        scale_bar_nm=100,
-        zmin="auto",
-        zmax="auto",
-    )
-
-    args, kwargs = mock_play_stack_cv.call_args
-    assert kwargs["fps"] == 4.0  # 2048 / 512
-
-
 @patch("playNano.cli.actions.parse_processing_file")
-@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.gui_entry")
 @patch("playNano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_uses_processing_file(
-    mock_load_data, mock_play_stack_cv, mock_parse_file
+    mock_load_data, mock_gui_entry, mock_parse_file
 ):
     """Test that play_pipeline_mode uses processing file correctly."""
     mock_stack = MagicMock()
@@ -249,10 +193,10 @@ def test_play_pipeline_mode_uses_processing_file(
 
 
 @patch("playNano.cli.actions.parse_processing_string")
-@patch("playNano.cli.actions.play_stack_cv")
+@patch("playNano.cli.actions.gui_entry")
 @patch("playNano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_uses_processing_str(
-    mock_load_data, mock_play_stack_cv, mock_parse_str
+    mock_load_data, mock_gui_entry, mock_parse_str
 ):
     """Test that a processed string is used in play mode."""
     mock_stack = MagicMock()

@@ -71,7 +71,7 @@ def main() -> None:
 
     # 1) 'play' subcommand
     play_parser = subparsers.add_parser(
-        "play", help="Interactive play mode (OpenCV window)."
+        "play", help="Interactive play mode (GUI window)."
     )
     play_parser.add_argument(
         "input_file", type=str, help="Path to AFM input file or folder."
