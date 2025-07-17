@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from importlib.resources import files
 
 # Allow compatability with Python 3.10
 try:
@@ -14,9 +15,9 @@ except ImportError:
 
 from typing import Any
 
-import cv2
 import dateutil.parser
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
 
 def normalize_timestamps(metadata_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -78,80 +79,80 @@ def draw_scale_and_timestamp(
     pixel_size_nm: float,
     scale: float,
     bar_length_nm: int = 100,
-    font_scale: float = 0.5,
-    font_thickness: int = 1,
+    font_scale: float = 1,
+    draw_ts: bool = True,
+    draw_scale: bool = True,
     color: tuple = (255, 255, 255),
 ) -> np.ndarray:
     """
-    Draw a scale bar and timestamp onto an image (in-place).
+    Draw a scale bar and/or timestamp onto an image (in-place via PIL).
 
     Parameters
     ----------
-    image : np.ndarray
-        The image to annotate (uint8, 3 channels expected).
+    image : np.ndarray (HxWx3, uint8)
     timestamp : float
-        Time in seconds to display.
     pixel_size_nm : float
-        Size of one pixel in nanometers.
     scale : float
-        Display scale factor (e.g., for resized images).
-    bar_length_nm : int, optional
-        Length of the scale bar in nanometers, by default 100.
-    font_scale : float, optional
-        Scale factor for the timestamp and label font.
-    font_thickness : int, optional
-        Thickness of the font lines.
-    color : tuple, optional
-        Color of text and scale bar in BGR format, by default white.
-
-    Returns
-    -------
-    np.ndarray
-        The annotated image (same array as input, modified in-place).
+    bar_length_nm : int
+    draw_ts: whether to draw the 'Time: xx.xx s' in top-left
+    draw_scale: whether to draw the scale bar + nm label in bottom-left
+    font_scale: relative multiplier
+    draw_ts : bool          # whether to draw timestamp
+    draw_scale : bool       # whether to draw scale bar
+    color : tuple           # RGB color for both
     """
-    h, _ = image.shape[:2]
-    px_per_nm = 1.0 / pixel_size_nm
-    if bar_length_nm > 0:
-        bar_length_px = int(bar_length_nm * px_per_nm * scale)
-        bar_height = 5
+    # Convert to PIL for drawing
+    pil = Image.fromarray(image)
+    draw = ImageDraw.Draw(pil)
+    W, H = pil.size
 
-        bar_x = 10
-        bar_y = h - 20
+    # ==== Font setup ====
+    steps_font_path = files("playNano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
 
-        # Draw scale bar
-        cv2.rectangle(
-            image,
-            (bar_x, bar_y),
-            (bar_x + bar_length_px, bar_y + bar_height),
-            color,
-            -1,
-        )
-        cv2.putText(
-            image,
-            f"{bar_length_nm} nm",
-            (bar_x, bar_y - 5),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            font_scale,
-            color,
-            font_thickness,
-        )
+    # compute a point size to match the GUI's QFont
+    ptsize = int(15 * font_scale)
+    try:
+        font = ImageFont.truetype(steps_font_path, ptsize)
+    except Exception:
+        # fallback to default
+        font = ImageFont.load_default()
 
-    timestamp_org_top = int(
-        45 * font_scale
-    )  # make the position from the top scale with fornt size.
+    # Helper to measure text size
+    def measure(text):
+        try:
+            return font.getsize(text)
+        except AttributeError:
+            bbox = draw.textbbox((0, 0), text, font=font)
+            return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
-    # Draw timestamp
-    cv2.putText(
-        image,
-        f"Time: {timestamp:.2f} s",
-        (10, timestamp_org_top),  # org
-        cv2.FONT_HERSHEY_SIMPLEX,
-        font_scale + 0.1,
-        color,
-        font_thickness + 1,
-    )
+    # ==== DRAW TIMESTAMP ====
+    if draw_ts:
+        ts_text = f"{timestamp:.2f} s"
+        tw, th = measure(ts_text)
+        y_offset = th + 2
+        draw.text((10, y_offset), ts_text, font=font, fill=color)
 
-    return image
+    # ==== DRAW SCALE BAR ====
+    if draw_scale and bar_length_nm > 0 and pixel_size_nm and pixel_size_nm > 0:
+        bar_h = 5
+        # compute pixel length: bar_length_nm / pixel_size_nm * scale_factor
+        px_per_nm = 1.0 / pixel_size_nm
+        raw_bar_px = bar_length_nm * px_per_nm
+        # in GUI, bar drawn on the scaled pixmap → simulate via scale
+        bar_w = int(raw_bar_px * scale)
+        x0, y0 = 10, H - 22
+        x1, y1 = x0 + bar_w, y0 + bar_h
+
+        # draw filled rectangle
+        draw.rectangle([x0, y0, x1, y1], fill=color)
+
+        # label above bar
+        label = f"{bar_length_nm} nm"
+        lw, lh = measure(label)
+        draw.text((x0, y0 - lh - 9), label, font=font, fill=color)
+
+    # back to numpy
+    return np.array(pil)
 
 
 def utc_now_iso() -> str:

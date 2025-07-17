@@ -3,7 +3,6 @@
 import logging
 from pathlib import Path
 
-import cv2
 import numpy as np
 
 INVALID_CHARS = r'\/:*?"<>|'
@@ -133,8 +132,19 @@ def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     np.ndarray
         Normalized image as a uint8 NumPy array with values in the range [0, 255].
     """
+    # Replace NaNs and Infs with 0
     image = np.nan_to_num(image, nan=0.0, posinf=0.0, neginf=0.0)
-    norm = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
+
+    # Compute min and max
+    min_val = np.min(image)
+    max_val = np.max(image)
+
+    # Avoid division by zero
+    if max_val - min_val == 0:
+        return np.zeros_like(image, dtype=np.uint8)
+
+    # Normalize to [0, 255]
+    norm = (image - min_val) / (max_val - min_val) * 255
     return norm.astype(np.uint8)
 
 

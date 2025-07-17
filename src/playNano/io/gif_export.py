@@ -36,6 +36,8 @@ def create_gif_with_scale_and_timestamp(
     cmap_name="afmhot",
     zmin: float | str | None = None,
     zmax: float | str | None = None,
+    draw_ts: bool = True,
+    draw_scale: bool = True,
 ):
     """
     Create a GIF from a stack of images with a scale bar and optional timestamps.
@@ -140,14 +142,17 @@ def create_gif_with_scale_and_timestamp(
                 f"Invalid timestamps provided, using frame index {i} as timestamp."
             )
             timestamp = i
-        # Apply OpenCV overlay drawing
+        # Add annotations
         frame_with_overlay = draw_scale_and_timestamp(
-            color_frame.copy(),
+            color_frame,
             timestamp=timestamp,
             pixel_size_nm=pixel_size_nm,
-            scale=1.0,  # no resizing in GIFs assumed
-            font_scale=frame.shape[0] / 512,
+            scale=1.0,
             bar_length_nm=scale_bar_length_nm,
+            font_scale=frame.shape[0] / 256,
+            draw_ts=draw_ts,
+            draw_scale=draw_scale,
+            color=(255, 255, 255),
         )
 
         # Convert back to PIL
@@ -173,6 +178,8 @@ def export_gif(
     raw: bool = False,
     zmin: float | None = None,
     zmax: float | None = None,
+    draw_ts: bool = True,
+    draw_scale: bool = True,
 ) -> None:
     """
     Optionally export a GIF of the AFM stack with scale bar and timestamps.
@@ -247,5 +254,7 @@ def export_gif(
         cmap_name="afmhot",
         zmin=zmin,
         zmax=zmax,
+        draw_ts=draw_ts,
+        draw_scale=draw_scale,
     )
     logger.debug(f"[export] GIF written to {gif_path}")

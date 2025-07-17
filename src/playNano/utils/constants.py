@@ -8,3 +8,6 @@ default_steps_with_kwargs = [
     ("polynomial_flatten", {"order": 2}),
     ("zero_mean", {}),
 ]
+
+# Number of bins for Z‑value histogram in the GUI
+HIST_BINS = 100

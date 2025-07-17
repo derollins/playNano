@@ -38,12 +38,12 @@ dependencies = [
   "tifffile",
   "matplotlib",
   "afmreader",
-  "opencv-python",
   "python-dateutil>=2.8",
   "scipy",
   "scikit-learn",
   "pyyaml>=6.0",
   "PySide6",
+  "pyqtgraph",
 ]
 
 [project.optional-dependencies]

@@ -6,11 +6,14 @@ from typing import Optional
 
 import matplotlib
 import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont, QFontDatabase
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
+    QDoubleSpinBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -104,8 +107,31 @@ class MainWindow(QMainWindow):
         self._zperc_raw = float(np.percentile(self._frames, self._percentile_P))
         self._zperc_flat = None
         self._zmin_flat, self._zmax_flat = None, None
+        self._zmin_flat, self._zmax_flat = self._zmin_raw, self._zmax_raw
         self._flat: Optional[np.ndarray] = None
         self._show_flat = False
+
+        # Prepare Matplotlib Figure and Canvas
+        self.hist_fig = Figure(figsize=(4, 2))
+        self.hist_fig.patch.set_facecolor("#252525")
+        self.hist_canvas = FigureCanvas(self.hist_fig)
+        self.hist_ax = self.hist_fig.add_subplot(111)
+
+        # Create spin boxes for numeric zmin/zmax control
+        RANGE_MIN = -1e5
+        RANGE_MAX = +1e5
+
+        self.zmin_spin = QDoubleSpinBox()
+        self.zmin_spin.setRange(RANGE_MIN, RANGE_MAX)
+        self.zmin_spin.setSingleStep(0.1)
+        self.zmin_spin.setValue(self._zmin_raw)
+        self.zmin_spin.setDecimals(1)
+
+        self.zmax_spin = QDoubleSpinBox()
+        self.zmax_spin.setRange(RANGE_MIN, RANGE_MAX)
+        self.zmax_spin.setSingleStep(0.1)
+        self.zmax_spin.setValue(self._zmax_raw)
+        self.zmax_spin.setDecimals(1)
 
         self._init_ui()
 
@@ -242,6 +268,37 @@ class MainWindow(QMainWindow):
         gif_layout.addWidget(self.save_gif_btn)
         gif_group.setLayout(gif_layout)
 
+        # ── Group: Z-Scale Histogram ─────────────────────────────
+        hist_group = QGroupBox("Z-Scale Histogram")
+        hist_layout = QVBoxLayout(hist_group)
+        hist_layout.setContentsMargins(10, 25, 10, 10)
+        hist_group.setFixedHeight(150)
+
+        # Matplotlib canvas
+        hist_layout.addWidget(self.hist_canvas)
+
+        # Spinboxes beneath the canvas
+        spin_layout = QHBoxLayout()
+        spin_layout.addWidget(QLabel("zmin:"))
+        spin_layout.addWidget(self.zmin_spin)
+        spin_layout.addSpacing(10)
+        spin_layout.addWidget(QLabel("zmax:"))
+        spin_layout.addWidget(self.zmax_spin)
+        hist_layout.addLayout(spin_layout)
+
+        # Auto button on its own line, right‑aligned
+        self.auto_btn = QPushButton("Auto")
+        self.auto_btn.setToolTip("Reset to automatic (1st/99th percentile) z-range")
+        hist_layout.addWidget(self.auto_btn, alignment=Qt.AlignRight)
+
+        hist_group.setLayout(hist_layout)
+        export_layout.addWidget(hist_group)
+
+        self.zmin_spin.setFixedWidth(80)
+        self.zmax_spin.setFixedWidth(80)
+        self.auto_btn.setFixedHeight(30)
+        self.auto_btn.setFixedWidth(60)
+
         # ── Group: Data Export ───────────────────────────────────────────────
         data_group = QGroupBox("Data Export")
         data_layout = QVBoxLayout()
@@ -297,6 +354,20 @@ class MainWindow(QMainWindow):
         self._update_export_options()
         self.show_frame(0)
 
+        # Draw histogram & connect interactions
+        QTimer.singleShot(0, self._draw_bars)
+        QTimer.singleShot(0, self._init_lines)
+        QTimer.singleShot(0, self._connect_hist_events)
+
+        # Connect spin boxes to slot
+        self.zmin_spin.valueChanged.connect(
+            lambda v: self._on_spinbox_changed("min", v)
+        )
+        self.zmax_spin.valueChanged.connect(
+            lambda v: self._on_spinbox_changed("max", v)
+        )
+        self.auto_btn.clicked.connect(self._on_auto)
+
     def apply_filters(self):
         """
         Build and run a ProcessingPipeline over the AFM stack.
@@ -325,8 +396,26 @@ class MainWindow(QMainWindow):
         self._zperc_flat = float(np.percentile(self._flat, self._percentile_P))
         # switch to showing flattened
         self._show_flat = True  # ← this ensures flattened view is active
-        self._update_background_color()
-        # redraw current frame
+        # Sync spin‑boxes to new flat range
+        self.zmin_spin.blockSignals(True)
+        self.zmin_spin.blockSignals(False)
+        self.zmax_spin.blockSignals(True)
+        self.zmax_spin.blockSignals(False)
+        # and for z scale
+        lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        self.zmin_spin.blockSignals(True)
+        self.zmax_spin.blockSignals(True)
+
+        self.zmin_spin.setValue(lo)
+        self.zmax_spin.setValue(hi)
+
+        self.zmin_spin.blockSignals(False)
+        self.zmax_spin.blockSignals(False)
+
+        # then refresh histogram & viewer
+        self._draw_bars()
+        self._init_lines()
+        self._move_lines()
         self.show_frame(self._idx)
 
         self._update_export_options()
@@ -426,9 +515,40 @@ class MainWindow(QMainWindow):
 
         # flip a flag
         self._show_flat = not getattr(self, "_show_flat", False)
-        # re‐draw the current frame and bg
+        # choose which z-range to use
+        zmin, zmax = (
+            (self._zmin_flat, self._zmax_flat)
+            if self._show_flat
+            else (self._zmin_raw, self._zmax_raw)
+        )
+        # update spinboxes (block signals to avoid recursive updates)
+        if self._show_flat:
+            lo, hi = self._zmin_flat, self._zmax_flat
+        else:
+            lo, hi = self._zmin_raw, self._zmax_raw
+
+        lo, hi = sorted((zmin, zmax))
+        self.zmin_spin.blockSignals(True)
+        self.zmax_spin.blockSignals(True)
+
+        self._set_spinbox_value(self.zmin_spin, lo)
+        self._set_spinbox_value(self.zmax_spin, hi)
+
+        self.zmin_spin.blockSignals(False)
+        self.zmax_spin.blockSignals(False)
+        # rebuild histogram for the newly-selected data
+        self._draw_bars()
+        self._init_lines()
+        # then update viewer
         self._update_background_color()
         self.show_frame(self._idx)
+
+    def _set_spinbox_value(self, spinbox, value):
+        spinbox.blockSignals(True)
+        spinbox.setValue(value)
+        spinbox.clearFocus()  # force repaint
+        spinbox.repaint()  # in case it didn't
+        spinbox.blockSignals(False)
 
     def _update_background_color(self):
         """Update viewer background based on current view (raw or filtered)."""
@@ -455,15 +575,23 @@ class MainWindow(QMainWindow):
         raw = self.gif_raw_radio.isChecked()
         save_dir = prepare_output_directory(self.output_dir, "output")
 
+        # Grab exactly what the viewer is using right now:
+        if raw:
+            zmin, zmax = self._zmin_raw, self._zmax_raw
+        else:
+            zmin, zmax = self._zmin_flat, self._zmax_flat
+
         export_gif(
             self.afm_stack,
             True,
             save_dir,
-            "gui_export",
-            scale_bar_nm=100,
+            output_name="gui_export",
+            scale_bar_nm=self.scale_bar_nm,
             raw=raw,
-            zmin=self._zmin_flat if not raw else self._zmin_raw,
-            zmax=self._zmax_flat if not raw else self._zmax_raw,
+            zmin=zmin,
+            zmax=zmax,
+            draw_ts=self.show_timestamp_box.isChecked(),
+            draw_scale=self.show_scale_bar_box.isChecked(),
         )
         logger.info("Exported GIF.")
 
@@ -519,6 +647,193 @@ class MainWindow(QMainWindow):
         self.data_processed_radio.setEnabled(has_filtered)
         if not has_filtered:
             self.data_raw_radio.setChecked(True)
+
+    def _draw_bars(self):
+        """Draw only the main histogram bars (with outlier clipping)."""
+        ax = self.hist_ax
+        ax.clear()
+        ax.set_facecolor("#252525")
+
+        # pick raw vs. flat
+        data = (
+            self._flat if (self._show_flat and self._flat is not None) else self._frames
+        )
+        vals = np.nan_to_num(data).ravel()
+
+        # clip to 1–99th percentiles (+ small buffer)
+        p_low, p_high = np.percentile(vals, [1, 99])
+        hist_min = p_low - abs(p_low) / 3
+        hist_max = p_high + abs(p_high) / 3
+
+        counts, edges = np.histogram(vals, bins=150, range=(hist_min, hist_max))
+        centers = (edges[:-1] + edges[1:]) / 2
+
+        # draw bars & style
+        ax.bar(
+            centers,
+            counts,
+            width=edges[1] - edges[0],
+            color="lightgray",
+            edgecolor="none",
+        )
+        ax.set_xlim(hist_min, hist_max)
+        ax.set_ylim(0, counts.max() * 1.1)
+        ax.set_facecolor("#252525")
+        ax.grid(True, color="#444", linestyle="--", linewidth=0.5)
+        ax.yaxis.set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.tick_params(axis="x", colors="#888", labelsize=8)
+        ax.spines["bottom"].set_color("#555")
+        self.hist_fig.subplots_adjust(left=0.05, right=0.98, top=0.95, bottom=0.18)
+        self.hist_canvas.draw_idle()
+
+    def _init_lines(self):
+        """Add two vertical red lines & shaded spans at the current zmin/zmax."""
+        ax = self.hist_ax
+        xmin, xmax = ax.get_xlim()
+
+        zmin = self._zmin_flat if self._show_flat else self._zmin_raw
+        zmax = self._zmax_flat if self._show_flat else self._zmax_raw
+
+        # lines
+        self.line_min = ax.axvline(zmin, color="red", linewidth=2, picker=5)
+        self.line_max = ax.axvline(zmax, color="red", linewidth=2, picker=5)
+
+        # spans
+        self.span_left = ax.axvspan(
+            xmin, zmin, facecolor="#209ba5", alpha=0.2, linewidth=0
+        )
+        self.span_right = ax.axvspan(
+            zmax, xmax, facecolor="#209ba5", alpha=0.2, linewidth=0
+        )
+
+        self.hist_canvas.draw_idle()
+
+    def _move_lines(self):
+        """Reposition the red lines & update their shaded spans—no clearing axes."""
+        ax = self.hist_ax
+        xmin, xmax = ax.get_xlim()
+        zmin = self._zmin_flat if self._show_flat else self._zmin_raw
+        zmax = self._zmax_flat if self._show_flat else self._zmax_raw
+
+        # move lines
+        self.line_min.set_xdata([zmin, zmin])
+        self.line_max.set_xdata([zmax, zmax])
+
+        # refresh spans
+        self.span_left.remove()
+        self.span_right.remove()
+        self.span_left = ax.axvspan(
+            xmin, zmin, facecolor="#209ba5", alpha=0.2, linewidth=0
+        )
+        self.span_right = ax.axvspan(
+            zmax, xmax, facecolor="#209ba5", alpha=0.2, linewidth=0
+        )
+
+        self.hist_canvas.draw_idle()
+
+    def _connect_hist_events(self):
+        """Wire up picking and dragging of the histogram lines."""
+        self._dragging = None
+        self.hist_canvas.mpl_connect("pick_event", self._on_pick)
+        self.hist_canvas.mpl_connect("motion_notify_event", self._on_motion)
+        self.hist_canvas.mpl_connect("button_release_event", self._on_release)
+
+    def _on_pick(self, event):
+        """Start dragging if a line is picked."""
+        if event.artist in (self.line_min, self.line_max):
+            self._dragging = event.artist
+
+    def _on_motion(self, event):
+        """While dragging, move line, update spinbox, and refresh viewer."""
+        if self._dragging and event.xdata is not None:
+            x = float(event.xdata)
+            # Clamp within data range
+            x = max(self.zmin_spin.minimum(), min(self.zmax_spin.maximum(), x))
+
+            # Update the line
+            self._dragging.set_xdata([x, x])
+            self.hist_canvas.draw_idle()
+
+            # Update the corresponding zmin/zmax and spinbox
+            if self._dragging is self.line_min:
+                if self._show_flat and self._flat is not None:
+                    self._zmin_flat = x
+                else:
+                    self._zmin_raw = x
+                self.zmin_spin.blockSignals(True)
+                self.zmin_spin.setValue(x)
+                self.zmin_spin.blockSignals(False)
+            else:
+                if self._show_flat and self._flat is not None:
+                    self._zmax_flat = x
+                else:
+                    self._zmax_raw = x
+                self.zmax_spin.blockSignals(True)
+                self.zmax_spin.setValue(x)
+                self.zmax_spin.blockSignals(False)
+
+            # rebuild histogram (so shading and lines update)
+            self._move_lines()
+            self._update_background_color()
+            self.show_frame(self._idx)
+
+    def _on_release(self, event):
+        """Stop dragging."""
+        self._dragging = None
+
+    def _on_spinbox_changed(self, which, val):
+        """When a spinbox changes, move its line and refresh everything."""
+        val = float(val)
+        if which == "min":
+            if self._show_flat and self._flat is not None:
+                self._zmin_flat = val
+            else:
+                self._zmin_raw = val
+            self.line_min.set_xdata([val, val])
+        else:
+            if self._show_flat and self._flat is not None:
+                self._zmax_flat = val
+            else:
+                self._zmax_raw = val
+            self.line_max.set_xdata([val, val])
+
+        # rebuild histogram (so shading and lines update)
+        self._move_lines()
+        self._update_background_color()
+        self.show_frame(self._idx)
+
+    def _on_auto(self):
+        # recompute auto-ranges for raw or flat
+        arr = (
+            self._flat if (self._show_flat and self._flat is not None) else self._frames
+        )
+        # use compute_zscale_range utility
+        zmin, zmax = compute_zscale_range(arr, zmin="auto", zmax="auto")
+        # store
+        if self._show_flat:
+            self._zmin_flat, self._zmax_flat = zmin, zmax
+        else:
+            self._zmin_raw, self._zmax_raw = zmin, zmax
+
+        # Update widgets
+        # Sync spin‑boxes
+        lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        self.zmin_spin.blockSignals(True)
+        self.zmax_spin.blockSignals(True)
+
+        self.zmin_spin.setValue(lo)
+        self.zmax_spin.setValue(hi)
+
+        self.zmin_spin.blockSignals(False)
+        self.zmax_spin.blockSignals(False)
+
+        # Rebuild histogram for the newly-selected data
+        self._draw_bars()
+        self._init_lines()
+        # then update viewer
+        self._update_background_color()
+        self.show_frame(self._idx)
 
 
 def z_to_rgb(z_value, zmin, zmax, cmap_name="afmhot"):
