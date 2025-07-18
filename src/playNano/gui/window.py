@@ -51,7 +51,26 @@ class MainWindow(QMainWindow):
         zmin: str = "auto",
         zmax: str = "auto",
     ):
-        """Initialize the main window with the given AFM path."""
+        """
+        Initialize the main application window.
+
+        Parameters
+        ----------
+        afm_stack : AFMImageStack
+            The loaded AFM image stack to display and process.
+        processing_steps : list of (str, dict), optional
+            A list of (filter_name, kwargs) tuples defining the default
+            processing pipeline steps.  If None, defaults will be used.
+        output_dir : str, optional
+            Base directory in which to write exported files.
+        output_name : str, default="playNano_export"
+            Base filename to use for exports.
+        scale_bar_nm : int, default=100
+            Physical length (nm) of the scale bar to draw on images.
+        zmin, zmax : 'auto' or float, default="auto"
+            Display range endpoints; if "auto", they will be computed
+            from the data.
+        """
         super().__init__()
         self.setWindowTitle("playNano Player")
 
@@ -136,9 +155,14 @@ class MainWindow(QMainWindow):
         self._init_ui()
 
     def _init_ui(self):
-        """Set up the main window UI."""
+        """
+        Construct and lay out all GUI widgets.
 
-        # ─── Top‐level container ─────────────────────────────────
+        This method builds the left-hand viewer panel, playback controls,
+        annotation toggles, and right-hand export tabs.
+        """
+
+        # ─── Top-level container ─────────────────────────────────
         container = QWidget()
         main_layout = QHBoxLayout(container)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -370,10 +394,11 @@ class MainWindow(QMainWindow):
 
     def apply_filters(self):
         """
-        Build and run a ProcessingPipeline over the AFM stack.
+        Apply the selected processing pipeline to the AFM stack.
 
-        Uses self.processing_steps (or defaults),
-        then refresh the viewer.
+        Builds a ProcessingPipeline from `self.processing_steps` (or defaults),
+        runs it, updates the flattened data (`self._flat`), recomputes display
+        ranges, and refreshes the viewer.
         """
         # choose which steps
         steps = self.processing_steps or default_steps_with_kwargs
@@ -424,7 +449,11 @@ class MainWindow(QMainWindow):
         self.data_processed_radio.setChecked(True)
 
     def toggle_play(self):
-        """Start or stop the automatic frame-advancing timer."""
+        """
+        Start or stop automatic frame advancement.
+
+        If playing, stops the QTimer; if paused, starts it at the current FPS.
+        """
         if self._timer.isActive():
             self._timer.stop()
             self.controls.play_btn.setText("▶️ Play")
@@ -435,13 +464,24 @@ class MainWindow(QMainWindow):
             self.controls.play_btn.setText("⏸ Pause")
 
     def _next_frame(self):
-        """Advance to the next frame in the stack."""
+        """
+        Advance to the next frame and update the display.
+
+        Called on each QTimer timeout when playing.
+        """
         self._idx = (self._idx + 1) % len(self._frames)
         self.show_frame(self._idx)
         self.controls.slider.setValue(self._idx)
 
     def show_frame(self, idx: int):
-        """Render frame #idx (filtered if available, else raw) in viewer widget."""
+        """
+        Render a specific frame in the viewer.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the frame to display (raw or processed, depending on state).
+        """
         logger.debug(f"[show_frame] Showing index {idx}")
         self._idx = idx
         arr = (
@@ -472,10 +512,17 @@ class MainWindow(QMainWindow):
 
     def _colormap_and_normalize(self, arr):
         """
-        Convert a 2D array to RGB uint8 using a colormap.
+        Map a 2D array to an RGB uint8 image via z-scaling and colormap.
 
-        Apply z-scaling, normalize to 0-255, apply a matplotlib
-        colormap, and return a HxWx3 uint8.
+        Parameters
+        ----------
+        arr : (H, W) array
+            Height map to render.
+
+        Returns
+        -------
+        rgb : (H, W, 3) uint8 array
+            Rendered RGB image.
         """
         if self._show_flat and self._flat is not None:
             zmin, zmax = self._zmin_flat, self._zmax_flat
@@ -493,7 +540,14 @@ class MainWindow(QMainWindow):
         return (rgba[..., :3] * 255).astype(np.uint8)
 
     def keyPressEvent(self, ev):
-        """Mirror key presses to the same methods as our buttons."""
+        """
+        Handle key press events for shortcuts.
+
+        Space → toggle play/pause
+        F → apply filters
+        R → toggle raw/processed view
+        G → export GIF
+        """
         k = ev.key()
         if k == Qt.Key_Space:
             self.toggle_play()
@@ -508,7 +562,11 @@ class MainWindow(QMainWindow):
             super().keyPressEvent(ev)
 
     def toggle_processed(self):
-        """Flip between processed frames (self._flat) and raw frames (self._frames)."""
+        """
+        Flip between raw and processed (flattened) data views.
+
+        If no processed data exists yet, does nothing.
+        """
         # If we've never applied filters, nothing to toggle
         if self._flat is None:
             return
@@ -551,7 +609,11 @@ class MainWindow(QMainWindow):
         spinbox.blockSignals(False)
 
     def _update_background_color(self):
-        """Update viewer background based on current view (raw or filtered)."""
+        """
+        Update the viewer background color based on current z-percentile.
+
+        Chooses raw vs. flat background depending on `self._show_flat`.
+        """
         if self._show_flat and self._flat is not None:
             z_bg = self._zperc_flat
             zmin, zmax = self._zmin_flat, self._zmax_flat
@@ -563,13 +625,25 @@ class MainWindow(QMainWindow):
         self.viewer.set_background_color(rgb)
 
     def _update_timer_interval(self, fps: int):
-        """Update playback timer interval if playing."""
+        """
+        Change the playback timer interval when FPS is adjusted.
+
+        Parameters
+        ----------
+        fps : int
+            New frames-per-second rate.
+        """
         if self._timer.isActive():
             interval_ms = int(1000 / fps) if fps > 0 else 50
             self._timer.start(interval_ms)
 
     def _export_gif(self):
-        """Export current view as an animated GIF."""
+        """
+        Export the current stack view as an animated GIF.
+
+        Honors the “Raw vs Processed” radio button and writes to
+        `self.output_dir`/“output” with filename “gui_export.gif”.
+        """
         from playNano.io.gif_export import export_gif
 
         raw = self.gif_raw_radio.isChecked()
@@ -596,7 +670,12 @@ class MainWindow(QMainWindow):
         logger.info("Exported GIF.")
 
     def _export_checked(self):
-        """Export selected formats (NPZ, OME-TIFF, HDF5)."""
+        """
+        Export the AFM stack in the formats selected (NPZ, OME-TIFF, HDF5).
+
+        Uses the “Export Raw” / “Export Processed” radio buttons to decide
+        which data to write.
+        """
         from playNano.io.export import export_bundles
 
         formats = []
@@ -633,7 +712,11 @@ class MainWindow(QMainWindow):
             logger.error(f"Export failed: {e}")
 
     def _update_export_options(self):
-        """Enable or disable processed export options based on processing state."""
+        """
+        Enable/disable export-format controls based on processing state.
+
+        Disables processed-data options if no filters have been applied yet.
+        """
         has_filtered = "raw" in self.afm_stack.processed and any(
             key != "raw" for key in self.afm_stack.processed
         )
@@ -837,7 +920,23 @@ class MainWindow(QMainWindow):
 
 
 def z_to_rgb(z_value, zmin, zmax, cmap_name="afmhot"):
-    """Map a data value z_value → RGB via the colormap."""
+    """
+    Map a single height value to an RGB triple via a matplotlib colormap.
+
+    Parameters
+    ----------
+    z_value : float
+        Height value to map.
+    zmin, zmax : float
+        Data range for normalization.  If zmax == zmin, returns black.
+    cmap_name : str, default="afmhot"
+        Name of the matplotlib colormap to use.
+
+    Returns
+    -------
+    rgb : tuple of int
+        (R, G, B) values in [0, 255].
+    """
     span = zmax - zmin
     if span <= 0:
         return (0, 0, 0)
