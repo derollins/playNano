@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 class ViewerWidget(QWidget):
-    """Displays a single frame as a resizable QPixmap, with background color."""
+    """Displays AFM height maps as a resizable image with optional overlays."""
 
     def __init__(self):
         """Initialize the view widget."""
@@ -29,7 +29,18 @@ class ViewerWidget(QWidget):
         self.custom_font = QFont("Arial", 14)  # fallback font
 
     def display_frame(self, arr: np.ndarray):
-        """Display a frame with arr: HxWx3 uint8 RGB."""
+        """
+        Load and show a new RGB frame.
+
+        Parameters
+        ----------
+        arr : np.ndarray
+            3D uint8 array of shape (H, W, 3) containing the RGB image data.
+
+        Returns
+        -------
+        None
+        """
         log.debug("[ViewerWidget] display_frame called.")
         h, w, _ = arr.shape
         img = QImage(arr.data, w, h, 3 * w, QImage.Format_RGB888)
@@ -40,7 +51,15 @@ class ViewerWidget(QWidget):
         self._rescale()
 
     def _rescale(self):
-        """Create a scaled pixmap matching current widget size."""
+        """
+        Rescale the current pixmap to fit the widget's size.
+
+        This updates `self._scaled_pixmap` and triggers a repaint.
+
+        Returns
+        -------
+        None
+        """
         if self._original_pixmap:
             self._scaled_pixmap = self._original_pixmap.scaled(
                 self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
@@ -50,12 +69,40 @@ class ViewerWidget(QWidget):
             self._scaled_pixmap = None
 
     def set_background_color(self, rgb: tuple[int, int, int]):
-        """Set the background color using an RGB tuple."""
+        """
+        Change the widget’s background fill color.
+
+        Parameters
+        ----------
+        rgb : tuple of int
+            (R, G, B) values in the range [0…255].
+
+        Returns
+        -------
+        None
+        """
         self._bg_rgb = rgb
         self.update()
 
     def paintEvent(self, event):
-        """Set custom paint event: background, image, and overlays."""
+        """
+        Custom paint handler: draws background, frame, and overlays.
+
+        Parameters
+        ----------
+        event : QPaintEvent
+            The Qt paint event.
+
+        Notes
+        -----
+        - Fills the widget rectangle with the background color.
+        - Centers and draws the scaled pixmap, if any.
+        - Optionally overlays timestamp, “RAW” label, and scale bar.
+
+        Returns
+        -------
+        None
+        """
         try:
             log.debug("[ViewerWidget] paintEvent triggered.")
             painter = QPainter(self)
@@ -121,7 +168,28 @@ class ViewerWidget(QWidget):
         pixel_size_nm: Optional[float],
         scale_bar_nm: Optional[int],
     ):
-        """Set the annotation settings (timestamp + scale bar)."""
+        """
+        Update which overlays to draw on each frame.
+
+        Parameters
+        ----------
+        timestamp : float or None
+            The time (in seconds) to display, or None.
+        draw_ts : bool
+            Whether to show the timestamp.
+        draw_scale : bool
+            Whether to show a scale bar.
+        draw_raw_label : bool
+            Whether to draw a “RAW” label.
+        pixel_size_nm : float or None
+            Nanometers per pixel (needed to size the scale bar).
+        scale_bar_nm : int or None
+            Physical length (nm) of the scale bar to draw.
+
+        Returns
+        -------
+        None
+        """
         log.debug(
             f"[ViewerWidget] set_annotations: ts={timestamp}, scale={scale_bar_nm}, px={pixel_size_nm}, "  # noqa: E501
             f"draw_ts={draw_ts}, draw_scale={draw_scale}"
@@ -135,10 +203,32 @@ class ViewerWidget(QWidget):
         self.update()
 
     def resizeEvent(self, event: QResizeEvent):
-        """Handle resize events to rescale the pixmap."""
+        """
+        Handle widget resize: recompute scaled pixmap size.
+
+        Parameters
+        ----------
+        event : QResizeEvent
+            The Qt resize event.
+
+        Returns
+        -------
+        None
+        """
         super().resizeEvent(event)
         self._rescale()
 
     def set_annotation_font(self, font: QFont):
-        """Set the font used for annotations like timestamp and scale bar."""
+        """
+        Override the font used for drawing text overlays.
+
+        Parameters
+        ----------
+        font : QFont
+            A Qt font object.
+
+        Returns
+        -------
+        None
+        """
         self.custom_font = font

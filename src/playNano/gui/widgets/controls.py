@@ -1,4 +1,15 @@
-"""Widget for playback controls in the playNano GUI."""
+"""
+Defines ViewerWidget, a Qt widget for viewing AFM height map stacks.
+
+The data is viewed as a resizable image with optional timestamp,
+scale-bar and “RAW” label overlays. Playback controls allow video
+playback of a image stack.
+
+Classes
+-------
+ViewerWidget
+    QWidget subclass that renders one frame of AFM data and draws annotations.
+"""
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDoubleSpinBox, QPushButton, QSlider, QVBoxLayout, QWidget
@@ -8,7 +19,21 @@ class PlaybackControls(QWidget):
     """Widget containing playback controls; play button, slider, and FPS control."""
 
     def __init__(self):
-        """Initialize the playback controls widget."""
+        """
+        Initialize the ViewerWidget.
+
+        - Sets up placeholder pixmaps.
+        - Initializes annotation toggles (timestamp, scale bar, RAW label).
+        - Chooses a default fallback font.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
         super().__init__()
         layout = QVBoxLayout(self)
         self.play_btn = QPushButton("▶️ Play")

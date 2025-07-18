@@ -1,4 +1,12 @@
-"""Main window for the playNano GUI application."""
+"""
+Main GUI window for browsing and exporting HS-AFM image stacks.
+
+Provides:
+- Frame playback controls (play/pause, slider, FPS).
+- Raw vs. processed toggling and filter application.
+- Z-scale histogram with draggable range lines.
+- Export tabs for GIF, NPZ, OME-TIFF, HDF5.
+"""
 
 import logging
 from importlib.resources import files
@@ -70,6 +78,16 @@ class MainWindow(QMainWindow):
         zmin, zmax : 'auto' or float, default="auto"
             Display range endpoints; if "auto", they will be computed
             from the data.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            If zmin/zmax cannot be parsed (not 'auto' or float).
+
         """
         super().__init__()
         self.setWindowTitle("playNano Player")
@@ -160,6 +178,10 @@ class MainWindow(QMainWindow):
 
         This method builds the left-hand viewer panel, playback controls,
         annotation toggles, and right-hand export tabs.
+
+        Returns
+        -------
+        None
         """
 
         # ─── Top-level container ─────────────────────────────────
@@ -310,7 +332,7 @@ class MainWindow(QMainWindow):
         spin_layout.addWidget(self.zmax_spin)
         hist_layout.addLayout(spin_layout)
 
-        # Auto button on its own line, right‑aligned
+        # Auto button on its own line, right-aligned
         self.auto_btn = QPushButton("Auto")
         self.auto_btn.setToolTip("Reset to automatic (1st/99th percentile) z-range")
         hist_layout.addWidget(self.auto_btn, alignment=Qt.AlignRight)
@@ -399,6 +421,16 @@ class MainWindow(QMainWindow):
         Builds a ProcessingPipeline from `self.processing_steps` (or defaults),
         runs it, updates the flattened data (`self._flat`), recomputes display
         ranges, and refreshes the viewer.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If the processing pipeline fails.
+
         """
         # choose which steps
         steps = self.processing_steps or default_steps_with_kwargs
@@ -421,7 +453,7 @@ class MainWindow(QMainWindow):
         self._zperc_flat = float(np.percentile(self._flat, self._percentile_P))
         # switch to showing flattened
         self._show_flat = True  # ← this ensures flattened view is active
-        # Sync spin‑boxes to new flat range
+        # Sync spin-boxes to new flat range
         self.zmin_spin.blockSignals(True)
         self.zmin_spin.blockSignals(False)
         self.zmax_spin.blockSignals(True)
@@ -453,6 +485,11 @@ class MainWindow(QMainWindow):
         Start or stop automatic frame advancement.
 
         If playing, stops the QTimer; if paused, starts it at the current FPS.
+
+        Returns
+        -------
+        None
+
         """
         if self._timer.isActive():
             self._timer.stop()
@@ -468,6 +505,10 @@ class MainWindow(QMainWindow):
         Advance to the next frame and update the display.
 
         Called on each QTimer timeout when playing.
+
+        Returns
+        -------
+        None
         """
         self._idx = (self._idx + 1) % len(self._frames)
         self.show_frame(self._idx)
@@ -481,6 +522,15 @@ class MainWindow(QMainWindow):
         ----------
         idx : int
             Index of the frame to display (raw or processed, depending on state).
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        IndexError
+            If `idx` is out of bounds.
         """
         logger.debug(f"[show_frame] Showing index {idx}")
         self._idx = idx
@@ -544,10 +594,27 @@ class MainWindow(QMainWindow):
         """
         Handle key press events for shortcuts.
 
+        Parameters
+        ----------
+        ev : QKeyEvent
+            The key event to handle.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+
+        Notes
+        -----
+        Key mapping:
         Space → toggle play/pause
         F → apply filters
         R → toggle raw/processed view
         G → export GIF
+        E → export data in checked formats
         """
         k = ev.key()
         if k == Qt.Key_Space:
@@ -558,7 +625,8 @@ class MainWindow(QMainWindow):
             self.toggle_processed()
         elif k == Qt.Key_G:
             self._export_gif()
-        # add more keys here (e.g. 'T' → export TIFF, etc.)
+        elif k == Qt.Key_E:
+            self._export_checked()
         else:
             super().keyPressEvent(ev)
 
@@ -567,6 +635,10 @@ class MainWindow(QMainWindow):
         Flip between raw and processed (flattened) data views.
 
         If no processed data exists yet, does nothing.
+
+        Returns
+        -------
+        None
         """
         # If we've never applied filters, nothing to toggle
         if self._flat is None:
@@ -603,6 +675,21 @@ class MainWindow(QMainWindow):
         self.show_frame(self._idx)
 
     def _set_spinbox_value(self, spinbox, value):
+        """
+        Safely set a QDoubleSpinBox’s value without emitting signals.
+
+        Parameters
+        ----------
+        spinbox : QDoubleSpinBox
+            The widget to update.
+        value : float
+            New value to set.
+
+        Returns
+        -------
+        None
+        """
+
         spinbox.blockSignals(True)
         spinbox.setValue(value)
         spinbox.clearFocus()  # force repaint
@@ -644,6 +731,15 @@ class MainWindow(QMainWindow):
 
         Honors the “Raw vs Processed” radio button and writes to
         `self.output_dir`/“output” with filename “gui_export.gif”.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        Exception
+            If GIF export fails.
         """
         from playNano.io.gif_export import export_gif
 
@@ -828,12 +924,34 @@ class MainWindow(QMainWindow):
         self.hist_canvas.mpl_connect("button_release_event", self._on_release)
 
     def _on_pick(self, event):
-        """Start dragging if a line is picked."""
+        """
+        Start dragging if a line is picked.
+
+        Parameters
+        ----------
+        event : MatplotlibEvent
+            The event object.
+
+        Returns
+        -------
+        None
+        """
         if event.artist in (self.line_min, self.line_max):
             self._dragging = event.artist
 
     def _on_motion(self, event):
-        """While dragging, move line, update spinbox, and refresh viewer."""
+        """
+        While dragging, move line, update spinbox, and refresh viewer.
+
+        Parameters
+        ----------
+        event : MatplotlibEvent
+            The event object.
+
+        Returns
+        -------
+        None
+        """
         if self._dragging and event.xdata is not None:
             x = float(event.xdata)
             # Clamp within data range
@@ -866,12 +984,25 @@ class MainWindow(QMainWindow):
             self._update_background_color()
             self.show_frame(self._idx)
 
-    def _on_release(self, event):
+    def _on_release(self):
         """Stop dragging."""
         self._dragging = None
 
-    def _on_spinbox_changed(self, which, val):
-        """When a spinbox changes, move its line and refresh everything."""
+    def _on_spinbox_changed(self, which: str, val: float) -> None:
+        """
+        Handle changes from the zmin/zmax spinboxes: update histogram lines and viewer.
+
+        Parameters
+        ----------
+        which : str
+            Either 'min' or 'max', indicating which spinbox changed.
+        val : float
+            The new value from the spinbox.
+
+        Returns
+        -------
+        None
+        """
         val = float(val)
         if which == "min":
             if self._show_flat and self._flat is not None:
@@ -891,7 +1022,22 @@ class MainWindow(QMainWindow):
         self._update_background_color()
         self.show_frame(self._idx)
 
-    def _on_auto(self):
+    def _on_auto(self) -> None:
+        """
+        Reset the z-scale to automatic (1st/99th percentile) and refresh the display.
+
+        This method:
+        - Determines whether to use raw data or processed (“flat”) data.
+        - Recomputes the zmin and zmax using :func:`compute_zscale_range` with "auto".
+        - Updates the zmin/zmax spinboxes without emitting value-changed signals.
+        - Redraws the histogram bars and vertical lines.
+        - Updates the viewer background color.
+        - Redisplays the current frame.
+
+        Returns
+        -------
+        None
+        """
         # recompute auto-ranges for raw or flat
         arr = (
             self._flat if (self._show_flat and self._flat is not None) else self._frames
@@ -905,7 +1051,7 @@ class MainWindow(QMainWindow):
             self._zmin_raw, self._zmax_raw = zmin, zmax
 
         # Update widgets
-        # Sync spin‑boxes
+        # Sync spin-boxes
         lo, hi = sorted((self._zmin_flat, self._zmax_flat))
         self.zmin_spin.blockSignals(True)
         self.zmax_spin.blockSignals(True)

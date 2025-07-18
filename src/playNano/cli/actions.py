@@ -433,7 +433,13 @@ def wizard_mode(
 
 
 def print_env_info():
-    """Print the current playNano environment metadata."""
+    """
+    Print the current playNano environment metadata.
+
+    Returns
+    -------
+    None
+    """
     import json
 
     from playNano.utils.system_info import gather_environment_info

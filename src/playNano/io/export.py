@@ -1,4 +1,17 @@
-"""Tools for exporting data in various formats."""
+"""
+Tools for exporting AFM image stacks in multiple formats.
+
+Provides functions to export AFM stacks with metadata as OME-TIFF, NPZ, or HDF5
+bundles. Handles path validation, metadata embedding, and file structure creation.
+
+Dependencies
+------------
+- numpy
+- tifffile
+- h5py
+- json
+- pathlib
+"""
 
 import json
 import logging
@@ -17,20 +30,24 @@ logger = logging.getLogger(__name__)
 
 def check_path_is_path(path):
     """
-    Ensure the input is a pathlib.Path object.
+    Ensure the input is returned as a ``pathlib.Path``.
 
-    If the input is a string, it will be converted to a Path object.
-    If the input is already a Path object, it will be returned as-is.
-    If the input is neither, a TypeError is raised.
+    Converts strings to ``Path`` objects. Raises ``TypeError`` for unsupported types.
 
-    Parameters:
-        path (str or Path): The input path to validate or convert.
+    Parameters
+    ----------
+    path : str or Path
+        The input path to validate or convert.
 
-    Returns:
-        Path: A pathlib.Path object representing the input path.
+    Returns
+    -------
+    Path
+        A ``pathlib.Path`` object representing the input path.
 
-    Raises:
-        TypeError: If the input is not a string or a Path object.
+    Raises
+    ------
+    TypeError
+        If the input is not a ``str`` or ``Path``.
     """
     if isinstance(path, str):
         logger.debug(f"Converting {path} to Path object.")
@@ -50,14 +67,30 @@ def save_ome_tiff_stack(
     channel: str = "height_trace",
 ) -> None:
     """
-    Save a 3D AFM stack as an OME-TIFF, embedding physical sizes and timepoints.
+    Save a 3D AFM image stack as an OME-TIFF file with metadata.
 
-    - path: Path to “.ome.tif” file (you can name it “.tif” but
-        ome=True writes OME XML internally)
-    - stack: shape = (n_frames, H, W), dtype float or uint
-    - pixel_size_nm: physical pixel size in nm
-    - timestamps: list of length n_frames
-    - channel: string channel name (stored in OME metadata)
+    Parameters
+    ----------
+    path : Path
+        Path to the output ".ome.tif" file.
+    stack : np.ndarray
+        AFM image stack of shape (n_frames, H, W) and dtype float or uint.
+    pixel_size_nm : float
+        Physical pixel size in nanometers.
+    timestamps : list of float
+        List of timestamps corresponding to each frame.
+    channel : str, optional
+        Channel name to embed in OME metadata. Default is "height_trace".
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    - Pixel size is stored in micrometers.
+    - Time increment and time points are embedded in OME metadata.
+    - Stack is reshaped to 5D TCZYX format as required by OME-TIFF.
     """
     path = check_path_is_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -107,10 +140,31 @@ def save_npz_bundle(
     channel: str = "height_trace",
 ) -> None:
     """
-    Save a 3D AFM stack plus metadata into a compressed .npz file.
+    Save an AFM stack and metadata in a compressed ``.npz`` bundle.
 
-    - path: Path to “.npz” (no suffix needed; do path.with_suffix(".npz"))
+    Parameters
+    ----------
+    path : Path
+        Destination file path. ``.npz`` extension is added if missing.
+    stack : np.ndarray
+        Image stack of shape (N, H, W).
+    pixel_size_nm : float
+        Physical pixel size in nanometers.
+    timestamps : list of float
+        Frame timestamps in seconds.
+    channel : str, default="height_trace"
+        Channel name saved as part of the metadata.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    - Data and metadata are saved as compressed NumPy arrays.
+    - Missing timestamps are stored as ``NaN``.
     """
+
     path = check_path_is_path(path)
     path = path.with_suffix(".npz")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,10 +191,31 @@ def save_h5_bundle(
     channel: str = "height_trace",
 ) -> None:
     """
-    Save a 3D AFM stack plus all metadata into a single HDF5 file.
+    Save an AFM stack and all metadata in a single HDF5 file.
 
-    - path: Path to “.h5” (we'll force .h5 suffix).
-    - frame_metadata: full list of dicts (one dict per frame).
+    Parameters
+    ----------
+    path : Path
+        Destination file path. ``.h5`` extension is enforced.
+    stack : np.ndarray
+        Image stack of shape (N, H, W).
+    pixel_size_nm : float
+        Physical pixel size in nanometers.
+    timestamps : list of float
+        Timestamps for each frame in seconds.
+    frame_metadata : list of dict
+        Full list of per-frame metadata dictionaries.
+    channel : str, default="height_trace"
+        Channel name stored in file attributes.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    - Image data is stored with gzip compression.
+    - Frame metadata is serialized as JSON and saved as an attribute.
     """
     path = check_path_is_path(path)
     path = path.with_suffix(".h5")
@@ -172,28 +247,39 @@ def export_bundles(
     raw: bool = False,
 ) -> None:
     """
-    Write out requested bundles from an AFM stack (.data must be final version).
+    Export AFM stacks with metadata to selected formats.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
-        The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel
+        AFM stack object containing image data and metadata.
     output_folder : Path
-        Directory to write export files (will be created if needed)
+        Directory where output files will be saved.
     base_name : str
-        Base file name (no extension) for each export, e.g. "sample_01"
-    formats : list of str
-        Which formats to write; valid set = {"tif", "npz", "h5"}.
-    raw : bool, optional
-        If True, use the raw data from `afm_stack.processed["raw"]`.
-        If False, use the final processed data in `afm_stack.data`.
-        Default is False (use processed data).
+        Base name for output files (without extensions).
+    formats : list of {"tif", "npz", "h5"}
+        Formats to export. Multiple formats can be specified.
+    raw : bool, default=False
+        If ``True``, export the raw (unprocessed) data. Otherwise, export
+        the processed data.
+
+
+    Returns
+    -------
+    None
 
     Raises
     ------
     SystemExit
-        If any element of `formats` is not in {"tif","npz","h5"}.
+        If any requested format is not one of ``{"tif", "npz", "h5"}``.
+
+    Notes
+    -----
+    - Automatically creates ``output_folder`` if it does not exist.
+    - Processed exports append ``"_filtered"`` to ``base_name``.
+    - Pixel size, timestamps, and channel metadata are included in all formats.
     """
+
     # Determine whether to use raw or processed data
     # (allows saving of unfiltered from play mode)
     if raw is False:
