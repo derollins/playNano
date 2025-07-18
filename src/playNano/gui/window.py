@@ -502,6 +502,7 @@ class MainWindow(QMainWindow):
                 timestamp=timestamp,
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
+                draw_raw_label=not self._show_flat,
                 pixel_size_nm=self.afm_stack.pixel_size_nm,
                 scale_bar_nm=self.scale_bar_nm,
             )
@@ -703,7 +704,6 @@ class MainWindow(QMainWindow):
             raw = False
 
         save_dir = prepare_output_directory(self.output_dir, "output")
-        print(f"Raw: {raw}")
         try:
             export_bundles(
                 self.afm_stack,
@@ -753,7 +753,7 @@ class MainWindow(QMainWindow):
         hist_min = p_low - abs(p_low) / 3
         hist_max = p_high + abs(p_high) / 3
 
-        counts, edges = np.histogram(vals, bins=150, range=(hist_min, hist_max))
+        counts, edges = np.histogram(vals, bins=250, range=(hist_min, hist_max))
         centers = (edges[:-1] + edges[1:]) / 2
 
         # draw bars & style
@@ -784,8 +784,8 @@ class MainWindow(QMainWindow):
         zmax = self._zmax_flat if self._show_flat else self._zmax_raw
 
         # lines
-        self.line_min = ax.axvline(zmin, color="red", linewidth=2, picker=5)
-        self.line_max = ax.axvline(zmax, color="red", linewidth=2, picker=5)
+        self.line_min = ax.axvline(zmin, color="#ff0000", linewidth=2, picker=5)
+        self.line_max = ax.axvline(zmax, color="#3700ff", linewidth=2, picker=5)
 
         # spans
         self.span_left = ax.axvspan(

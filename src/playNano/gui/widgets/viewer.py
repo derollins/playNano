@@ -25,6 +25,7 @@ class ViewerWidget(QWidget):
         self._scale_bar_nm: Optional[int] = None
         self._draw_timestamp = False
         self._draw_scale_bar = False
+        self._draw_raw_label = False
         self.custom_font = QFont("Arial", 14)  # fallback font
 
     def display_frame(self, arr: np.ndarray):
@@ -77,6 +78,15 @@ class ViewerWidget(QWidget):
             if self._draw_timestamp and self._timestamp is not None:
                 painter.drawText(10, 30, f"{self._timestamp:.2f} s")
 
+            # RAW lable
+            if self._draw_raw_label is True:
+                text = "RAW"
+                font_metrics = painter.fontMetrics()
+                text_width = font_metrics.horizontalAdvance(text)
+                x = self.width() - text_width - 10  # 10px padding from the right edge
+                y = 30  # vertical position
+                painter.drawText(x, y, text)
+
             # Scale bar
             if self._original_pixmap and self._draw_scale_bar:
                 pix_width = self._original_pixmap.width()
@@ -107,6 +117,7 @@ class ViewerWidget(QWidget):
         timestamp: Optional[float],
         draw_ts: bool,
         draw_scale: bool,
+        draw_raw_label: bool,
         pixel_size_nm: Optional[float],
         scale_bar_nm: Optional[int],
     ):
@@ -120,6 +131,7 @@ class ViewerWidget(QWidget):
         self._draw_scale_bar = draw_scale
         self._pixel_size_nm = pixel_size_nm
         self._scale_bar_nm = scale_bar_nm
+        self._draw_raw_label = draw_raw_label
         self.update()
 
     def resizeEvent(self, event: QResizeEvent):
