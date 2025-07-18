@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         afm_stack: AFMImageStack,
         processing_steps: Optional[list[tuple[str, dict]]] = None,
         output_dir: Optional[str] = None,
-        output_name: str = "playNano_export",
+        output_name: str = "",
         scale_bar_nm: int = 100,
         zmin: str = "auto",
         zmax: str = "auto",
@@ -649,6 +649,11 @@ class MainWindow(QMainWindow):
         raw = self.gif_raw_radio.isChecked()
         save_dir = prepare_output_directory(self.output_dir, "output")
 
+        # Check for presence of raw data if user requests it
+        if raw and "raw" not in self.afm_stack.processed:
+            logger.debug("Data is unprocessed, exporting the unprocessed data.")
+            raw = False
+
         # Grab exactly what the viewer is using right now:
         if raw:
             zmin, zmax = self._zmin_raw, self._zmax_raw
@@ -659,7 +664,7 @@ class MainWindow(QMainWindow):
             self.afm_stack,
             True,
             save_dir,
-            output_name="gui_export",
+            output_name=self.output_name,
             scale_bar_nm=self.scale_bar_nm,
             raw=raw,
             zmin=zmin,
@@ -690,7 +695,7 @@ class MainWindow(QMainWindow):
             logger.info("No export formats selected.")
             return
 
-        raw = not self._show_flat
+        raw = self.data_raw_radio.isChecked()
 
         # Check for presence of raw data if user requests it
         if raw and "raw" not in self.afm_stack.processed:
@@ -698,12 +703,12 @@ class MainWindow(QMainWindow):
             raw = False
 
         save_dir = prepare_output_directory(self.output_dir, "output")
-
+        print(f"Raw: {raw}")
         try:
             export_bundles(
                 self.afm_stack,
                 save_dir,
-                "gui_export",
+                self.output_name,
                 formats,
                 raw=raw,
             )

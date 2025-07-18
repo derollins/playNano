@@ -196,6 +196,7 @@ def export_gif(
         Optional base name override for the GIF file.
     scale_bar_nm : int or None
         Length of the scale bar in nanometers.
+    raw : bool
     zmin : float, "auto", or None, optional
         Minimum Z-value to map to colormap 0.
         - If "auto", uses the 1st percentile of the data.
