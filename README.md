@@ -196,7 +196,6 @@ Key elements:
   <img src="docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
 </p>
 
-
 The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags
 (these are controled within the GUI.)
 
