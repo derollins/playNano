@@ -290,7 +290,7 @@ def test_wizard_remove_and_move_valid(capsys):
     # Preload two steps
     inputs = iter(
         [
-            "add threshold_mask",
+            "add mask_threshold",
             "",  # default threshold
             "add polynomial_flatten",
             "2",  # order=2
@@ -307,7 +307,7 @@ def test_wizard_remove_and_move_valid(capsys):
     monkey.setattr(
         actions,
         "is_valid_step",
-        lambda n: n in ["threshold_mask", "polynomial_flatten", "mask_mean_offset"],
+        lambda n: n in ["mask_threshold", "polynomial_flatten", "mask_mean_offset"],
     )  # noqa: E501
     monkey.setattr(builtins, "input", lambda prompt="": next(inputs))
 
@@ -373,14 +373,14 @@ def test_is_valid_step_false(name):
 
 def test_parse_processing_string_basic(mock_filters):
     """Test the parsing of a processing string give correct steps and params."""
-    s = "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
+    s = "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"
     FILTER_MAP["gaussian_filter"] = lambda: None
-    MASK_MAP["threshold_mask"] = lambda: None
+    MASK_MAP["mask_threshold"] = lambda: None
     steps = parse_processing_string(s)
     assert steps == [
         ("remove_plane", {}),
         ("gaussian_filter", {"sigma": 2.0}),
-        ("threshold_mask", {"threshold": 2}),
+        ("mask_threshold", {"threshold": 2}),
     ]
 
 
@@ -414,17 +414,16 @@ def test_parse_processing_file_yaml(tmp_path):
         "filters": [
             {"name": "remove_plane"},
             {"name": "gaussian_filter", "sigma": 2.0},
-            {"name": "threshold_mask", "threshold": 3},
+            {"name": "mask_threshold", "threshold": 3},
         ]
     }
     yaml_path = tmp_path / "filters.yaml"
     yaml_path.write_text(yaml.dump(yaml_data))
-
     steps = parse_processing_file(str(yaml_path))
     assert steps == [
         ("remove_plane", {}),
         ("gaussian_filter", {"sigma": 2.0}),
-        ("threshold_mask", {"threshold": 3}),
+        ("mask_threshold", {"threshold": 3}),
     ]
 
 
@@ -433,7 +432,7 @@ def test_parse_processing_file_json(tmp_path):
     json_data = {
         "filters": [
             {"name": "remove_plane"},
-            {"name": "threshold_mask", "threshold": 1},
+            {"name": "mask_threshold", "threshold": 1},
         ]
     }
     json_path = tmp_path / "filters.json"
@@ -442,7 +441,7 @@ def test_parse_processing_file_json(tmp_path):
     steps = parse_processing_file(str(json_path))
     assert steps == [
         ("remove_plane", {}),
-        ("threshold_mask", {"threshold": 1}),
+        ("mask_threshold", {"threshold": 1}),
     ]
 
 

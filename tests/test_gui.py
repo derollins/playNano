@@ -17,12 +17,15 @@ log = logging.getLogger(__name__)
 
 @pytest.fixture
 def main_window(qtbot):
-    """Create and return a MainWindow instance with test data."""
     wnd = MainWindow()
     test_stack = np.random.rand(3, 5, 5)
     wnd.set_stack(test_stack)
     qtbot.addWidget(wnd)
-    return wnd
+    yield wnd
+    wnd._timer.stop()
+    wnd.close()
+    wnd.deleteLater()
+    qtbot.wait(50)
 
 
 @patch("playNano.gui.window.AFMImageStack.load_data")
@@ -90,6 +93,8 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     # Toggle back to raw
     wnd.toggle_processed()
     assert wnd._show_flat is False
+    wnd.close()
+    wnd.deleteLater()
 
 
 @patch("playNano.gui.main.QApplication")
@@ -145,6 +150,8 @@ def test_mainwindow_font_fallbacks(qtbot, caplog):
             wnd = MainWindow(mock_stack)
             qtbot.addWidget(wnd)
             assert "Failed to load Steps Mono font" in caplog.text
+            wnd.close()
+            wnd.deleteLater()
 
 
 def test_toggle_play_starts_and_stops(qtbot):
@@ -165,6 +172,9 @@ def test_toggle_play_starts_and_stops(qtbot):
     wnd.toggle_play()  # should stop
     assert not wnd._timer.isActive()
     assert wnd.controls.play_btn.text() == "▶️ Play"
+
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_keypress_triggers_methods(qtbot):
@@ -193,6 +203,8 @@ def test_keypress_triggers_methods(qtbot):
         evt.key.return_value = key
         wnd.keyPressEvent(evt)
         assert called["value"], f"{method} should have been called"
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_show_frame_fallback_pixel_size(qtbot):
@@ -205,6 +217,8 @@ def test_show_frame_fallback_pixel_size(qtbot):
     qtbot.addWidget(wnd)
 
     wnd.show_frame(0)  # Should not raise
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_colormap_normalize_flat_range(qtbot):
@@ -219,6 +233,8 @@ def test_colormap_normalize_flat_range(qtbot):
     wnd._zmin_raw = wnd._zmax_raw  # force flat range
     rgb = wnd._colormap_and_normalize(np.ones((5, 5)))
     assert np.all(rgb == 0)
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_next_frame_advances_and_updates_slider(qtbot):
@@ -236,6 +252,8 @@ def test_next_frame_advances_and_updates_slider(qtbot):
     # Expect that show_frame was called at least once with the correct index
     assert any(call == ((2,),) for call in wnd.show_frame.call_args_list)
     assert wnd.controls.slider.value() == 2
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_update_timer_interval_active_timer(qtbot):
@@ -252,6 +270,8 @@ def test_update_timer_interval_active_timer(qtbot):
     wnd._timer.start.assert_called_once()
     interval = wnd._timer.start.call_args[0][0]
     assert 45 < interval < 55  # approx 50 ms for 20 fps
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_toggle_processed_updates_spinboxes_flat_branch():
@@ -303,6 +323,7 @@ def test_update_background_color_flat_branch():
     expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afmhot")
 
     wnd.viewer.set_background_color.assert_called_once_with(expected_rgb)
+    del wnd
 
 
 @patch("playNano.io.gif_export.export_gif")
@@ -320,6 +341,8 @@ def test_export_gif_calls_export(mock_prepare, mock_export, qtbot):
     wnd._export_gif()
     mock_export.assert_called_once()
     mock_prepare.assert_called_once()
+    wnd.close()
+    wnd.deleteLater()
 
 
 @pytest.mark.parametrize(
@@ -380,6 +403,8 @@ def test_export_gif_branches(
     # timestamp and scale bar toggles passed correctly
     assert call_args["draw_ts"] is True
     assert call_args["draw_scale"] is False
+    wnd.close()
+    wnd.deleteLater()
 
 
 @patch("playNano.io.gif_export.export_gif", side_effect=Exception("Export failed"))
@@ -400,6 +425,8 @@ def test_export_gif_logs_error(mock_prepare, mock_export, qtbot, caplog):
     assert "GIF export failed: Export failed" in caplog.text
     mock_export.assert_called_once()
     mock_prepare.assert_called_once()
+    wnd.close()
+    wnd.deleteLater()
 
 
 def test_show_frame_handles_annotation_exception(qtbot, caplog):
@@ -414,10 +441,16 @@ def test_show_frame_handles_annotation_exception(qtbot, caplog):
     caplog.set_level(logging.ERROR)
     wnd.show_frame(0)
     assert "Failed to set annotations" in caplog.text
+    wnd.close()
+    wnd.deleteLater()
 
 
-def test_keypress_calls_super_for_other_keys(qtbot):
-    """Test unhandled key press calls superclass keyPressEvent."""
+def test_keypress_calls_super_for_other_keys(qtbot, monkeypatch):
+    """Test that unhandled key presses call the superclass keyPressEvent."""
+    import os
+
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 5, 5))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
@@ -426,17 +459,25 @@ def test_keypress_calls_super_for_other_keys(qtbot):
 
     called = {}
 
-    def super_called(ev):
+    from PySide6.QtWidgets import QMainWindow
+
+    # Patch the superclass method to record calls, regardless of signature
+    def fake_super_keypress(*args, **kwargs):
         called["yes"] = True
 
-    wnd.keyPressEvent.__func__.__globals__["super"] = lambda *a, **k: MagicMock(
-        keyPressEvent=super_called
-    )
+    monkeypatch.setattr(QMainWindow, "keyPressEvent", fake_super_keypress)
 
+    # Trigger key press with an unhandled key
     event = MagicMock()
-    event.key.return_value = Qt.Key_Z  # not handled
+    event.key.return_value = Qt.Key_Z  # Not mapped in MainWindow
     wnd.keyPressEvent(event)
-    assert "yes" in called
+
+    assert (
+        "yes" in called
+    ), "Superclass keyPressEvent should have been called for unhandled keys"
+
+    wnd.close()
+    wnd.deleteLater()
 
 
 @patch("playNano.io.export.export_bundles")
@@ -476,6 +517,7 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
         ["npz", "h5"],
         raw=True,
     )
+    del wnd
 
 
 @patch("playNano.io.export.export_bundles")
@@ -515,6 +557,7 @@ def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
         ["npz", "tif", "h5"],
         raw=True,
     )
+    del wnd
 
 
 @patch("playNano.gui.window.prepare_output_directory")
@@ -536,6 +579,7 @@ def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
     assert "No export formats selected." in caplog.text
     mock_export.assert_not_called()
     mock_prepare.assert_not_called()
+    del wnd
 
 
 @patch("playNano.io.export.export_bundles")
@@ -559,6 +603,7 @@ def test_export_checked_raw_requested_but_missing(
     assert "Data is unprocessed, exporting the unprocessed data." in caplog.text
     call_args = mock_export.call_args.kwargs
     assert call_args["raw"] is False
+    del wnd
 
 
 @patch("playNano.io.export.export_bundles", side_effect=Exception("Export failed"))
@@ -579,6 +624,7 @@ def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
 
     assert "Export failed: Export failed" in caplog.text
     mock_export.assert_called_once()
+    del wnd
 
 
 def test_on_motion_updates_line_and_spinbox():
@@ -637,6 +683,7 @@ def test_on_motion_updates_line_and_spinbox():
     wnd._move_lines.assert_called_once()
     wnd._update_background_color.assert_called_once()
     wnd.show_frame.assert_called_once_with(1)
+    del wnd
 
 
 def test_on_motion_updates_zmax_flat_branch():
@@ -673,14 +720,11 @@ def test_on_motion_updates_zmax_flat_branch():
 
     # Optionally test that set_xdata called with [4.0, 4.0]
     wnd._dragging.set_xdata.assert_called_once_with([4.0, 4.0])
+    del wnd
 
 
 def test_on_motion_updates_zmax_raw_branch():
     """Test _on_motion updates _zmax_flat & zmax_spin when line moved in raw mode."""
-    from unittest.mock import MagicMock
-
-    from playNano.gui.window import MainWindow
-
     wnd = MainWindow.__new__(MainWindow)
 
     # Set dragging line to be max line (not line_min)
@@ -724,6 +768,7 @@ def test_on_motion_updates_zmax_raw_branch():
     wnd._move_lines.assert_called_once()
     wnd._update_background_color.assert_called_once()
     wnd.show_frame.assert_called_once_with(wnd._idx)
+    del wnd
 
 
 @pytest.mark.parametrize(
@@ -769,6 +814,7 @@ def test_on_spinbox_changed_updates_attributes(which, show_flat, flat, attr_to_c
     wnd._move_lines.assert_called_once()
     wnd._update_background_color.assert_called_once()
     wnd.show_frame.assert_called_once_with(wnd._idx)
+    del wnd
 
 
 @pytest.mark.parametrize(
@@ -822,6 +868,7 @@ def test_on_auto_recomputes_and_updates(mock_compute, show_flat, flat_data):
     wnd._init_lines.assert_called_once()
     wnd._update_background_color.assert_called_once()
     wnd.show_frame.assert_called_once_with(wnd._idx)
+    del wnd
 
 
 # --- Tests for viewer widget ---

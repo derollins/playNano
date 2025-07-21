@@ -103,9 +103,9 @@ class ViewerWidget(QWidget):
         -------
         None
         """
+        painter = QPainter(self)
         try:
             log.debug("[ViewerWidget] paintEvent triggered.")
-            painter = QPainter(self)
             painter.fillRect(self.rect(), QColor(*self._bg_rgb))
 
             if self._scaled_pixmap:
@@ -116,48 +116,51 @@ class ViewerWidget(QWidget):
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setPen(Qt.white)
 
-            # Set font with desired size and family
             font = QFont(self.custom_font)
             font.setPointSize(18)
             painter.setFont(font)
 
-            # Timestamp
             if self._draw_timestamp and self._timestamp is not None:
                 painter.drawText(10, 30, f"{self._timestamp:.2f} s")
 
-            # RAW lable
-            if self._draw_raw_label is True:
+            if self._draw_raw_label:
                 text = "RAW"
                 font_metrics = painter.fontMetrics()
                 text_width = font_metrics.horizontalAdvance(text)
-                x = self.width() - text_width - 10  # 10px padding from the right edge
-                y = 30  # vertical position
+                x = self.width() - text_width - 10
+                y = 30
                 painter.drawText(x, y, text)
 
-            # Scale bar
             if self._original_pixmap and self._draw_scale_bar:
-                pix_width = self._original_pixmap.width()
-                log.debug(
-                    f"[ViewerWidget] Drawing scale bar: pix_width={pix_width}, widget_width={self.width()}"  # noqa: E501
+                try:
+                    bar_px = (
+                        self._scale_bar_nm / self._pixel_size_nm
+                    )  # may raise ZeroDivisionError
+                except ZeroDivisionError:
+                    log.warning(
+                        "[ViewerWidget] Division by zero in scale bar calculation."
+                    )
+                else:
+                    if self._scaled_pixmap:
+                        scaled_width = self._scaled_pixmap.width()
+                        scale = scaled_width / self._original_pixmap.width()
+                        bar_width = int(bar_px * scale)
+                    else:
+                        bar_width = int(bar_px)
+                    bar_height = 5
+                    x = 10
+                    y = self.height() - 20
+                    painter.fillRect(x, y, bar_width, bar_height, Qt.white)
+                    painter.drawText(x, y - 5, f"{self._scale_bar_nm} nm")
+            else:
+                log.warning(
+                    "[ViewerWidget] Skipped scale bar: pixel_size_nm is zero or None"
                 )
-                if self._pixel_size_nm and self._scale_bar_nm:
-                    try:
-                        bar_px = self._scale_bar_nm / self._pixel_size_nm
-                        if self._scaled_pixmap:
-                            scaled_width = self._scaled_pixmap.width()
-                            scale = scaled_width / self._original_pixmap.width()
-                            bar_width = int(bar_px * scale)
-                        bar_height = 5
-                        x = 10
-                        y = self.height() - 20
-                        painter.fillRect(x, y, bar_width, bar_height, Qt.white)
-                        painter.drawText(x, y - 5, f"{self._scale_bar_nm} nm")
-                    except ZeroDivisionError:
-                        log.warning(
-                            "[ViewerWidget] Division by zero in scale bar calculation."
-                        )
+
         except Exception as e:
             log.exception(f"[ViewerWidget] paintEvent crashed: {e}")
+        finally:
+            painter.end()
 
     def set_annotations(
         self,

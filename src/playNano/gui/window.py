@@ -89,6 +89,8 @@ class MainWindow(QMainWindow):
             If zmin/zmax cannot be parsed (not 'auto' or float).
 
         """
+        if not QMainWindow.__init__.__call__:
+            raise RuntimeError("Base QMainWindow not properly initialized")
         super().__init__()
         self.setWindowTitle("playNano Player")
 
