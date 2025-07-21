@@ -192,7 +192,7 @@ Key elements:
 – Export panel: select formats (OME‑TIFF, NPZ, HDF5, GIF) and export current raw or processed data.
 
 <div align="center">
-  ![playNano GUI main window](docs/images/GUIwindow.png)
+  ![playNano GUI main window](docs/images/GUI_window.png)
 </div>
 
 The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags
