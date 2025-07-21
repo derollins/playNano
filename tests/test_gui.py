@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 @pytest.fixture
 def main_window(qtbot):
+    """Create a main window for testing."""
     wnd = MainWindow()
     test_stack = np.random.rand(3, 5, 5)
     wnd.set_stack(test_stack)
