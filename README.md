@@ -191,9 +191,7 @@ Key elements:
 – Z‑scale histogram: two draggable vertical lines for zmin/zmax with “Auto” reset and spin boxes.
 – Export panel: select formats (OME‑TIFF, NPZ, HDF5, GIF) and export current raw or processed data.
 
-<div align="center">
-  ![playNano GUI main window](docs/images/GUI_window.png)
-</div>
+![playNano GUI main window](docs/images/GUI_window.png)
 
 The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags
 (these are controled within the GUI.)
