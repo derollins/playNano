@@ -43,7 +43,6 @@ dependencies = [
   "scikit-learn",
   "pyyaml>=6.0",
   "PySide6",
-  "pyqtgraph",
 ]
 
 [project.optional-dependencies]
@@ -73,6 +72,7 @@ playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
 median_filter     = "playNano.processing.filters:median_filter" # Doesn't exist yet but used in testing
+nanolocz_level    = "pnanolocz_lib.level:level"
 
 [project.entry-points."playNano.analysis"]
 count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"

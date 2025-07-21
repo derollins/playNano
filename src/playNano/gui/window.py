@@ -676,7 +676,7 @@ class MainWindow(QMainWindow):
 
     def _set_spinbox_value(self, spinbox, value):
         """
-        Safely set a QDoubleSpinBox’s value without emitting signals.
+        Safely set a QDoubleSpinBox's value without emitting signals.
 
         Parameters
         ----------
@@ -757,19 +757,22 @@ class MainWindow(QMainWindow):
         else:
             zmin, zmax = self._zmin_flat, self._zmax_flat
 
-        export_gif(
-            self.afm_stack,
-            True,
-            save_dir,
-            output_name=self.output_name,
-            scale_bar_nm=self.scale_bar_nm,
-            raw=raw,
-            zmin=zmin,
-            zmax=zmax,
-            draw_ts=self.show_timestamp_box.isChecked(),
-            draw_scale=self.show_scale_bar_box.isChecked(),
-        )
-        logger.info("Exported GIF.")
+        try:
+            export_gif(
+                self.afm_stack,
+                True,
+                save_dir,
+                output_name=self.output_name,
+                scale_bar_nm=self.scale_bar_nm,
+                raw=raw,
+                zmin=zmin,
+                zmax=zmax,
+                draw_ts=self.show_timestamp_box.isChecked(),
+                draw_scale=self.show_scale_bar_box.isChecked(),
+            )
+            logger.info("Exported GIF.")
+        except Exception as e:
+            logger.error(f"GIF export failed: {e}")
 
     def _export_checked(self):
         """
@@ -984,8 +987,8 @@ class MainWindow(QMainWindow):
             self._update_background_color()
             self.show_frame(self._idx)
 
-    def _on_release(self):
-        """Stop dragging."""
+    def _on_release(self, event):
+        """Stop dragging when mouse release."""
         self._dragging = None
 
     def _on_spinbox_changed(self, which: str, val: float) -> None:
