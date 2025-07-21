@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD033 -->
 # 📽️ playNano
 
 **AFM Video Reader for `.h5-jpk` files and other high-speed AFM video formats**
@@ -191,7 +192,10 @@ Key elements:
 – Z‑scale histogram: two draggable vertical lines for zmin/zmax with “Auto” reset and spin boxes.
 – Export panel: select formats (OME‑TIFF, NPZ, HDF5, GIF) and export current raw or processed data.
 
-![playNano GUI main window](docs/images/GUI_window.png)
+<p align="center">
+  <img src="docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
+</p>
+
 
 The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags
 (these are controled within the GUI.)
