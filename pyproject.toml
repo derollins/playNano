@@ -23,15 +23,13 @@ classifiers = [
 ]
 keywords = [
   "afm",
-  "AFM",
   "atomic force microscopy",
-  "high-speed AFM",
   "image processing",
   "video analysis",
   "scientific visualization"
 ]
 dependencies = [
-  "numpy<2.0",
+  "numpy>=1.23,<2.0",
   "pandas",
   "h5py",
   "Pillow",
@@ -42,13 +40,14 @@ dependencies = [
   "scipy",
   "scikit-learn",
   "pyyaml>=6.0",
-  "PySide6",
+  "PySide6>=6.5",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-cov",
+    "pytest-qt",
     "flake8",
     "pre-commit",
     "isort",
@@ -61,8 +60,6 @@ docs = [
     "furo",  # or your theme
     "myst-parser",
     "sphinx-autoapi",  # or autodoc/autosummary
-    "numpy",
-    "h5py",
 ]
 
 notebooks = ["jupyter"]
@@ -72,7 +69,6 @@ playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
 median_filter     = "playNano.processing.filters:median_filter" # Doesn't exist yet but used in testing
-nanolocz_level    = "pnanolocz_lib.level:level"
 
 [project.entry-points."playNano.analysis"]
 count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"
@@ -83,9 +79,6 @@ GitHub = "https://github.com/derollins/playNano"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-"playNano.fonts" = ["*.ttf", "*.otf"]
 
 [build-system]
 requires = ["hatchling"]

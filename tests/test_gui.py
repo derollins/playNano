@@ -1,24 +1,28 @@
 """Unit tests for the playNano GUI, MainWindow, and ViewerWidget components."""
 
 import logging
-import sys
 from unittest.mock import ANY, MagicMock, patch
 
 import numpy as np
 import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QApplication
 
 from playNano.gui import main
 from playNano.gui.widgets.viewer import ViewerWidget
 from playNano.gui.window import MainWindow
 
-app = QApplication.instance()
-if app is None:
-    app = QApplication(sys.argv)
-
 log = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def main_window(qtbot):
+    """Create and return a MainWindow instance with test data."""
+    wnd = MainWindow()
+    test_stack = np.random.rand(3, 5, 5)
+    wnd.set_stack(test_stack)
+    qtbot.addWidget(wnd)
+    return wnd
 
 
 @patch("playNano.gui.window.AFMImageStack.load_data")
@@ -641,24 +645,34 @@ def test_on_motion_updates_zmax_flat_branch():
     # Create an instance without calling __init__
     wnd = MainWindow.__new__(MainWindow)
 
-    # Set dragging line to be max line (not line_min)
+    # _dragging needs .set_xdata method, not bool
     wnd._dragging = MagicMock()
-    wnd.line_min = MagicMock()  # different object
+    wnd._dragging.set_xdata = MagicMock()
 
+    wnd.line_min = MagicMock()  # Different object → triggers zmax branch
     wnd._show_flat = True
-    wnd._flat = [1]  # not None, so flat branch will be used
+    wnd._flat = [1]
     wnd._zmax_flat = 0
     wnd._zmax_raw = 0
     wnd._idx = 0
 
-    # Mock zmax spin with proper return values
+    wnd.zmin_spin = MagicMock()
+    wnd.zmin_spin.minimum.return_value = 0
     wnd.zmax_spin = MagicMock()
-    wnd.zmax_spin.minimum.return_value = 0.0
-    wnd.zmax_spin.maximum.return_value = 5.0
+    wnd.zmax_spin.maximum.return_value = 5
     wnd.zmax_spin.setValue = MagicMock()
     wnd.zmax_spin.blockSignals = MagicMock()
 
-    # zmin_spin won't be used in this branch but mus_
+    wnd.hist_canvas = MagicMock()
+    wnd._move_lines = MagicMock()
+    wnd._update_background_color = MagicMock()
+    wnd.show_frame = MagicMock()
+
+    event = MagicMock(xdata=4.0)
+    wnd._on_motion(event)
+
+    # Optionally test that set_xdata called with [4.0, 4.0]
+    wnd._dragging.set_xdata.assert_called_once_with([4.0, 4.0])
 
 
 def test_on_motion_updates_zmax_raw_branch():
@@ -864,15 +878,19 @@ def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
     widget._draw_scale_bar = False
     widget.show()
 
+    caplog.set_level("ERROR", logger="playNano.gui.widgets.viewer")
+
     with patch(
         "PySide6.QtGui.QPainter.fillRect", side_effect=RuntimeError("test error")
     ):
-        with caplog.at_level("ERROR"):
+        with caplog.at_level("ERROR", logger="playNano.gui.widgets.viewer"):
             widget.update()
+            widget.repaint()
+            qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)
             qtbot.wait(100)
 
     assert any(
-        "paintEvent crashed: test error" in rec.message for rec in caplog.records
+        "paintEvent crashed: test error" in record.message for record in caplog.records
     )
 
 
@@ -883,10 +901,10 @@ def test_paint_event_zero_division_branch(widget, qtbot, caplog):
         """Dummy class that triggers a ZeroDivisionError when used in division."""
 
         def __bool__(self):
-            return True  # passes `if self._pixel_size_nm`
+            return True
 
         def __rtruediv__(self, other):
-            raise ZeroDivisionError  # triggers your except block
+            raise ZeroDivisionError
 
     widget.resize(100, 100)
     widget._original_pixmap = QPixmap(50, 50)
@@ -895,12 +913,15 @@ def test_paint_event_zero_division_branch(widget, qtbot, caplog):
     widget._pixel_size_nm = ZeroDiv()
     widget._scale_bar_nm = 10
 
-    with caplog.at_level("WARNING"):
+    caplog.set_level("WARNING", logger="playNano.gui.widgets.viewer")
+
+    with caplog.at_level("WARNING", logger="playNano.gui.widgets.viewer"):
         widget.show()
         widget.repaint()
-        qtbot.wait(50)
+        qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)
+        qtbot.wait(100)
 
     assert any(
-        "Division by zero in scale bar calculation." in rec.message
-        for rec in caplog.records
+        "Division by zero in scale bar calculation." in record.message
+        for record in caplog.records
     )
