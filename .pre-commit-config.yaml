@@ -3,13 +3,13 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(docs/|tests/resources/spm_folder_0|src/playNano/fonts/|LICENSE)$
+        exclude: ^(docs/|tests/resources/spm_folder_0|src/playNano/fonts/|LICENSE)
       - id: end-of-file-fixer
-        exclude: ^(docs/|tests/resources/spm_folder_0|src/playNano/fonts/|LICENSE)$
+        exclude: ^(docs/|tests/resources/spm_folder_0|src/playNano/fonts/|LICENSE)
       - id: check-yaml
-        exclude: ^(docs/|src/playNano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playNano/fonts/|LICENSE)
       - id: check-added-large-files
-        exclude: ^(docs/|src/playNano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playNano/fonts/|LICENSE)
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
