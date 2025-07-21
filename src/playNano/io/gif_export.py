@@ -197,13 +197,14 @@ def export_gif(
     scale_bar_nm : int or None
         Length of the scale bar in nanometers. Defaults to 100 nm.
     raw : bool, default=False
-        If ``True``, export raw (unprocessed) data; otherwise export processed data if available.
+        If ``True``, export raw (unprocessed) data; otherwise export processed data
+        if available.
     zmin : float or {"auto"} or None, optional
         Minimum z-value mapped to colormap low end. ``"auto"`` uses the 1st percentile.
         ``None`` uses the minimum value of the data.
     zmax : float or {"auto"} or None, optional
-        Maximum z-value mapped to colormap high end. ``"auto"`` uses the 99th percentile.
-        ``None`` uses the maximum value of the data.
+        Maximum z-value mapped to colormap high end. ``"auto"`` uses the 99th
+        percentile. ``None`` uses the maximum value of the data.
     draw_ts : bool, default=True
         Whether to draw timestamps on each frame.
     draw_scale : bool, default=True

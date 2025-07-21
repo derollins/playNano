@@ -1,19 +1,18 @@
-"""Test for playNano minimal UI."""
+"""Unit tests for the playNano GUI, MainWindow, and ViewerWidget components."""
 
-from unittest.mock import ANY, MagicMock, patch
 import logging
+import sys
+from unittest.mock import ANY, MagicMock, patch
 
 import numpy as np
-from PySide6.QtCore import Qt
 import pytest
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication
 
 from playNano.gui import main
-from playNano.gui.window import MainWindow
 from playNano.gui.widgets.viewer import ViewerWidget
-
-import sys
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QPixmap
+from playNano.gui.window import MainWindow
 
 app = QApplication.instance()
 if app is None:
@@ -29,7 +28,7 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     # Mock AFMImageStack
     # Dummy filter function with version
     def dummy_filter(arr, **kwargs):
-        """Make a dummy a filter function."""
+        """Make as dummy filter function that increments input array by 1."""
         return arr + 1
 
     dummy_filter.__version__ = "0.0.1"
@@ -127,9 +126,12 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
 
 def test_mainwindow_font_fallbacks(qtbot, caplog):
     """Test that font loading failures trigger warnings."""
-    with patch("playNano.gui.window.QFontDatabase.addApplicationFont", return_value=-1):
+    with patch(
+        "playNano.gui.window.QFontDatabase.addApplicationFont", return_value=-1
+    ):  #
         with patch(
-            "playNano.gui.window.QFontDatabase.applicationFontFamilies", return_value=[]
+            "playNano.gui.window.QFontDatabase.applicationFontFamilies",
+            return_value=[],
         ):
             caplog.set_level(logging.WARNING)
             mock_stack = MagicMock(width=256, height=256, data=np.random.rand(5, 5, 5))
@@ -177,22 +179,16 @@ def test_keypress_triggers_methods(qtbot):
         (Qt.Key_G, "_export_gif"),
         (Qt.Key_E, "_export_checked"),
     ]:
-        called = False
+        called = {"value": False}
 
-        def make_setter():
-            nonlocal called
+        def setter(*a, called=called, **k):
+            called["value"] = True
 
-            def setter(*a, **k):
-                nonlocal called
-                called = True
-
-            return setter
-
-        setattr(wnd, method, make_setter())
+        setattr(wnd, method, setter)
         evt = MagicMock()
         evt.key.return_value = key
         wnd.keyPressEvent(evt)
-        assert called, f"{method} should have been called"
+        assert called["value"], f"{method} should have been called"
 
 
 def test_show_frame_fallback_pixel_size(qtbot):
@@ -308,6 +304,7 @@ def test_update_background_color_flat_branch():
 @patch("playNano.io.gif_export.export_gif")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_gif_calls_export(mock_prepare, mock_export, qtbot):
+    """Test that _export_gif calls prepare_output_directory and export_gif."""
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
@@ -441,6 +438,7 @@ def test_keypress_calls_super_for_other_keys(qtbot):
 @patch("playNano.io.export.export_bundles")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
+    """Test _export_gif branches on raw/processed data and z-range values."""
     # 1) Build a bare MainWindow without running its __init__
     from playNano.gui.window import MainWindow
 
@@ -479,6 +477,7 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
 @patch("playNano.io.export.export_bundles")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
+    """Test that _export_checked exports all formats when all checkboxes are set."""
     # 1) Build a bare MainWindow without running its __init__
     from playNano.gui.window import MainWindow
 
@@ -517,6 +516,7 @@ def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
 @patch("playNano.gui.window.prepare_output_directory")
 @patch("playNano.io.export.export_bundles")
 def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
+    """Test _export_checked logs a message and does nothing if no formats selected."""
     wnd = MainWindow.__new__(MainWindow)
     wnd.export_npz_cb = MagicMock(isChecked=lambda: False)
     wnd.export_ome_tiff_cb = MagicMock(isChecked=lambda: False)
@@ -539,6 +539,7 @@ def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
 def test_export_checked_raw_requested_but_missing(
     mock_prepare, mock_export, qtbot, caplog
 ):
+    """Test that _export_checked falls back to processed data if raw is missing."""
     wnd = MainWindow.__new__(MainWindow)
     wnd.export_npz_cb = MagicMock(isChecked=lambda: True)
     wnd.export_ome_tiff_cb = MagicMock(isChecked=lambda: False)
@@ -559,6 +560,7 @@ def test_export_checked_raw_requested_but_missing(
 @patch("playNano.io.export.export_bundles", side_effect=Exception("Export failed"))
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
+    """Test that _export_checked logs an error if export_bundles raises."""
     wnd = MainWindow.__new__(MainWindow)
     wnd.export_npz_cb = MagicMock(isChecked=lambda: True)
     wnd.export_ome_tiff_cb = MagicMock(isChecked=lambda: False)
@@ -576,6 +578,7 @@ def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
 
 
 def test_on_motion_updates_line_and_spinbox():
+    """Test _on_motion updates zmin_raw, line, spinbox, and triggers refresh."""
 
     wnd = MainWindow.__new__(MainWindow)
 
@@ -633,7 +636,7 @@ def test_on_motion_updates_line_and_spinbox():
 
 
 def test_on_motion_updates_zmax_flat_branch():
-    """Test _on_motion updates _zmax_flat and zmax_spin when dragging max line in flat mode."""
+    """Test _on_motion updates _zmax_flat & zmax_spin when line moved in flat mode."""
 
     # Create an instance without calling __init__
     wnd = MainWindow.__new__(MainWindow)
@@ -659,9 +662,10 @@ def test_on_motion_updates_zmax_flat_branch():
 
 
 def test_on_motion_updates_zmax_raw_branch():
-    """Test _on_motion updates _zmax_raw and zmax_spin when dragging max line in raw mode."""
-    from playNano.gui.window import MainWindow
+    """Test _on_motion updates _zmax_flat & zmax_spin when line moved in raw mode."""
     from unittest.mock import MagicMock
+
+    from playNano.gui.window import MainWindow
 
     wnd = MainWindow.__new__(MainWindow)
 
@@ -811,6 +815,7 @@ def test_on_auto_recomputes_and_updates(mock_compute, show_flat, flat_data):
 
 @pytest.fixture
 def widget(qtbot):
+    """Provide a ViewerWidget fixture for painting tests."""
     w = ViewerWidget()
     w.resize(100, 100)
     qtbot.addWidget(w)
@@ -818,6 +823,7 @@ def widget(qtbot):
 
 
 def test_paint_event_zero_division_warning(widget, qtbot, caplog):
+    """Test paintEvent logs when division by zero occurs in scale bar calculation."""
     widget._original_pixmap = QPixmap(50, 50)
     widget._scaled_pixmap = QPixmap(50, 50)
     widget._draw_scale_bar = True
@@ -852,6 +858,7 @@ def test_paint_event_zero_division_warning(widget, qtbot, caplog):
 
 
 def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
+    """Test paintEvent logs errors when generic exception occurs during painting."""
     widget._original_pixmap = QPixmap(50, 50)
     widget._scaled_pixmap = QPixmap(50, 50)
     widget._draw_scale_bar = False
@@ -870,7 +877,11 @@ def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
 
 
 def test_paint_event_zero_division_branch(widget, qtbot, caplog):
+    """Test paintEvent logs a warning when __rtruediv__ raises ZeroDivisionError."""
+
     class ZeroDiv:
+        """Dummy class that triggers a ZeroDivisionError when used in division."""
+
         def __bool__(self):
             return True  # passes `if self._pixel_size_nm`
 

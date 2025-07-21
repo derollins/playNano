@@ -86,7 +86,7 @@ class ViewerWidget(QWidget):
 
     def paintEvent(self, event):
         """
-        Custom paint handler: draws background, frame, and overlays.
+        Create custom paint handler: draws background, frame, and overlays.
 
         Parameters
         ----------

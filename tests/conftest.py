@@ -1,16 +1,14 @@
 """Provides pytest fixtures for test resource paths."""
 
-from pathlib import Path
 import os
 import sys
-
+from pathlib import Path
 
 import pytest
 from PySide6.QtWidgets import QApplication
 
 from playNano.processing.filters import register_filters
 from playNano.processing.mask_generators import register_masking
-
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
@@ -19,6 +17,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 def ensure_qapplication():
     """
     Make sure there is a single QApplication for all tests that need it.
+
     This runs before any test, so any import/instantiation of QWidget will
     see a valid QApp and won't blow up.
     """
