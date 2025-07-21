@@ -11,14 +11,9 @@ from playNano.cli.utils import (
     parse_processing_string,
 )
 from playNano.errors import LoadError
-from playNano.io.export import (
-    export_bundles,
-    save_h5_bundle,
-    save_npz_bundle,
-    save_ome_tiff_stack,
-)
+from playNano.gui.main import gui_entry
+from playNano.io.export import export_bundles
 from playNano.io.gif_export import export_gif
-from playNano.playback.vis import play_stack_cv
 from playNano.processing.core import process_stack
 
 logger = logging.getLogger(__name__)
@@ -97,7 +92,14 @@ def run_pipeline_mode(
 
     # 4) GIF
     export_gif(
-        afm_stack, make_gif, output_folder, output_name, scale_bar_nm, zmin, zmax
+        afm_stack=afm_stack,
+        make_gif=make_gif,
+        output_folder=output_folder,
+        output_name=output_name,
+        scale_bar_nm=scale_bar_nm,
+        raw=False,
+        zmin=zmin,
+        zmax=zmax,
     )
 
 
@@ -174,9 +176,8 @@ def play_pipeline_mode(
                 "The value of zmax must be either a number or the string 'auto'."
             )
 
-    play_stack_cv(
+    gui_entry(
         afm_stack,
-        fps=fps,
         output_dir=output_folder,
         output_name=output_name,
         steps_with_kwargs=steps_with_kwargs,
@@ -431,90 +432,14 @@ def wizard_mode(
             print(f"Unknown command: {verb}. Type `help` for a list of commands.\n")
 
 
-def write_exports(
-    afm_stack: AFMImageStack,
-    out_folder: Path,
-    base_name: str,
-    formats: list[str],
-    raw: bool = False,
-) -> None:
-    """
-    Write out requested bundles from an AFM stack (.data must be final version).
-
-    Parameters
-    ----------
-    afm_stack : AFMImageStack
-        The AFM stack containing final .data, .pixel_size_nm, .frame_metadata, .channel
-    out_folder : Path
-        Directory to write export files (will be created if needed)
-    base_name : str
-        Base file name (no extension) for each export, e.g. "sample_01"
-    formats : list of str
-        Which formats to write; valid set = {"tif", "npz", "h5"}.
-    raw : bool, optional
-        If True, use the raw data from `afm_stack.processed["raw"]`.
-        If False, use the final processed data in `afm_stack.data`.
-        Default is False (use processed data).
-
-    Raises
-    ------
-    SystemExit
-        If any element of `formats` is not in {"tif","npz","h5"}.
-    """
-    if raw is False:
-        stack_data = afm_stack.data
-    elif raw is True and "raw" in afm_stack.processed:
-        stack_data = afm_stack.processed["raw"]
-    px_nm = afm_stack.pixel_size_nm
-    timestamps = [md.get("timestamp") for md in afm_stack.frame_metadata]
-    channel = afm_stack.channel
-
-    out_folder.mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger(__name__)
-
-    valid = {"tif", "tiff", "npz", "h5"}
-    for fmt in formats:
-        if fmt not in valid:
-            logger.error(f"Unsupported export format '{fmt}'. Choose from {valid}.")
-            sys.exit(1)
-
-    if "tif" in formats or "tiff" in formats:
-        tif_path = out_folder / f"{base_name}.ome.tif"
-        logger.info(f"Writing OME-TIFF → {tif_path}")
-        save_ome_tiff_stack(
-            path=tif_path,
-            stack=stack_data,
-            pixel_size_nm=px_nm,
-            timestamps=timestamps,
-            channel=channel,
-        )
-
-    if "npz" in formats:
-        npz_path = out_folder / f"{base_name}"
-        logger.info(f"Writing NPZ bundle → {npz_path}.npz")
-        save_npz_bundle(
-            path=npz_path,
-            stack=stack_data,
-            pixel_size_nm=px_nm,
-            timestamps=timestamps,
-            channel=channel,
-        )
-
-    if "h5" in formats:
-        h5_path = out_folder / f"{base_name}"
-        logger.info(f"Writing HDF5 bundle → {h5_path}.h5")
-        save_h5_bundle(
-            path=h5_path,
-            stack=stack_data,
-            pixel_size_nm=px_nm,
-            timestamps=timestamps,
-            frame_metadata=afm_stack.frame_metadata,
-            channel=channel,
-        )
-
-
 def print_env_info():
-    """Print the current playNano environment metadata."""
+    """
+    Print the current playNano environment metadata.
+
+    Returns
+    -------
+    None
+    """
     import json
 
     from playNano.utils.system_info import gather_environment_info

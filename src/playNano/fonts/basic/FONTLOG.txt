@@ -1,0 +1,92 @@
+
+  FONTLOG: Basic
+
+  --------------------------------------------
+  Basic Regular
+  --------------------------------------------
+
+  This file provides detailed information on the Basic font 
+  Software.
+  This information should be distributed along with the Basic 
+  font and any derivative works.
+  
+  Basic Font Information
+  
+  Basic is a Unicode typeface family that supports languages 
+  that use the Latin script and its variants, and could be 
+  expanded to support other scripts.
+  
+  More specifically, this release supports the following 
+  glyph ranges: Latin-1, Latin-2, Turkish, Windows Baltic, 
+  Macintosh Character Set.
+  
+  Windows WGL is expected to be added in time.
+  
+  To contribute to the project contact Eben Sorkin 
+  at sorkineben@gmail.com
+  
+  ChangeLog
+  
+  11 Sep 2014 (Christoph Haag) Basic v1.006
+- created fontforge sources as base to work on GNU/Linux
+- added FONTLOG to .sfdir
+- Mastered Font from Fontforge SFDIR to 
+  UFO,OTF,TTF,EOT,WOFF,SVG
+  
+  26 Aug 2014 (Eben Sorkin) Basic v1.005
+- Added more fractions, double arrows, capital Esset 
+  (uni1E9E)
+- Fixed Croation Dbar (Dcroat)
+- Added finacial symbols 
+  colonmonetary/lira/uni20A6/peseta/dong/won/franc/uni20AA/uni
+  20B1/uni20B2/uni20B5/uni20B9/uni20BA
+- Mastered Font from Fontlab VBF to UFO and TTF
+  
+  21 Aug 2014 (Eben Sorkin) Basic v1.004
+- Adjusted the number shapes and spacing. Numbers are also 
+  now fully cap height.
+- G, lower case l caron and d caron adjusted
+- Merged l and i shapes
+- Mastered Font from Fontlab VBF to UFO and TTF
+  
+  21 Aug 2014 (Eben Sorkin) Basic v1.003
+- Adjusted the files further to work optimally with TTFA 
+  hinting.
+- Mastered Font from Fontlab VBF to UFO and TTF
+  
+  18 Aug 2014 (Eben Sorkin) Basic v1.002
+- Changed spacing and forms to move from _magic tables_ 
+  optimization to more typical type spacing for TTFA.
+- Added some optical adjustments for dark spots. 
+- Added language support and many symbols.
+- Mastered Font from Fontlab VBF to UFO and TTF
+  
+  12 Dec 2011 (Eben Sorkin) Basic v1.001
+- Mastered Font from Fontlab VBF to TTF
+  
+  11 Dec 2011 (Magnus Gaarde) Basic v1.000
+- Completed first complete version of Basic in Fontlab ( 
+  VBF format )
+  
+  Acknowledgements
+  
+  If you make modifications be sure to add your name (N), 
+  email (E), web-address (if you have one) (W) and 
+  description (D). This list is in alphabetical order.
+  
+  N: Magnus Gaarde
+  E: design@skriftklog.dk
+  W: http://skriftklog.dk
+  D: Designer
+  
+  N: Christoph Haag
+  E: christoph@lafkon.net
+  W: www.lafkon.net
+  D: Transformer
+  
+  N: Eben Sorkin
+  E: sorkineben@gmail.com
+  W: www.sorkintype.com
+  D: Mastering, and re-design for TTFA hinting
+
+

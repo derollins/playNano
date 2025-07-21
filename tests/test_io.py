@@ -6,7 +6,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-import cv2
 import h5py
 import numpy as np
 import pytest
@@ -35,9 +34,6 @@ from playNano.io.loader import (
     get_loader_for_folder,
     load_afm_stack,
 )
-from playNano.playback import vis
-from playNano.playback.vis import pad_to_square, play_stack_cv
-from playNano.processing.pipeline import ProcessingPipeline
 
 
 class DummyAFM:
@@ -562,160 +558,6 @@ def test_using_h5jpk_resource(resource_path):
     assert jpk_file.exists(), "Test .h5-jpk file is missing!"
 
 
-def test_pad_to_square_rectangular_image():
-    """Pad a rectangular image to a square with correct centering."""
-    # Create a 2x4 grayscale image with distinct values
-    img = np.array([[1, 2, 3, 4], [5, 6, 7, 8]], dtype=np.uint8)
-    out = pad_to_square(img, border_color=0)
-    # Output should be 4x4, with original centered vertically
-    assert out.shape == (4, 4)
-    # Top and bottom rows should be zeros
-    assert np.all(out[0] == 0) and np.all(out[3] == 0)
-    # Middle rows should match original
-    assert np.array_equal(out[1, :], img[0]) and np.array_equal(out[2, :], img[1])
-
-
-def test_pad_to_square_square_image():
-    """Return the same image when it's already square."""
-    img = np.ones((3, 3), dtype=np.uint8) * 5
-    out = pad_to_square(img, border_color=7)
-    assert out.shape == (3, 3)
-    assert np.array_equal(out, img)
-
-
-class DummyWindow:
-    """Class for testing the cv2 window."""
-
-    pass
-
-
-def test_play_stack_cv_exits_on_escape(monkeypatch, tmp_path):
-    """play_stack_cv should exit immediately when ESC key is pressed."""
-    # Create a dummy AFMImageStack with a 2-frame stack of 2x2 images
-    stack = AFMImageStack(
-        data=np.zeros((2, 2, 2)),
-        pixel_size_nm=1.0,
-        channel="height_trace",
-        file_path=tmp_path,
-        frame_metadata=[{}, {}],
-    )
-
-    # Monkey­patch all cv2 window functions to do nothing / return values
-    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
-    # getWindowImageRect returns (x, y, width, height) matching image size (2x2)
-    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
-    # cv2.normalize is used in rendering; just return the source array
-    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
-    # <— add a stub for cv2.cvtColor
-    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
-
-    # Resize and imshow do nothing
-    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
-    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
-    # waitKey returns ESC code (27)
-    monkeypatch.setattr(cv2, "waitKey", lambda delay: 27)
-    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
-
-    # Call play_stack_cv: should run loop once and exit without error
-    play_stack_cv(stack, fps=10.0)
-
-
-def test_play_stack_cv_flatten_and_toggle(monkeypatch, tmp_path):
-    """play_stack_cv should flatten on 'f' and toggle on SPACE."""
-    # Create a dummy 2-frame stack of 2x2 images
-    img0 = np.array([[1, 2], [3, 4]], dtype=np.uint8)
-    img1 = np.array([[5, 6], [7, 8]], dtype=np.uint8)
-    stack = AFMImageStack(
-        data=np.stack([img0, img1], axis=0),
-        pixel_size_nm=1.0,
-        channel="height_trace",
-        file_path=tmp_path,
-        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
-    )
-
-    # Track if pipeline.run() was called
-    calls = {"flattened": False}
-
-    def fake_run(self):
-        calls["flattened"] = True
-        # Simulate a flattened stack of all 9’s
-        self.stack.processed["raw"] = self.stack.data.copy()
-        flat = np.full_like(self.stack.data, 9)
-        self.stack.data = flat
-        return flat
-
-    # Patch run() on the ProcessingPipeline class
-    monkeypatch.setattr(ProcessingPipeline, "run", fake_run)
-
-    # Patch OpenCV functions
-    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 2, 2))
-    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
-    # <— add a stub for cv2.cvtColor
-    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
-    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
-    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
-
-    # Simulate key presses: 'f' (flatten), SPACE (toggle), ESC (exit)
-    key_sequence = [ord("f"), 32, 27]
-    monkeypatch.setattr(cv2, "waitKey", lambda delay: key_sequence.pop(0))
-
-    # Run the function
-    play_stack_cv(stack, fps=5.0)
-
-    # Check that flatten was called
-    assert calls["flattened"] is True
-
-
-def test_pad_to_square_with_border_color():
-    """pad_to_square applies custom border_color correctly."""
-    img = np.zeros((1, 2), dtype=np.uint8)
-    out = pad_to_square(img, border_color=5)
-    # Output is 2x2; bottom row should be border_color
-    assert out.shape == (2, 2)
-    assert np.all(out[1] == 5)
-    # Top row should contain original values
-    assert out[0, 0] == 0 and out[0, 1] == 0
-
-
-def test_normalize_to_uint8_handles_negative_values():
-    """Test normalize_to_uint8 properly rescales negative values."""
-    img = np.array([[-10, 0], [10, 20]], dtype=np.float32)
-    out = normalize_to_uint8(img)
-    assert out.min() == 0
-    assert out.max() == 255
-
-
-def test_normalize_to_uint8_large_image():
-    """Test normalize_to_uint8 on large arrays."""
-    img = np.random.rand(1000, 1000) * 100
-    out = normalize_to_uint8(img)
-    assert out.shape == img.shape
-    assert out.dtype == np.uint8
-
-
-def test_pad_to_square_color_image():
-    """Ensure color images (H, W, 3) are padded correctly, only 2D."""
-    img = np.ones((2, 4), dtype=np.uint8) * 100
-    out = pad_to_square(img, border_color=0)
-    assert out.shape == (4, 4)
-    assert np.all(out[0] == 0)
-    assert np.all(out[-1] == 0)
-
-
-def test_pad_to_square_rgb_square_image():
-    """Ensure no padding occurs on square RGB image."""
-    img = np.ones((5, 5), dtype=np.uint8) * 255
-    out = pad_to_square(img, border_color=0)
-    assert out.shape == img.shape
-    assert np.array_equal(out, img)
-
-
 def test_get_loader_for_file_prioritizes_file_loader():
     """File extension loader should be used even if folder loader exists."""
     fake_path = Path("/path/sample.h5-jpk")
@@ -738,32 +580,6 @@ def test_load_afm_stack_unsupported_file(tmp_path):
         load_afm_stack(file)
 
 
-def test_play_stack_cv_skips_on_other_keys(monkeypatch, tmp_path):
-    """Pressing an unhandled key should just continue playback."""
-    stack = AFMImageStack(
-        data=np.random.rand(2, 5, 5),
-        pixel_size_nm=1.0,
-        channel="height_trace",
-        file_path=tmp_path,
-        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
-    )
-
-    monkeypatch.setattr(cv2, "namedWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "resizeWindow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "setWindowProperty", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "getWindowImageRect", lambda *args, **kwargs: (0, 0, 5, 5))
-    monkeypatch.setattr(cv2, "normalize", lambda src, dst, a, b, norm_type: src)
-    monkeypatch.setattr(cv2, "cvtColor", lambda src, code: src)
-    monkeypatch.setattr(cv2, "resize", lambda src, dsize, interpolation: src)
-    monkeypatch.setattr(cv2, "imshow", lambda *args, **kwargs: None)
-    monkeypatch.setattr(cv2, "destroyWindow", lambda name: None)
-
-    keys = [ord("x"), 27]  # random key + ESC to exit
-    monkeypatch.setattr(cv2, "waitKey", lambda delay: keys.pop(0))
-
-    play_stack_cv(stack, fps=5.0)
-
-
 def test_get_loader_for_folder_picks_first_supported(tmp_path):
     """Should pick the first supported extension found in folder."""
     (tmp_path / "file1.spm").touch()
@@ -774,13 +590,6 @@ def test_get_loader_for_folder_picks_first_supported(tmp_path):
     )
     assert ext.lower() in [".asd", ".jpk"]
     assert callable(loader)
-
-
-def test_prepare_output_directory(tmp_path):
-    """Test that prepare_output_directory creates a directory and returns its path."""
-    path = vis.prepare_output_directory(str(tmp_path))
-    assert path.exists()
-    assert path.is_dir()
 
 
 @patch("playNano.io.gif_export.create_gif_with_scale_and_timestamp")

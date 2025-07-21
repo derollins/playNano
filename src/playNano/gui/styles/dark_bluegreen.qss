@@ -1,0 +1,119 @@
+/* Main window background */
+QWidget {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    font-family: "basic", sans-serif;
+    font-size: 10pt;
+    border: none;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #092a2d;
+    color: white;
+    border: 1px solid #16868f;
+    border-radius: 0px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #209ba5;
+}
+QPushButton:pressed {
+    background-color: #125c61;
+}
+QPushButton:disabled {
+    background-color: #444;
+    color: #888;
+    border-color: #333;
+}
+
+/* Tabs */
+QTabWidget::pane {
+    border: 1px solid #2a2a2a;
+    background-color: #252525;
+}
+QTabBar::tab {
+    background: #197278;
+    color: white;
+    padding: 6px 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border: 1px solid #16868f;
+    margin-right: 2px;
+}
+QTabBar::tab:selected {
+    background: #209ba5;
+}
+QTabBar::tab:hover {
+    background: #1ea4af;
+}
+
+/* Checkboxes and Radio Buttons */
+QCheckBox, QRadioButton {
+    spacing: 6px;
+}
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+}
+QCheckBox::indicator:unchecked,
+QRadioButton::indicator:unchecked {
+    border: 1px solid #16868f;
+    background-color: #1e1e1e;
+}
+QCheckBox::indicator:checked,
+QRadioButton::indicator:checked {
+    background-color: #209ba5;
+    border: 1px solid #16868f;
+}
+
+QCheckBox::indicator:disabled,
+QRadioButton::indicator:disabled {
+    background-color: #a8a8a8;
+    border: 1px solid #828282;
+}
+
+/* Slider */
+QSlider::groove:horizontal {
+    height: 3px;
+    background: #bcbcbc;
+}
+QSlider::handle:horizontal {
+    background: #209ba5;
+    border: 1px solid #16868f;
+    width: 12px;
+    margin: -5px 0;
+    border-radius: 0px;
+}
+
+/* FPS spinbox */
+QDoubleSpinBox {
+    background-color: #1e1e2f;   /* dark bluish background */
+    border: 1px solid #3a8fb7;   /* blue-green border */
+    border-radius: 1px;           /* rounded corners */
+    color: #ffffff;               /* text color */
+    padding: 2px 6px;             /* some padding inside */
+}
+
+QDoubleSpinBox:hover {
+    border-color: #56c0d8;       /* lighter border on hover */
+}
+
+QDoubleSpinBox:focus {
+    border-color: #00acc1;       /* highlight border when focused */
+    background-color: #2a2a40;   /* slightly lighter bg on focus */
+}
+
+
+/* ViewerWidget (custom QLabel) - remove border and give it edge feel */
+QLabel#viewer {
+    background-color: black;
+    border: none;
+}
+
+/* Tooltips */
+QToolTip {
+    background-color: #252525;
+    color: #ffffff;
+    border: 1px solid #16868f;
+}

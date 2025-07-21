@@ -1,0 +1,10 @@
+# Enforce Unix-style line endings for source code and docs
+*.py     text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+*.yml    text eol=lf
+*.toml   text eol=lf
+
+# Fonts are binary – no conversion
+*.otf    binary
+*.ttf    binary

@@ -71,7 +71,7 @@ def main() -> None:
 
     # 1) 'play' subcommand
     play_parser = subparsers.add_parser(
-        "play", help="Interactive play mode (OpenCV window)."
+        "play", help="Interactive play mode (GUI window)."
     )
     play_parser.add_argument(
         "input_file", type=str, help="Path to AFM input file or folder."
@@ -226,6 +226,12 @@ def main() -> None:
 
     parser_env = subparsers.add_parser("env-info", help="Print environment info")
     parser_env.set_defaults(func=lambda args: print_env_info())
+
+    gui_parser = subparsers.add_parser("gui", help="Launch Qt GUI playback")
+    gui_parser.add_argument("input_file", help="Path to AFM file/folder")
+    gui_parser.set_defaults(
+        func=lambda args: __import__("playNano.gui.main").gui_entry(args)
+    )
 
     args = parser.parse_args()
     setup_logging(getattr(logging, args.log_level.upper()))

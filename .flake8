@@ -2,5 +2,5 @@
 [flake8]
 extend-ignore = D202, D203, D211, D213, E203, E213, E266, E501, W503
 max-line-length = 88
-exclude = .git,__pycache__,build,dist,.venv,docs, docs/**, notebooks, *.ipynb,
+exclude = .git,__pycache__,build,dist,.venv,docs, docs/**, notebooks, *.ipynb, *.oft, *ttf,
 max-complexity = 50

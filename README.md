@@ -36,7 +36,8 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 ## ✨ Features
 
 - 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` and `.spm` files.
-- ▶️ **Animated image viewer** for high-speed AFM playback.
+- ▶️ **Animated video viewer**, a PySide6-based GUI viewer for high‑speed AFM playback and exporting with
+  live z‑scale adjustment.
 - 🪟 **Applies basic filters** and ordered filter chains to image data.
 - 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
 - 🎞️ **Generates animated GIFs** of AFM stacks with annotations.
@@ -182,9 +183,20 @@ Use `quit` to exit the wizard early.
 
 ### 🖥️ Interactive Playback mode (`play`)
 
-Opens an OpenCV window for visualising and processing the AFM stack.
+Opens a modern PySide6 GUI for browsing, filtering, and exporting AFM stacks.
 
-The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags.
+Key elements:
+– Playback controls: play/pause, FPS slider, and current frame indicator.
+– Annotation toggles: timestamps and scale bar.
+– Z‑scale histogram: two draggable vertical lines for zmin/zmax with “Auto” reset and spin boxes.
+– Export panel: select formats (OME‑TIFF, NPZ, HDF5, GIF) and export current raw or processed data.
+
+<div align="center">
+  ![playNano GUI main window](docs/images/GUIwindow.png)
+</div>
+
+The window is initilized with similar flags to the `run` mode without the `--export` or `--make-gif` flags
+(these are controled within the GUI.)
 
 ```bash
 playnano play /path/to/afm_file.h5-jpk \
@@ -198,9 +210,10 @@ playnano play /path/to/afm_file.h5-jpk \
 
 ```
 
-The `--zmin` and `--zmax` flags define the Z colour scale of the window and any GIF exports. The
+The `--zmin` and `--zmax` flags define the initial Z colour scale of the window and GIF exports. The
 value can be either a float or the string, 'auto', to set the values as the 1st and 99th percentiles
-of the data respectively; this is the default behaviour.
+of the data respectively; this is the default behaviour. These values can be changed interactivly within
+the window.
 
 **Viewer key bindings:**
 
@@ -209,21 +222,16 @@ Press keys to inteact with the video viewing window:
 Apply filter:
 
 - **f** — Apply filtering and update view.
-- **Space** — Toggle between raw and filtered data.
+- **r** — Toggle between raw and filtered data.
 
 Save and export:
 
-- **t** — Export the current data as an OME-TIF (.ome.tif), loadable in many image analysis programmes.
-- **n** — Export the current data as a NumPy zipped archive (.npz).
-- **h** — Export the current data as a HDF5 bundle (.h5).
-- **g** — Export the data as an animated GIF with the annotations in the viewed (scale bar and timestamps).
+- **e** — Export the current data (raw or processed as set in the export panel) in the selected formats, either
+  OME-TIF (.ome.tif), loadable in many image analysis programmes, a NumPy zipped archive (.npz), or a HDF5
+  bundle (.h5).
+- **g** — Export the data as an animated GIF with the annotations in the viewer (scale bar and timestamps).
 
-> 📝 Note: The exported data reflects the current view — if raw data is shown, raw is exported;
-> if filters are applied, the filtered view is saved.
-
-Other commands:
-
-- **q** or **ESC** — Quit the viewer.
+> 📝 Note: Both raw and processed data can be exported - this es selected in the export panel.
 
 ## 🪟 Flattening
 
@@ -430,3 +438,10 @@ integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-02
 ## 📜 License
 
 This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Included Fonts
+
+This project bundles the “Steps Mono” font by [Velvetyne Type Foundry](https://velvetyne.fr/fonts/steps-mono/),
+licensed under the SIL Open Font License 1.1.
+
+See `src/playNano/fonts/LICENCE.txt` for full license terms and attribution.

@@ -92,31 +92,6 @@ class AFMImageStack:
             If data is not an np.ndarray.
         ValueError
             If data.ndim != 3 or pixel_size_nm <= 0, or metadata length mismatch.
-        """ """
-        Initialize AFMImageStack with data, spatial metadata, and per-frame metadata.
-
-        Parameters
-        ----------
-        data : np.ndarray
-            3D array of shape (n_frames, height, width) containing AFM image stack.
-        pixel_size_nm : float
-            Pixel size in nanometers; must be positive.
-        channel : str
-            Channel name (e.g., 'height_trace').
-        file_path : Path
-            Source file or folder path.
-        frame_metadata : list of dict, optional
-            List of per-frame metadata dicts. Will be padded or trimmed to length
-            n_frames.
-            After initialization, each entry is normalized to include a numeric
-            'timestamp' (fallback to frame index if missing).
-
-        Raises
-        ------
-        TypeError
-            If data is not an np.ndarray.
-        ValueError
-            If data.ndim != 3 or pixel_size_nm <= 0, or metadata length mismatch.
         """
         # Validate that data is a 3D NumPy array
         if not isinstance(data, np.ndarray):

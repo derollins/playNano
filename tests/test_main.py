@@ -181,21 +181,6 @@ def test_sanitize_output_name_trims_and_defaults():
     assert sanitize_output_name("   ", "fallback") == "fallback"
 
 
-def test_write_exports_invalid_format(tmp_path, caplog):
-    """Test write_exports raises SystemExit on unsupported export format."""
-    mock_stack = MagicMock()
-    mock_stack.data = "data"
-    mock_stack.pixel_size_nm = 1.0
-    mock_stack.frame_metadata = [{"timestamp": 0}]
-    mock_stack.channel = "height_trace"
-
-    with pytest.raises(SystemExit):
-        from playNano.cli.actions import write_exports
-
-        write_exports(mock_stack, tmp_path, "testfile", ["invalid"])
-    assert "Unsupported export format" in caplog.text
-
-
 def test_handle_play_file_not_found(tmp_path, caplog):
     """Test handle_play raises SystemExit if input file does not exist."""
     from argparse import Namespace
