@@ -12,6 +12,7 @@ import pytest
 from playNano.afm_stack import AFMImageStack
 from playNano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
 from playNano.io.formats.read_h5jpk import (
+    _get_z_scaling_h5,
     _get_z_unit_h5,
     _guess_and_standardize_units_to_nm,
     apply_z_unit_conversion,
@@ -202,6 +203,29 @@ def test_h5jpk_file_is_valid(resource_path):
             assert len(f.keys()) > 0  # Ensure it has some content
     except OSError as e:
         pytest.fail(f"Failed to open HDF5 file: {e}")
+
+
+@pytest.fixture
+def h5_file_missing_scaling(tmp_path):
+    file_path = tmp_path / "test_missing_scaling.h5"
+    with h5py.File(file_path, "w") as f:
+        f.create_group("channel")
+    return h5py.File(file_path, "r")
+
+
+def test_get_z_scaling_logs_warning(caplog, h5_file_missing_scaling):
+    """Test _get_z_scaling logs warnings if scaling attributes are not in h5-jpk."""
+    grp = h5_file_missing_scaling["channel"]
+
+    with caplog.at_level("WARNING"):
+        multiplier, offset = _get_z_scaling_h5(grp)
+
+    assert multiplier == 1.0
+    assert offset == 0.0
+
+    # Check that both warnings were logged
+    assert "Missing attribute 'net-encoder.scaling.multiplier'" in caplog.text
+    assert "Missing attribute 'net-encoder.scaling.offset'" in caplog.text
 
 
 @pytest.mark.parametrize(
