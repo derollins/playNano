@@ -149,9 +149,25 @@ def _get_z_scaling_h5(channel_group: h5py.Group) -> tuple[float, float]:
     -----
     Defaults to (1.0, 0.0) if attributes are not present.
     """
-    multiplier = float(channel_group.attrs.get("net-encoder.scaling.multiplier", 1.0))
-    offset = float(channel_group.attrs.get("net-encoder.scaling.offset", 0.0))
+    try:
+        multiplier = float(channel_group.attrs["net-encoder.scaling.multiplier"])
+    except KeyError:
+        multiplier = 1.0
+        logger.warning(
+            "Missing attribute 'net-encoder.scaling.multiplier'. "
+            "Defaulting to multiplier = 1.0."
+        )
 
+    try:
+        offset = float(channel_group.attrs["net-encoder.scaling.offset"])
+    except KeyError:
+        offset = 0.0
+        logger.warning(
+            "Missing attribute 'net-encoder.scaling.offset'. "
+            "Defaulting to offset = 0.0."
+        )
+
+    logger.debug(f"Z value scaling: multiplier = {multiplier}, offset = {offset}")
     return multiplier, offset
 
 
@@ -325,7 +341,7 @@ def _guess_and_standardize_units_to_nm(image_stack: np.ndarray) -> np.ndarray:
 
 
 def apply_z_unit_conversion(
-    images: np.ndarray, channel_group: h5py.Group, channel: str = "TP"
+    images: np.ndarray, channel_group: h5py.Group, channel: str = "height_trace"
 ) -> np.ndarray:
     """Apply z unit conversion to nanometers if needed, or guess if unknown."""
     try:
