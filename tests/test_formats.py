@@ -207,6 +207,7 @@ def test_h5jpk_file_is_valid(resource_path):
 
 @pytest.fixture
 def h5_file_missing_scaling(tmp_path):
+    """Create a test hdf5 file without scaling attributes for testing."""
     file_path = tmp_path / "test_missing_scaling.h5"
     with h5py.File(file_path, "w") as f:
         f.create_group("channel")
