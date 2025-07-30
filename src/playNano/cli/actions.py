@@ -1,25 +1,30 @@
 """Core logic for CLI actions in playNano."""
 
+import json
 import logging
 import sys
 from pathlib import Path
 
 from playNano.afm_stack import AFMImageStack
+from playNano.analysis.pipeline import AnalysisPipeline
+from playNano.analysis.utils.common import export_to_hdf5, make_json_safe
 from playNano.cli.utils import (
     is_valid_step,
+    parse_analysis_file,
+    parse_analysis_string,
     parse_processing_file,
     parse_processing_string,
 )
 from playNano.errors import LoadError
 from playNano.gui.main import gui_entry
-from playNano.io.export import export_bundles
+from playNano.io.export_data import export_bundles
 from playNano.io.gif_export import export_gif
 from playNano.processing.core import process_stack
 
 logger = logging.getLogger(__name__)
 
 
-def run_pipeline_mode(
+def process_pipeline_mode(
     input_file: str,
     channel: str,
     processing_str: str | None,
@@ -33,39 +38,51 @@ def run_pipeline_mode(
     zmax: str = "auto",
 ) -> None:
     """
-    Load an AFM file, apply processing, and optionally export results and GIF.
+    Apply a processing pipeline to an AFM file, then optionally export data and GIF.
 
-    Priority for parsing steps:
-      1. If --processing-file is provided, read YAML/JSON from that file.
-      2. Else if --processing is provided, parse the processing string.
-
-    After building the ordered list of (step_name, kwargs),
-    we build a ProcessingPipeline and run it. Finally, handle
-    exports and GIF as before.
+    Steps
+    -----
+    1. Parse processing steps from either `processing_file` (YAML/JSON)
+    or `processing_str`.
+    2. Run the ProcessingPipeline on the AFM stack to apply all filters.
+    3. Export the processed stack to TIFF/NPZ/HDF5 formats (`export_bundles`).
+    4. Generate an animated GIF of the filtered data (`export_gif`).
 
     Parameters
     ----------
     input_file : str
         Path to the AFM input file.
     channel : str
-        Data channel to extract from the file (e.g., "height_trace").
+        Name of the data channel to extract (e.g., "height_trace").
     processing_str : str or None
-        Optional inline string defining filters,
-        e.g., "remove_plane; gaussian_filter:sigma=2".
+        Semicolon-delimited inline pipeline string, e.g.
+        `"remove_plane;gaussian_filter:sigma=2"`.
     processing_file : str or None
-        Path to a YAML or JSON file specifying processing steps.
+        Path to a YAML/JSON file defining the processing steps.
     export : str or None
-        Comma-separated list of export formats (e.g., "tif,npz,h5").
+        Comma-separated output formats for bundles (e.g. `"tif,npz,h5"`).
     make_gif : bool
-        Whether to create a GIF of the filtered data.
+        Whether to create an animated GIF of the filtered stack.
     output_folder : str or None
-        Output directory for exports. Defaults to "output/".
+        Directory in which to write any export files.
     output_name : str or None
-        Optional override for output file base name.
+        Base filename (no extension) for bundles/GIF; defaults to
+        the stem of `input_file`.
     scale_bar_nm : int or None
-        Length of scale bar for GIF. Defaults to 100 nm.
+        Length (in nm) of the scale bar overlaid on each GIF frame.
+    zmin : str
+        Minimum Z-value for GIF color normalization (float string or `"auto"`).
+    zmax : str
+        Maximum Z-value for GIF color normalization (float string or `"auto"`).
+
+    Returns
+    -------
+    None
     """
-    # 1) Build steps_with_kwargs
+
+    logger.debug("Entering process_pipeline_mode: %r", locals())
+
+    # 1) Build steps_with_kwargs for processing
     if processing_file:
         steps_with_kwargs = parse_processing_file(processing_file)
     elif processing_str:
@@ -103,6 +120,95 @@ def run_pipeline_mode(
     )
 
 
+def warn_if_unprocessed(stack: AFMImageStack) -> None:
+    """Emit a warning if `stack.processed` is not a dict containing 'raw'."""
+    processed = getattr(stack, "processed", None)
+    if not (isinstance(processed, dict) and "raw" in processed):
+        logger.warning(
+            "This AFMImageStack has not been run through a playNano processing "
+            "pipeline yet. No `.processed` dictionary (with a 'raw' key) was found. "
+            "Ensure this data is appropriately processed for analysis. "
+        )
+
+
+def analyze_pipeline_mode(
+    input_file: str,
+    channel: str,
+    analysis_str: str | None,
+    analysis_file: str | None,
+    output_folder: str | None,
+    output_name: str | None,
+) -> None:
+    """
+    Run an analysis pipeline on an AFM stack and export both JSON and HDF5.
+
+    Steps
+    -----
+    1. Load the AFMImageStack from disk using `input_file` and `channel`.
+    2. Parse analysis modules from `analysis_file` or `analysis_str`.
+    3. Build and execute an `AnalysisPipeline` over the stack.
+    4. Sanitize the full record (`make_json_safe`) and write it to `<output>.json`.
+    5. Export the raw record to HDF5 via `export_to_hdf5`.
+
+    Parameters
+    ----------
+    input_file : str
+        Path to the AFM input file.
+    channel : str
+        Name of the data channel to analyze (e.g., "height_trace").
+    analysis_str : str or None
+        Semicolon-delimited inline analysis string, e.g.
+        `"feature_detection:threshold=5;particle_tracking"`.
+    analysis_file : str or None
+        Path to a YAML/JSON file defining the analysis pipeline.
+    output_folder : str or None
+        Directory in which to write JSON + HDF5 exports.
+    output_name : str or None
+        Base filename (no extension) for both `<output>.json` and `<output>.h5`;
+        defaults to the stem of `input_file`.
+
+    Returns
+    -------
+    None
+    """
+    # 1) load data
+    stack = AFMImageStack.load_data(input_file, channel=channel)
+    warn_if_unprocessed(stack)
+
+    # 2) parse steps
+    if analysis_file:
+        steps = parse_analysis_file(analysis_file)
+    else:
+        steps = parse_analysis_string(analysis_str)
+
+    # 3) build & run pipeline
+    pipeline = AnalysisPipeline()
+    for name, kwargs in steps:
+        pipeline.add(name, **kwargs)
+    raw_record = pipeline.run(stack, log_to=None)
+
+    # 4) write JSON
+    # — determine output folder & name
+    out_dir = Path(output_folder or ".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    base_name = output_name or Path(input_file).stem
+    json_path = out_dir / f"{base_name}.json"
+
+    # — sanitize & dump
+    safe_record = make_json_safe(raw_record)
+    logger.debug("Writing analysis JSON to %s", json_path)
+    with json_path.open("w") as jf:
+        json.dump(safe_record, jf, indent=2)
+    logger.info("Wrote analysis JSON to %s", json_path)
+
+    # 5) write HDF5
+    h5_path = out_dir / f"{base_name}.h5"
+    logger.debug("Writing analysis HDF5 to %s", h5_path)
+    export_to_hdf5(raw_record, out_path=h5_path)
+    logger.info("Wrote analysis HDF5 to %s", h5_path)
+
+
 def play_pipeline_mode(
     input_file: str,
     channel: str,
@@ -115,28 +221,39 @@ def play_pipeline_mode(
     zmax: str = "auto",
 ) -> None:
     """
-    Load an AFM file and display it interactively with optional filters.
+    Launch an interactive GUI to browse an AFM stack with optional filters.
+
+    Steps
+    -----
+    1. Load the AFM stack from `input_file` and `channel`.
+    2. Optionally apply a processing pipeline (inline or YAML/JSON).
+    3. Display frames in a QT-based viewer with live filtering controls.
+    4. Allow on-the-fly export to bundles or GIF via GUI.
 
     Parameters
     ----------
     input_file : str
         Path to the AFM input file.
     channel : str
-        Data channel to extract from the file.
+        Data channel to display (e.g., "height_trace").
     processing_str : str or None
-        Inline filter string (e.g., "gaussian_filter:sigma=2").
+        Inline processing string as for `process_pipeline_mode`.
     processing_file : str or None
-        YAML or JSON file describing processing steps.
+        Path to a YAML/JSON file specifying processing steps.
     output_folder : str or None
-        Directory for saving on-the-fly exports (if enabled in viewer).
+        Directory for any GUI-triggered exports.
     output_name : str or None
-        Base name for exports generated from the viewer.
+        Base filename (no extension) for GUI exports.
     scale_bar_nm : int or None
-        Scale bar length in nanometers for visualization.
-    zmin : str, optional
-        Minimum Z-value to map to colormap 0. If "auto", use 1st percentile.
-    zmax : str, optional
-        Maximum Z-value to map to colormap 255. If "auto", use 99th percentile.
+        Scale bar length (in nm) displayed on frames.
+    zmin : str
+        Minimum Z-value mapping (float or `"auto"`).
+    zmax : str
+        Maximum Z-value mapping (float or `"auto"`).
+
+    Returns
+    -------
+    None
     """
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
@@ -195,20 +312,33 @@ def wizard_mode(
     scale_bar_nm: int | None,
 ) -> None:
     """
-    Launch an interactive REPL for building and applying a processing pipeline.
+    Interactive REPL for step-by-step pipeline construction and execution.
+
+    In wizard mode the user can:
+      - `add <filter_name>`          Add a processing step
+      - `remove <index>`             Remove a step
+      - `move <old> <new>`           Reorder steps
+      - `list`                       Show current steps
+      - `save <path>`                Dump steps to YAML
+      - `run`                        Execute pipeline and exit
+      - `quit`                       Exit without running
 
     Parameters
     ----------
     input_file : str
         Path to the AFM input file.
     channel : str
-        Channel to extract (e.g., "height_trace").
+        Data channel (e.g., "height_trace").
     output_folder : str or None
-        Directory to save exports or GIFs.
+        Directory for any exports triggered during the session.
     output_name : str or None
-        Optional override for base output name.
+        Base filename (no extension) for wizard exports.
     scale_bar_nm : int or None
-        Length of scale bar in nanometers for GIF export.
+        Scale bar length (in nm) for any GIF created.
+
+    Returns
+    -------
+    None
     """
     logger = logging.getLogger(__name__)
     # Check if input file exists

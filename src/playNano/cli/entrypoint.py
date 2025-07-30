@@ -5,7 +5,12 @@ import logging
 import sys
 
 from playNano.cli.actions import print_env_info
-from playNano.cli.handlers import handle_play, handle_processing_wizard, handle_run
+from playNano.cli.handlers import (
+    handle_analyze,
+    handle_play,
+    handle_process,
+    handle_processing_wizard,
+)
 from playNano.errors import LoadError
 
 logger = logging.getLogger(__name__)
@@ -23,6 +28,7 @@ def setup_logging(level: int = logging.INFO) -> None:
     logging.basicConfig(
         level=level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        force=True,
     )
 
 
@@ -31,21 +37,23 @@ def main() -> None:
     Parse command-line arguments and dispatch to the appropriate CLI subcommand.
 
     This function sets up the top-level argparse parser, configures logging,
-    and then calls the appropriate handler function (`handle_play`, `handle_run`,
-    or `handle_processing_wizard`) based on the chosen subcommand.
+    and then calls the appropriate handler function (`handle_play`, `handle_process`,
+    `handle_analyze`, or `handle_processing_wizard`) based on the chosen subcommand.
 
-    - Set up argument parsing for 'play', 'run' and 'wizard' subcommands,
+    - Set up argument parsing for 'play', 'process' and 'wizard' subcommands,
     each with their own options.
     - Configure logging level based on user input.
     - Show help and exit if no subcommand is provided.
     - Call the handler function associated with the chosen subcommand.
 
     Usage:
-      playnano play  <input_file> [--processing …] [--output-folder …] [--output-name …]
-        [--scale-bar-nm …] [--channel …]
-      playnano run   <input_file> [--processing …] [--export …] [--make-gif]
+      playnano play    <input_file> [--processing …] [--output-folder …]
+        [--output-name …] [--scale-bar-nm …] [--channel …]
+      playnano process <input_file> [--processing …] [--export …] [--make-gif]
         [--output-folder …] [--output-name …] [--scale-bar-nm …] [--channel …]
-      playnano wizard <input_file> [--channel …] [--scale-bar-nm …]
+      playnano analyze <input_file> [--analysis-steps … | --analysis-file …]
+        [--output-folder …] [--output-name …] [--channel …]
+      playnano wizard  <input_file> [--channel …] [--scale-bar-nm …]
         [--output-folder …] [--output-name …]
 
     Returns
@@ -66,7 +74,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(
         title="subcommands",
         dest="command",
-        help="Choose one subcommand: 'play', 'run' or 'processing'.",
+        help="Choose one subcommand: 'play', 'process', 'analyise' or 'wizard'.",
     )
 
     # 1) 'play' subcommand
@@ -156,57 +164,57 @@ def main() -> None:
     )
     wizard_parser.set_defaults(func=handle_processing_wizard)
 
-    # 3) 'run' subcommand
-    run_parser = subparsers.add_parser(
-        "run", help="Run mode: apply filters & export bundles/GIF."
+    # 3) 'process' subcommand
+    process_parser = subparsers.add_parser(
+        "process", help="Process mode: apply filters & export bundles/GIF."
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "input_file", type=str, help="Path to AFM input file or folder."
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--channel",
         type=str,
         default="height_trace",
         help="Channel to read (default=height_trace).",
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--export",
         type=str,
         help="Comma-separated formats to export: 'tif', 'npz', 'h5'.",
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--make-gif",
         action="store_true",
         help="Also write an animated GIF after filtering.",
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--output-folder",
         type=str,
         help="Folder to write bundles and/or GIF (default='./output').",
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--output-name", type=str, help="Base name for output files (no extension)."
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--scale-bar-nm",
         type=int,
         help="Interger length of scale bar in nm",
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--zmin",
         type=str,
         default="auto",
         help="The minimum value of the z scale, float or 'auto' (default=('auto').",  # noqa
     )
-    run_parser.add_argument(
+    process_parser.add_argument(
         "--zmax",
         type=str,
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
     )
     # Mutually exclusive: either processing string or processing file (or none)
-    group = run_parser.add_mutually_exclusive_group()
-    group.add_argument(
+    filter_group = process_parser.add_mutually_exclusive_group()
+    filter_group.add_argument(
         "--processing",
         type=str,
         help=(
@@ -216,13 +224,50 @@ def main() -> None:
             '"remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"'
         ),
     )
-    group.add_argument(
+    filter_group.add_argument(
         "--processing-file",
         type=str,
         help="Path to a YAML (or JSON) file describing the processing.",
     )
 
-    run_parser.set_defaults(func=handle_run)
+    process_parser.set_defaults(func=handle_process)
+
+    # 4) 'analyze' subcommand
+    analyze_parser = subparsers.add_parser(
+        "analyze",
+        help="Analyze a processed stack: process analysis modules & export JSON/HDF5.",
+    )
+    analyze_parser.add_argument(
+        "input_file", type=str, help="Path to AFM input file or folder."
+    )
+    analyze_parser.add_argument(
+        "--channel",
+        type=str,
+        default="height_trace",
+        help="Channel to read (default=height_trace).",
+    )
+    # inline string _or_ yaml file, mutually exclusive:
+    analysis_group = analyze_parser.add_mutually_exclusive_group(required=True)
+    analysis_group.add_argument(
+        "--analysis-steps",
+        type=str,
+        help="Semicolon-delimited analysis steps, e.g. "
+        "'feature_detection:mask_fn=mask_threshold,threshold=5;particle_tracking:max_distance=3.0'",  # noqa
+    )
+    analysis_group.add_argument(
+        "--analysis-file",
+        type=str,
+        help="YAML/JSON file defining your analysis pipeline.",
+    )
+    analyze_parser.add_argument(
+        "--output-folder",
+        type=str,
+        help="Folder to write bundles and/or GIF (default='./output').",
+    )
+    analyze_parser.add_argument(
+        "--output-name", type=str, help="Base name for output files (no extension)."
+    )
+    analyze_parser.set_defaults(func=handle_analyze)
 
     parser_env = subparsers.add_parser("env-info", help="Print environment info")
     parser_env.set_defaults(func=lambda args: print_env_info())

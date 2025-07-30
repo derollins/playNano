@@ -8,7 +8,7 @@ from typing import Any, Optional
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis import BUILTIN_ANALYSIS_MODULES
 from playNano.analysis.base import AnalysisModule
-from playNano.analysis.utils.common import NumpyEncoder
+from playNano.analysis.utils.common import sanitize_analysis_for_logging
 from playNano.processing.mask_generators import register_masking
 from playNano.utils.system_info import gather_environment_info
 from playNano.utils.time_utils import utc_now_iso
@@ -360,16 +360,18 @@ class AnalysisPipeline:
             "analysis": stack.analysis,
             "provenance": stack.provenance["analysis"],
         }
-
         # write to file if requested
+        # Swapped from using NumpyEncoder becuase it could not handle the size
+        # of the full analysis record.
         if log_to:
             import json
-            import os
 
-            dirpath = os.path.dirname(log_to)
-            if dirpath:
-                os.makedirs(dirpath, exist_ok=True)
+            safe_record = {
+                "environment": sanitize_analysis_for_logging(record["environment"]),
+                "analysis": sanitize_analysis_for_logging(record["analysis"]),
+                "provenance": sanitize_analysis_for_logging(record["provenance"]),
+            }
             with open(log_to, "w") as file:
-                json.dump(record, file, indent=2, cls=NumpyEncoder)
+                json.dump(safe_record, file, indent=2)
         # Add record
         return record

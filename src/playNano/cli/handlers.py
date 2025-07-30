@@ -5,26 +5,12 @@ import logging
 import sys
 from pathlib import Path
 
-from playNano.cli.actions import play_pipeline_mode, run_pipeline_mode, wizard_mode
-
-
-def setup_logging(level: int = logging.INFO) -> None:
-    """
-    Configure the logging format and level.
-
-    Parameters
-    ----------
-    level : int, optional
-        Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.
-
-    Returns
-    -------
-    None
-    """
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+from playNano.cli.actions import (
+    analyze_pipeline_mode,
+    play_pipeline_mode,
+    process_pipeline_mode,
+    wizard_mode,
+)
 
 
 def handle_play(args: argparse.Namespace) -> None:
@@ -89,9 +75,9 @@ def handle_play(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def handle_run(args: argparse.Namespace) -> None:
+def handle_process(args: argparse.Namespace) -> None:
     """
-    Handle the 'run' subcommand: feed arguments into the run_pipeline_mode function.
+    Handle the 'process' subcommand: feed arguments into the run_pipeline_mode function.
 
     Parameters
     ----------
@@ -112,7 +98,7 @@ def handle_run(args: argparse.Namespace) -> None:
     None
     """
     try:
-        run_pipeline_mode(
+        process_pipeline_mode(
             input_file=args.input_file,
             channel=args.channel,
             processing_str=args.processing,
@@ -171,4 +157,22 @@ def handle_processing_wizard(args: argparse.Namespace) -> None:
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
+        sys.exit(1)
+
+
+def handle_analyze(args: argparse.Namespace) -> None:
+    """
+    Handle the 'analyze' subcommand: run only analysis & export results.
+    """
+    try:
+        analyze_pipeline_mode(
+            input_file=args.input_file,
+            channel=args.channel,
+            analysis_str=args.analysis_steps,
+            analysis_file=args.analysis_file,
+            output_folder=args.output_folder,
+            output_name=args.output_name,
+        )
+    except Exception as e:
+        logging.getLogger(__name__).error(e, exc_info=True)
         sys.exit(1)

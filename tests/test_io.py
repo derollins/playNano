@@ -13,7 +13,7 @@ import tifffile
 from PIL import Image, ImageSequence
 
 from playNano.afm_stack import AFMImageStack
-from playNano.io.export import (
+from playNano.io.export_data import (
     check_path_is_path,
     export_bundles,
     save_h5_bundle,
@@ -627,10 +627,17 @@ def afm_stack_obj(dummy_stack):
 
 def test_save_ome_tiff_stack_creates_file(dummy_stack):
     """Test that save_tiff_bundle creates a file."""
-    data, timestamps, _ = dummy_stack
+    data, timestamps, metadata = dummy_stack
+    stack = AFMImageStack(
+        data=data,
+        pixel_size_nm=1.0,
+        file_path="dummy_path.h5-jpk",
+        frame_metadata=metadata,
+        channel="height_trace",
+    )
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test.ome.tif"
-        save_ome_tiff_stack(out_path, data, 1.0, timestamps)
+        save_ome_tiff_stack(out_path, stack, raw=False)
         assert out_path.exists()
         with tifffile.TiffFile(out_path) as tif:
             assert tif.series[0].shape[:1] == (3,)  # 3 frames
@@ -638,10 +645,17 @@ def test_save_ome_tiff_stack_creates_file(dummy_stack):
 
 def test_save_npz_bundle_creates_file(dummy_stack):
     """Test that save_npz_bundle creates a file."""
-    data, timestamps, _ = dummy_stack
+    data, timestamps, metadata = dummy_stack
+    stack = AFMImageStack(
+        data=data,
+        file_path="dummy_path.h5-jpk",
+        pixel_size_nm=1.0,
+        frame_metadata=metadata,
+        channel="height_trace",
+    )
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test"
-        save_npz_bundle(out_path, data, 1.0, timestamps)
+        save_npz_bundle(out_path, stack, raw=False)
         npz_path = out_path.with_suffix(".npz")
         assert npz_path.exists()
         # Properly close file after reading
@@ -653,9 +667,16 @@ def test_save_npz_bundle_creates_file(dummy_stack):
 def test_save_h5_bundle_creates_file(dummy_stack):
     """Test that save_h5_bundle creates a file."""
     data, timestamps, metadata = dummy_stack
+    stack = AFMImageStack(
+        data=data,
+        pixel_size_nm=1.0,
+        file_path="dummy_path.h5-jpk",
+        frame_metadata=metadata,
+        channel="height_trace",
+    )
     with tempfile.TemporaryDirectory() as tmpdir:
         out_path = Path(tmpdir) / "test"
-        save_h5_bundle(out_path, data, 1.0, timestamps, metadata)
+        save_h5_bundle(out_path, stack, raw=False)
         h5_path = out_path.with_suffix(".h5")
         assert h5_path.exists()
         with h5py.File(h5_path, "r") as f:
@@ -722,3 +743,190 @@ def test_export_bundles_raw_flag(afm_stack_obj):
         out_dir = Path(tmpdir)
         export_bundles(afm_stack_obj, out_dir, "stack_raw", ["tif"], raw=True)
         assert (out_dir / "stack_raw.ome.tif").exists()
+
+
+@pytest.fixture
+def sample_record():
+    return {
+        "metadata": {
+            "experiment": "test",
+            "version": 1.0,
+        },
+        "results": {
+            "values": [
+                {"id": 1, "area": 100.0, "label": "A"},
+                {"id": 2, "area": 200.0, "label": "B"},
+            ]
+        },
+    }
+
+
+def test_npz_export_and_reload_synthetic(tmp_path):
+    """Ensure exporting and reloading a synthetic AFMImageStack as NPZ retains data."""
+    # Create synthetic AFM stack
+    n_frames, H, W = 3, 8, 8
+    raw_data = np.random.rand(n_frames, H, W).astype(np.float32)
+    processed_data = raw_data + 1.0
+    meta = [{"timestamp": i} for i in range(n_frames)]
+
+    stack = AFMImageStack(
+        data=processed_data,
+        pixel_size_nm=2.0,
+        channel="height_trace",
+        file_path=Path("synthetic.h5-jpk"),
+        frame_metadata=meta,
+    )
+    stack.processed["raw"] = raw_data
+    stack.provenance["processing"]["steps"] = ["dummy_filter"]
+    stack.provenance["analysis"] = {"results": np.array([1, 2, 3])}
+
+    # Save to NPZ
+    out_path = tmp_path / "stack_export"
+    save_npz_bundle(out_path, stack, raw=False)
+
+    # Reload and verify
+    loaded = load_afm_stack(out_path.with_suffix(".npz"), channel="height_trace")
+    assert loaded.data.shape == (3, 8, 8)
+    assert loaded.pixel_size_nm == 2.0
+    assert loaded.frame_metadata == meta
+    prov = loaded.provenance
+    print(prov)
+    assert prov["processing"]["steps"] == ["dummy_filter"]
+
+
+def test_npz_export_from_real_resource(tmp_path, resource_path):
+    """Test loading a real AFM file and saving to NPZ format."""
+
+    in_path = resource_path / "sample_0.h5-jpk"
+    assert in_path.exists(), "Resource file missing"
+
+    stack = load_afm_stack(in_path)
+    assert stack.data.ndim == 3
+    assert stack.pixel_size_nm > 0
+    assert isinstance(stack.frame_metadata, list)
+
+    out_path = tmp_path / "real_stack"
+    save_npz_bundle(out_path, stack, raw=False)
+
+    npz = out_path.with_suffix(".npz")
+    assert npz.exists()
+
+    contents = load_afm_stack(npz, channel="height_trace")
+    assert np.allclose(contents.data, stack.data)
+    assert contents.pixel_size_nm == 1.171875
+    assert contents.data.shape == stack.data.shape
+
+
+def test_h5_export_and_reload_synthetic(tmp_path):
+    """Ensure exporting and reloading a synthetic AFMImageStack as .h5 retains data."""
+    # Create synthetic AFM stack
+    n_frames, H, W = 3, 8, 8
+    raw_data = np.random.rand(n_frames, H, W).astype(np.float32)
+    processed_data = raw_data + 1.0
+    meta = [{"timestamp": i} for i in range(n_frames)]
+
+    stack = AFMImageStack(
+        data=processed_data,
+        pixel_size_nm=2.0,
+        channel="height_trace",
+        file_path=Path("synthetic.h5-jpk"),
+        frame_metadata=meta,
+    )
+    stack.processed["raw"] = raw_data
+    stack.provenance["processing"]["steps"] = ["dummy_filter"]
+    stack.provenance["analysis"] = {"results": np.array([1, 2, 3])}
+
+    # Save to H5
+    out_path = tmp_path / "stack_export"
+    save_h5_bundle(out_path, stack, raw=False)
+
+    # Reload and verify
+    loaded = load_afm_stack(out_path.with_suffix(".h5"), channel="height_trace")
+    assert loaded.data.shape == (3, 8, 8)
+    assert loaded.pixel_size_nm == 2.0
+    assert loaded.frame_metadata == meta
+    prov = loaded.provenance
+    print(prov)
+    assert prov["processing"]["steps"] == ["dummy_filter"]
+
+
+def test_h5_export_from_real_resource(tmp_path, resource_path):
+    """Test loading a real AFM file and saving to HDF5 format."""
+
+    in_path = resource_path / "sample_0.h5-jpk"
+    assert in_path.exists(), "Resource file missing"
+
+    stack = load_afm_stack(in_path)
+    assert stack.data.ndim == 3
+    assert stack.pixel_size_nm > 0
+    assert isinstance(stack.frame_metadata, list)
+
+    out_path = tmp_path / "real_stack"
+    save_h5_bundle(out_path, stack, raw=False)
+
+    h5 = out_path.with_suffix(".h5")
+    assert h5.exists()
+
+    contents = load_afm_stack(h5, channel="height_trace")
+    assert np.allclose(contents.data, stack.data)
+    assert contents.pixel_size_nm == 1.171875
+    assert contents.data.shape == stack.data.shape
+
+
+def test_ome_tif_export_and_reload_synthetic(tmp_path):
+    """Ensure exporting and reloading a synthetic AFMImageStack as TIF retains data."""
+    # Create synthetic AFM stack
+    n_frames, H, W = 3, 8, 8
+    raw_data = np.random.rand(n_frames, H, W).astype(np.float32)
+    processed_data = raw_data + 1.0
+    meta = [{"timestamp": i} for i in range(n_frames)]
+
+    stack = AFMImageStack(
+        data=processed_data,
+        pixel_size_nm=2.0,
+        channel="height_trace",
+        file_path=Path("synthetic.h5-jpk"),
+        frame_metadata=meta,
+    )
+    stack.processed["raw"] = raw_data
+    stack.provenance["processing"]["steps"] = ["dummy_filter"]
+    stack.provenance["analysis"] = {"results": np.array([1, 2, 3])}
+
+    # Save to OME TIF
+    out_path = tmp_path / "stack_export.ome.tif"
+    print(out_path)
+
+    save_ome_tiff_stack(out_path, stack, raw=False)
+
+    # Reload and verify
+    loaded = load_afm_stack(out_path.with_suffix(".tif"), channel="height_trace")
+    assert loaded.data.shape == (3, 8, 8)
+    assert loaded.pixel_size_nm == 2.0
+    assert loaded.frame_metadata == meta
+    prov = loaded.provenance
+    print(prov)
+    assert prov["processing"]["steps"] == ["dummy_filter"]
+
+
+def test_ome_tif_export_from_real_resource(tmp_path, resource_path):
+    """Test loading a real AFM file and saving to OME TIF format."""
+
+    in_path = resource_path / "sample_0.h5-jpk"
+    assert in_path.exists(), "Resource file missing"
+
+    stack = load_afm_stack(in_path)
+    assert stack.data.ndim == 3
+    assert stack.pixel_size_nm > 0
+    assert isinstance(stack.frame_metadata, list)
+
+    out_path = tmp_path / "real_stack.ome.tif"
+    save_ome_tiff_stack(out_path, stack, raw=False)
+
+    ome = out_path.with_suffix(".tif")
+    print(ome)
+    assert ome.exists()
+
+    contents = load_afm_stack(ome, channel="height_trace")
+    assert np.allclose(contents.data, stack.data)
+    assert contents.pixel_size_nm == 1.171875
+    assert contents.data.shape == stack.data.shape

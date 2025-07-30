@@ -67,6 +67,7 @@ playnano = "playNano.cli.entrypoint:main"
 
 [project.entry-points."playNano.filters"]
 median_filter = "playNano.processing.filters:median_filter"
+auto_level = "pnanolocz_lib.level_auto:level_auto"
 
 [project.entry-points."playNano.analysis"]
 count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"

@@ -15,7 +15,8 @@ import yaml
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
 from playNano.cli.actions import wizard_mode
-from playNano.cli.handlers import handle_play, handle_processing_wizard, setup_logging
+from playNano.cli.entrypoint import setup_logging
+from playNano.cli.handlers import handle_play, handle_processing_wizard
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
@@ -33,11 +34,11 @@ register_masking()
 
 
 @patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("boom"))
-def test_run_pipeline_mode_load_error_logs_and_returns(mock_load, caplog):
+def test_process_pipeline_mode_load_error_logs_and_returns(mock_load, caplog):
     """Test that loading AFM data failure logs an error and returns None."""
     caplog.set_level(logging.ERROR)
     with pytest.raises(SystemExit) as exc:
-        actions.run_pipeline_mode(
+        actions.process_pipeline_mode(
             "in.jpk", "ch", None, None, None, False, None, None, None
         )
     assert exc.value.code == 1
@@ -50,12 +51,12 @@ def test_run_pipeline_mode_load_error_logs_and_returns(mock_load, caplog):
 @patch("playNano.cli.actions.process_stack")
 @patch("playNano.cli.actions.export_bundles")
 @patch("playNano.cli.actions.export_gif")
-def test_run_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_parse):
-    """Test the full flow of run_pipeline_mode with processing string."""
+def test_process_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_parse):
+    """Test the full flow of process_pipeline_mode with processing string."""
     pipe = MagicMock()
     mock_proc.return_value = pipe
 
-    actions.run_pipeline_mode(
+    actions.process_pipeline_mode(
         "in.jpk", "ch", "f1;f2:a=1", None, "npz,h5", True, "od", "nm", 10
     )
     mock_parse.assert_called_once()
@@ -567,6 +568,7 @@ def test_setup_logging_defaults(mock_basic_config):
     mock_basic_config.assert_called_once_with(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        force=True,  # add this
     )
 
 
@@ -577,6 +579,7 @@ def test_setup_logging_debug(mock_basic_config):
     mock_basic_config.assert_called_once_with(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        force=True,  # add this
     )
 
 

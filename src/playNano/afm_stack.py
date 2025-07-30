@@ -338,24 +338,13 @@ class AFMImageStack:
         Returns
         -------
         AFMImageStack
-            Instance with data, pixel_size_nm, channel, file_path, and normalized
-            frame_metadata.
+            Fully reconstructed AFMImageStack with processed snapshots and provenance.
         """
         from playNano.io.loader import load_afm_stack
 
         afm = load_afm_stack(path, channel)
-
-        normalized_metadata: list[dict[str, Any]] = normalize_timestamps(
-            afm.frame_metadata
-        )
-
-        return cls(
-            data=afm.data,
-            pixel_size_nm=afm.pixel_size_nm,
-            channel=channel,
-            file_path=Path(path),
-            frame_metadata=normalized_metadata,
-        )
+        afm.frame_metadata = normalize_timestamps(afm.frame_metadata)
+        return afm
 
     @property
     def n_frames(self) -> int:

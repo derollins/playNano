@@ -85,7 +85,10 @@ def test_export_to_hdf5_structure_and_values():
                 "values"
             ]  # Access the actual dataset inside the group
 
-            values = [json.loads(v) for v in values_ds[:]]
+            values = [
+                json.loads(v) if isinstance(v, (str, bytes)) else v
+                for v in values_ds[:]
+            ]
             assert values == sample_record["results"]["values"]
 
 
