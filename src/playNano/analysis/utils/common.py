@@ -143,6 +143,9 @@ def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=5):
     if isinstance(obj, bytes):
         return obj.decode("utf-8", errors="replace")
 
+    if isinstance(obj, (np.generic, np.bool_)):
+        return obj.item()
+
     return obj
 
 

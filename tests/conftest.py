@@ -41,3 +41,58 @@ def register_all_filters_and_masks():
     # Automatically run before every test
     register_filters()
     register_masking()
+
+
+@pytest.fixture(scope="session")
+def analysis_pipeline_schema():
+    """Create a schema for testing the anlaysis output."""
+    return {
+        "type": "object",
+        "required": ["environment", "analysis", "provenance"],
+        "properties": {
+            "environment": {"type": "object"},  # Could be more detailed if you want
+            "analysis": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "object"
+                },  # Each step's outputs are objects
+            },
+            "provenance": {
+                "type": "object",
+                "required": ["steps", "results_by_name", "frame_times"],
+                "properties": {
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "index",
+                                "name",
+                                "params",
+                                "timestamp",
+                                "version",
+                                "analysis_key",
+                            ],
+                            "properties": {
+                                "index": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "params": {"type": "object"},
+                                "timestamp": {"type": "string", "format": "date-time"},
+                                "version": {
+                                    "anyOf": [{"type": "string"}, {"type": "null"}]
+                                },
+                                "analysis_key": {"type": "string"},
+                            },
+                        },
+                    },
+                    "results_by_name": {
+                        "type": "object",
+                        "additionalProperties": {"type": "object"},
+                    },
+                    "frame_times": {"anyOf": [{"type": "array"}, {"type": "null"}]},
+                },
+                "additionalProperties": False,
+            },
+        },
+        "additionalProperties": False,
+    }

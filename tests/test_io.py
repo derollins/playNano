@@ -1,5 +1,6 @@
 """Tests for the functions within io module."""
 
+import json
 import re
 import tempfile
 from pathlib import Path
@@ -7,12 +8,19 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import h5py
+import jsonschema
 import numpy as np
 import pytest
 import tifffile
 from PIL import Image, ImageSequence
 
 from playNano.afm_stack import AFMImageStack
+from playNano.analysis.pipeline import AnalysisPipeline
+from playNano.analysis.utils.common import (
+    export_to_hdf5,
+    make_json_safe,
+    sanitize_analysis_for_logging,
+)
 from playNano.io.export_data import (
     check_path_is_path,
     export_bundles,
@@ -34,6 +42,7 @@ from playNano.io.loader import (
     get_loader_for_folder,
     load_afm_stack,
 )
+from playNano.processing.pipeline import ProcessingPipeline
 
 
 class DummyAFM:
@@ -930,3 +939,315 @@ def test_ome_tif_export_from_real_resource(tmp_path, resource_path):
     assert np.allclose(contents.data, stack.data)
     assert contents.pixel_size_nm == 1.171875
     assert contents.data.shape == stack.data.shape
+
+
+def validate_analysis_record(record):
+    """Validate structure and basic integrity of an AnalysisPipeline output record."""
+    assert isinstance(record, dict)
+    for key in ("environment", "analysis", "provenance"):
+        assert key in record, f"Missing top-level key: {key}"
+        assert isinstance(record[key], dict), f"{key} must be a dict"
+
+    prov = record["provenance"]
+    for key in ("steps", "results_by_name", "frame_times"):
+        assert key in prov, f"Missing provenance key: {key}"
+    assert isinstance(prov["steps"], list), "provenance['steps'] must be a list"
+    assert isinstance(
+        prov["results_by_name"], dict
+    ), "provenance['results_by_name'] must be a dict"
+    assert prov["frame_times"] is None or isinstance(prov["frame_times"], list)
+
+    analysis_keys = set(record["analysis"].keys())
+    step_analysis_keys = set()
+    for step in prov["steps"]:
+        for field in (
+            "index",
+            "name",
+            "params",
+            "timestamp",
+            "version",
+            "analysis_key",
+        ):
+            assert field in step, f"Step missing field: {field}"
+        step_analysis_keys.add(step["analysis_key"])
+
+    missing_keys = step_analysis_keys - analysis_keys
+    assert not missing_keys, f"Missing analysis keys for steps: {missing_keys}"
+
+    # Ensure each step output is a dict
+    for key in step_analysis_keys:
+        assert isinstance(
+            record["analysis"][key], dict
+        ), f"Step output {key} must be a dict"
+
+
+@pytest.mark.parametrize(
+    "ext,save_func",
+    [
+        (".npz", save_npz_bundle),
+        (".h5", save_h5_bundle),
+        (".ome.tif", save_ome_tiff_stack),
+    ],
+)
+def test_analysis_pipeline_across_formats(tmp_path, resource_path, ext, save_func):
+    """Test AnalysisPipeline from exported NPZ/HDF5/TIF data to JSON/HDF5 outputs."""
+    # STEP 1: Load real AFM stack
+    input_path = resource_path / "sample_0.h5-jpk"
+    stack = load_afm_stack(input_path)
+
+    # STEP 2: Export to target format
+    export_path = tmp_path / f"exported_stack{ext}"
+    save_func(export_path, stack, raw=False)
+
+    # STEP 3: Reload exported stack for analysis
+    reloaded = load_afm_stack(export_path, channel="height_trace")
+
+    # STEP 4: Run analysis pipeline
+    pipeline = AnalysisPipeline()
+    pipeline.add("count_nonzero")
+    pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1)
+    pipeline.add("particle_tracking")
+    record = pipeline.run(reloaded)
+
+    # STEP 5: Validate output structure
+    validate_analysis_record(record)
+
+    step_keys = [step["analysis_key"] for step in record["provenance"]["steps"]]
+    assert step_keys, "No analysis steps found in record provenance"
+
+    # STEP 6: Save analysis results JSON + HDF5
+    out_dir = tmp_path / "analysis_results"
+    out_dir.mkdir()
+    json_path = out_dir / "summary_analysis.json"
+    h5_path = out_dir / "summary_analysis.h5"
+    record_group_name = "analysis_record"
+
+    with open(json_path, "w") as f:
+        json.dump(make_json_safe(record), f, indent=2)
+
+    export_to_hdf5(record, h5_path, dataset_name=record_group_name)
+
+    # STEP 7: Verify JSON contents
+    assert json_path.exists()
+    with open(json_path) as f:
+        loaded_json = json.load(f)
+    # Re-validate loaded JSON structure (optional but recommended)
+    validate_analysis_record(loaded_json)
+
+    # Check JSON analysis results
+    for step in record["provenance"]["steps"]:
+        key = step["analysis_key"]
+        assert key in loaded_json["analysis"], f"{key} missing in JSON analysis"
+        expected_vals = record["analysis"][key]
+        actual_vals = loaded_json["analysis"][key]
+        assert "results_by_name" in record["provenance"]
+        assert isinstance(record["provenance"]["results_by_name"], dict)
+        assert "frame_times" in record["provenance"]
+        env = record["environment"]
+        assert "python_version" in env
+        assert "platform" in env
+
+        # frame_times can be None or a list/array of floats
+        ft = record["provenance"]["frame_times"]
+        assert ft is None or (
+            isinstance(ft, (list, tuple))
+            and all(isinstance(t, (float, int)) for t in ft)
+        )
+
+        # Flexible value comparisons
+        for k, expected_val in expected_vals.items():
+            actual_val = actual_vals.get(k)
+            assert actual_val is not None, f"{key}.{k} missing in JSON analysis"
+            # Skip summary-only dicts without 'values'
+            if (
+                isinstance(actual_val, dict)
+                and "_summary" in actual_val
+                and "values" not in actual_val
+            ):
+                continue
+            # Skip lists of summaries
+            if isinstance(actual_val, list) and all(
+                isinstance(x, dict) and "_summary" in x for x in actual_val
+            ):
+                continue
+            # Numeric scalar comparison
+            if isinstance(expected_val, (int, float)):
+                assert np.isclose(
+                    expected_val, actual_val
+                ), f"{key}.{k} scalar mismatch"
+            # Arrays/lists comparison
+            elif isinstance(expected_val, (list, np.ndarray)):
+                if isinstance(actual_val, dict) and "values" in actual_val:
+                    actual_val = actual_val["values"]
+                assert np.allclose(
+                    expected_val, actual_val
+                ), f"{key}.{k} array mismatch"
+
+    # STEP 8: Verify HDF5 contents
+    assert h5_path.exists()
+    with h5py.File(h5_path, "r") as f:
+        assert record_group_name in f, f"{record_group_name} group missing in HDF5"
+        analysis_group = f[record_group_name]["analysis"]
+
+        for step in record["provenance"]["steps"]:
+            key = step["analysis_key"]
+            assert key in analysis_group, f"{key} missing in HDF5 analysis group"
+            step_group = analysis_group[key]
+            expected_vals = record["analysis"][key]
+            assert "results_by_name" in record["provenance"]
+            assert isinstance(record["provenance"]["results_by_name"], dict)
+            assert "frame_times" in record["provenance"]
+            env = record["environment"]
+            assert "python_version" in env
+            assert "platform" in env
+            # frame_times can be None or a list/array of floats
+            ft = record["provenance"]["frame_times"]
+            assert ft is None or (
+                isinstance(ft, (list, tuple))
+                and all(isinstance(t, (float, int)) for t in ft)
+            )
+
+            for k, expected_val in expected_vals.items():
+                # Skip non-dataset keys or summaries without raw values
+                if k not in step_group:
+                    continue
+                ds = step_group[k]
+                # If dataset contains "values" group
+                if isinstance(ds, h5py.Group) and "values" in ds:
+                    actual_data = ds["values"][()]
+                elif isinstance(ds, h5py.Dataset):
+                    actual_data = ds[()]
+                else:
+                    continue
+                expected_array = np.array(expected_val)
+                assert np.allclose(
+                    actual_data, expected_array
+                ), f"{key}.{k} HDF5 data mismatch"
+
+
+@pytest.mark.parametrize(
+    "ext,save_func",
+    [
+        (".npz", save_npz_bundle),
+        (".h5", save_h5_bundle),
+        (".ome.tif", save_ome_tiff_stack),
+    ],
+)
+def test_analysis_pipeline_schema(
+    tmp_path, resource_path, ext, save_func, analysis_pipeline_schema
+):
+    """Test analysis record against the JSON schema after pipeline execution."""
+    input_path = resource_path / "sample_0.h5-jpk"
+    stack = load_afm_stack(input_path)
+
+    export_path = tmp_path / f"exported_stack{ext}"
+    save_func(export_path, stack, raw=False)
+
+    reloaded = load_afm_stack(export_path, channel="height_trace")
+
+    pipeline = AnalysisPipeline()
+    pipeline.add("count_nonzero")
+    pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1)
+    pipeline.add("particle_tracking")
+    record = pipeline.run(reloaded)
+
+    # Validate the overall record against the schema
+    jsonschema.validate(instance=record, schema=analysis_pipeline_schema)
+
+
+def test_pipeline_clear_and_reuse(tmp_path, resource_path):
+    """Test pipeline clearing and reuse for a second analysis run."""
+    input_path = resource_path / "sample_0.h5-jpk"
+    stack = load_afm_stack(input_path)
+
+    # Process
+
+    processing_pipeline = ProcessingPipeline(stack)
+    processing_pipeline.add_filter("remove_plane")
+    processing_pipeline.run()
+
+    # First run
+    pipeline = AnalysisPipeline()
+    pipeline.add("count_nonzero")
+    pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1)
+    record1 = pipeline.run(stack)
+    assert record1["analysis"], "First pipeline run produced no output"
+
+    # Clear the pipeline
+    pipeline.clear()
+    assert pipeline.steps == []
+    assert pipeline._module_cache == {}
+
+    # Reuse the same instance for a new run
+    pipeline.add("log_blob_detection")
+    pipeline.add(
+        "x_means_clustering",
+        detection_module="log_blob_detection",
+        coord_columns=("x", "y"),
+    )
+    new_stack = load_afm_stack(input_path)  # simulate clean start
+    processing_pipeline_2 = ProcessingPipeline(new_stack)
+    processing_pipeline_2.add_filter("zero_mean")
+    processing_pipeline_2.run()
+    record2 = pipeline.run(new_stack)
+
+    assert record2["analysis"], "Second pipeline run produced no output"
+    expected_keys = ["step_1_log_blob_detection", "step_2_x_means_clustering"]
+    actual_keys = list(record2["analysis"].keys())
+    assert actual_keys == expected_keys, f"Unexpected analysis keys: {actual_keys}"
+
+    validate_analysis_record(record2)
+
+
+def test_make_json_safe_handles_numpy_types():
+    """Test make_json_safe handles NumPy scalars and arrays without error."""
+    raw_record = {
+        "environment": {
+            "python_version": np.str_("3.11"),
+            "float": np.float32(1.5),
+        },
+        "analysis": {"step_1": {"array": np.array([1.0, 2.0])}},
+        "provenance": {
+            "steps": [],
+            "results_by_name": {},
+            "frame_times": None,
+        },
+    }
+    safe = make_json_safe(raw_record)
+    dumped = json.dumps(safe)  # Should not raise
+    assert isinstance(dumped, str)
+
+
+def test_sanitize_analysis_for_logging_numpy_types():
+    """Test that NumPy types are sanitized into JSON-safe formats."""
+    raw = {
+        "array": np.array([1.0, 2.0]),
+        "float": np.float32(1.5),
+        "int": np.int64(2),
+    }
+    sanitized = sanitize_analysis_for_logging(raw)
+    dumped = json.dumps(sanitized)  # Should succeed
+    assert isinstance(dumped, str)
+
+
+def test_validate_analysis_record_minimal():
+    """Test that a minimal valid analysis record passes validation."""
+    record = {
+        "environment": {"python_version": "3.x", "platform": "test"},
+        "analysis": {"step_1_dummy": {}},
+        "provenance": {
+            "steps": [
+                {
+                    "index": 1,
+                    "name": "dummy",
+                    "params": {},
+                    "timestamp": "2025-01-01T00:00:00Z",
+                    "version": None,
+                    "analysis_key": "step_1_dummy",
+                }
+            ],
+            "results_by_name": {"dummy": [{}]},
+            "frame_times": None,
+        },
+    }
+    validate_analysis_record(record)
