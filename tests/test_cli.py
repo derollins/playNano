@@ -4,23 +4,28 @@ import argparse
 import builtins
 import json
 import logging
+import tempfile
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
+import numpy as np
 import pytest
 import yaml
 
 import playNano.cli.actions as actions
 from playNano.afm_stack import AFMImageStack
-from playNano.cli.actions import wizard_mode
+from playNano.cli import utils as cli_utils
+from playNano.cli.actions import analyze_pipeline_mode, wizard_mode
 from playNano.cli.entrypoint import setup_logging
-from playNano.cli.handlers import handle_play, handle_processing_wizard
+from playNano.cli.handlers import handle_analyze, handle_play, handle_processing_wizard
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
     is_valid_step,
+    parse_analysis_file,
+    parse_analysis_string,
     parse_processing_file,
     parse_processing_string,
 )
@@ -64,6 +69,173 @@ def test_process_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_pars
         Path("in.jpk"), "ch", [("f1", {}), ("f2", {"a": 1})]
     )
     mock_bundles.assert_called_once_with(pipe, "od", "nm", ["npz", "h5"])
+
+
+@pytest.fixture
+def mock_pipeline(monkeypatch):
+    """
+    Fixture to mock the AnalysisPipeline class and its run method.
+    Returns a MagicMock pipeline instance.
+    """
+    pipeline = MagicMock()
+    pipeline.run.return_value = {"analysis": "result"}
+    monkeypatch.setattr("playNano.cli.actions.AnalysisPipeline", lambda: pipeline)
+    return pipeline
+
+
+def test_analyze_pipeline_basic_flow(tmp_path, monkeypatch, mock_pipeline):
+    """
+    Test that analyze_pipeline_mode performs the full pipeline flow correctly.
+
+    Tests on an inline analysis string (no file).
+
+    Checks:
+    - AFMImageStack.load_data called with input and channel.
+    - warn_if_unprocessed called on loaded stack.
+    - parse_analysis_string called with provided analysis string.
+    - Pipeline steps added and run called properly.
+    - JSON file opened and written.
+    - HDF5 export called with expected arguments.
+    """
+    input_file = "input.afm"
+    channel = "height_trace"
+    analysis_str = "step1:param=1"
+    analysis_file = None
+    output_folder = str(tmp_path)
+    output_name = None
+
+    # Mock dependencies
+    mock_load_data = MagicMock(return_value="stack")
+    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+
+    mock_warn = MagicMock()
+    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", mock_warn)
+
+    mock_parse_analysis_string = MagicMock(return_value=[("step1", {"param": 1})])
+    monkeypatch.setattr(
+        "playNano.cli.actions.parse_analysis_string", mock_parse_analysis_string
+    )
+
+    mock_make_json_safe = MagicMock(side_effect=lambda x: x)
+    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+
+    mock_export = MagicMock()
+    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+
+    # Mock builtins.open for JSON writing
+    m_open = mock_open()
+    monkeypatch.setattr(Path, "open", m_open)
+
+    analyze_pipeline_mode(
+        input_file, channel, analysis_str, analysis_file, output_folder, output_name
+    )
+
+    # Now you can check that Path.open was called with "w"
+    m_open.assert_called_with("w")
+    # Assertions
+    mock_load_data.assert_called_once_with(input_file, channel=channel)
+    mock_warn.assert_called_once_with("stack")
+    mock_parse_analysis_string.assert_called_once_with(analysis_str)
+    mock_pipeline.add.assert_called_with("step1", param=1)
+    mock_pipeline.run.assert_called_once_with("stack", log_to=None)
+
+    handle = m_open()
+    handle.write.assert_called()
+
+    expected_h5_path = Path(output_folder) / (Path(input_file).stem + ".h5")
+    mock_export.assert_called_once_with(
+        mock_pipeline.run.return_value, out_path=expected_h5_path
+    )
+
+
+def test_analyze_pipeline_prefers_file_over_str(tmp_path, monkeypatch, mock_pipeline):
+    """
+    Test that analyze_pipeline_mode prefers parsing analysis steps from a file.
+
+    Checks that if a file is providedif provided, it ignores the analysis string.
+
+    Checks:
+    - parse_analysis_file called with given file.
+    - parse_analysis_string not called.
+    - Pipeline steps added and HDF5 export called.
+    - AFMImageStack.load_data called.
+    """
+    input_file = "input.afm"
+    channel = "height_trace"
+    analysis_str = "step1:param=1"
+    analysis_file = "analysis.yaml"
+    output_folder = str(tmp_path)
+    output_name = "customname"
+
+    mock_load_data = MagicMock(return_value="stack")
+    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+
+    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", MagicMock())
+
+    mock_parse_file = MagicMock(return_value=[("stepfile", {})])
+    monkeypatch.setattr("playNano.cli.actions.parse_analysis_file", mock_parse_file)
+
+    mock_parse_str = MagicMock()
+    monkeypatch.setattr("playNano.cli.actions.parse_analysis_string", mock_parse_str)
+
+    mock_make_json_safe = MagicMock(side_effect=lambda x: x)
+    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+
+    mock_export = MagicMock()
+    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+
+    monkeypatch.setattr("builtins.open", lambda *args, **kwargs: MagicMock())
+
+    analyze_pipeline_mode(
+        input_file, channel, analysis_str, analysis_file, output_folder, output_name
+    )
+
+    mock_parse_file.assert_called_once_with(analysis_file)
+    mock_parse_str.assert_not_called()
+    mock_pipeline.add.assert_called_with("stepfile")
+    mock_export.assert_called()
+    mock_load_data.assert_called_once_with(input_file, channel=channel)
+
+
+def test_analyze_pipeline_creates_output_folder(monkeypatch, tmp_path, mock_pipeline):
+    """
+    Test that analyze_pipeline_mode creates the output folder if it does not exist.
+
+    Checks:
+    - Output folder directory is created.
+    - AFMImageStack.load_data called.
+    """
+    input_file = "input.afm"
+    channel = "chan"
+    analysis_str = "step1"
+    analysis_file = None
+    output_folder = str(tmp_path / "newfolder")  # folder does not exist yet
+    output_name = None
+
+    mock_load_data = MagicMock(return_value="stack")
+    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+
+    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", MagicMock())
+
+    mock_parse_analysis_string = MagicMock(return_value=[("step1", {})])
+    monkeypatch.setattr(
+        "playNano.cli.actions.parse_analysis_string", mock_parse_analysis_string
+    )
+
+    mock_make_json_safe = MagicMock(side_effect=lambda x: x)
+    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+
+    mock_export = MagicMock()
+    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+
+    monkeypatch.setattr("builtins.open", lambda *args, **kwargs: MagicMock())
+
+    analyze_pipeline_mode(
+        input_file, channel, analysis_str, analysis_file, output_folder, output_name
+    )
+
+    assert Path(output_folder).exists()
+    mock_load_data.assert_called_once_with(input_file, channel=channel)
 
 
 @patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("err"))
@@ -468,6 +640,167 @@ def test_parse_processing_file_invalid_filter_entry(tmp_path):
         parse_processing_file(str(bad_yaml))
 
 
+def test_parse_analysis_string_basic():
+    """Parses single step with multiple numeric parameters."""
+    s = "log_blob_detection:min_sigma=1.0,max_sigma=3.0"
+    result = parse_analysis_string(s)
+    assert result == [("log_blob_detection", {"min_sigma": 1.0, "max_sigma": 3.0})]
+
+
+def test_parse_analysis_string_multiple_steps(monkeypatch):
+    """Parses multiple steps with numeric parameters."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    s = "step1:param1=1;step2:param2=2,param3=3"
+    result = parse_analysis_string(s)
+    assert result == [
+        ("step1", {"param1": 1}),
+        ("step2", {"param2": 2, "param3": 3}),
+    ]
+
+
+def test_parse_analysis_string_with_booleans_and_strings(monkeypatch):
+    """Parses booleans and strings in parameters."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    s = "foo:flag=true,label=sample"
+    result = parse_analysis_string(s)
+    assert result == [("foo", {"flag": True, "label": "sample"})]
+
+
+def test_parse_analysis_string_no_params(monkeypatch):
+    """Parses step with no parameters."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    s = "bar"
+    result = parse_analysis_string(s)
+    assert result == [("bar", {})]
+
+
+def test_parse_analysis_string_invalid_param_syntax(monkeypatch):
+    """Raises on invalid param syntax with no '='."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    with pytest.raises(ValueError, match="Invalid parameter expression"):
+        parse_analysis_string("step:invalidparam")
+
+
+def test_parse_analysis_string_unknown_step():
+    """Raises if an analysis step name is not recognized."""
+    with pytest.raises(ValueError, match="Unknown analysis step: 'does_not_exist'"):
+        parse_analysis_string("does_not_exist:param=1")
+
+
+def make_temp_analysis_file(data: dict, suffix=".yaml") -> str:
+    """Create a temporary YAML or JSON analysis config file."""
+    with tempfile.NamedTemporaryFile("w+", suffix=suffix, delete=False) as f:
+        if suffix == ".json":
+            json.dump(data, f)
+        else:
+            yaml.safe_dump(data, f)
+        return f.name
+
+
+def test_parse_analysis_file_yaml(monkeypatch):
+    """Parses YAML file into step/param tuples."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    data = {"analysis": [{"name": "foo", "param": 1}, {"name": "bar"}]}
+    path = make_temp_analysis_file(data, ".yaml")
+    result = parse_analysis_file(path)
+    assert result == [("foo", {"param": 1}), ("bar", {})]
+
+
+def test_parse_analysis_file_json(monkeypatch):
+    """Parses JSON file into step/param tuples."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    data = {"analysis": [{"name": "step1", "thresh": 0.5}]}
+    path = make_temp_analysis_file(data, ".json")
+    result = parse_analysis_file(path)
+    assert result == [("step1", {"thresh": 0.5})]
+
+
+def test_parse_analysis_file_missing(monkeypatch):
+    """Raises FileNotFoundError if path does not exist."""
+    path = "nonexistent_file.yaml"
+    with pytest.raises(
+        FileNotFoundError, match="No such file or directory: 'nonexistent_file.yaml'"
+    ):
+        parse_analysis_file(path)
+
+
+def test_parse_analysis_file_invalid_schema(monkeypatch):
+    """Raises if top-level key 'analysis' is missing."""
+    path = make_temp_analysis_file({"invalid": []}, ".yaml")
+    with pytest.raises(ValueError, match="must contain top-level key 'filters'"):
+        parse_analysis_file(path)
+
+
+def test_parse_analysis_file_invalid_entries(monkeypatch):
+    """Raises if any entry in 'analysis' is not a dict with 'name'."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    path = make_temp_analysis_file({"analysis": [123]}, ".yaml")
+    with pytest.raises(ValueError, match="Each entry under 'analysis' must be a dict"):
+        parse_analysis_file(path)
+
+
+def test_parse_analysis_file_unknown_step(monkeypatch):
+    """Raises if a step name in the file is not recognized."""
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: False)
+    path = make_temp_analysis_file({"analysis": [{"name": "does_not_exist"}]}, ".yaml")
+    with pytest.raises(ValueError, match="Unknown analysis step"):
+        parse_analysis_file(path)
+
+
+def test_parse_analysis_file_fallback_to_json(monkeypatch):
+    """Falls back to JSON parsing if YAML parse fails."""
+
+    # Valid JSON, but invalid YAML (YAML would interpret this as a string)
+    json_text = '{"analysis": [{"name": "step1", "param": 1}]}'
+
+    # Create a fake file containing this content
+    with tempfile.NamedTemporaryFile("w+", suffix=".yaml", delete=False) as f:
+        f.write(json_text)
+        f.flush()
+        path = f.name
+
+    # Monkeypatch to accept any step as valid
+    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+
+    # Should parse via fallback JSON logic
+    result = parse_analysis_file(path)
+    assert result == [("step1", {"param": 1})]
+
+
+def test_parse_analysis_file_yaml_fails_json_succeeds(monkeypatch):
+    """Forces YAML parse to fail and confirms JSON fallback succeeds."""
+    data = {"analysis": [{"name": "step1", "value": 42}]}
+    path = make_temp_analysis_file(data, suffix=".json")
+
+    # Force yaml.safe_load to raise an exception
+    monkeypatch.setattr(
+        yaml, "safe_load", lambda _: (_ for _ in ()).throw(Exception("mock YAML fail"))
+    )
+
+    # Ensure is_valid_analysis_step returns True
+    monkeypatch.setattr(cli_utils, "is_valid_analysis_step", lambda name: True)
+
+    result = parse_analysis_file(path)
+    assert result == [("step1", {"value": 42})]
+
+
+def test_parse_analysis_file_invalid_yaml_and_json(monkeypatch):
+    """Raises ValueError if both YAML and JSON parsing fail."""
+    # Write garbage content that is neither valid YAML nor JSON
+    with tempfile.NamedTemporaryFile("w+", suffix=".yaml", delete=False) as f:
+        f.write("this is not: [valid json or yaml")  # deliberately malformed
+        f.flush()
+        path = f.name
+
+    with pytest.raises(
+        ValueError, match="Unable to parse processing file as YAML or JSON"
+    ):
+        parse_analysis_file(path)
+
+
+# --- Tests for the handlers
+
+
 def test_handle_play_accepts_path_object():
     """Test handle_play accepts a Path object as input_file."""
     # input_file is a Path object, not a string
@@ -625,3 +958,84 @@ def test_wizard_mode_zscale_input(
     _, kwargs = mock_export_gif.call_args
     assert kwargs["zmin"] == "0.0"
     assert kwargs["zmax"] == "1.0"
+
+
+def make_fake_stack():
+    """Create a minimal valid mock AFMImageStack with data and provenance."""
+    stack = SimpleNamespace()
+    stack.data = np.zeros((3, 5, 5))  # (n_frames, height, width)
+    stack.provenance = {"analysis": {}}
+    stack.analysis = {}
+    return stack
+
+
+def test_handle_analyze_success(monkeypatch):
+    """
+    Test that handle_analyze successfully calls analyze_pipeline_mode
+    with a valid analysis step and stack.
+    """
+    args = SimpleNamespace(
+        input_file="input.afm",
+        channel="height",
+        analysis_steps="log_blob_detection:min_sigma=1.0",
+        analysis_file=None,
+        output_folder="/tmp",
+        output_name=None,
+    )
+
+    # Patch AFMImageStack.load_data to return a real-looking mock stack
+    from playNano.cli import actions
+
+    monkeypatch.setattr(
+        actions.AFMImageStack, "load_data", lambda *a, **k: make_fake_stack()
+    )
+    monkeypatch.setattr(actions, "warn_if_unprocessed", lambda stack: None)
+    monkeypatch.setattr(actions, "make_json_safe", lambda record: record)
+    monkeypatch.setattr(actions, "export_to_hdf5", lambda record, out_path: None)
+
+    # Use real parse_analysis_string to allow valid step
+    from playNano.cli.utils import parse_analysis_string
+
+    monkeypatch.setattr(actions, "parse_analysis_string", parse_analysis_string)
+
+    # Patch AnalysisPipeline
+    class MockPipeline:
+        def __init__(self):
+            self.added = []
+
+        def add(self, name, **kwargs):
+            self.added.append((name, kwargs))
+
+        def run(self, stack, log_to=None):
+            return {"dummy_result": 123}
+
+    monkeypatch.setattr(actions, "AnalysisPipeline", MockPipeline)
+
+    handle_analyze(args)  # Should complete without exception
+
+
+def test_handle_analyze_exception(monkeypatch, caplog):
+    """
+    Test that handle_analyze logs error and exits with code 1 if an exception occurs.
+    """
+    args = SimpleNamespace(
+        input_file="input.afm",
+        channel="height",
+        analysis_steps="log_blob_detection:min_sigma=1.0",
+        analysis_file=None,
+        output_folder="/tmp",
+        output_name=None,
+    )
+
+    def raise_exc(*a, **k):
+        raise RuntimeError("fail")
+
+    monkeypatch.setattr("playNano.cli.actions.analyze_pipeline_mode", raise_exc)
+
+    with patch("sys.exit") as mock_exit:
+        with caplog.at_level(logging.ERROR):
+            handle_analyze(args)
+        mock_exit.assert_called_once_with(1)
+
+    # Confirm the error message was logged
+    assert any("fail" in record.message for record in caplog.records)

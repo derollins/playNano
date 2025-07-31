@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 
 class NumpyEncoder(json.JSONEncoder):
     """
-    Custom JSON encoder for serializing NumPy ndarray objects.
+    Custom JSON encoder for serializing NumPy ndarray and scalar objects.
 
-    This encoder converts NumPy arrays to native Python lists so they can be
+    This encoder converts NumPy arrays to native Python lists and NumPy scalar
+    types (e.g., float32, int64) to their native Python equivalents so they can be
     serialized by the standard `json` module. It can be used with `json.dump`
     or `json.dumps` by passing it as the `cls` argument.
 
@@ -25,31 +26,40 @@ class NumpyEncoder(json.JSONEncoder):
 
     def default(self, obj):
         """
-        Override the default method to convert NumPy arrays to lists.
+        Override default method to convert NumPy arrays and scalar types.
+
+        Convert NumPy arrays ad scalar types to JSON-serializable forms.
 
         Parameters:
             obj (Any): The object to be serialized.
 
         Returns:
             A JSON-serializable version of the object. If the object is a NumPy
-            ndarray, it is converted to a list. Otherwise, the superclass's
-            default method is used.
+            ndarray, it is converted to a list. If the object is a NumPy scalar
+            (e.g., np.float32, np.int64), it is converted to the equivalent Python
+            scalar. Otherwise, the superclass's default method is used.
 
         Raises:
             TypeError: If the object cannot be serialized by the superclass.
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        if isinstance(obj, (np.floating, np.float32, np.float64)):
+            return float(obj)
+        if isinstance(obj, (np.integer, np.int32, np.int64)):
+            return int(obj)
         if callable(obj):
             return f"<function {obj.__name__}>"
         return super().default(obj)
 
 
 def safe_json_dumps(obj):
+    """Serialize an object to JSON safely, falling back to str() on failure."""
     try:
         return json.dumps(obj, cls=NumpyEncoder)
-    except TypeError:
+    except TypeError as e:
         # fallback for anything not serializable, like functions
+        print(f"Fallback triggered for object: {obj!r} with error {e}")
         return str(obj)
 
 
