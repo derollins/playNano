@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 
 from playNano.cli.actions import (
+    Wizard,
     analyze_pipeline_mode,
     play_pipeline_mode,
     process_pipeline_mode,
-    wizard_mode,
 )
 
 
@@ -116,22 +116,20 @@ def handle_process(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def handle_processing_wizard(args: argparse.Namespace) -> None:
+def handle_wizard(args: argparse.Namespace) -> None:
     """
-    Interactive “wizard” for building a processing processing step by step.
+    Interactive wizard for building both processing and analysis pipelines.
 
     Usage:
-      playnano processing <input_file>  [--channel ...] \
-                                        [--output-folder ...] \
-                                        [--output-name ...]
+      playnano processing <input_file> [--channel ...] \
+                                 [--output-folder ...] \
+                                 [--output-name ...]
 
-    The user then interacts with a simple REPL:
-      add remove_plane
-      add gaussian_filter
-        sigma: 2.0
-      list
-      run
-      quit
+    After launch, commands include:
+      add/remove/move/list/save/load/run        for processing steps
+      aadd/aremove/amove/alist/asave/aload/arun  for analysis steps
+      help                                  show available commands
+      quit                                  exit without running
 
     Parameters
     ----------
@@ -141,20 +139,20 @@ def handle_processing_wizard(args: argparse.Namespace) -> None:
         - channel (str)
         - output_folder (str or None)
         - output_name (str or None)
-        - scale_bar_nm (int or None), 0 turns off scale bar
+        - scale_bar_nm (int or None), 0 disables scale bar
 
     Returns
     -------
     None
     """
     try:
-        wizard_mode(
+        Wizard(
             input_file=args.input_file,
             channel=args.channel,
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
-        )
+        ).run()
     except Exception as e:
         logging.getLogger(__name__).error(e)
         sys.exit(1)

@@ -9,7 +9,7 @@ from playNano.cli.handlers import (
     handle_analyze,
     handle_play,
     handle_process,
-    handle_processing_wizard,
+    handle_wizard,
 )
 from playNano.errors import LoadError
 
@@ -162,7 +162,7 @@ def main() -> None:
         type=int,
         help="Integer length of scale bar in nm",
     )
-    wizard_parser.set_defaults(func=handle_processing_wizard)
+    wizard_parser.set_defaults(func=handle_wizard)
 
     # 3) 'process' subcommand
     process_parser = subparsers.add_parser(

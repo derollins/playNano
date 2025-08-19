@@ -110,6 +110,90 @@ def export_to_hdf5(
         recurse(h5file.create_group(dataset_name), record)
 
 
+def load_analysis_from_hdf5(
+    file_path: str | Path, dataset_name: str = "analysis_record"
+) -> dict:
+    """
+    Load a nested dict/list/NumPy array structure from an HDF5 file,
+    exactly reversing `export_to_hdf5`. Automatically converts integer-valued
+    NumPy floats to Python ints recursively for use as list indices.
+
+    Parameters
+    ----------
+    file_path : str or Path
+        Path to the HDF5 file containing the saved analysis dictionary.
+    dataset_name : str, default='analysis_record'
+        Name of the top-level group in the HDF5 file where the dictionary is stored.
+
+    Returns
+    -------
+    record : dict
+        Nested dictionary reconstructed from the HDF5 file. The structure preserves:
+        - dicts as dicts
+        - lists as lists
+        - NumPy arrays as np.ndarray
+        - strings as str
+        - empty lists as []
+        - primitive values stored in attributes
+        - integer-valued floats converted to Python int recursively
+
+    Raises
+    ------
+    KeyError
+        If `dataset_name` is not found in the HDF5 file.
+    """
+
+    def recurse(group):
+        """Recursively reconstruct dict/list/array from an HDF5 group."""
+        if "values" in group:
+            data = group["values"][()]
+            # Convert bytes to str if needed
+            if isinstance(data, np.ndarray) and data.dtype.kind == "S":
+                return data.astype(str)
+
+            # Scalar array
+            if isinstance(data, np.ndarray) and data.shape == ():
+                val = data.item()
+                return (
+                    int(val)
+                    if isinstance(val, (np.integer, np.floating))
+                    and float(val).is_integer()
+                    else val
+                )
+
+            # Full array: convert integer-valued floats to int
+            if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
+                if np.all(np.mod(data, 1) == 0):
+                    data = data.astype(int)
+            return data
+
+        if "empty" in group:
+            return []
+
+        if "value" in group.attrs:
+            val = group.attrs["value"]
+            return (
+                int(val)
+                if isinstance(val, np.floating) and float(val).is_integer()
+                else val
+            )
+
+        keys = list(group.keys())
+        if all(k.startswith("item_") for k in keys):
+            items = [
+                recurse(group[k])
+                for k in sorted(keys, key=lambda x: int(x.split("_")[1]))
+            ]
+            return items
+        else:
+            return {k: recurse(group[k]) for k in keys}
+
+    with h5py.File(file_path, "r") as h5file:
+        if dataset_name not in h5file:
+            raise KeyError(f"Dataset '{dataset_name}' not found in HDF5 file.")
+        return recurse(h5file[dataset_name])
+
+
 def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=5):
     """Return a JSON-safe version of any object, printing any functions it finds."""
     import numpy as np
