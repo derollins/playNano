@@ -114,8 +114,9 @@ def load_analysis_from_hdf5(
     file_path: str | Path, dataset_name: str = "analysis_record"
 ) -> dict:
     """
-    Load a nested dict/list/NumPy array structure from an HDF5 file,
-    exactly reversing `export_to_hdf5`. Automatically converts integer-valued
+    Load a nested dict/list/NumPy array structure from an HDF5 file.
+
+    This exactly reverses `export_to_hdf5`. Automatically converts integer-valued
     NumPy floats to Python ints recursively for use as list indices.
 
     Parameters

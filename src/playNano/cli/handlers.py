@@ -159,9 +159,7 @@ def handle_wizard(args: argparse.Namespace) -> None:
 
 
 def handle_analyze(args: argparse.Namespace) -> None:
-    """
-    Handle the 'analyze' subcommand: run only analysis & export results.
-    """
+    """Handle the 'analyze' subcommand: run only analysis & export results."""
     try:
         analyze_pipeline_mode(
             input_file=args.input_file,

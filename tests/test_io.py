@@ -756,6 +756,7 @@ def test_export_bundles_raw_flag(afm_stack_obj):
 
 @pytest.fixture
 def sample_record():
+    """Create a sample record for testing."""
     return {
         "metadata": {
             "experiment": "test",

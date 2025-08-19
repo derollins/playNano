@@ -15,6 +15,7 @@ from playNano.utils.io_utils import prepare_output_directory, sanitize_output_na
 
 
 def test_setup_logging_sets_correct_level():
+    """Test that setup_logging sets the root logger to the specified level."""
     stream = StringIO()
     handler = logging.StreamHandler(stream)
     logger = logging.getLogger("test_logger")
@@ -32,6 +33,7 @@ def test_setup_logging_sets_correct_level():
 
 
 def test_parse_args_defaults(monkeypatch):
+    """Test that main() runs without errors with default arguments."""
     monkeypatch.setattr(sys, "argv", ["prog", "play", "sample_path.jpk"])
     monkeypatch.setattr(Path, "exists", lambda self: True)
 
@@ -124,6 +126,7 @@ def test_sanitize_empty_output_dir():
 
 
 def test_setup_logging_warn_level():
+    """Test that setup_logging sets the root logger to WARNING level."""
     stream = StringIO()
     handler = logging.StreamHandler(stream)
     logger = logging.getLogger("test_logger")

@@ -84,6 +84,7 @@ def test_process_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_pars
 def mock_pipeline(monkeypatch):
     """
     Fixture to mock the AnalysisPipeline class and its run method.
+
     Returns a MagicMock pipeline instance.
     """
     pipeline = MagicMock()
@@ -598,7 +599,7 @@ def test_wizard_save_generates_yaml(tmp_path):
 
 
 def test_wizard_asave_generates_yaml(tmp_path):
-    """ASave should serialize current asteps to YAML file."""
+    """Test that asave serializes current asteps to YAML file."""
     yaml_file = tmp_path / "acfg.yaml"
     inputs = iter(
         [
@@ -1096,6 +1097,7 @@ class DummyStack:
     """Minimal AFM-like object used for tests."""
 
     def __init__(self):
+        """Initialize a dummy stack with some fake data."""
         self.n_frames = 10
         self.image_shape = (64, 64)
         # metadata used by play pipeline if required
@@ -1108,6 +1110,7 @@ class FakeIO:
     """Fake IO that answers prompts from a queue and collects outputs."""
 
     def __init__(self, answers=None):
+        """Initialize with a list of answers to return for prompts."""
         self.answers = iter(answers or [])
         self.outputs = []
 
@@ -1121,7 +1124,7 @@ class FakeIO:
             return ""
 
     def say(self, msg: str) -> None:
-        """Fake output"""
+        """Fake output."""
         self.outputs.append(msg)
 
 
@@ -1308,7 +1311,7 @@ def test_handle_amove(wizard_mock_io):
 
 
 def test_handle_aload(monkeypatch, tmp_path):
-    """Test"""
+    """Test loading an analysis steps file."""
     # Create a dummy analysis file path
     dummy_file = tmp_path / "dummy.yaml"
     dummy_file.write_text("analysis:\n  - name: stepX")
@@ -1555,11 +1558,11 @@ def test_analysis_with_processing_reruns(monkeypatch, wizard, tmp_path):
         """Dummy pipeline to simulate analysis."""
 
         def add(self, *a, **k):
-            """Dummy add method."""
+            """Add method in DummyPipeline."""
             pass
 
         def run(self, *a, **k):
-            """Dummy run method that returns a value."""
+            """Eun method that returns a value in the DummyPipeline."""
             return {"result": 42}
 
     monkeypatch.setattr(actions, "AnalysisPipeline", lambda: DummyPipeline())
@@ -1586,6 +1589,7 @@ def test_handle_asave_and_aload(tmp_path, wizard):
 
 
 def test_asave_aload_roundtrip(tmp_path):
+    """Test that analysis steps can be saved and loaded correctly."""
     io = CaptureIO([""])  # stub IO if needed
     wiz = make_wizard(tmp_path, io)
     wiz.analysis_steps = [
@@ -1672,6 +1676,7 @@ class CaptureIO(actions.IO):
     """IO adapter that takes an iterator of inputs and records outputs."""
 
     def __init__(self, inputs):
+        """Initialize with a list of inputs to return for prompts."""
         self._inputs = iter(inputs)
         self.outputs = []
 

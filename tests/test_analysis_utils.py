@@ -93,6 +93,7 @@ def test_export_to_hdf5_structure_and_values():
 
 
 def test_safe_json_dumps_serializable():
+    """Test that safe_json_dumps serializes a simple object."""
     obj = {"value": np.float32(3.14), "array": np.array([1, 2, 3])}
     result = safe_json_dumps(obj)
     parsed = json.loads(result)  # Should succeed without error
@@ -101,6 +102,8 @@ def test_safe_json_dumps_serializable():
 
 
 def test_safe_json_dumps_fallback(monkeypatch):
+    """Test that safe_json_dumps falls back to str() for unserializable objects."""
+
     # Force the encoder to fail and test fallback to str()
     def failing_default(self, obj):
         raise TypeError("mock failure")
@@ -113,6 +116,7 @@ def test_safe_json_dumps_fallback(monkeypatch):
 
 
 def test_safe_json_dumps_non_serializable():
+    """Test that safe_json_dumps falls back to str() for non-serializable objects."""
     obj = {"callback": lambda x: x}
     result = safe_json_dumps(obj)
     # Falls back to str()
@@ -121,6 +125,7 @@ def test_safe_json_dumps_non_serializable():
 
 
 def test_safe_json_dumps_fallback_on_array():
+    """Test that safe_json_dumps falls back to str() for numpy arrays."""
     obj = {"array": np.array([1, 2, 3])}
     result = safe_json_dumps(obj)
     # Not valid JSON; fallback used

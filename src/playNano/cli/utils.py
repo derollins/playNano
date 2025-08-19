@@ -58,7 +58,7 @@ def is_valid_analysis_step(name: str) -> bool:
 
 def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, object]]]:
     """
-    Parses a semicolon-delimited string of processing steps into a structured list.
+    Parse a semicolon-delimited string of processing steps into a structured list.
 
     The list consists of (step_name, parameters) tuples.
     Each step in the string can optionally include parameters, separated by commas.
@@ -445,7 +445,8 @@ def _cast_input(s: str, expected_type: type, default: Any):
 
     Notes
     -----
-    - Boolean conversion recognizes '1', 'true', 'yes', 'y', 't' (case-insensitive) as True.
+    - Boolean conversion recognizes '1', 'true', 'yes', 'y', 't'
+      (case-insensitive) as True.
     - Tuple and list types assume comma-separated values in the string.
     """
     # best-effort conversion
@@ -543,7 +544,7 @@ def _get_processing_callable(step_name: str):
 
 
 def get_processing_step_type(step_name: str) -> str:
-    """Return the type of a processing step"""
+    """Return the type of a processing step."""
     if step_name in FILTER_MAP:
         return "filter"
     if step_name in MASK_MAP:
