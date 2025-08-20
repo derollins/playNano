@@ -19,7 +19,7 @@ coverage.xml
 .pytest_cache/
 
 # Docs
-docs/build/
+docs/_build/
 
 # ignore notebook check‑points
 **/.ipynb_checkpoints
