@@ -59,6 +59,8 @@ docs = [
     "furo",
     "myst-parser",
     "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "nbsphinx",
 ]
 
 notebooks = ["jupyter"]
