@@ -17,21 +17,21 @@ playNano.gui.main module
 
 .. automodule:: playNano.gui.main
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.gui.window module
 --------------------------
 
 .. automodule:: playNano.gui.window
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: playNano.gui
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

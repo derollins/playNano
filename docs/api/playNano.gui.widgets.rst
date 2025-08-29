@@ -9,21 +9,21 @@ playNano.gui.widgets.controls module
 
 .. automodule:: playNano.gui.widgets.controls
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.gui.widgets.viewer module
 ----------------------------------
 
 .. automodule:: playNano.gui.widgets.viewer
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: playNano.gui.widgets
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

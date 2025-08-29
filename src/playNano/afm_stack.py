@@ -50,13 +50,14 @@ class AFMImageStack:
     analysis : dict[str, Any]
         Results of analysis modules, keyed by 'step_<i>_<module_name>'.
     provenance : dict[str, Any]
-        Records environment info and provenance of processing and analysis pipelines:
-        {
-            "environment": {...},
-            "processing": {"steps": [...], "keys_by_name": {...}},
-            "analysis": {"frame_times": [...], "steps": [...],
-            "results_by_name": {...}},
-        }
+        Records environment info and provenance of processing and analysis pipelines::
+
+            {
+                "environment": {...},
+                "processing": {"steps": [...], "keys_by_name": {...}},
+                "analysis": {"frame_times": [...], "steps": [...],
+                "results_by_name": {...}},
+            }
     """
 
     def __init__(
@@ -518,13 +519,17 @@ class AFMImageStack:
         """
         Export processing provenance and environment metadata to a JSON file.
 
-        Writes:
+        Writes
+        ------
+
+        Example JSON structure::
+
             {
-              "environment": { ... },
-              "processing": {
-                  "steps": [ ... ],
-                  "keys_by_name": { ... }
-              }
+            "environment": { ... },
+            "processing": {
+                "steps": [ ... ],
+                "keys_by_name": { ... }
+            }
             }
 
         Parameters
@@ -552,15 +557,18 @@ class AFMImageStack:
         Expects that stack.analysis (or stack.analysis_results) and
         stack.provenance["analysis"] are populated by AnalysisPipeline.run().
 
-        Writes a dict of the form:
+        Writes
+        ------
+        Example JSON structure::
+
             {
-              "environment": { ... },
-              "analysis": { <step_key>: outputs, ... },
-              "provenance": {
-                  "steps": [ ... ],
-                  "results_by_name": { ... },
-                  "frame_times": [...],
-              }
+            "environment": { ... },
+            "analysis": { <step_key>: outputs, ... },
+            "provenance": {
+                "steps": [ ... ],
+                "results_by_name": { ... },
+                "frame_times": [...],
+            }
             }
 
         Parameters
@@ -639,12 +647,14 @@ class AFMImageStack:
         Apply a sequence of processing steps to each frame in the AFM image stack.
 
         Steps can be:
+
           - "clear"       : reset any existing mask
           - mask names    : keys in MASK_MAP
           - filter names  : keys in FILTER_MAP
           - plugin names  : entry points in 'playNano.filters'
           - method names  : bound methods on this class
-        **kwargs are forwarded to mask functions or filter functions as appropriate.
+
+        ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.
 
         This is a stateless convenience: applies clear/mask/filter steps in order,
         snapshots only 'raw' and final data in self.processed, but does not assign
@@ -663,7 +673,7 @@ class AFMImageStack:
         np.ndarray
             Final processed 3D array (shape (n_frames, height, width)).
 
-        NOTES
+        Notes
         -----
         For tracked, reproducible processing,
         use ProcessingPipeline.

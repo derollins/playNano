@@ -74,7 +74,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(
         title="subcommands",
         dest="command",
-        help="Choose one subcommand: 'play', 'process', 'analyise' or 'wizard'.",
+        help="Choose one subcommand: 'play', 'process', 'analyze' or 'wizard'.",
     )
 
     # 1) 'play' subcommand

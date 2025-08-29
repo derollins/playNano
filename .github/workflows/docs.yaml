@@ -22,7 +22,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .[docs]
-          pip install sphinx sphinx-rtd-theme nbsphinx
 
       - name: Build HTML docs
         run: sphinx-build docs docs/_build/html

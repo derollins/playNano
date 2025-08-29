@@ -214,14 +214,16 @@ class AnalysisPipeline:
         Execute all added analysis steps on the given AFMImageStack.
 
         Each step:
-          - is resolved to an AnalysisModule instance
-          - invoked with `(stack, previous_results=..., **params)`
-          - its outputs are stored under `stack.analysis["step_<n>_<module_name>"]`
-          - provenance is recorded in `stack.provenance["analysis"]["steps"]`
+
+        - is resolved to an AnalysisModule instance
+        - invoked with `(stack, previous_results=..., **params)`
+        - its outputs are stored under `stack.analysis["step_<n>_<module_name>"]`
+        - provenance is recorded in `stack.provenance["analysis"]["steps"]`
 
         The overall provenance sub-dict also collects:
-          - results_by_name: mapping module name to list of outputs
-          - frame_times: result of `stack.get_frame_times()`, or None
+
+        - results_by_name: mapping module name to list of outputs
+        - frame_times: result of `stack.get_frame_times()`, or None
 
         The environment info (via gather_environment_info) is stored at
         `stack.provenance["environment"]` (if not already set).
@@ -235,12 +237,13 @@ class AnalysisPipeline:
 
         Returns
         -------
-        AnalysisRecord : dict
-            {
-                "environment": <dict of environment metadata>,
-                "analysis": <dict of outputs per step>,
-                "provenance": <dict with keys "steps", "results_by_name", "frame_times">
-            }
+        AnalysisRecord :     dict
+
+        {
+            "environment": <dict of environment metadata>,
+            "analysis": <dict of outputs per step>,
+            "provenance": <dict with keys "steps", "results_by_name", "frame_times">
+        }
 
         Notes
         -----
@@ -297,7 +300,7 @@ class AnalysisPipeline:
         stack.provenance["analysis"]["frame_times"] = None
 
         step_results: list[dict[str, Any]] = []
-        results_by_name: defaultdict[str, list] = defaultdict(dict)
+        results_by_name: defaultdict[str, list] = defaultdict(list)
         previous_latest: dict[str, dict[str, Any]] = {}
         # module cache unchanged
         for idx, (module_name, params) in enumerate(self.steps, start=1):
@@ -342,7 +345,9 @@ class AnalysisPipeline:
             }
             step_results.append(step_record)
             # update previous_results structures
-            results_by_name[module_name] = outputs
+            results_by_name[module_name].append(
+                {"analysis_key": analysis_key, "outputs": outputs}
+            )
             # allow downstream modules to use latest result
             previous_latest[module_name] = outputs
 

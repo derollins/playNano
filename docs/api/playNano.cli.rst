@@ -9,37 +9,37 @@ playNano.cli.actions module
 
 .. automodule:: playNano.cli.actions
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.cli.entrypoint module
 ------------------------------
 
 .. automodule:: playNano.cli.entrypoint
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.cli.handlers module
 ----------------------------
 
 .. automodule:: playNano.cli.handlers
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.cli.utils module
 -------------------------
 
 .. automodule:: playNano.cli.utils
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: playNano.cli
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

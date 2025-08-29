@@ -87,7 +87,15 @@ def analysis_pipeline_schema():
                     },
                     "results_by_name": {
                         "type": "object",
-                        "additionalProperties": {"type": "object"},
+                        "additionalProperties": {
+                            "anyOf": [
+                                {"type": "object"},  # old single-output case
+                                {
+                                    "type": "array",
+                                    "items": {"type": "object"},
+                                },  # new multi-output case
+                            ]
+                        },
                     },
                     "frame_times": {"anyOf": [{"type": "array"}, {"type": "null"}]},
                 },

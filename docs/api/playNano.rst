@@ -9,6 +9,7 @@ Subpackages
 
    playNano.analysis
    playNano.cli
+   playNano.gui
    playNano.io
    playNano.processing
 
@@ -20,21 +21,21 @@ playNano.afm\_stack module
 
 .. automodule:: playNano.afm_stack
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 playNano.errors module
 ----------------------
 
 .. automodule:: playNano.errors
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: playNano
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

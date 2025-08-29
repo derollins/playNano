@@ -32,23 +32,26 @@ This project requires Python 3.10 or newer and is in development. If you find an
 
 Questions? Email: <d.e.rollins@leeds.ac.uk>
 
+Full documentation (Sphinx): `docs/` (built HTML in `docs/_build/html`).
+
+📜 [Changelog](https://derollins.github.io/playNano/changelog.html)
+
 ---
 
 ## ✨ Features
 
 - 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` and `.spm` files.
-- ▶️ **Animated video viewer**, a PySide6-based GUI viewer for high‑speed AFM playback and exporting with
-  live z‑scale adjustment.
-- 🪟 **Applies basic filters** and ordered filter chains to image data.
-- 📩 **Exports** to OME-TIFF stacks, NPZ bundles, and HDF5 bundles.
-- 🎞️ **Generates animated GIFs** of AFM stacks with annotations.
-- 📒 **Tracks** full processing and analysis provenance for reproducibility.
+- ▶️ **Animated video viewer**, an interactive PySide6 viewer with playback, z-scale configuration, and export tools.
+- 🪟 **Processing pipeline** (filters + masks) that records per-step provenance.
+- 📏 **Analysis pipeline** for detection/tracking; stores outputs and provenance in the stack.
+- 📩 **Exports** to OME-TIFF stacks, NPZ bundles, HDF5 bundles, and annotated GIFs..
 - 🔌 **Plugin system** for custom filters.
-- 🧠 Built for integration with analysis pipelines and tools like `TopoStats`.
 
 ---
 
-## 📦 Installation
+## 📦 Installation and Dependancies
+
+Requires Python 3.10–3.12.
 
 Clone the repository into a new folder:
 
@@ -63,23 +66,31 @@ It is recommended to use a virtual environment. Then install in editable mode:
 pip install -e .
 ```
 
-Python 3.10 to 3.12 is required.
+Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
+scipy, scikit-learn, python-dateutil, tifffile, AFMReader (optional).
 
 ## 🚀 Quickstart
 
-Generate a flattened AFM image stack and export a GIF:
+**Play a file (GUI):**
 
 ```bash
-playnano run "example_data/sample.h5-jpk" --processing "remove_plane;mask_mean_offset:factor=1;row_median_align" --make-gif
+playnano play path/to/sample.h5-jpk
 ```
 
-Or launch an interactive viewer to inspect and flatten the data:
-
-```bash
-playnano play "example_data/sample.h5-jpk"
-```
-
+This opens an interactive window that can be used to veiw the videos and configure
+formatting for the display and GIF exports.
 Press the **f** key to flatten with default steps.
+
+**Batch process + make GIF:**
+
+```bash
+playnano process path/to/sample.h5-jpk \
+  --processing "remove_plane;gaussian_filter:sigma=1.0" \
+  --export tif,npz --make-gif --output-folder ./results
+```
+
+See the full docs for the complete CLI reference, GUI guide, filters, YAML schemas,
+and examples.
 
 ## ⌨️ CLI Usage
 
@@ -414,6 +425,7 @@ This project requires the following Python packages:
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
 
+
 ## 🤝 Related Software
 
 These are some software packages that have helped and inspired this project:
@@ -442,7 +454,16 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](htt
 
 ## Included Fonts
 
-This project bundles the “Steps Mono” font by [Velvetyne Type Foundry](https://velvetyne.fr/fonts/steps-mono/),
-licensed under the SIL Open Font License 1.1.
+This project bundles the following fonts:
 
-See `src/playNano/fonts/LICENCE.txt` for full license terms and attribution.
+- **Steps Mono** by [Velvetyne Type Foundry](https://velvetyne.fr/fonts/steps-mono/),
+  licensed under the SIL Open Font License 1.1.
+
+- **Basic** by [Eben Sorkin](https://github.com/EbenSorkin),
+  licensed under the SIL Open Font License 1.1.
+
+Full license texts and attribution are provided in:
+
+- `src/playNano/fonts/Steps-Mono/LICENCE.txt`
+- `src/playNano/fonts/Basic/LICENCE.txt`
+
