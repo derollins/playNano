@@ -22,6 +22,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PySide6 GUI with interactive playback and export panel.
 - Analysis pipeline framework with provenance tracking.
 
-
 [Unreleased]: https://github.com/derollins/playNano/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0

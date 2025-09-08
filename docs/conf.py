@@ -1,9 +1,9 @@
-import os
-import sys
-import pkgutil
-import playNano.analysis.modules as modules
 import importlib
+import os
+import pkgutil
+import sys
 
+import playNano.analysis.modules as modules
 
 sys.path.insert(0, os.path.abspath("../../src"))
 
@@ -76,7 +76,7 @@ module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
 with open(generated_list_path, "w", encoding="utf-8") as f:
     for name in module_names:
         full_name = f"playNano.analysis.modules.{name}"
-        module_html = f"playNano.analysis.modules.html"
+        module_html = "playNano.analysis.modules.html"
         anchor = f"#module-playNano.analysis.modules.{name}"
         link = os.path.join(rel_api_folder, module_html) + anchor
         # Normalize to forward slashes for Sphinx links

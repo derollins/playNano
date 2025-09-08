@@ -1,6 +1,4 @@
-"""
-Public package initialization for analysis modules. Analysis modules live here. :noindex:
-"""
+"""Public package initialization for analysis modules. :noindex:"""
 
 import importlib
 import pkgutil

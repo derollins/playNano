@@ -425,7 +425,6 @@ This project requires the following Python packages:
 - `tifffile`
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
 
-
 ## 🤝 Related Software
 
 These are some software packages that have helped and inspired this project:
@@ -466,4 +465,3 @@ Full license texts and attribution are provided in:
 
 - `src/playNano/fonts/Steps-Mono/LICENCE.txt`
 - `src/playNano/fonts/Basic/LICENCE.txt`
-
