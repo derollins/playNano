@@ -5,14 +5,17 @@ channels:
 
 dependencies:
   - python=3.11
-  - numpy
-  - h5py=3.8.*          # Pin to a stable version to avoid crashes
+  - numpy>=1.23,<2.0
+  - pandas
+  - h5py
   - pillow
+  - tifffile
   - matplotlib
-  - opencv
   - scipy
+  - scikit-learn
+  - pyyaml>=6.0
+  - pyside6>=6.5
   - pip
   - pip:
-      - topostats
       - afmreader
       - python-dateutil>=2.8

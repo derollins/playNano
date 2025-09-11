@@ -12,9 +12,9 @@ import pandas as pd
 import pytest
 
 from playNano.analysis.utils import common, frames, particles
+from playNano.analysis.utils.common import NumpyEncoder, safe_json_dumps
 
 matplotlib.use("Agg")  # Use a non-interactive backend suitable for testing
-
 
 # --- Common Utils ---
 
@@ -85,8 +85,52 @@ def test_export_to_hdf5_structure_and_values():
                 "values"
             ]  # Access the actual dataset inside the group
 
-            values = [json.loads(v) for v in values_ds[:]]
+            values = [
+                json.loads(v) if isinstance(v, (str, bytes)) else v
+                for v in values_ds[:]
+            ]
             assert values == sample_record["results"]["values"]
+
+
+def test_safe_json_dumps_serializable():
+    """Test that safe_json_dumps serializes a simple object."""
+    obj = {"value": np.float32(3.14), "array": np.array([1, 2, 3])}
+    result = safe_json_dumps(obj)
+    parsed = json.loads(result)  # Should succeed without error
+    assert parsed["value"] == pytest.approx(3.14)
+    assert parsed["array"] == [1, 2, 3]
+
+
+def test_safe_json_dumps_fallback(monkeypatch):
+    """Test that safe_json_dumps falls back to str() for unserializable objects."""
+
+    # Force the encoder to fail and test fallback to str()
+    def failing_default(self, obj):
+        raise TypeError("mock failure")
+
+    monkeypatch.setattr(NumpyEncoder, "default", failing_default)
+    obj = {"value": 123}
+    result = safe_json_dumps(obj)
+    assert isinstance(result, str)
+    assert "value" in result
+
+
+def test_safe_json_dumps_non_serializable():
+    """Test that safe_json_dumps falls back to str() for non-serializable objects."""
+    obj = {"callback": lambda x: x}
+    result = safe_json_dumps(obj)
+    # Falls back to str()
+    assert isinstance(result, str)
+    assert "function" in result or "lambda" in result
+
+
+def test_safe_json_dumps_fallback_on_array():
+    """Test that safe_json_dumps falls back to str() for numpy arrays."""
+    obj = {"array": np.array([1, 2, 3])}
+    result = safe_json_dumps(obj)
+    # Not valid JSON; fallback used
+    assert isinstance(result, str)
+    assert "array" in result
 
 
 # --- Frame Utils ---

@@ -334,7 +334,7 @@ def test_export_gif_calls_export(mock_prepare, mock_export, qtbot):
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
-    mock_stack.processed = {"raw": True}
+    mock_stack.processed = {"raw": np.random.rand(1, 10, 10)}
 
     wnd = MainWindow(mock_stack)
     qtbot.addWidget(wnd)
@@ -368,7 +368,7 @@ def test_export_gif_branches(
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
-    mock_stack.processed = {"raw": True} if raw_present else {}
+    mock_stack.processed = {"raw": mock_stack.data} if raw_present else {}
 
     # Instantiate MainWindow
     wnd = MainWindow(mock_stack)
@@ -415,7 +415,7 @@ def test_export_gif_logs_error(mock_prepare, mock_export, qtbot, caplog):
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
-    mock_stack.processed = {"raw": True}
+    mock_stack.processed = {"raw": mock_stack.data}
 
     wnd = MainWindow(mock_stack)
     qtbot.addWidget(wnd)
@@ -481,7 +481,7 @@ def test_keypress_calls_super_for_other_keys(qtbot, monkeypatch):
     wnd.deleteLater()
 
 
-@patch("playNano.io.export.export_bundles")
+@patch("playNano.io.export_data.export_bundles")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     """Test _export_gif branches on raw/processed data and z-range values."""
@@ -500,7 +500,7 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     wnd.data_processed_radio = MagicMock(isChecked=MagicMock(return_value=False))
     #    – A fake AFM stack and its processed map
     fake_stack = MagicMock()
-    fake_stack.processed = {"raw": True}
+    fake_stack.processed = {"raw": np.random.rand(1, 10, 10)}
     wnd.afm_stack = fake_stack
     #    – Output settings
     wnd.output_dir = "some/output"
@@ -521,7 +521,7 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     del wnd
 
 
-@patch("playNano.io.export.export_bundles")
+@patch("playNano.io.export_data.export_bundles")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
     """Test that _export_checked exports all formats when all checkboxes are set."""
@@ -540,7 +540,7 @@ def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
     wnd.data_processed_radio = MagicMock(isChecked=MagicMock(return_value=False))
     #    – A fake AFM stack and its processed map
     fake_stack = MagicMock()
-    fake_stack.processed = {"raw": True}
+    fake_stack.processed = {"raw": np.random.rand(1, 10, 10)}
     wnd.afm_stack = fake_stack
     #    – Output settings
     wnd.output_dir = "some/output"
@@ -562,7 +562,7 @@ def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
 
 
 @patch("playNano.gui.window.prepare_output_directory")
-@patch("playNano.io.export.export_bundles")
+@patch("playNano.io.export_data.export_bundles")
 def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
     """Test _export_checked logs a message and does nothing if no formats selected."""
     wnd = MainWindow.__new__(MainWindow)
@@ -583,7 +583,7 @@ def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
     del wnd
 
 
-@patch("playNano.io.export.export_bundles")
+@patch("playNano.io.export_data.export_bundles")
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_raw_requested_but_missing(
     mock_prepare, mock_export, qtbot, caplog
@@ -607,7 +607,7 @@ def test_export_checked_raw_requested_but_missing(
     del wnd
 
 
-@patch("playNano.io.export.export_bundles", side_effect=Exception("Export failed"))
+@patch("playNano.io.export_data.export_bundles", side_effect=Exception("Export failed"))
 @patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
     """Test that _export_checked logs an error if export_bundles raises."""
@@ -616,7 +616,7 @@ def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
     wnd.export_ome_tiff_cb = MagicMock(isChecked=lambda: False)
     wnd.export_h5_cb = MagicMock(isChecked=lambda: False)
     wnd.data_raw_radio = MagicMock(isChecked=lambda: True)
-    wnd.afm_stack = MagicMock(processed={"raw": True})
+    wnd.afm_stack = MagicMock(processed={"raw": np.random.rand(1, 10, 10)})
     wnd.output_dir = "mock_dir"
     wnd.output_name = "output"
 

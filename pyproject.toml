@@ -1,13 +1,13 @@
 [project]
 name = "playNano"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
 requires-python = ">=3.10, <3.13"
 authors = [
-  { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk"}
+  { name = "D. E. Rollins", email = "d.e.rollins@leeds.ac.uk" }
 ]
-license = {text = "GPL-3.0-or-later"}
+license = { text = "GPL-3.0-or-later" }
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Natural Language :: English",
@@ -51,6 +51,7 @@ dev = [
     "isort",
     "ruff",
     "black",
+    "jsonschema",
 ]
 
 docs = [
@@ -58,6 +59,9 @@ docs = [
     "furo",
     "myst-parser",
     "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "nbsphinx",
+    "sphinxcontrib-programoutput",
 ]
 
 notebooks = ["jupyter"]
@@ -79,11 +83,14 @@ GitHub = "https://github.com/derollins/playNano"
 where = ["src"]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-ambiguous-features = true
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.isort]
 profile = "black"

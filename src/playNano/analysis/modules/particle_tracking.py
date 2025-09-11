@@ -108,15 +108,17 @@ class ParticleTrackingModule(AnalysisModule):
             raise RuntimeError(f"{self.name!r} requires previous results to run.")
 
         # Auto-detect the most recent available detection module
-        if detection_module not in previous_results:
-            available = [
-                mod for mod in reversed(self.requires) if mod in previous_results
-            ]
-            if not available:
-                raise RuntimeError(
-                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
-                )
-            detection_module = available[0]
+
+        if previous_results is None:
+            raise RuntimeError(f"{self.name!r} requires previous results to run.")
+
+        available = [mod for mod in reversed(self.requires) if mod in previous_results]
+        if not available:
+            raise RuntimeError(
+                f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+            )
+
+        detection_module = available[0]
 
         fd_out = previous_results[detection_module]
         feats = fd_out[coord_key]  # List[List[dict]]

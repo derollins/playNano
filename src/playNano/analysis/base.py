@@ -13,8 +13,9 @@ class AnalysisModule(ABC):
     Abstract base class for analysis steps.
 
     Subclasses must implement:
-      - a `name` property returning a unique string identifier
-      - a `run(stack, previous_results=None, **params) -> dict` method
+
+    - a ``name`` property returning a unique string identifier
+    - a ``run(stack, previous_results=None, **params) -> dict`` method
     """
 
     @property
@@ -43,17 +44,18 @@ class AnalysisModule(ABC):
             The AFMImageStack instance, containing `.data` and metadata.
         previous_results : dict or None
             Outputs from earlier modules in the pipeline, if any.
-        **params : module-specific parameters
-            E.g. threshold, min_size, etc.
+        **params : dict
+            Module-specific parameters, e.g., threshold, min_size, etc.
 
         Returns
         -------
-        dict
-            A dictionary mapping output names (strings) to results, e.g.:
-            {
-                "coords": numpy array of shape (N,3),
-                "masks": numpy array of shape (n_frames, H, W),
-                ...
-            }
+        AnalysisOutputs
+            A dictionary mapping output names (strings) to results. Example::
+
+                {
+                    "coords": numpy array of shape (N, 3),
+                    "masks": numpy array of shape (n_frames, H, W),
+                }
+
         """
         raise NotImplementedError("Subclasses must implement 'run' method")

@@ -6,7 +6,17 @@ import sys
 
 from playNano.utils.time_utils import utc_now_iso
 
-KEY_DEPENDENCIES = ["numpy", "h5py", "scipy", "opencv-python", "scikit-image", "pandas"]
+KEY_DEPENDENCIES = [
+    "numpy",
+    "h5py",
+    "scipy",
+    "scikit-learn",
+    "scikit-image",
+    "pandas",
+    "Pillow",
+    "matplotlib",
+    "afmreader",
+]
 
 
 def gather_environment_info() -> dict:

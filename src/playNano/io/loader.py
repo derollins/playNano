@@ -1,13 +1,25 @@
 """
-Common loader for various high speed AFM video formats.
+Common loader for various high speed AFM video formats *and* playNano export bundles.
 
-Returns an AFMImageStack object
+Supported extensions:
+  - .jpk        (folder)
+  - .spm        (folder)
+  - .h5-jpk     (single-file JPK)
+  - .asd        (single-file ASD)
+  - .ome.tif / .tif  (OME-TIFF bundles)
+  - .npz        (playNano NPZ bundles)
+  - .h5         (playNano HDF5 bundles)
 """
 
 import logging
 from pathlib import Path
 
 from playNano.afm_stack import AFMImageStack
+from playNano.io.data_loaders import (
+    load_h5_bundle,
+    load_npz_bundle,
+    load_ome_tiff_stack,
+)
 from playNano.io.formats.read_asd import load_asd_file
 from playNano.io.formats.read_h5jpk import load_h5jpk
 from playNano.io.formats.read_jpk_folder import load_jpk_folder
@@ -112,6 +124,10 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     This loader splits these two approaches and loads both into
     the common AFMImageStack object for processing.
 
+    As well as the file formats exported from AFM instruments, this
+    function also read raw and processed exports from playNano (NPZ,
+    OME_TIF and HDF5).
+
     All data values with length units (i.e. m) are converted to nm.
 
     Parameters
@@ -140,6 +156,10 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     file_loaders = {
         ".h5-jpk": load_h5jpk,
         ".asd": load_asd_file,
+        ".npz": load_npz_bundle,
+        ".h5": load_h5_bundle,
+        ".ome.tif": load_ome_tiff_stack,
+        ".tif": load_ome_tiff_stack,
         # Add others as needed
     }
 

@@ -124,11 +124,26 @@ class MainWindow(QMainWindow):
 
         self.afm_stack: AFMImageStack = afm_stack
 
+        # if this stack was loaded from one of our bundles, it will have
+        # a 'raw' snapshot in processed.  Treat that as the "true" raw
+        # and the stack.data as the "flat" (processed) frames.
+        if "raw" in self.afm_stack.processed:
+            # raw frames (unfiltered)
+            self._frames = self.afm_stack.processed["raw"]
+            # processed / “flat” frames
+            self._flat = self.afm_stack.data.copy()
+            # start in processed view by default
+            self._show_flat = True
+        else:
+            # standard case: no prior bundle, stack.data is raw
+            self._frames = self.afm_stack.data
+            self._flat = None
+            self._show_flat = False
+
         self.resize(
             int(self.afm_stack.width * 1.5),
             self.afm_stack.height + 200,
         )
-
         self.processing_steps: list[tuple[str, dict]] = processing_steps or []
         self.output_dir = output_dir
         self.output_name = output_name
@@ -136,19 +151,24 @@ class MainWindow(QMainWindow):
         self.zmin = zmin
         self.zmax = zmax
         self._idx = 0
-        self._frames = self.afm_stack.data
-        self._zmin_raw, self._zmax_raw = compute_zscale_range(
-            self._frames,
-            zmin=self.zmin,
-            zmax=self.zmax,
-        )
         self._percentile_P = 25
+
+        # Raw view z-scale
+        self._zmin_raw, self._zmax_raw = compute_zscale_range(
+            self._frames, zmin=zmin, zmax=zmax
+        )
         self._zperc_raw = float(np.percentile(self._frames, self._percentile_P))
-        self._zperc_flat = None
-        self._zmin_flat, self._zmax_flat = None, None
-        self._zmin_flat, self._zmax_flat = self._zmin_raw, self._zmax_raw
-        self._flat: Optional[np.ndarray] = None
-        self._show_flat = False
+
+        # Processed (flat) view z-scale
+        if self._flat is not None:
+            self._zmin_flat, self._zmax_flat = compute_zscale_range(
+                self._flat, zmin=zmin, zmax=zmax
+            )
+            self._zperc_flat = float(np.percentile(self._flat, self._percentile_P))
+        else:
+            # No processed stack yet: initialize to raw values
+            self._zmin_flat, self._zmax_flat = self._zmin_raw, self._zmax_raw
+            self._zperc_flat = self._zperc_raw
 
         # Prepare Matplotlib Figure and Canvas
         self.hist_fig = Figure(figsize=(4, 2))
@@ -783,7 +803,7 @@ class MainWindow(QMainWindow):
         Uses the “Export Raw” / “Export Processed” radio buttons to decide
         which data to write.
         """
-        from playNano.io.export import export_bundles
+        from playNano.io.export_data import export_bundles
 
         formats = []
         if self.export_npz_cb.isChecked():

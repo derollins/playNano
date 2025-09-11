@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -13,22 +14,29 @@ from playNano.cli.entrypoint import main, setup_logging
 from playNano.utils.io_utils import prepare_output_directory, sanitize_output_name
 
 
-def test_setup_logging_sets_correct_level(caplog):
-    """Check setup_logging sets the specified logging level correctly."""
-    with caplog.at_level(logging.DEBUG):
-        setup_logging(logging.DEBUG)
-        logger = logging.getLogger("test_logger")
-        logger.debug("Debug log")
-    assert "Debug log" in caplog.text
+def test_setup_logging_sets_correct_level():
+    """Test that setup_logging sets the root logger to the specified level."""
+    stream = StringIO()
+    handler = logging.StreamHandler(stream)
+    logger = logging.getLogger("test_logger")
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+    setup_logging(logging.DEBUG)  # sets root config
+    logger.debug("Debug log")
+
+    handler.flush()
+    contents = stream.getvalue()
+    assert "Debug log" in contents
+
+    logger.removeHandler(handler)
 
 
 def test_parse_args_defaults(monkeypatch):
-    """Verify `playnano run sample_path.jpk` uses defaults and does not error."""
-    # Simulate: playnano run sample_path.jpk
-    monkeypatch.setattr(sys, "argv", ["prog", "run", "sample_path.jpk"])
-    # Pretend the path exists
+    """Test that main() runs without errors with default arguments."""
+    monkeypatch.setattr(sys, "argv", ["prog", "play", "sample_path.jpk"])
     monkeypatch.setattr(Path, "exists", lambda self: True)
-    # Stub out load_data so it returns a minimal AFMImageStack
+
     monkeypatch.setattr(
         AFMImageStack,
         "load_data",
@@ -41,7 +49,10 @@ def test_parse_args_defaults(monkeypatch):
         ),
     )
 
-    # No exception should be raised
+    # Patch out the GUI entry function so QApplication isn't called
+    monkeypatch.setattr("playNano.cli.actions.gui_entry", lambda *args, **kwargs: None)
+
+    # Should not raise
     result = main()
     assert result is None
 
@@ -114,13 +125,22 @@ def test_sanitize_empty_output_dir():
     assert result.resolve().name == "default"
 
 
-def test_setup_logging_warn_level(caplog):
-    """Test setup_logging correctly logs at WARNING level."""
-    with caplog.at_level(logging.WARNING):
-        setup_logging(logging.WARNING)
-        logger = logging.getLogger("test_logger")
-        logger.warning("A warning")
-    assert "A warning" in caplog.text
+def test_setup_logging_warn_level():
+    """Test that setup_logging sets the root logger to WARNING level."""
+    stream = StringIO()
+    handler = logging.StreamHandler(stream)
+    logger = logging.getLogger("test_logger")
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)
+
+    setup_logging(logging.WARNING)
+    logger.warning("A warning")
+
+    handler.flush()
+    contents = stream.getvalue()
+    assert "A warning" in contents
+
+    logger.removeHandler(handler)
 
 
 def test_sanitize_name_with_extension():
@@ -233,11 +253,11 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
     assert "Failed to load" in caplog.text
 
 
-def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
-    """Test handle_run raises SystemExit for invalid output folder path."""
+def test_handle_process_bad_output_folder(monkeypatch, tmp_path, caplog):
+    """Test handle_process raises SystemExit for invalid output folder path."""
     from argparse import Namespace
 
-    from playNano.cli.handlers import handle_run
+    from playNano.cli.handlers import handle_process
 
     good_stack = MagicMock()
     good_stack.frame_metadata = [{"timestamp": 1}]
@@ -261,15 +281,15 @@ def test_handle_run_bad_output_folder(monkeypatch, tmp_path, caplog):
     (tmp_path / "test.jpk").write_text("data")
 
     with pytest.raises(SystemExit):
-        handle_run(args)
+        handle_process(args)
     assert "Invalid characters in output folder" in caplog.text
 
 
-def test_handle_run_make_gif(monkeypatch, tmp_path):
-    """Test handle_run creates a GIF when make_gif is True."""
+def test_handle_process_make_gif(monkeypatch, tmp_path):
+    """Test handle_process creates a GIF when make_gif is True."""
     from argparse import Namespace
 
-    from playNano.cli.handlers import handle_run
+    from playNano.cli.handlers import handle_process
 
     fake_data = np.zeros((10, 10, 10))
     fake_stack = MagicMock()
@@ -305,7 +325,7 @@ def test_handle_run_make_gif(monkeypatch, tmp_path):
     (tmp_path / "sample.jpk").write_text("x")
 
     # Run the function
-    handle_run(args)
+    handle_process(args)
 
 
 def test_main_no_command(monkeypatch, capsys):
