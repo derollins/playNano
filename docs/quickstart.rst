@@ -1,8 +1,9 @@
 Quickstart
 ==========
 
-This short quickstart gets *playNano* running quickly (recommended: **conda**).
-For full details see the linked pages (installation, CLI, GUI, processing, analysis).
+This short quickstart gets **playNano** running quickly (recommended: **conda**).
+For full details see the linked pages (:docs:`installation`, :docs:`cli`,
+:docs:`gui`, :docs:`processing`, :docs:`analysis`).
 
 1. Create a conda environment (recommended)
 -------------------------------------------
@@ -26,6 +27,12 @@ Optional extras (docs, notebooks):
 
    pip install -e ".[docs]" ".[notebooks]"
 
+.. note::
+
+   The ``-e`` flag installs **playNano** in editable mode, allowing you to
+   modify the source code and see changes immediately—recommended for development
+   and experimentation.
+
 3. Quick verification
 ---------------------
 
@@ -38,12 +45,19 @@ Optional extras (docs, notebooks):
 -----------------------------------
 
 Launch interactive GUI:
+^^^^^^^^^^^^^^^^^^^^^^^
+
+To open a sample file in the GUI, run:
 
 .. code-block:: bash
 
-   playnano play path/to/sample.h5-jpk
+   playnano play ./tests/resources/sample.h5-jpk  # Opens GUI with loaded file
+
+This opens a sample AFM file when run in the project root. Change the path to your
+own data to view other files.
 
 Batch process + export (no GUI):
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 

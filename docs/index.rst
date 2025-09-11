@@ -53,7 +53,6 @@ User Guide
    analysis
    custom_analysis_modules
    notebooks
-   changelog
 
 API Reference
 ~~~~~~~~~~~~~
@@ -64,9 +63,9 @@ API Reference
 
    api/modules
 
-Footer / Support
-----------------
-
+Information and Support
+-----------------------
+- :doc:`changelog`
 - GitHub: https://github.com/derollins/playNano
 - Issues: https://github.com/derollins/playNano/issues
 - Email: d.e.rollins@leeds.ac.uk

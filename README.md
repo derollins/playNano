@@ -69,6 +69,8 @@ pip install -e .
 Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
 scipy, scikit-learn, python-dateutil, tifffile, AFMReader (optional).
 
+More information is available in the documentation.
+
 ## 🚀 Quickstart
 
 **Play a file (GUI):**

@@ -18,7 +18,8 @@ See also the :doc:`cli`, :doc:`gui` and :doc:`analysis` pages.
 Quick start
 -----------
 
-Apply a short inline processing string (CLI):
+Processing can be applied directly in a batch mode using the ``process`` subcommand.
+This can be used to apply a series of filters and export the results in the CLI:
 
 .. code-block:: bash
 
@@ -66,7 +67,8 @@ Common built-in filters
 - ``polynomial_flatten`` - fit & subtract a 2D polynomial surface.
   - parameter: ``order`` (int, default: 2)
 - ``row_median_align`` - subtract median per row to remove horizontal banding.
-- ``zero_mean`` - subtract global mean (centres background around zero).
+- ``zero_mean`` - subtract global mean (centres data around zero or backgorund around zero if a foregorund
+    mask is applied).
 - ``gaussian_filter`` - gaussian smoothing.
   - parameter: ``sigma`` (float, default: 1.0)
 
@@ -145,8 +147,8 @@ The processing system supports exporting processed results and snapshots to:
 - **HDF5** - self-contained bundle including data, processed snapshots and provenance.
 - **GIF** - annotated animated GIF (requires timing metadata for correct frame rates).
 
-Use the CLI flags ``--export``, ``--output-folder`` and ``--output-name`` to
-control export behaviour.
+Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
+control export behaviour (See :docs:`cli` for CLI flag details).
 
 What the pipeline records (overview)
 ------------------------------------
