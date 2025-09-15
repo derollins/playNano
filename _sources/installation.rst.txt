@@ -90,7 +90,7 @@ dependencies.
 This will install:
 
 - Python 3.11 and core scientific libraries (NumPy, SciPy, Pillow, Matplotlib)
-- AFM-specific tools: ``afmreader``, ``topostats``
+- AFM-specific tools: ``afmreader``
 - GUI support via ``PySide6``
 - Compatibility pins (e.g. ``h5py=3.8.*``) to avoid known issues
 

@@ -526,7 +526,7 @@ Required if <cite>mask_key</cite> is not provided.</p></li>
 <li><p><strong>min_size</strong> (<em>int</em><em>, </em><em>default=10</em>) – Minimum area (in pixels) for a region to be kept.</p></li>
 <li><p><strong>remove_edge</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, discard any region that touches the frame boundary.</p></li>
 <li><p><strong>fill_holes</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True, fill holes in each mask before labeling.</p></li>
-<li><p><strong>hole_area</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – If set, only fills holes smaller than this area.</p></li>
+<li><p><strong>hole_area</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – If set, fills only holes smaller than this area.</p></li>
 <li><p><strong>**mask_kwargs</strong> – Additional keyword arguments forwarded to <cite>mask_fn(frame, **mask_kwargs)</cite>.</p></li>
 </ul>
 </dd>
@@ -576,7 +576,7 @@ Aggregate metrics:</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="n">otsu_mask</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="n">mask_mean_offset</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="gp">... </span>             <span class="n">fill_holes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hole_area</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">][</span><span class="s2">&quot;total_features&quot;</span><span class="p">]</span>
@@ -589,7 +589,7 @@ Aggregate metrics:</p>
 <dd><p>Name of the analysis module.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string identifier for this module: “dbscan_clustering”.</p>
+<dd class="field-odd"><p>The string identifier for this module: “feature_detection”.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -612,9 +612,9 @@ Required if <cite>mask_key</cite> is None.</p></li>
 <li><p><strong>mask_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key in <cite>previous_results</cite> whose value is a boolean
 mask array of same shape as <cite>stack.data</cite>.</p></li>
 <li><p><strong>min_size</strong> (<em>int</em><em>, </em><em>default 10</em>) – Minimum area (in pixels) to keep a region.</p></li>
-<li><p><strong>remove_edge</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, discard regions touching any image boundary.</p></li>
-<li><p><strong>fill_holes</strong> (<em>bool</em><em>, </em><em>default False</em>) – Whether to fill holes before labeling.</p></li>
-<li><p><strong>hole_area</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – If set, only fill holes smaller than this area.</p></li>
+<li><p><strong>remove_edge</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, discard regions touching any image boundary.</p></li>
+<li><p><strong>fill_holes</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to fill holes before labeling.</p></li>
+<li><p><strong>hole_area</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – If set, only fill holes smaller than this area.</p></li>
 <li><p><strong>**mask_kwargs</strong> – Passed to <cite>mask_fn(frame, **mask_kwargs)</cite>.</p></li>
 </ul>
 </dd>
