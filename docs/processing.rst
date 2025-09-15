@@ -60,9 +60,8 @@ Concepts & behaviour
 - After a pipeline run the pipeline **updates ``stack.data``** to the final
   processed array (so downstream code sees processed frames by default).
 
-Common built-in filters
------------------------
-
+Built-in filters
+----------------
 - ``remove_plane`` - fit and subtract a 2D plane (useful for tilt removal).
 - ``polynomial_flatten`` - fit & subtract a 2D polynomial surface.
   - parameter: ``order`` (int, default: 2)
@@ -72,8 +71,8 @@ Common built-in filters
 - ``gaussian_filter`` - gaussian smoothing.
   - parameter: ``sigma`` (float, default: 1.0)
 
-Masks (summary)
----------------
+Built-in masks
+--------------
 
 - ``mask_threshold`` - mask values above ``threshold``.
   - parameter: ``threshold`` (float, default: 0.0)
@@ -118,6 +117,11 @@ Plugin signature:
 When the plugin is installed, it appears in the same CLI/API list as the
 built-in filters.
 
+CLI / GUI Usage
+---------------
+
+
+
 Programmatic usage
 ------------------
 
@@ -137,8 +141,8 @@ Build and run a pipeline from Python:
 
    pipeline.run()   # updates stack.processed and stack.data
 
-Saved data & exports (brief)
----------------------------
+Saved data & exports
+^^^^^^^^^^^^^^^^^^^^
 
 The processing system supports exporting processed results and snapshots to:
 
@@ -150,8 +154,8 @@ The processing system supports exporting processed results and snapshots to:
 Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
 control export behaviour (See :docs:`cli` for CLI flag details).
 
-What the pipeline records (overview)
-------------------------------------
+What the pipeline records
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After a run the following are available on the :class:`~playNano.afm_stack.AFMImageStack`:
 

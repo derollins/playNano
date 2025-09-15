@@ -40,18 +40,17 @@ allowing you to make changes and test them immediately during development.
 
 .. code-block:: bash
 
-   # 1) Create and activate a conda env
+   # 1) Clone the repository (if you haven't already)
+   git clone https://github.com/derollins/playNano.git
+   # And navigate to the project root
+   cd playNano
+
+   # 2) Create and activate a conda env
    conda create -n playnano python=3.11
    conda activate playnano
 
-   # 2) Install the package (from the project root)
+   # 3) Install the package (from the project root)
    pip install -e .
-
-If you need PySide6 and prefer conda packages for Qt:
-
-.. code-block:: bash
-
-   conda install -c conda-forge pyside6
 
 Install optional extras (examples):
 
@@ -84,7 +83,7 @@ dependencies.
 
 .. code-block:: bash
 
-   conda env create -f environment.yml
+   conda env create -f environment.yaml
    conda activate playnano_env
 
 This will install:
@@ -100,11 +99,11 @@ This will install:
 
 .. tip::
 
-   If you modify ``environment.yml``, you can update your environment with:
+   If you modify ``environment.yaml``, you can update your environment with:
 
    .. code-block:: bash
 
-      conda env update -f environment.yml --prune
+      conda env update -f environment.yaml --prune
 
 Notes & troubleshooting
 -----------------------

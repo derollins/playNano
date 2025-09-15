@@ -23,8 +23,10 @@ The GUI provides:
    :align: center
    :width: 400px
 
-Command-line usage
-------------------
+Command-line access
+-------------------
+
+The GUI is launched via the ``playnano play`` command:
 
 .. code-block:: bash
 
@@ -38,7 +40,7 @@ Command-line usage
        [--zmax MAX_Z]
 
 Arguments & common options
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **input_file** (*str*, required)
   Path to an AFM file (e.g. ``.h5-jpk``) or a folder of frame files.
@@ -103,7 +105,7 @@ Export behaviour & filenames
   provenance information, and snapshots (raw + intermediate processed steps, when available).
 
 Viewer annotations & GIF exports
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Any visual annotations you see in the viewer are **burned into** exported GIFs.
 That means the exported animation is a pixel-by-pixel rendering of the current
