@@ -12,7 +12,7 @@ from playNano.analysis.base import AnalysisModule
 from playNano.analysis.modules import feature_detection, x_means_clustering
 from playNano.analysis.modules.count_nonzero import CountNonzeroModule
 from playNano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
-from playNano.analysis.modules.feature_detection import FeatureDetectionModule
+from playNano.analysis.modules.feature_detection import MASK_MAP, FeatureDetectionModule
 from playNano.analysis.modules.k_means_clustering import KMeansClusteringModule
 from playNano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
 from playNano.analysis.modules.particle_tracking import ParticleTrackingModule
@@ -123,6 +123,20 @@ def test_run_raises_if_no_data():
         fd.run(stack, mask_fn=lambda f: f > 0)
 
 
+class DummyStackWrongShape:
+    """Simulate an AFM stack with invalid data shape."""
+
+    data = np.array([1, 2, 3])  # 1D array instead of 3D
+
+
+def test_run_raises_if_data_not_3d():
+    """Test that run raises ValueError if stack.data exists but is not 3D."""
+    fd = FeatureDetectionModule()
+    stack = DummyStackWrongShape()
+    with pytest.raises(ValueError, match="stack.data must be a 3D numpy array"):
+        fd.run(stack, mask_fn=lambda f: f > 0)
+
+
 def test_mask_fn_type_error_fallback():
     """Test for something to do with a type error."""
     import numpy as np
@@ -145,6 +159,41 @@ def test_mask_fn_type_error_fallback():
 
     result = fd.run(stack, mask_fn=mask_fn)
     assert "features_per_frame" in result
+
+
+def test_run_resolves_registered_mask_string(monkeypatch):
+    """Test that a registered mask key string resolves to the correct function."""
+    fd = FeatureDetectionModule()
+
+    # Dummy stack: 1 frame, 3x3 image
+    class DummyStackFeatures:
+        data = np.ones((1, 3, 3))
+
+        def time_for_frame(self, i):
+            return i
+
+    stack = DummyStackFeatures()
+
+    # Pick a registered mask key
+    registered_key = "dummy_mask_key"
+
+    # Dummy mask function: all True
+    def dummy_mask(frame):
+        return np.ones_like(frame, dtype=bool)
+
+    # Patch MASK_MAP to include dummy mask
+    monkeypatch.setitem(MASK_MAP, registered_key, dummy_mask)
+
+    # Run module, disable remove_edge to allow small frame region
+    result = fd.run(stack, mask_fn=registered_key, remove_edge=False, min_size=1)
+
+    # Check output structure
+    assert "features_per_frame" in result
+    assert "labeled_masks" in result
+    assert "summary" in result
+
+    # Since mask is all True, labeled mask should have one region
+    assert result["labeled_masks"][0].max() == 1
 
 
 def test_skip_empty_vals_region():

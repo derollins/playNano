@@ -13,6 +13,9 @@ from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_holes
 
 from playNano.analysis.base import AnalysisModule
+from playNano.processing.mask_generators import register_masking
+
+MASK_MAP = register_masking()
 
 
 class FeatureDetectionModule(AnalysisModule):
@@ -39,7 +42,7 @@ class FeatureDetectionModule(AnalysisModule):
     fill_holes : bool, default=False
         If True, fill holes in each mask before labeling.
     hole_area : int or None, default=None
-        If set, only fills holes smaller than this area.
+        If set, fills only holes smaller than this area.
     **mask_kwargs
         Additional keyword arguments forwarded to `mask_fn(frame, **mask_kwargs)`.
 
@@ -81,7 +84,7 @@ class FeatureDetectionModule(AnalysisModule):
 
     Examples
     --------
-    >>> pipeline.add("feature_detection", mask_fn=otsu_mask, min_size=20,
+    >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20,
     ...              fill_holes=True, hole_area=50)
     >>> result = pipeline.run(stack)
     >>> result["summary"]["total_features"]
@@ -98,9 +101,129 @@ class FeatureDetectionModule(AnalysisModule):
         Returns
         -------
         str
-            The string identifier for this module: "dbscan_clustering".
+            The string identifier for this module: "feature_detection".
         """
         return "feature_detection"
+
+    def _get_mask_array(
+        self,
+        data: np.ndarray,
+        previous_results: Optional[dict[str, Any]],
+        mask_fn: Optional[callable],
+        mask_key: Optional[str],
+        **mask_kwargs,
+    ) -> np.ndarray:
+        """Resolve mask array from previous results or by computing frame-by-frame."""
+        n_frames, H, W = data.shape
+
+        if mask_key is not None:
+            if not previous_results or mask_key not in previous_results:
+                raise KeyError(f"mask_key '{mask_key}' not found in previous_results")
+            mask_arr = previous_results[mask_key]
+            if not (
+                isinstance(mask_arr, np.ndarray)
+                and mask_arr.dtype == bool
+                and mask_arr.shape == data.shape
+            ):
+                raise ValueError(
+                    f"previous_results[{mask_key}] must be a boolean ndarray of shape {data.shape}"  # noqa
+                )
+            return mask_arr
+
+        if mask_fn is None:
+            raise ValueError("Either mask_fn or mask_key must be provided")
+
+        # Resolve mask_fn if it's a registered string
+        if isinstance(mask_fn, str):
+            if mask_fn not in MASK_MAP:
+                raise ValueError(
+                    f"mask_fn '{mask_fn}' is not a known registered mask. "
+                    f"Available: {list(MASK_MAP.keys())}"
+                )
+            mask_fn = MASK_MAP[mask_fn]
+
+        # Compute mask frame-by-frame
+        mask_arr = np.zeros_like(data, dtype=bool)
+        for i in range(n_frames):
+            try:
+                mf = mask_fn(data[i], **mask_kwargs)
+            except TypeError:
+                mf = mask_fn(data[i])
+            if not (
+                isinstance(mf, np.ndarray) and mf.dtype == bool and mf.shape == (H, W)
+            ):
+                raise ValueError(f"mask_fn returned invalid mask for frame {i}")
+            mask_arr[i] = mf
+        return mask_arr
+
+    def _process_frame(
+        self,
+        frame: np.ndarray,
+        mask_frame: np.ndarray,
+        frame_ts: float,
+        *,
+        min_size: int,
+        remove_edge: bool,
+        fill_holes: bool,
+        hole_area: Optional[int],
+    ) -> tuple[list[dict[str, Any]], np.ndarray]:
+        """Process a single frame: hole fill, labeling, filtering, stats."""
+        H, W = frame.shape
+
+        # Optionally fill holes
+        if fill_holes:
+            if hole_area is not None:
+                mask_frame = remove_small_holes(mask_frame, area_threshold=hole_area)
+            else:
+                mask_frame = binary_fill_holes(mask_frame)
+            mask_frame = mask_frame.astype(bool)
+
+        # Label connected regions
+        initial_labeled = label(mask_frame)
+        filtered_mask = np.zeros_like(mask_frame, dtype=bool)
+
+        for prop in regionprops(initial_labeled):
+            if prop.area < min_size:
+                continue
+            minr, minc, maxr, maxc = prop.bbox
+            if remove_edge and (minr == 0 or minc == 0 or maxr == H or maxc == W):
+                continue
+            filtered_mask[initial_labeled == prop.label] = True
+
+        # Relabel after filtering
+        labeled = label(filtered_mask)
+        props = regionprops(labeled, intensity_image=frame)
+
+        # Collect stats
+        features: list[dict[str, Any]] = []
+        for prop in props:
+            mask_pixels = labeled == prop.label
+            vals = frame[mask_pixels]
+            if vals.size == 0:
+                continue
+            features.append(
+                {
+                    "frame_timestamp": frame_ts,
+                    "label": int(prop.label),
+                    "area": int(prop.area),
+                    "min": float(vals.min()),
+                    "max": float(vals.max()),
+                    "mean": float(vals.mean()),
+                    "bbox": tuple(map(int, prop.bbox)),  # (minr, minc, maxr, maxc)
+                    "centroid": tuple(map(float, prop.centroid)),
+                }
+            )
+        return features, labeled
+
+    def _summarize(self, n_frames: int, total_features: int) -> dict[str, Any]:
+        """Summarize results across frames."""
+        return {
+            "total_frames": n_frames,
+            "total_features": total_features,
+            "avg_features_per_frame": (
+                total_features / n_frames if n_frames > 0 else 0.0
+            ),
+        }
 
     def run(
         self,
@@ -138,11 +261,11 @@ class FeatureDetectionModule(AnalysisModule):
             mask array of same shape as `stack.data`.
         min_size : int, default 10
             Minimum area (in pixels) to keep a region.
-        remove_edge : bool, default True
+        remove_edge : bool, default=True
             If True, discard regions touching any image boundary.
-        fill_holes : bool, default False
+        fill_holes : bool, default=False
             Whether to fill holes before labeling.
-        hole_area : int or None, default None
+        hole_area : int or None, default=None
             If set, only fill holes smaller than this area.
         **mask_kwargs
             Passed to `mask_fn(frame, **mask_kwargs)`.
@@ -173,121 +296,37 @@ class FeatureDetectionModule(AnalysisModule):
             raise ValueError("AFMImageStack has no data")
         if not isinstance(data, np.ndarray) or data.ndim != 3:
             raise ValueError("stack.data must be a 3D numpy array (n_frames, H, W)")
-        n_frames, H, W = data.shape
+        n_frames, _, _ = data.shape
 
-        # 1. Obtain or validate mask array
-        if mask_key is not None:
-            if not previous_results or mask_key not in previous_results:
-                raise KeyError(f"mask_key '{mask_key}' not found in previous_results")
-            mask_arr = previous_results[mask_key]
-            if not (
-                isinstance(mask_arr, np.ndarray)
-                and mask_arr.dtype == bool
-                and mask_arr.shape == data.shape
-            ):
-                raise ValueError(
-                    f"previous_results[{mask_key}] must be a boolean ndarray of shape {data.shape}"  # noqa
-                )
-        else:
-            if mask_fn is None:
-                raise ValueError("Either mask_fn or mask_key must be provided")
-            # compute mask frame-by-frame
-            mask_arr = np.zeros_like(data, dtype=bool)
-            for i in range(n_frames):
-                frame = data[i]
-                try:
-                    mf = mask_fn(frame, **mask_kwargs)
-                except TypeError:
-                    mf = mask_fn(frame)
-                # validate
-                if not (
-                    isinstance(mf, np.ndarray)
-                    and mf.dtype == bool
-                    and mf.shape == (H, W)
-                ):
-                    raise ValueError(f"mask_fn returned invalid mask for frame {i}")
-                mask_arr[i] = mf
+        mask_arr = self._get_mask_array(
+            data, previous_results, mask_fn, mask_key, **mask_kwargs
+        )
 
         features_per_frame: list[list[dict[str, Any]]] = []
+        labeled_masks: list[np.ndarray] = []
         total_features = 0
-        labeled_masks = []
 
         for i in range(n_frames):
-            frame = data[i]
             try:
-                ts = stack.time_for_frame(i)
-                frame_ts = float(ts)
+                frame_ts = float(stack.time_for_frame(i))
             except Exception:
                 frame_ts = float(i)
 
-            mask_frame = mask_arr[i].copy()
-
-            # 2. Optionally fill holes
-            if fill_holes:
-                # mask_frame is boolean
-                if hole_area is not None:
-                    # fill holes smaller than hole_area
-                    # remove_small_holes fills holes with area < area_threshold
-                    # note: remove_small_holes expects a 2D array
-                    mask_frame = remove_small_holes(
-                        mask_frame, area_threshold=hole_area
-                    )
-                else:
-                    # fill all holes regardless of size
-                    mask_frame = binary_fill_holes(mask_frame)
-                # ensure boolean dtype
-                mask_frame = mask_frame.astype(bool)
-
-            # 3. Label connected regions
-            initial_labeled = label(mask_frame)
-            filtered_mask = np.zeros_like(mask_frame, dtype=bool)
-
-            for prop in regionprops(initial_labeled):
-                area = prop.area
-                minr, minc, maxr, maxc = prop.bbox
-                if area < min_size:
-                    continue
-                if remove_edge and (minr == 0 or minc == 0 or maxr == H or maxc == W):
-                    continue
-                filtered_mask[initial_labeled == prop.label] = True
-
-            # Now label the filtered mask
-            labeled = label(filtered_mask)
+            feats, labeled = self._process_frame(
+                data[i],
+                mask_arr[i].copy(),
+                frame_ts,
+                min_size=min_size,
+                remove_edge=remove_edge,
+                fill_holes=fill_holes,
+                hole_area=hole_area,
+            )
+            features_per_frame.append(feats)
             labeled_masks.append(labeled)
-            props = regionprops(labeled, intensity_image=frame)
-
-            kept_stats: list[dict[str, Any]] = []
-            for prop in props:
-                area = prop.area
-                minr, minc, maxr, maxc = prop.bbox  # maxr/maxc are exclusive
-                # Compute stats on underlying image
-                mask_pixels = labeled == prop.label
-                vals = frame[mask_pixels]
-                if vals.size == 0:
-                    continue
-                stats = {
-                    "frame_timestamp": frame_ts,
-                    "label": int(prop.label),
-                    "area": int(area),
-                    "min": float(vals.min()),
-                    "max": float(vals.max()),
-                    "mean": float(vals.mean()),
-                    "bbox": (int(minr), int(minc), int(maxr), int(maxc)),
-                    "centroid": tuple(map(float, prop.centroid)),
-                }
-                kept_stats.append(stats)
-
-            features_per_frame.append(kept_stats)
-            total_features += len(kept_stats)
-
-        summary = {
-            "total_frames": n_frames,
-            "total_features": total_features,
-            "avg_features_per_frame": total_features / n_frames if n_frames > 0 else 0,
-        }
+            total_features += len(feats)
 
         return {
             "features_per_frame": features_per_frame,
             "labeled_masks": labeled_masks,
-            "summary": summary,
+            "summary": self._summarize(n_frames, total_features),
         }
