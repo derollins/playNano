@@ -123,6 +123,20 @@ def test_run_raises_if_no_data():
         fd.run(stack, mask_fn=lambda f: f > 0)
 
 
+class DummyStackWrongShape:
+    """Simulate an AFM stack with invalid data shape."""
+
+    data = np.array([1, 2, 3])  # 1D array instead of 3D
+
+
+def test_run_raises_if_data_not_3d():
+    """Test that run raises ValueError if stack.data exists but is not 3D."""
+    fd = FeatureDetectionModule()
+    stack = DummyStackWrongShape()
+    with pytest.raises(ValueError, match="stack.data must be a 3D numpy array"):
+        fd.run(stack, mask_fn=lambda f: f > 0)
+
+
 def test_mask_fn_type_error_fallback():
     """Test for something to do with a type error."""
     import numpy as np

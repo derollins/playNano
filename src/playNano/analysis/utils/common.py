@@ -195,7 +195,7 @@ def load_analysis_from_hdf5(
         return recurse(h5file[dataset_name])
 
 
-def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=5):
+def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=6):
     """Return a JSON-safe version of any object, printing any functions it finds."""
     import numpy as np
 
