@@ -64,8 +64,13 @@ Arguments & common options
 - **--zmin**, **--zmax** (*float* or ``"auto"``)  
   Initial display z-limits. ``"auto"`` uses the 1st / 99th percentiles by default.
 
-Main window layout
-------------------
+Main window
+-----------
+
+.. image:: images/GUI_window.png
+   :alt: playNano GUI
+   :width: 420px
+   :align: center
 
 - **Viewer Panel (left)** - rendered AFM frames (raw or processed) with overlays.
   Playback controls and filter buttons are located below the viewer.
@@ -75,8 +80,17 @@ Main window layout
   - **GIF Export**: choose raw/processed and save an annotated animated GIF.
   - **Data Export**: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.
 
+Keyboard shortcuts
+^^^^^^^^^^^^^^^^^^
+
+- **Space** - play / pause
+- **F** - apply filters (run configured processing pipeline)
+- **R** - toggle raw / processed view
+- **G** - export the current view as a GIF (honours timestamp/scale settings)
+- **E** - export data (NPZ / OME-TIFF / HDF5) in the checked formats
+
 Raw vs Processed data behaviour
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - If the loaded stack contains a saved ``"raw"`` snapshot (e.g. when loading a bundle),
   the GUI treats that snapshot as the unprocessed data and ``stack.data`` as the
@@ -85,14 +99,6 @@ Raw vs Processed data behaviour
   the processed view. After applying filters, the GUI switches to the processed view by
   default, and export options for processed data become available.
 
-Keyboard shortcuts
-------------------
-
-- **Space** - play / pause
-- **F** - apply filters (run configured processing pipeline)
-- **R** - toggle raw / processed view
-- **G** - export the current view as a GIF (honours timestamp/scale settings)
-- **E** - export data (NPZ / OME-TIFF / HDF5) in the checked formats
 
 Export behaviour & filenames
 ---------------------------
@@ -104,15 +110,15 @@ Export behaviour & filenames
 - **Data bundles**: NPZ, OME-TIFF, and HDF5 exports include processing metadata,
   provenance information, and snapshots (raw + intermediate processed steps, when available).
 
-Viewer annotations & GIF exports
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+GIF annotations
+^^^^^^^^^^^^^^^
 
 Any visual annotations you see in the viewer are **burned into** exported GIFs.
-That means the exported animation is a pixel-by-pixel rendering of the current
-viewer display - it is not an independent overlay file.
+That means the exported animation reflects the current viewer display - it is
+not an independent overlay file.
 
 What is included
-^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~
 
 - **Timestamps** - if the ``Show Timestamp`` checkbox is enabled, the frame
   timestamp displayed in the viewer will be drawn into every exported GIF frame.
@@ -125,7 +131,7 @@ What is included
   lines or spinboxes, the exported frames reflect those settings.
 
 How to control annotations
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Use the viewer checkboxes to toggle annotations before export:
   - Uncheck **Show Timestamp** to remove timestamps from the exported GIF.
