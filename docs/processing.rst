@@ -23,8 +23,8 @@ This can be used to apply a series of filters and export the results in the CLI:
 
 .. code-block:: bash
 
-   playnano process data/sample.h5-jpk \
-       --processing "remove_plane;gaussian_filter:sigma=2.0;threshold_mask:threshold=2" \
+   playnano process ./tests/resources/sample_0.h5-jpk \
+       --processing "remove_plane;threshold_mask:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0" \
        --export tif,npz \
        --make-gif \
        --output-folder ./results \
@@ -36,16 +36,16 @@ Or use a YAML pipeline file:
 
    filters:
      - name: remove_plane
-     - name: gaussian_filter
-       sigma: 2.0
      - name: threshold_mask
        threshold: 2
      - name: polynomial_flatten
        order: 2
+     - name: gaussian_filter
+       sigma: 2.0
 
 .. code-block:: bash
 
-   playnano process data/sample.h5-jpk --processing-file pipeline.yaml
+   playnano process ./tests/resources/sample_0.h5-jpk --processing-file pipeline.yaml
 
 Concepts & behaviour
 --------------------
@@ -60,20 +60,38 @@ Concepts & behaviour
 - After a pipeline run the pipeline **updates ``stack.data``** to the final
   processed array (so downstream code sees processed frames by default).
 
-Common built-in filters
------------------------
+Built-in filters and masks
+--------------------------
+
+There are a number of built in functions that can be used to process AFM data.
+
+These functions take a numpy array as a argument along with any parameters and
+return a numpy array. In the case of the filters this is an array of floats while
+the mask functions output a binary array.
+
+Certain filters (e.g. ``remove_plane``, ``row_median_align``) support masked computation.
+When a binary mask is provided, the operation is applied to the full image, but its internal
+parameters are estimated only from unmasked pixels. This is useful when regions of the image
+contain artifacts, noise, or irrelevant features that should not influence the operation,
+but the correction itself must be applied globally (i.e. flattening based on background pixels).
+
+The output of each function is saved as a step and the masks can  also be used in analysis
+pipelines.
+
+Filters
+^^^^^^^
 
 - ``remove_plane`` - fit and subtract a 2D plane (useful for tilt removal).
 - ``polynomial_flatten`` - fit & subtract a 2D polynomial surface.
   - parameter: ``order`` (int, default: 2)
 - ``row_median_align`` - subtract median per row to remove horizontal banding.
-- ``zero_mean`` - subtract global mean (centres data around zero or backgorund around zero if a foregorund
+- ``zero_mean`` - subtract global mean (centres data around zero or background around zero if a foreground
     mask is applied).
 - ``gaussian_filter`` - gaussian smoothing.
   - parameter: ``sigma`` (float, default: 1.0)
 
-Masks (summary)
----------------
+Masks
+^^^^^
 
 - ``mask_threshold`` - mask values above ``threshold``.
   - parameter: ``threshold`` (float, default: 0.0)
@@ -83,7 +101,7 @@ Masks (summary)
   - parameter: ``factor`` (float, default: 1.0)
 - ``mask_morphological`` - threshold + morphological closing (structure size param).
   - parameter: ``threshold`` (float)
-  - parameter: ``structure_size`` (int, fefault= 3)
+  - parameter: ``structure_size`` (int, default= 3)
 - ``mask_adaptive`` - block-wise adaptive thresholding (``block_size``, ``offset``).
   - parameter: ``block_size`` (int, default: 5)
   - parameter: ``offset`` (float, default: 0.0)
@@ -97,7 +115,7 @@ Plugins
 
 Extend the pipeline by registering filter functions via entry points under
 ``playNano.filters``. This can be any callable that accepts a 2D numpy array
-with optionl parameters and returns a processed 2D array.
+with optional parameters and returns a processed 2D array.
 
 Example `pyproject.toml` fragment:
 
@@ -118,8 +136,26 @@ Plugin signature:
 When the plugin is installed, it appears in the same CLI/API list as the
 built-in filters.
 
+CLI / GUI Usage
+---------------
+
+The processing pipeline can defined in the CLI and run in the CLI or the GUI.
+
+The **playNano** wizard allows processing pipelines to be built interactively.
+To launch this you use the ``wizard`` subcommand followed by a path to the file you
+are processing and flags that define the output folder and file name (see :doc:`cli`).
+
+.. code-block::
+  playnano wizard .test/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
+
 Programmatic usage
 ------------------
+
+The processing pipeline can be used programmatically via the
+:class:`~playNano.processing.pipeline.ProcessingPipeline` class, which operates
+on a :class:`~playNano.afm_stack.AFMImageStack` object. Use the ``add_filter()`` and
+``add_mask()`` methods to build the pipeline step-by-step, and call ``run()``
+to execute it.
 
 Build and run a pipeline from Python:
 
@@ -137,8 +173,12 @@ Build and run a pipeline from Python:
 
    pipeline.run()   # updates stack.processed and stack.data
 
-Saved data & exports (brief)
----------------------------
+After execution, the processed frames are available via ``stack.data``, and intermediate
+snapshots can be accessed through ``stack.processed``.
+
+
+Saved data & exports
+^^^^^^^^^^^^^^^^^^^^
 
 The processing system supports exporting processed results and snapshots to:
 
@@ -150,8 +190,8 @@ The processing system supports exporting processed results and snapshots to:
 Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
 control export behaviour (See :docs:`cli` for CLI flag details).
 
-What the pipeline records (overview)
-------------------------------------
+What the pipeline records
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After a run the following are available on the :class:`~playNano.afm_stack.AFMImageStack`:
 

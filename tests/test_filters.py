@@ -12,6 +12,7 @@ from playNano.processing.masked_filters import (
     polynomial_flatten_masked,
     remove_plane_masked,
     row_median_align_masked,
+    zero_mean_masked,
 )
 
 structure = generate_binary_structure(rank=2, connectivity=2)  # 8-connectivity
@@ -406,3 +407,36 @@ def test_row_median_align_masked_shape_mismatch():
     mask = np.zeros((5, 5), dtype=bool)
     with pytest.raises(ValueError):
         row_median_align_masked(data, mask)
+
+
+def test_zero_mean_masked_basic():
+    """Test zero mean on a simple image with a single pixel mask."""
+    # Simple 3x3 image
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
+    mask = np.array(
+        [[False, False, False], [False, True, False], [False, False, False]]
+    )
+
+    # Background pixels are all except center
+    expected_bg = np.array([1, 2, 3, 4, 6, 7, 8, 9], dtype=float)
+    expected_mean = expected_bg.mean()
+    expected = data - expected_mean
+
+    result = zero_mean_masked(data, mask)
+    np.testing.assert_allclose(result, expected)
+
+
+def test_zero_mean_masked_all_foreground():
+    """Test that error is raised if whole image is masked."""
+    data = np.ones((2, 2))
+    mask = np.ones_like(data, dtype=bool)  # all foreground
+    with pytest.raises(ValueError, match="No background pixels"):
+        zero_mean_masked(data, mask)
+
+
+def test_zero_mean_masked_shape_mismatch():
+    """Test that error is raised if mask and data are different shapes."""
+    data = np.ones((2, 2))
+    mask = np.ones((3, 3), dtype=bool)
+    with pytest.raises(ValueError, match="Mask must have same shape"):
+        zero_mean_masked(data, mask)

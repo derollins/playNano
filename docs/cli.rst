@@ -15,7 +15,7 @@ General usage
 Run :command:`playnano --help` to see global options and a list of subcommands.
 
 Available subcommands
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 - ``play``    - Launch the interactive GUI viewer.
 - ``process`` - Batch mode: apply filters and export images/bundles/GIFs.
@@ -25,8 +25,13 @@ Available subcommands
 
 The CLI maps to the Python entry point ``playNano.cli.entrypoint:main``.
 
-Process (batch) mode
---------------------
+Batch mode operations
+---------------------
+
+Processing and analysis can be run in a non-interactive batch mode without a GUI or wizard.
+
+Batch processing mode
+^^^^^^^^^^^^^^^^^^^^^
 
 Apply filters and export without user interaction.
 
@@ -45,7 +50,7 @@ Apply filters and export without user interaction.
      [--zmax MAXIMUM]
 
 Primary options
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 - ``--channel`` (default: ``height_trace``) - channel name to load from the file.
 - ``--processing`` - semi-colon delimited inline pipeline string.
@@ -62,7 +67,7 @@ Primary options
    Use one or the other (or neither to run with no processing).
 
 Processing pipeline schema
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example pipeline YAML (see :doc:`processing` for details):
 
@@ -77,8 +82,8 @@ Example pipeline YAML (see :doc:`processing` for details):
      - name: polynomial_flatten
        order: 2
 
-Analyze mode
-------------
+Batch analysis mode
+^^^^^^^^^^^^^^^^^^^
 
 Run an analysis pipeline on an loaded AFM stack and export the results.
 
@@ -91,8 +96,8 @@ Run an analysis pipeline on an loaded AFM stack and export the results.
      [--output-folder OUTPUT_DIR] \
      [--output-name BASE_NAME]
 
-Options
-^^^^^^^
+Analysis options
+~~~~~~~~~~~~~~~~
 
 - ``--analysis-steps`` - semicolon-delimited inline steps (example below).
 - ``--analysis-file`` - YAML/JSON file specifying the analysis pipeline.
@@ -107,7 +112,7 @@ Inline example:
      --output-folder ./analysis_results --output-name run1
 
 Analysis pipeline schema
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example YAML (see :doc:`analysis` for full reference):
 
@@ -120,8 +125,7 @@ Example YAML (see :doc:`analysis` for full reference):
      - name: track_particles
        max_distance: 3.0
 
-Outputs
-^^^^^^^
+**Outputs**
 
 - ``<output>.json`` - sanitized analysis record (suitable for downstream parsing).
 - ``<output>.h5`` - full analysis bundle (if HDF5 export requested).
@@ -141,7 +145,7 @@ Common REPL commands
 ^^^^^^^^^^^^^^^^^^^^
 
 Processing pipeline commands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``add <filter>`` - add a processing step (REPL prompts for parameters).
 - ``list`` - show the current processing pipeline steps.
@@ -149,7 +153,7 @@ Processing pipeline commands
 - ``run`` - execute the processing pipeline on the supplied input.
 
 Analysis pipeline commands (prefixed with ``a``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``aadd <analysis_step>`` - add an analysis step (REPL prompts for parameters).
 - ``alist`` - show the current analysis pipeline steps.
@@ -158,7 +162,7 @@ Analysis pipeline commands (prefixed with ``a``)
     AFM stack contains only raw data).
 
 Other utility commands
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 - ``help`` - show available REPL commands.
 - ``quit`` - exit the wizard (this is a single, global quit that closes the entire session).
@@ -190,13 +194,13 @@ GUI highlights
 - Keyboard shortcuts: ``Space`` (play/pause), ``F`` (apply filters), ``R`` (toggle raw/processed), ``G`` (export GIF), ``E`` (export selected formats)
 
 Notes about z-range
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 - ``--zmin`` / ``--zmax`` accept a float or the string ``auto`` (default).
   When ``auto`` is used values are computed as the 1st and 99th percentiles of the stack.
 
 env-info
---------
+~~~~~~~~
 
 Prints environment and dependency information to help debugging and issue reports:
 

@@ -22,6 +22,7 @@ Quick links
 - :doc:`processing` - filters, masks and pipeline behaviour
 - :doc:`analysis` - running analysis modules and provenance
    - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
+- :doc:`whats_new/v0.1.0` - highlights of the latest release
 - :doc:`changelog` - release notes and history
 
 Quickstart (example)
@@ -30,10 +31,10 @@ Quickstart (example)
 .. code-block:: bash
 
    # show a file in the interactive GUI
-   playnano play example_data/sample.h5-jpk
+   playnano play ./test/resources/sample_0.h5-jpk
 
 .. note::
-   See :doc:`quickstart` for a runnable notebook and step-by-step instructions.
+   See :doc:`quickstart` for step-by-step instructions.
 
 Contents
 --------
@@ -53,6 +54,7 @@ User Guide
    analysis
    custom_analysis_modules
    notebooks
+   changelog
 
 API Reference
 ~~~~~~~~~~~~~
@@ -62,6 +64,15 @@ API Reference
    :caption: API Reference
 
    api/modules
+
+What's New
+~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+   :caption: What's New
+
+   whats_new/index
 
 Information and Support
 -----------------------

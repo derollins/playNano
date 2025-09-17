@@ -2,7 +2,8 @@ Analysis
 ========
 
 The analysis system in **playNano** provides a provenance-aware pipeline
-for running detection, tracking and other analysis modules on AFM image stacks.
+for running a variety of analaysis modules including built in modules for
+feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
 and reproducibility.
@@ -21,16 +22,17 @@ Run an inline analysis pipeline from the CLI:
 
 .. code-block:: bash
 
-   playnano analyze data/processed_sample.h5      --analysis-steps "detect_particles:threshold=5;track_particles:max_distance=3"      --output-folder ./results      --output-name tracked_particles
+   playnano analyze data/processed_sample.h5 --analysis-steps "feature_detection:mask_fn="mask_threshold",threshold=1;particle_tracking:max_distance=3"      --output-folder ./results      --output-name tracked_particles
 
 Or load the pipeline from a YAML/JSON file:
 
 .. code-block:: yaml
 
    analysis:
-     - name: detect_particles
+     - name: feature_detection
+       mask_fn: mask_threshold
        threshold: 5
-     - name: track_particles
+     - name: particle_tracking
        max_distance: 3
 
 .. code-block:: bash
@@ -51,7 +53,7 @@ Overview & behaviour
   summary is written (arrays and complex objects are summarised for JSON friendliness).
 
 Available analysis modules
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See the generated list of installed modules:
 
@@ -61,7 +63,9 @@ See the generated list of installed modules:
 CLI usage
 ---------
 
-General form:
+The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.
+
+This is the general form of the analyze subcommand for CLI use:
 
 .. code-block:: bash
 
@@ -75,6 +79,36 @@ Common options:
 - ``--output-folder`` / ``--output-name`` - control where exported results are written.
 
 Since some analysis modules have several parameters it is often easier to generate a YAML using the wizard.
+
+
+YAML schema
+^^^^^^^^^^^
+
+Top-level key must be ``analysis``:
+
+.. code-block:: yaml
+
+   analysis:
+     - name: feature_detection
+       mask_fn: mask_threshold
+       threshold: 4.5
+     - name: particle_tracking
+       max_distance: 2.5
+       min_length: 5
+
+Each entry:
+
+- **name** (str, required) - analysis module name.
+- **parameters** - module-specific kwargs passed through to the module.
+
+Validation notes
+^^^^^^^^^^^^^^^^
+
+- The ``analysis`` key is required.
+- Each step must include ``name``.
+- Unknown module names raise an error at runtime.
+- Parameters are forwarded as keyword arguments and must match the module signature.
+
 
 Programmatic usage
 ------------------
@@ -112,34 +146,6 @@ Outputs & exports
 - CLI/utility functions may optionally export:
   - A sanitised JSON summary (human- and machine-readable).
   - HDF5 bundle with full data + provenance.
-
-YAML schema
------------
-
-Top-level key must be ``analysis``:
-
-.. code-block:: yaml
-
-   analysis:
-     - name: feature_detection
-       mask_fn: mask_threshold
-       threshold: 4.5
-     - name: particle_tracking
-       max_distance: 2.5
-       min_length: 5
-
-Each entry:
-
-- **name** (str, required) - analysis module name.
-- **parameters** - module-specific kwargs passed through to the module.
-
-Validation notes
-^^^^^^^^^^^^^^^^
-
-- The ``analysis`` key is required.
-- Each step must include ``name``.
-- Unknown module names raise an error at runtime.
-- Parameters are forwarded as keyword arguments and must match the module signature.
 
 Inspecting results
 ------------------
