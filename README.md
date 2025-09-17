@@ -10,7 +10,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/playNano)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
 [![Tests](https://github.com/derollins/playNano/actions/workflows/tests.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/tests.yaml)
