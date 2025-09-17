@@ -13,7 +13,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/playNano)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
-[![Tests](https://github.com/derollins/playNano/actions/workflows/tests.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/tests.yaml)
+[![Tests](https://github.com/derollins/playNano/actions/workflows/test.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/tests.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Code style: flake8](https://img.shields.io/badge/code%20style-flake8-456789.svg)](https://github.com/psf/flake8)
