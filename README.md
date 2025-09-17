@@ -164,7 +164,7 @@ If you use **playNano** in academic work, please cite it appropriately.
 
 - For now, please cite the GitHub repository:
   > Rollins, D. (2025). playNano: AFM Video Reader and Analysis Toolkit.
-  > GitHub repository: https://github.com/derollins/playNano
+  > GitHub repository: <https://github.com/derollins/playNano>
 
 ## Included Fonts
 
