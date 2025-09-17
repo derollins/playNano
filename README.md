@@ -5,6 +5,9 @@
 
 <div align="center">
 
+[![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=blue)](https://github.com/derollins/playNano/releases)
+[![GitHub release downloads](https://img.shields.io/github/downloads/derollins/playNano/latest/total?color=orange)](https://github.com/derollins/playNano/releases)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
