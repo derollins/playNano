@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="playNano.io.formats package" href="playNano.io.formats.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="What’s New" href="../whats_new/index.html" /><link rel="prev" title="playNano.io.formats package" href="playNano.io.formats.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
         <title>playNano.processing package - playNano 0.1.0 documentation</title>
@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -228,6 +230,13 @@
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -515,6 +524,26 @@ False=background (used to fit).</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.processing.masked_filters.zero_mean_masked">
+<span class="sig-prename descclassname"><span class="pre">playNano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/processing/masked_filters.html#zero_mean_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.processing.masked_filters.zero_mean_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the mean of background pixels (mask==False) from the entire image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Image with zero-mean background.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-playNano.processing.pipeline">
 <span id="playnano-processing-pipeline-module"></span><h2>playNano.processing.pipeline module<a class="headerlink" href="#module-playNano.processing.pipeline" title="Link to this heading">¶</a></h2>
@@ -753,7 +782,15 @@ def gaussian_filter(frame, sigma=1.0):</p>
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="../whats_new/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">What’s New</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="playNano.io.formats.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -824,6 +861,7 @@ def gaussian_filter(frame, sigma=1.0):</p>
 <li><a class="reference internal" href="#playNano.processing.masked_filters.register_mask_filters"><code class="docutils literal notranslate"><span class="pre">register_mask_filters()</span></code></a></li>
 <li><a class="reference internal" href="#playNano.processing.masked_filters.remove_plane_masked"><code class="docutils literal notranslate"><span class="pre">remove_plane_masked()</span></code></a></li>
 <li><a class="reference internal" href="#playNano.processing.masked_filters.row_median_align_masked"><code class="docutils literal notranslate"><span class="pre">row_median_align_masked()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.processing.masked_filters.zero_mean_masked"><code class="docutils literal notranslate"><span class="pre">zero_mean_masked()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-playNano.processing.pipeline">playNano.processing.pipeline module</a><ul>

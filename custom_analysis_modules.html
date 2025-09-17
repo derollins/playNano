@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="playNano" href="api/modules.html" /><link rel="prev" title="Analysis" href="analysis.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Notebooks" href="notebooks.html" /><link rel="prev" title="Analysis" href="analysis.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
         <title>Custom Analysis Modules - playNano 0.1.0 documentation</title>
@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -275,8 +284,8 @@
 <p>You can extend <strong>playNano</strong> by writing your own analysis modules and registering
 them as plugins. This allows you to integrate custom feature detectors, tracking
 methods, or specialised statistics into the standard pipeline.</p>
-<section id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<section id="stucture-and-requirements">
+<h2>Stucture and Requirements<a class="headerlink" href="#stucture-and-requirements" title="Link to this heading">¶</a></h2>
 <p>Custom modules must subclass <a class="reference internal" href="api/playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">playNano.analysis.base.AnalysisModule</span></code></a> and
 implement two things:</p>
 <ul class="simple">
@@ -288,9 +297,8 @@ implement two things:</p>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">version</span></code> class attribute (string) to help with provenance tracking</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">requires</span></code> list to declare required previous analysis modules</p></li>
 </ul>
-</section>
 <section id="minimal-example">
-<h2>Minimal Example<a class="headerlink" href="#minimal-example" title="Link to this heading">¶</a></h2>
+<h3>Minimal Example<a class="headerlink" href="#minimal-example" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playNano.analysis.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisModule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
 
@@ -310,19 +318,8 @@ implement two things:</p>
 results (arrays, dicts, numbers, etc.). These values are stored under
 <code class="docutils literal notranslate"><span class="pre">stack.analysis</span></code> and linked in the provenance log.</p>
 </section>
-<section id="registering-the-module">
-<h2>Registering the Module<a class="headerlink" href="#registering-the-module" title="Link to this heading">¶</a></h2>
-<p>Add an entry under <code class="docutils literal notranslate"><span class="pre">[project.entry-points.&quot;playNano.analysis&quot;]</span></code> in
-<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> so the plugin system can discover your module:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;playNano.analysis&quot;</span><span class="k">]</span>
-<span class="n">my_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mypackage.mymodule:MyModule&quot;</span>
-</pre></div>
-</div>
-<p>After installation (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code>), playNano will automatically detect
-your plugin.</p>
-</section>
 <section id="declaring-dependencies">
-<h2>Declaring Dependencies<a class="headerlink" href="#declaring-dependencies" title="Link to this heading">¶</a></h2>
+<h3>Declaring Dependencies<a class="headerlink" href="#declaring-dependencies" title="Link to this heading">¶</a></h3>
 <p>If your module requires the outputs of another analysis step, you can
 declare this using the <code class="docutils literal notranslate"><span class="pre">requires</span></code> class attribute:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyDependentModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
@@ -339,6 +336,18 @@ declare this using the <code class="docutils literal notranslate"><span class="p
 </div>
 <p>This ensures the pipeline provides access to upstream results.</p>
 <p>This isn’t fully fleshed out so if you encounter any isssue please raise and issue on GitHub.</p>
+</section>
+</section>
+<section id="registering-the-module">
+<h2>Registering the Module<a class="headerlink" href="#registering-the-module" title="Link to this heading">¶</a></h2>
+<p>Add an entry under <code class="docutils literal notranslate"><span class="pre">[project.entry-points.&quot;playNano.analysis&quot;]</span></code> in
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> so the plugin system can discover your module:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;playNano.analysis&quot;</span><span class="k">]</span>
+<span class="n">my_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mypackage.mymodule:MyModule&quot;</span>
+</pre></div>
+</div>
+<p>After installation (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code>), playNano will automatically detect
+your plugin.</p>
 </section>
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
@@ -384,12 +393,12 @@ your module’s results were recorded.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="api/modules.html">
+          <a class="next-page" href="notebooks.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">playNano</div>
+                <div class="title">Notebooks</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -435,10 +444,12 @@ your module’s results were recorded.</p></li>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Custom Analysis Modules</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#stucture-and-requirements">Stucture and Requirements</a><ul>
 <li><a class="reference internal" href="#minimal-example">Minimal Example</a></li>
-<li><a class="reference internal" href="#registering-the-module">Registering the Module</a></li>
 <li><a class="reference internal" href="#declaring-dependencies">Declaring Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#registering-the-module">Registering the Module</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#usage-in-a-pipeline">Usage in a Pipeline</a></li>
 <li><a class="reference internal" href="#debugging-troubleshooting">Debugging &amp; Troubleshooting</a></li>

@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -305,16 +314,17 @@ allowing you to make changes and test them immediately during development.</p>
 the <code class="docutils literal notranslate"><span class="pre">conda</span></code> package manager. Miniconda is lightweight and ideal for custom
 setups, while Anaconda includes a full suite of scientific packages out of the box.</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1) Create and activate a conda env</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1) Clone the repository (if you haven&#39;t already)</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/derollins/playNano.git
+<span class="c1"># And navigate to the project root</span>
+<span class="nb">cd</span><span class="w"> </span>playNano
+
+<span class="c1"># 2) Create and activate a conda env</span>
 conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>playnano<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
 conda<span class="w"> </span>activate<span class="w"> </span>playnano
 
-<span class="c1"># 2) Install the package (from the project root)</span>
+<span class="c1"># 3) Install the package (from the project root)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
-</pre></div>
-</div>
-<p>If you need PySide6 and prefer conda packages for Qt:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pyside6
 </pre></div>
 </div>
 <p>Install optional extras (examples):</p>
@@ -341,7 +351,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <p>If you prefer a reproducible setup using a pre-defined environment file, you can
 use the provided <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> to create a conda environment with all required
 dependencies.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yaml
 conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 </pre></div>
 </div>
@@ -358,8 +368,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>If you modify <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>, you can update your environment with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>update<span class="w"> </span>-f<span class="w"> </span>environment.yml<span class="w"> </span>--prune
+<p>If you modify <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code>, you can update your environment with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>update<span class="w"> </span>-f<span class="w"> </span>environment.yaml<span class="w"> </span>--prune
 </pre></div>
 </div>
 </div>

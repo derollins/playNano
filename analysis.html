@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -273,7 +282,8 @@
           <section id="analysis">
 <h1>Analysis<a class="headerlink" href="#analysis" title="Link to this heading">¶</a></h1>
 <p>The analysis system in <strong>playNano</strong> provides a provenance-aware pipeline
-for running detection, tracking and other analysis modules on AFM image stacks.
+for running a variety of analaysis modules including built in modules for
+feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
 and reproducibility.</p>
@@ -286,14 +296,15 @@ and reproducibility.</p>
 <section id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
 <p>Run an inline analysis pipeline from the CLI:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w">      </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;detect_particles:threshold=5;track_particles:max_distance=3&quot;</span><span class="w">      </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=&quot;</span>mask_threshold<span class="s2">&quot;,threshold=1;particle_tracking:max_distance=3&quot;</span><span class="w">      </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
 </pre></div>
 </div>
 <p>Or load the pipeline from a YAML/JSON file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect_particles</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature_detection</span>
+<span class="w">    </span><span class="nt">mask_fn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">track_particles</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
 <span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </pre></div>
 </div>
@@ -314,9 +325,8 @@ stored result keys) under <code class="docutils literal notranslate"><span class
 <li><p>If <code class="docutils literal notranslate"><span class="pre">log_to</span></code> is provided to programmatic runs or the CLI, a <strong>sanitised JSON</strong>
 summary is written (arrays and complex objects are summarised for JSON friendliness).</p></li>
 </ul>
-</section>
 <section id="available-analysis-modules">
-<h2>Available analysis modules<a class="headerlink" href="#available-analysis-modules" title="Link to this heading">¶</a></h2>
+<h3>Available analysis modules<a class="headerlink" href="#available-analysis-modules" title="Link to this heading">¶</a></h3>
 <p>See the generated list of installed modules:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.count_nonzero">count_nonzero</a>  - Analysis module for counting non-zero data points in an array.</p></li>
@@ -328,9 +338,11 @@ summary is written (arrays and complex objects are summarised for JSON friendlin
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.x_means_clustering">x_means_clustering</a>  - Module for X-Means clustering as part of the playNano analysis pipeline.</p></li>
 </ul>
 </section>
+</section>
 <section id="cli-usage">
 <h2>CLI usage<a class="headerlink" href="#cli-usage" title="Link to this heading">¶</a></h2>
-<p>General form:</p>
+<p>The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.</p>
+<p>This is the general form of the analyze subcommand for CLI use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>&lt;input_file&gt;<span class="w">      </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">&quot;step1:arg=val;step2:arg=val&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w">      </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w">      </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w">      </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
 </pre></div>
 </div>
@@ -342,6 +354,33 @@ summary is written (arrays and complex objects are summarised for JSON friendlin
 <li><p><code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> / <code class="docutils literal notranslate"><span class="pre">--output-name</span></code> - control where exported results are written.</p></li>
 </ul>
 <p>Since some analysis modules have several parameters it is often easier to generate a YAML using the wizard.</p>
+<section id="yaml-schema">
+<h3>YAML schema<a class="headerlink" href="#yaml-schema" title="Link to this heading">¶</a></h3>
+<p>Top-level key must be <code class="docutils literal notranslate"><span class="pre">analysis</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature_detection</span>
+<span class="w">    </span><span class="nt">mask_fn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
+<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.5</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
+<span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.5</span>
+<span class="w">    </span><span class="nt">min_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</pre></div>
+</div>
+<p>Each entry:</p>
+<ul class="simple">
+<li><p><strong>name</strong> (str, required) - analysis module name.</p></li>
+<li><p><strong>parameters</strong> - module-specific kwargs passed through to the module.</p></li>
+</ul>
+</section>
+<section id="validation-notes">
+<h3>Validation notes<a class="headerlink" href="#validation-notes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">analysis</span></code> key is required.</p></li>
+<li><p>Each step must include <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
+<li><p>Unknown module names raise an error at runtime.</p></li>
+<li><p>Parameters are forwarded as keyword arguments and must match the module signature.</p></li>
+</ul>
+</section>
 </section>
 <section id="programmatic-usage">
 <h2>Programmatic usage<a class="headerlink" href="#programmatic-usage" title="Link to this heading">¶</a></h2>
@@ -379,33 +418,6 @@ summary is written (arrays and complex objects are summarised for JSON friendlin
 - A sanitised JSON summary (human- and machine-readable).
 - HDF5 bundle with full data + provenance.</p></li>
 </ul>
-</section>
-<section id="yaml-schema">
-<h2>YAML schema<a class="headerlink" href="#yaml-schema" title="Link to this heading">¶</a></h2>
-<p>Top-level key must be <code class="docutils literal notranslate"><span class="pre">analysis</span></code>:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature_detection</span>
-<span class="w">    </span><span class="nt">mask_fn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
-<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.5</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
-<span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.5</span>
-<span class="w">    </span><span class="nt">min_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</pre></div>
-</div>
-<p>Each entry:</p>
-<ul class="simple">
-<li><p><strong>name</strong> (str, required) - analysis module name.</p></li>
-<li><p><strong>parameters</strong> - module-specific kwargs passed through to the module.</p></li>
-</ul>
-<section id="validation-notes">
-<h3>Validation notes<a class="headerlink" href="#validation-notes" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p>The <code class="docutils literal notranslate"><span class="pre">analysis</span></code> key is required.</p></li>
-<li><p>Each step must include <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
-<li><p>Unknown module names raise an error at runtime.</p></li>
-<li><p>Parameters are forwarded as keyword arguments and must match the module signature.</p></li>
-</ul>
-</section>
 </section>
 <section id="inspecting-results">
 <h2>Inspecting results<a class="headerlink" href="#inspecting-results" title="Link to this heading">¶</a></h2>
@@ -566,15 +578,17 @@ examples, and best practices.</p>
             <ul>
 <li><a class="reference internal" href="#">Analysis</a><ul>
 <li><a class="reference internal" href="#quick-start">Quick start</a></li>
-<li><a class="reference internal" href="#overview-behaviour">Overview &amp; behaviour</a></li>
+<li><a class="reference internal" href="#overview-behaviour">Overview &amp; behaviour</a><ul>
 <li><a class="reference internal" href="#available-analysis-modules">Available analysis modules</a></li>
-<li><a class="reference internal" href="#cli-usage">CLI usage</a></li>
-<li><a class="reference internal" href="#programmatic-usage">Programmatic usage</a></li>
-<li><a class="reference internal" href="#outputs-exports">Outputs &amp; exports</a></li>
-<li><a class="reference internal" href="#yaml-schema">YAML schema</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#cli-usage">CLI usage</a><ul>
+<li><a class="reference internal" href="#yaml-schema">YAML schema</a></li>
 <li><a class="reference internal" href="#validation-notes">Validation notes</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#programmatic-usage">Programmatic usage</a></li>
+<li><a class="reference internal" href="#outputs-exports">Outputs &amp; exports</a></li>
 <li><a class="reference internal" href="#inspecting-results">Inspecting results</a></li>
 <li><a class="reference internal" href="#advanced-implementation-details">Advanced / Implementation details</a><ul>
 <li><a class="reference internal" href="#module-loading">Module loading</a></li>

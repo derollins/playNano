@@ -5,8 +5,8 @@ You can extend **playNano** by writing your own analysis modules and registering
 them as plugins. This allows you to integrate custom feature detectors, tracking
 methods, or specialised statistics into the standard pipeline.
 
-Requirements
-------------
+Stucture and Requirements
+-------------------------
 
 Custom modules must subclass :class:`playNano.analysis.base.AnalysisModule` and
 implement two things:
@@ -20,7 +20,7 @@ You may also define:
 - a ``requires`` list to declare required previous analysis modules
 
 Minimal Example
----------------
+^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -42,22 +42,8 @@ Outputs must be returned as a dictionary mapping **string keys** to
 results (arrays, dicts, numbers, etc.). These values are stored under
 ``stack.analysis`` and linked in the provenance log.
 
-Registering the Module
-----------------------
-
-Add an entry under ``[project.entry-points."playNano.analysis"]`` in
-``pyproject.toml`` so the plugin system can discover your module:
-
-.. code-block:: toml
-
-   [project.entry-points."playNano.analysis"]
-   my_module = "mypackage.mymodule:MyModule"
-
-After installation (``pip install .``), playNano will automatically detect
-your plugin.
-
 Declaring Dependencies
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 If your module requires the outputs of another analysis step, you can
 declare this using the ``requires`` class attribute:
@@ -78,6 +64,20 @@ declare this using the ``requires`` class attribute:
 This ensures the pipeline provides access to upstream results.
 
 This isn't fully fleshed out so if you encounter any isssue please raise and issue on GitHub.
+
+Registering the Module
+----------------------
+
+Add an entry under ``[project.entry-points."playNano.analysis"]`` in
+``pyproject.toml`` so the plugin system can discover your module:
+
+.. code-block:: toml
+
+   [project.entry-points."playNano.analysis"]
+   my_module = "mypackage.mymodule:MyModule"
+
+After installation (``pip install .``), playNano will automatically detect
+your plugin.
 
 Best Practices
 --------------

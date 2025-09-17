@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -290,8 +299,9 @@ and numeric spin boxes for precise control.</p></li>
 <a class="reference internal image-reference" href="_images/GUI_window.png"><img alt="playNano GUI main window" class="align-center" src="_images/GUI_window.png" style="width: 400px;" />
 </a>
 </section>
-<section id="command-line-usage">
-<h2>Command-line usage<a class="headerlink" href="#command-line-usage" title="Link to this heading">¶</a></h2>
+<section id="command-line-access">
+<h2>Command-line access<a class="headerlink" href="#command-line-access" title="Link to this heading">¶</a></h2>
+<p>The GUI is launched via the <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code> command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>/path/to/afm_file.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">[</span>--processing<span class="w"> </span>PROCESSING_STEPS_STR<span class="w"> </span><span class="p">|</span><span class="w"> </span>--processing-file<span class="w"> </span>PIPELINE_FILE<span class="o">]</span><span class="w"> </span><span class="se">\</span>
@@ -302,9 +312,8 @@ and numeric spin boxes for precise control.</p></li>
 <span class="w">    </span><span class="o">[</span>--zmax<span class="w"> </span>MAX_Z<span class="o">]</span>
 </pre></div>
 </div>
-</section>
 <section id="arguments-common-options">
-<h2>Arguments &amp; common options<a class="headerlink" href="#arguments-common-options" title="Link to this heading">¶</a></h2>
+<h3>Arguments &amp; common options<a class="headerlink" href="#arguments-common-options" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>input_file</strong> (<em>str</em>, required)
 Path to an AFM file (e.g. <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>) or a folder of frame files.</p></li>
@@ -323,8 +332,11 @@ Length of the scale bar drawn on images (set <code class="docutils literal notra
 Initial display z-limits. <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the 1st / 99th percentiles by default.</p></li>
 </ul>
 </section>
-<section id="main-window-layout">
-<h2>Main window layout<a class="headerlink" href="#main-window-layout" title="Link to this heading">¶</a></h2>
+</section>
+<section id="main-window">
+<h2>Main window<a class="headerlink" href="#main-window" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/GUI_window.png"><img alt="playNano GUI" class="align-center" src="_images/GUI_window.png" style="width: 420px;" />
+</a>
 <ul class="simple">
 <li><p><strong>Viewer Panel (left)</strong> - rendered AFM frames (raw or processed) with overlays.
 Playback controls and filter buttons are located below the viewer.</p></li>
@@ -333,9 +345,18 @@ Playback controls and filter buttons are located below the viewer.</p></li>
 - <strong>GIF Export</strong>: choose raw/processed and save an annotated animated GIF.
 - <strong>Data Export</strong>: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.</p></li>
 </ul>
+<section id="keyboard-shortcuts">
+<h3>Keyboard shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Space</strong> - play / pause</p></li>
+<li><p><strong>F</strong> - apply filters (run configured processing pipeline)</p></li>
+<li><p><strong>R</strong> - toggle raw / processed view</p></li>
+<li><p><strong>G</strong> - export the current view as a GIF (honours timestamp/scale settings)</p></li>
+<li><p><strong>E</strong> - export data (NPZ / OME-TIFF / HDF5) in the checked formats</p></li>
+</ul>
 </section>
 <section id="raw-vs-processed-data-behaviour">
-<h2>Raw vs Processed data behaviour<a class="headerlink" href="#raw-vs-processed-data-behaviour" title="Link to this heading">¶</a></h2>
+<h3>Raw vs Processed data behaviour<a class="headerlink" href="#raw-vs-processed-data-behaviour" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>If the loaded stack contains a saved <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot (e.g. when loading a bundle),
 the GUI treats that snapshot as the unprocessed data and <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> as the
@@ -345,15 +366,6 @@ the processed view. After applying filters, the GUI switches to the processed vi
 default, and export options for processed data become available.</p></li>
 </ul>
 </section>
-<section id="keyboard-shortcuts">
-<h2>Keyboard shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><strong>Space</strong> - play / pause</p></li>
-<li><p><strong>F</strong> - apply filters (run configured processing pipeline)</p></li>
-<li><p><strong>R</strong> - toggle raw / processed view</p></li>
-<li><p><strong>G</strong> - export the current view as a GIF (honours timestamp/scale settings)</p></li>
-<li><p><strong>E</strong> - export data (NPZ / OME-TIFF / HDF5) in the checked formats</p></li>
-</ul>
 </section>
 <section id="export-behaviour-filenames">
 <h2>Export behaviour &amp; filenames<a class="headerlink" href="#export-behaviour-filenames" title="Link to this heading">¶</a></h2>
@@ -365,14 +377,13 @@ information - if that metadata is missing GIF export may fail (check logs).</p><
 <li><p><strong>Data bundles</strong>: NPZ, OME-TIFF, and HDF5 exports include processing metadata,
 provenance information, and snapshots (raw + intermediate processed steps, when available).</p></li>
 </ul>
-</section>
-<section id="viewer-annotations-gif-exports">
-<h2>Viewer annotations &amp; GIF exports<a class="headerlink" href="#viewer-annotations-gif-exports" title="Link to this heading">¶</a></h2>
+<section id="gif-annotations">
+<h3>GIF annotations<a class="headerlink" href="#gif-annotations" title="Link to this heading">¶</a></h3>
 <p>Any visual annotations you see in the viewer are <strong>burned into</strong> exported GIFs.
-That means the exported animation is a pixel-by-pixel rendering of the current
-viewer display - it is not an independent overlay file.</p>
+That means the exported animation reflects the current viewer display - it is
+not an independent overlay file.</p>
 <section id="what-is-included">
-<h3>What is included<a class="headerlink" href="#what-is-included" title="Link to this heading">¶</a></h3>
+<h4>What is included<a class="headerlink" href="#what-is-included" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Timestamps</strong> - if the <code class="docutils literal notranslate"><span class="pre">Show</span> <span class="pre">Timestamp</span></code> checkbox is enabled, the frame
 timestamp displayed in the viewer will be drawn into every exported GIF frame.</p></li>
@@ -386,7 +397,7 @@ lines or spinboxes, the exported frames reflect those settings.</p></li>
 </ul>
 </section>
 <section id="how-to-control-annotations">
-<h3>How to control annotations<a class="headerlink" href="#how-to-control-annotations" title="Link to this heading">¶</a></h3>
+<h4>How to control annotations<a class="headerlink" href="#how-to-control-annotations" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Use the viewer checkboxes to toggle annotations before export:
 - Uncheck <strong>Show Timestamp</strong> to remove timestamps from the exported GIF.
@@ -394,6 +405,7 @@ lines or spinboxes, the exported frames reflect those settings.</p></li>
 <li><p>Choose <strong>Save Raw</strong> or <strong>Save Processed</strong> in the GIF export panel to pick the data source.</p></li>
 <li><p>Use the histogram or spinboxes to set the precise z-range that will be used in the GIF.</p></li>
 </ul>
+</section>
 </section>
 </section>
 <section id="troubleshooting-tips">
@@ -478,15 +490,21 @@ may be incorrect or omitted without frame timing metadata.</p></li>
             <ul>
 <li><a class="reference internal" href="#">GUI: Interactive Playback</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#command-line-usage">Command-line usage</a></li>
+<li><a class="reference internal" href="#command-line-access">Command-line access</a><ul>
 <li><a class="reference internal" href="#arguments-common-options">Arguments &amp; common options</a></li>
-<li><a class="reference internal" href="#main-window-layout">Main window layout</a></li>
-<li><a class="reference internal" href="#raw-vs-processed-data-behaviour">Raw vs Processed data behaviour</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#main-window">Main window</a><ul>
 <li><a class="reference internal" href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
-<li><a class="reference internal" href="#export-behaviour-filenames">Export behaviour &amp; filenames</a></li>
-<li><a class="reference internal" href="#viewer-annotations-gif-exports">Viewer annotations &amp; GIF exports</a><ul>
+<li><a class="reference internal" href="#raw-vs-processed-data-behaviour">Raw vs Processed data behaviour</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#export-behaviour-filenames">Export behaviour &amp; filenames</a><ul>
+<li><a class="reference internal" href="#gif-annotations">GIF annotations</a><ul>
 <li><a class="reference internal" href="#what-is-included">What is included</a></li>
 <li><a class="reference internal" href="#how-to-control-annotations">How to control annotations</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#troubleshooting-tips">Troubleshooting &amp; tips</a></li>

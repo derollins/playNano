@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -294,18 +303,19 @@ processing filters, analysis pipelines, and the API reference.</p>
 </dd>
 </dl>
 </li>
+<li><p><a class="reference internal" href="whats_new/v0.1.0.html"><span class="doc">What’s New in playNano 0.1.0</span></a> - highlights of the latest release</p></li>
 <li><p><a class="reference internal" href="changelog.html"><span class="doc">Changelog</span></a> - release notes and history</p></li>
 </ul>
 </section>
 <section id="quickstart-example">
 <h2>Quickstart (example)<a class="headerlink" href="#quickstart-example" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># show a file in the interactive GUI</span>
-playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.h5-jpk
+playnano<span class="w"> </span>play<span class="w"> </span>./test/resources/sample_0.h5-jpk
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>See <a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> for a runnable notebook and step-by-step instructions.</p>
+<p>See <a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> for step-by-step instructions.</p>
 </div>
 </section>
 <section id="contents">
@@ -332,12 +342,9 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#general-usage">General usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#available-subcommands">Available subcommands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#process-batch-mode">Process (batch) mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#analyze-mode">Analyze mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#batch-mode-operations">Batch mode operations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#wizard-mode-interactive">Wizard mode (interactive)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#play-gui-mode">Play (GUI) mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#env-info">env-info</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#help-usage">Help &amp; usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#tips-troubleshooting">Tips &amp; troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#links">Links</a></li>
@@ -345,13 +352,9 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 </li>
 <li class="toctree-l1"><a class="reference internal" href="gui.html">GUI: Interactive Playback</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="gui.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#command-line-usage">Command-line usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#arguments-common-options">Arguments &amp; common options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#main-window-layout">Main window layout</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#raw-vs-processed-data-behaviour">Raw vs Processed data behaviour</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#keyboard-shortcuts">Keyboard shortcuts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#command-line-access">Command-line access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#main-window">Main window</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui.html#export-behaviour-filenames">Export behaviour &amp; filenames</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#viewer-annotations-gif-exports">Viewer annotations &amp; GIF exports</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui.html#troubleshooting-tips">Troubleshooting &amp; tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui.html#notes-links">Notes &amp; links</a></li>
 </ul>
@@ -359,12 +362,10 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#concepts-behaviour">Concepts &amp; behaviour</a></li>
-<li class="toctree-l2"><a class="reference internal" href="processing.html#common-built-in-filters">Common built-in filters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="processing.html#masks-summary">Masks (summary)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html#built-in-filters-and-masks">Built-in filters and masks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#plugins">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html#cli-gui-usage">CLI / GUI Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#programmatic-usage">Programmatic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="processing.html#saved-data-exports-brief">Saved data &amp; exports (brief)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="processing.html#what-the-pipeline-records-overview">What the pipeline records (overview)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#advanced-implementation-details">Advanced / Implementation details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#tips-troubleshooting">Tips &amp; troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#see-also">See also</a></li>
@@ -373,11 +374,9 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#overview-behaviour">Overview &amp; behaviour</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html#available-analysis-modules">Available analysis modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#cli-usage">CLI usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#programmatic-usage">Programmatic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#outputs-exports">Outputs &amp; exports</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html#yaml-schema">YAML schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#inspecting-results">Inspecting results</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#advanced-implementation-details">Advanced / Implementation details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html#troubleshooting-tips">Troubleshooting &amp; tips</a></li>
@@ -386,13 +385,20 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#minimal-example">Minimal Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#stucture-and-requirements">Stucture and Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#registering-the-module">Registering the Module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#declaring-dependencies">Declaring Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#best-practices">Best Practices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#usage-in-a-pipeline">Usage in a Pipeline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="custom_analysis_modules.html#debugging-troubleshooting">Debugging &amp; Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#running-notebooks">Running Notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#changelog">Changelog</a></li>
 </ul>
 </li>
 </ul>
@@ -407,6 +413,15 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 <li class="toctree-l2"><a class="reference internal" href="api/playNano.html">playNano package</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</section>
+<section id="what-s-new">
+<h3>What’s New<a class="headerlink" href="#what-s-new" title="Link to this heading">¶</a></h3>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="whats_new/index.html">What’s New</a></li>
 </ul>
 </div>
 </section>
@@ -473,6 +488,7 @@ playnano<span class="w"> </span>play<span class="w"> </span>example_data/sample.
 <li><a class="reference internal" href="#contents">Contents</a><ul>
 <li><a class="reference internal" href="#user-guide">User Guide</a></li>
 <li><a class="reference internal" href="#api-reference">API Reference</a></li>
+<li><a class="reference internal" href="#what-s-new">What’s New</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#information-and-support">Information and Support</a></li>

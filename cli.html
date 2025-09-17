@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -281,9 +290,8 @@ and an interactive wizard for building pipelines.</p>
 </pre></div>
 </div>
 <p>Run <strong class="command">playnano --help</strong> to see global options and a list of subcommands.</p>
-</section>
 <section id="available-subcommands">
-<h2>Available subcommands<a class="headerlink" href="#available-subcommands" title="Link to this heading">¶</a></h2>
+<h3>Available subcommands<a class="headerlink" href="#available-subcommands" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">play</span></code>    - Launch the interactive GUI viewer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">process</span></code> - Batch mode: apply filters and export images/bundles/GIFs.</p></li>
@@ -293,8 +301,12 @@ and an interactive wizard for building pipelines.</p>
 </ul>
 <p>The CLI maps to the Python entry point <code class="docutils literal notranslate"><span class="pre">playNano.cli.entrypoint:main</span></code>.</p>
 </section>
-<section id="process-batch-mode">
-<h2>Process (batch) mode<a class="headerlink" href="#process-batch-mode" title="Link to this heading">¶</a></h2>
+</section>
+<section id="batch-mode-operations">
+<h2>Batch mode operations<a class="headerlink" href="#batch-mode-operations" title="Link to this heading">¶</a></h2>
+<p>Processing and analysis can be run in a non-interactive batch mode without a GUI or wizard.</p>
+<section id="batch-processing-mode">
+<h3>Batch processing mode<a class="headerlink" href="#batch-processing-mode" title="Link to this heading">¶</a></h3>
 <p>Apply filters and export without user interaction.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>/path/to/sample.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
@@ -310,7 +322,7 @@ and an interactive wizard for building pipelines.</p>
 </pre></div>
 </div>
 <section id="primary-options">
-<h3>Primary options<a class="headerlink" href="#primary-options" title="Link to this heading">¶</a></h3>
+<h4>Primary options<a class="headerlink" href="#primary-options" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--channel</span></code> (default: <code class="docutils literal notranslate"><span class="pre">height_trace</span></code>) - channel name to load from the file.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--processing</span></code> - semi-colon delimited inline pipeline string.</p></li>
@@ -328,7 +340,7 @@ Use one or the other (or neither to run with no processing).</p>
 </div>
 </section>
 <section id="processing-pipeline-schema">
-<h3>Processing pipeline schema<a class="headerlink" href="#processing-pipeline-schema" title="Link to this heading">¶</a></h3>
+<h4>Processing pipeline schema<a class="headerlink" href="#processing-pipeline-schema" title="Link to this heading">¶</a></h4>
 <p>Example pipeline YAML (see <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a> for details):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_plane</span>
@@ -342,8 +354,8 @@ Use one or the other (or neither to run with no processing).</p>
 </div>
 </section>
 </section>
-<section id="analyze-mode">
-<h2>Analyze mode<a class="headerlink" href="#analyze-mode" title="Link to this heading">¶</a></h2>
+<section id="batch-analysis-mode">
+<h3>Batch analysis mode<a class="headerlink" href="#batch-analysis-mode" title="Link to this heading">¶</a></h3>
 <p>Run an analysis pipeline on an loaded AFM stack and export the results.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>/path/to/processed_sample.h5<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
@@ -353,8 +365,8 @@ Use one or the other (or neither to run with no processing).</p>
 <span class="w">  </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
 </pre></div>
 </div>
-<section id="options">
-<h3>Options<a class="headerlink" href="#options" title="Link to this heading">¶</a></h3>
+<section id="analysis-options">
+<h4>Analysis options<a class="headerlink" href="#analysis-options" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--analysis-steps</span></code> - semicolon-delimited inline steps (example below).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--analysis-file</span></code> - YAML/JSON file specifying the analysis pipeline.</p></li>
@@ -368,7 +380,7 @@ Use one or the other (or neither to run with no processing).</p>
 </div>
 </section>
 <section id="analysis-pipeline-schema">
-<h3>Analysis pipeline schema<a class="headerlink" href="#analysis-pipeline-schema" title="Link to this heading">¶</a></h3>
+<h4>Analysis pipeline schema<a class="headerlink" href="#analysis-pipeline-schema" title="Link to this heading">¶</a></h4>
 <p>Example YAML (see <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a> for full reference):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect_particles</span>
@@ -378,13 +390,12 @@ Use one or the other (or neither to run with no processing).</p>
 <span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0</span>
 </pre></div>
 </div>
-</section>
-<section id="outputs">
-<h3>Outputs<a class="headerlink" href="#outputs" title="Link to this heading">¶</a></h3>
+<p><strong>Outputs</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;output&gt;.json</span></code> - sanitized analysis record (suitable for downstream parsing).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;output&gt;.h5</span></code> - full analysis bundle (if HDF5 export requested).</p></li>
 </ul>
+</section>
 </section>
 </section>
 <section id="wizard-mode-interactive">
@@ -397,9 +408,8 @@ configurations.</p>
 </div>
 <section id="common-repl-commands">
 <h3>Common REPL commands<a class="headerlink" href="#common-repl-commands" title="Link to this heading">¶</a></h3>
-</section>
 <section id="processing-pipeline-commands">
-<h3>Processing pipeline commands<a class="headerlink" href="#processing-pipeline-commands" title="Link to this heading">¶</a></h3>
+<h4>Processing pipeline commands<a class="headerlink" href="#processing-pipeline-commands" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">add</span> <span class="pre">&lt;filter&gt;</span></code> - add a processing step (REPL prompts for parameters).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">list</span></code> - show the current processing pipeline steps.</p></li>
@@ -408,7 +418,7 @@ configurations.</p>
 </ul>
 </section>
 <section id="analysis-pipeline-commands-prefixed-with-a">
-<h3>Analysis pipeline commands (prefixed with <code class="docutils literal notranslate"><span class="pre">a</span></code>)<a class="headerlink" href="#analysis-pipeline-commands-prefixed-with-a" title="Link to this heading">¶</a></h3>
+<h4>Analysis pipeline commands (prefixed with <code class="docutils literal notranslate"><span class="pre">a</span></code>)<a class="headerlink" href="#analysis-pipeline-commands-prefixed-with-a" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">aadd</span> <span class="pre">&lt;analysis_step&gt;</span></code> - add an analysis step (REPL prompts for parameters).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">alist</span></code> - show the current analysis pipeline steps.</p></li>
@@ -421,11 +431,12 @@ configurations.</p>
 </ul>
 </section>
 <section id="other-utility-commands">
-<h3>Other utility commands<a class="headerlink" href="#other-utility-commands" title="Link to this heading">¶</a></h3>
+<h4>Other utility commands<a class="headerlink" href="#other-utility-commands" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">help</span></code> - show available REPL commands.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">quit</span></code> - exit the wizard (this is a single, global quit that closes the entire session).</p></li>
 </ul>
+</section>
 </section>
 </section>
 <section id="play-gui-mode">
@@ -451,21 +462,21 @@ configurations.</p>
 <li><p>Export panel: NPZ, OME-TIFF, HDF5 and GIF export options</p></li>
 <li><p>Keyboard shortcuts: <code class="docutils literal notranslate"><span class="pre">Space</span></code> (play/pause), <code class="docutils literal notranslate"><span class="pre">F</span></code> (apply filters), <code class="docutils literal notranslate"><span class="pre">R</span></code> (toggle raw/processed), <code class="docutils literal notranslate"><span class="pre">G</span></code> (export GIF), <code class="docutils literal notranslate"><span class="pre">E</span></code> (export selected formats)</p></li>
 </ul>
-</section>
 <section id="notes-about-z-range">
-<h3>Notes about z-range<a class="headerlink" href="#notes-about-z-range" title="Link to this heading">¶</a></h3>
+<h4>Notes about z-range<a class="headerlink" href="#notes-about-z-range" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> / <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> accept a float or the string <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default).
 When <code class="docutils literal notranslate"><span class="pre">auto</span></code> is used values are computed as the 1st and 99th percentiles of the stack.</p></li>
 </ul>
 </section>
-</section>
 <section id="env-info">
-<h2>env-info<a class="headerlink" href="#env-info" title="Link to this heading">¶</a></h2>
+<h4>env-info<a class="headerlink" href="#env-info" title="Link to this heading">¶</a></h4>
 <p>Prints environment and dependency information to help debugging and issue reports:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>env-info
 </pre></div>
 </div>
+</section>
+</section>
 </section>
 <section id="help-usage">
 <h2>Help &amp; usage<a class="headerlink" href="#help-usage" title="Link to this heading">¶</a></h2>
@@ -561,32 +572,40 @@ you installed the package (<code class="docutils literal notranslate"><span clas
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Command Line Interface (CLI)</a><ul>
-<li><a class="reference internal" href="#general-usage">General usage</a></li>
+<li><a class="reference internal" href="#general-usage">General usage</a><ul>
 <li><a class="reference internal" href="#available-subcommands">Available subcommands</a></li>
-<li><a class="reference internal" href="#process-batch-mode">Process (batch) mode</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#batch-mode-operations">Batch mode operations</a><ul>
+<li><a class="reference internal" href="#batch-processing-mode">Batch processing mode</a><ul>
 <li><a class="reference internal" href="#primary-options">Primary options</a></li>
 <li><a class="reference internal" href="#processing-pipeline-schema">Processing pipeline schema</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#analyze-mode">Analyze mode</a><ul>
-<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#batch-analysis-mode">Batch analysis mode</a><ul>
+<li><a class="reference internal" href="#analysis-options">Analysis options</a></li>
 <li><a class="reference internal" href="#analysis-pipeline-schema">Analysis pipeline schema</a></li>
-<li><a class="reference internal" href="#outputs">Outputs</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#wizard-mode-interactive">Wizard mode (interactive)</a><ul>
-<li><a class="reference internal" href="#common-repl-commands">Common REPL commands</a></li>
+<li><a class="reference internal" href="#common-repl-commands">Common REPL commands</a><ul>
 <li><a class="reference internal" href="#processing-pipeline-commands">Processing pipeline commands</a></li>
 <li><a class="reference internal" href="#analysis-pipeline-commands-prefixed-with-a">Analysis pipeline commands (prefixed with <code class="docutils literal notranslate"><span class="pre">a</span></code>)</a></li>
 <li><a class="reference internal" href="#other-utility-commands">Other utility commands</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#play-gui-mode">Play (GUI) mode</a><ul>
-<li><a class="reference internal" href="#gui-highlights">GUI highlights</a></li>
-<li><a class="reference internal" href="#notes-about-z-range">Notes about z-range</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#play-gui-mode">Play (GUI) mode</a><ul>
+<li><a class="reference internal" href="#gui-highlights">GUI highlights</a><ul>
+<li><a class="reference internal" href="#notes-about-z-range">Notes about z-range</a></li>
 <li><a class="reference internal" href="#env-info">env-info</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#help-usage">Help &amp; usage</a></li>
 <li><a class="reference internal" href="#tips-troubleshooting">Tips &amp; troubleshooting</a></li>
 <li><a class="reference internal" href="#links">Links</a></li>

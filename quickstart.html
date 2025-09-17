@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -273,8 +282,14 @@
           <section id="quickstart">
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
 <p>This short quickstart gets <strong>playNano</strong> running quickly (recommended: <strong>conda</strong>).
-For full details see the linked pages (<a href="#id1"><span class="problematic" id="id2">:docs:`installation`</span></a>, <a href="#id3"><span class="problematic" id="id4">:docs:`cli`</span></a>,
-<a href="#id5"><span class="problematic" id="id6">:docs:`gui`</span></a>, <a href="#id7"><span class="problematic" id="id8">:docs:`processing`</span></a>, <a href="#id9"><span class="problematic" id="id10">:docs:`analysis`</span></a>).</p>
+For full details see the linked pages (<a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>, <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>,
+<a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a>, <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a>, <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a>).</p>
+<p>Before you start ensure you have a copy of the <strong>playNano</strong> source code, either clone the repository or downlaod a relase from github.</p>
+<p>A simnple way to clone the <strong>playNano</strong> repository:</p>
+<dl class="simple">
+<dt>..clode-block:: bash</dt><dd><p>git clone <a class="reference external" href="https://github.com/derollins/playNano.git">https://github.com/derollins/playNano.git</a>   # Clones the repo to a folder called playNano</p>
+</dd>
+</dl>
 <section id="create-a-conda-environment-recommended">
 <h2>1. Create a conda environment (recommended)<a class="headerlink" href="#create-a-conda-environment-recommended" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># from the project root (where pyproject.toml / src/ live)</span>
@@ -285,6 +300,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano
 </section>
 <section id="install-playnano-editable">
 <h2>2. Install playNano (editable)<a class="headerlink" href="#install-playnano-editable" title="Link to this heading">¶</a></h2>
+<p>Navigate to the playNano project root (where <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> / <code class="docutils literal notranslate"><span class="pre">src/</span></code> live) and run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
@@ -311,22 +327,24 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;i
 <section id="launch-interactive-gui">
 <h3>Launch interactive GUI:<a class="headerlink" href="#launch-interactive-gui" title="Link to this heading">¶</a></h3>
 <p>To open a sample file in the GUI, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>./tests/resources/sample.h5-jpk<span class="w">  </span><span class="c1"># Opens GUI with loaded file</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w">  </span><span class="c1"># Opens GUI with loaded file</span>
 </pre></div>
 </div>
 <p>This opens a sample AFM file when run in the project root. Change the path to your
 own data to view other files.</p>
 </section>
-<section id="batch-process-export-no-gui">
-<h3>Batch process + export (no GUI):<a class="headerlink" href="#batch-process-export-no-gui" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>path/to/sample.h5-jpk<span class="w"> </span><span class="se">\</span>
+<section id="batch-process-analyis-and-export-no-gui">
+<h3>Batch process, analyis and export (no GUI):<a class="headerlink" href="#batch-process-analyis-and-export-no-gui" title="Link to this heading">¶</a></h3>
+<p>For batch processing and analysis the processing and analyis pipelines are run through seperate commands.
+To run these commands on example data, these commands can be run from the project root.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="se">\</span>
 <span class="w">  </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;mask_mean_offset:factor=1;row_median_align&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--export<span class="w"> </span>tif,npz<span class="w"> </span>--make-gif<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>sample_processed
+<span class="w">  </span>--export<span class="w"> </span>h5,tif,npz<span class="w"> </span>--make-gif<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>sample_processed
 </pre></div>
 </div>
 <p>Run analysis (detection + tracking):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;detect_particles:threshold=5;track_particles:max_distance=3&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>./results/sample_processed.h5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:threshold=5;track_particles:max_distance=3&quot;</span>
 </pre></div>
 </div>
 </section>
@@ -339,7 +357,7 @@ own data to view other files.</p>
 <li><p>GUI overview and shortcuts: <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a></p></li>
 <li><p>Processing pipeline details + YAML schema: <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a></p></li>
 <li><p>Analysis API and CLI usage: <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a></p></li>
-<li><p>Step-by-step Jupyter demo: <span class="xref std std-doc">notebooks</span></p></li>
+<li><p>Step-by-step Jupyter demo: <a class="reference internal" href="notebooks.html"><span class="doc">Notebooks</span></a></p></li>
 </ul>
 </section>
 </section>
@@ -405,7 +423,7 @@ own data to view other files.</p>
 <li><a class="reference internal" href="#quick-verification">3. Quick verification</a></li>
 <li><a class="reference internal" href="#most-common-actions-one-liners">4. Most common actions (one-liners)</a><ul>
 <li><a class="reference internal" href="#launch-interactive-gui">Launch interactive GUI:</a></li>
-<li><a class="reference internal" href="#batch-process-export-no-gui">Batch process + export (no GUI):</a></li>
+<li><a class="reference internal" href="#batch-process-analyis-and-export-no-gui">Batch process, analyis and export (no GUI):</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#where-to-go-next">5. Where to go next</a></li>

@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="playNano" href="api/modules.html" /><link rel="prev" title="Notebooks" href="notebooks.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
         <title>Changelog - playNano 0.1.0 documentation</title>
@@ -198,7 +198,7 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
@@ -206,6 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -228,6 +230,13 @@
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.processing.html">playNano.processing package</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -287,17 +296,84 @@ and this project adheres to <a class="reference external" href="https://semver.o
 </ul>
 </section>
 </section>
-<section id="yyyy-mm-dd">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - YYYY-MM-DD<a class="headerlink" href="#yyyy-mm-dd" title="Link to this heading">¶</a></h3>
 <section id="id1">
-<h4>Added<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="id2">
+<h4>Added<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>First public release 🎉</p></li>
-<li><p>Initial AFM video loading, playback, and export.</p></li>
-<li><p>Processing pipeline with filters and masks.</p></li>
-<li><p>PySide6 GUI with interactive playback and export panel.</p></li>
-<li><p>Analysis pipeline framework with provenance tracking.</p></li>
+<li><p><strong>AFM data loading &amp; playback</strong></p>
+<ul>
+<li><p>Load HS‑AFM videos from .h5-jpk and .asd files and folders of .spm and .jpk files.</p></li>
+<li><p>Time‑aware frame navigation and consistent pixel/scale metadata.</p></li>
 </ul>
+</li>
+<li><p><strong>Processing pipeline with masks &amp; full provenance</strong></p>
+<ul>
+<li><p>Sequential filters and masks (e.g., plane removal, row/median alignment, polynomial flatten, Gaussian filtering).</p></li>
+<li><p>Each step is recorded with index, name, parameters, timestamps, and environment details under <code class="docutils literal notranslate"><span class="pre">stack.provenance</span></code>.</p></li>
+<li><p>Processed snapshots and masks are stored with ordered keys like <code class="docutils literal notranslate"><span class="pre">step_&lt;n&gt;_&lt;name&gt;</span></code> for reliable inspection and re‑use.</p></li>
+</ul>
+</li>
+<li><p><strong>Reproducible export &amp; re‑import (analysis‑ready)</strong></p>
+<ul>
+<li><p>Save the current stack state (with stages, masks, and provenance) to <strong>HDF5 (<code class="docutils literal notranslate"><span class="pre">.h5</span></code>)</strong> or <strong>NumPy bundles (<code class="docutils literal notranslate"><span class="pre">.npz</span></code>)</strong>.</p></li>
+<li><p>Re‑load bundles later to continue processing and run analyses with the full history intact.</p></li>
+<li><p>Export to <strong>OME‑TIFF</strong> for interoperability and to <strong>GIF</strong> (with optional scale bars)
+for quick sharing and presentation.</p></li>
+</ul>
+</li>
+<li><p><strong>Interactive GUI (PySide6) for exploration</strong></p>
+<ul>
+<li><p>Real‑time playback, frame seeking, and snapshot previews.</p></li>
+<li><p><strong>Z‑range control</strong> (auto or manual) to maintain consistent height scaling across frames.</p></li>
+<li><p><strong>Annotations/overlays</strong> (i.e. timestamps, raw data label, scale bar) rendered on top of frames.</p></li>
+<li><p>Built‑in dark theme stylesheet for high‑contrast analysis.</p></li>
+</ul>
+</li>
+<li><p><strong>Analysis framework</strong></p>
+<ul>
+<li><p>Build analysis pipelines from built-in and pluggable analysis modules.</p></li>
+<li><p>Built-in analysis modules (e.g., LoG blob detection, DBSCAN/K‑Means/X‑Means clustering, particle tracking).</p></li>
+<li><p>Produces labeled masks, per‑feature properties (area, min/max/mean, bbox, centroid), and summary statistics.</p></li>
+<li><p>Analysis outputs are keyed and traced in provenance for reproducibility.</p></li>
+</ul>
+</li>
+<li><p><strong>Command Line Interface (CLI)</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">playnano</span></code> entrypoint to run processing pipelines, export bundles (TIFF/NPZ/HDF5), and create GIFs from the shell.</p></li>
+</ul>
+</li>
+<li><p><strong>Notebooks</strong></p>
+<ul>
+<li><p>Jupyter notebooks included to demonstrate programmatic workflow.</p></li>
+<li><p>Overview notebook covers the whole loading, processing, analysis and export workflow.</p></li>
+<li><p>Processing notebook focuses on processing and export of loaded data.</p></li>
+</ul>
+</li>
+<li><p><strong>Documentation</strong>:</p>
+<ul>
+<li><p>Created a Sphinx documentation site on GitHub Pages.</p></li>
+<li><p><strong>User Guide</strong> covering installation, quick start, GUI and CLI usage, processing, analysis and exports.</p></li>
+<li><p><strong>API Reference</strong> generated with <code class="docutils literal notranslate"><span class="pre">sphinx-autoapi</span></code> for all packages.</p></li>
+<li><p><strong>CLI reference</strong> with examples and typical workflows.</p></li>
+<li><p>Furo theme and MyST Markdown configuration for a clean, consistent look.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="changed">
+<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>N/A (initial public release).</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>N/A (initial public release).</p></li>
+</ul>
+<hr class="docutils" />
 </section>
 </section>
 </section>
@@ -308,8 +384,26 @@ and this project adheres to <a class="reference external" href="https://semver.o
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="api/modules.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">playNano</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="notebooks.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Notebooks</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -346,8 +440,10 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><a class="reference internal" href="#added">Added</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#yyyy-mm-dd">0.1.0 - YYYY-MM-DD</a><ul>
-<li><a class="reference internal" href="#id1">Added</a></li>
+<li><a class="reference internal" href="#id1">0.1.0 - 2025-09-17</a><ul>
+<li><a class="reference internal" href="#id2">Added</a></li>
+<li><a class="reference internal" href="#changed">Changed</a></li>
+<li><a class="reference internal" href="#fixed">Fixed</a></li>
 </ul>
 </li>
 </ul>
