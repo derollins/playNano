@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-import playNano.processing.filters as filters
 from playNano.processing.versioning import versioned_filter
 
 logger = logging.getLogger(__name__)
@@ -155,11 +154,39 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return aligned
 
 
+@versioned_filter("0.1.0")
+def zero_mean_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """
+    Subtract the mean of background pixels (mask==False) from the entire image.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D AFM image.
+    mask : np.ndarray
+        Boolean mask of same shape; True=foreground, False=background.
+
+    Returns
+    -------
+    np.ndarray
+        Image with zero-mean background.
+    """
+    if mask.shape != data.shape:
+        raise ValueError("Mask must have same shape as data.")
+
+    bg_idx = ~mask
+    if np.count_nonzero(bg_idx) == 0:
+        raise ValueError("No background pixels to compute mean.")
+
+    mean_val = np.mean(data[bg_idx])
+    return data.astype(np.float64) - mean_val
+
+
 def register_mask_filters():
     """Return list of masking options."""
     return {
         "remove_plane": remove_plane_masked,
         "polynomial_flatten": polynomial_flatten_masked,
         "row_median_align": row_median_align_masked,
-        "zero_mean": lambda data, mask: filters.zero_mean(data, mask=mask),
+        "zero_mean": zero_mean_masked,
     }

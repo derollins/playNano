@@ -129,6 +129,14 @@ lint.ignore = [
     "I001",
 ]
 
+extend-exclude = [
+  "docs",
+  "notebooks",
+  "src/playNano/fonts",
+  "tests/resources/spm_folder_0",
+  "LICENSE",
+]
+
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 

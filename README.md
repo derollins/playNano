@@ -49,7 +49,7 @@ Full documentation (Sphinx): <https://derollins.github.io/playNano/>
 
 ---
 
-## 📦 Installation and Dependancies
+## 📦 Installation and Dependencies
 
 Requires Python 3.10–3.12.
 
@@ -75,12 +75,16 @@ More information is available in the documentation: <https://derollins.github.io
 
 **Play a file (GUI):**
 
+<p align="center">
+  <img src="docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
+</p>
+
 ```bash
 playnano play ./tests/resources/sample_0.h5-jpk # This command opens example data if run in the project root
 ```
 
 Replace the path with the location of your data (file for asd/h5-jpk or folder for spm/jpk)
-This opens an interactive window that can be used to veiw the videos and configure
+This opens an interactive window that can be used to view the videos and configure
 formatting for the display and GIF exports.
 Press the **f** key to flatten with default steps.
 
@@ -109,7 +113,7 @@ See the full docs for the complete [CLI reference](https://derollins.github.io/p
 - `notebooks/playnano_demo_notebook.ipynb`: step‑by‑step demo of loading, processing, analysing, and exporting time-series
  AFM data with playNano.
 
-Install playNano using `pip install .[notebooks]` to include the `jupyter` dependancy.
+Install playNano using `pip install .[notebooks]` to include the `jupyter` dependency.
 
 ## 🧩 Dependencies
 
@@ -141,7 +145,7 @@ including U-net based masking.
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
 Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens
-each as a tuple containing a NumPy array and a float referring to the planar pixel to nanometer convertion
+each as a tuple containing a NumPy array and a float referring to the planar pixel to nanometer conversion
 factor. Within playNano this library is used to open the folder-based AFM video formats.
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
@@ -153,6 +157,14 @@ integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-02
 ## 📜 License
 
 This project is licensed under the [GNU General Public License v3.0 (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## 📖 Citing playNano
+
+If you use **playNano** in academic work, please cite it appropriately.
+
+- For now, please cite the GitHub repository:
+  > Rollins, D. (2025). playNano: AFM Video Reader and Analysis Toolkit.
+  > GitHub repository: https://github.com/derollins/playNano
 
 ## Included Fonts
 

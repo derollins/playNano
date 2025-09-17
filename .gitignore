@@ -1,26 +1,45 @@
+# Logs
 *.log
 
+# Python cache/compiled files
 __pycache__/
-*.pyc
+*.py[cod]
 
-.ruff_cache
+# Ruff / linting cache
+.ruff_cache/
 
-# Unit test / coverage reports
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor / IDE settings
+.vscode/
+.idea/
+
+# Virtual environments
+.venv/
+env/
+*.env
+
+# Test / coverage / CI artifacts
 htmlcov/
 .tox/
 .nox/
-.coverage
-.coverage.*
-.cache
+.coverage*
+.cache/
 nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
 
-# Docs
+# Documentation builds
 docs/_build/
 
-# ignore notebook check‑points
-**/.ipynb_checkpoints
-# do NOT ignore the notebooks/ folder itself
+# Jupyter notebook checkpoints
+**/.ipynb_checkpoints/
+
+# Build & distribution artifacts
+build/
+dist/
+*.egg-info/
