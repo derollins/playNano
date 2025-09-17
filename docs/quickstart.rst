@@ -2,8 +2,8 @@ Quickstart
 ==========
 
 This short quickstart gets **playNano** running quickly (recommended: **conda**).
-For full details see the linked pages (:docs:`installation`, :docs:`cli`,
-:docs:`gui`, :docs:`processing`, :docs:`analysis`).
+For full details see the linked pages (:doc:`installation`, :doc:`cli`,
+:doc:`gui`, :doc:`processing`, :doc:`analysis`).
 
 Before you start ensure you have a copy of the **playNano** source code, either clone the repository or downlaod a relase from github.
 
@@ -66,7 +66,7 @@ This opens a sample AFM file when run in the project root. Change the path to yo
 own data to view other files.
 
 Batch process, analyis and export (no GUI):
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For batch processing and analysis the processing and analyis pipelines are run through seperate commands.
 To run these commands on example data, these commands can be run from the project root.
@@ -85,7 +85,7 @@ Run analysis (detection + tracking):
      --analysis-steps "feature_detection:threshold=5;track_particles:max_distance=3"
 
 5. Where to go next
---------------------
+-------------------
 
 - Full installation instructions and platform notes: :doc:`installation`
 - CLI reference and flags: :doc:`cli`

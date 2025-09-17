@@ -410,7 +410,7 @@ def test_row_median_align_masked_shape_mismatch():
 
 
 def test_zero_mean_masked_basic():
-    """Test zero mean on a simple image with a single pixel mask"""
+    """Test zero mean on a simple image with a single pixel mask."""
     # Simple 3x3 image
     data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
     mask = np.array(
@@ -427,7 +427,7 @@ def test_zero_mean_masked_basic():
 
 
 def test_zero_mean_masked_all_foreground():
-    """Test that error is raised if whole image is masked"""
+    """Test that error is raised if whole image is masked."""
     data = np.ones((2, 2))
     mask = np.ones_like(data, dtype=bool)  # all foreground
     with pytest.raises(ValueError, match="No background pixels"):
@@ -435,7 +435,7 @@ def test_zero_mean_masked_all_foreground():
 
 
 def test_zero_mean_masked_shape_mismatch():
-    """Test that error is raised if mask and data are different shapes"""
+    """Test that error is raised if mask and data are different shapes."""
     data = np.ones((2, 2))
     mask = np.ones((3, 3), dtype=bool)
     with pytest.raises(ValueError, match="Mask must have same shape"):

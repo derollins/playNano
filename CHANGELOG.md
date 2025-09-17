@@ -36,12 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Interactive GUI (PySide6) for exploration**
   - Real‑time playback, frame seeking, and snapshot previews.
   - **Z‑range control** (auto or manual) to maintain consistent height scaling across frames.
-  - **Annotations/overlays** (i.e. timetamps, raw data label, scale bar) rendered on top of frames.
+  - **Annotations/overlays** (i.e. timestamps, raw data label, scale bar) rendered on top of frames.
   - Built‑in dark theme stylesheet for high‑contrast analysis.
 
 - **Analysis framework**
   - Build analysis pipelines from built-in and pluggable analysis modules.
-  - Built- in analysis modules (e.g., LoG blob detection, DBSCAN/K‑Means/X‑Means clustering, particle tracking).
+  - Built-in analysis modules (e.g., LoG blob detection, DBSCAN/K‑Means/X‑Means clustering, particle tracking).
   - Produces labeled masks, per‑feature properties (area, min/max/mean, bbox, centroid), and summary statistics.
   - Analysis outputs are keyed and traced in provenance for reproducibility.
 
@@ -49,12 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `playnano` entrypoint to run processing pipelines, export bundles (TIFF/NPZ/HDF5), and create GIFs from the shell.
 
 - **Notebooks**
-  - Jupyter notebooks included to demonstate programmatic workflow.
+  - Jupyter notebooks included to demonstrate programmatic workflow.
   - Overview notebook covers the whole loading, processing, analysis and export workflow.
   - Processing notebook focuses on processing and export of loaded data.
 
 - **Documentation**:
-  - Created a Sphinx documentation site on github.io.
+  - Created a Sphinx documentation site on GitHub Pages.
   - **User Guide** covering installation, quick start, GUI and CLI usage, processing, analysis and exports.
   - **API Reference** generated with `sphinx-autoapi` for all packages.
   - **CLI reference** with examples and typical workflows.
