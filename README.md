@@ -5,12 +5,15 @@
 
 <div align="center">
 
-[![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=blue)](https://github.com/derollins/playNano/releases)
-[![GitHub release downloads](https://img.shields.io/github/downloads/derollins/playNano/latest/total?color=orange)](https://github.com/derollins/playNano/releases)
+[![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=green)](https://github.com/derollins/playNano/releases)
+[![GitHub release downloads](https://img.shields.io/github/downloads/derollins/playNano/latest/total?color=green)](https://github.com/derollins/playNano/releases)
+[![PyPI version](https://img.shields.io/pypi/v/playNano?color=blue)](https://pypi.org/project/playNano/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
+[![Tests](https://github.com/derollins/playNano/actions/workflows/tests.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/tests.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Code style: flake8](https://img.shields.io/badge/code%20style-flake8-456789.svg)](https://github.com/psf/flake8)
