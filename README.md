@@ -59,21 +59,39 @@ Full documentation (Sphinx): <https://derollins.github.io/playNano/>
 
 Requires Python 3.10–3.12.
 
-Clone the repository into a new folder:
+It is recommended to use a virtual environment such as conda to isolate the installation. There
+are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/installation.html)
+
+If you have [Anaconda](https://anaconda.org/) or [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install)
+installed, open the terminal (or Anaconda PowerShell Prompt on Windows) and create and activate
+a new virtual enviroment.
+
+ ```bash
+ conda create -n playnano_env python=3.11 # Create a new virtual enviroment with Python 3.11
+ conda activate playnano_env  # Activate the virtual enviroment
+ ```
+
+The simpliest way to install **playNano** is through PyPi using the command:
+
+```bash
+pip install playnano
+```
+
+Alternitavly clone the repository from GitHUb into a new folder:
 
 ```bash
 git clone https://github.com/derollins/playNano.git
 cd playNano
 ```
 
-It is recommended to use a virtual environment. Then install in editable mode:
+Then install in editable mode:
 
 ```bash
 pip install -e .
 ```
 
 Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
-scipy, scikit-learn, python-dateutil, tifffile, AFMReader (optional).
+scipy, scikit-learn, python-dateutil, tifffile, AFMReader.
 
 More information is available in the documentation: <https://derollins.github.io/playNano/installation.html>
 
