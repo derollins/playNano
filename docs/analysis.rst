@@ -2,7 +2,7 @@ Analysis
 ========
 
 The analysis system in **playNano** provides a provenance-aware pipeline
-for running a variety of analaysis modules including built in modules for
+for running a variety of analysis modules including built in modules for
 feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
@@ -22,7 +22,9 @@ Run an inline analysis pipeline from the CLI:
 
 .. code-block:: bash
 
-   playnano analyze data/processed_sample.h5 --analysis-steps "feature_detection:mask_fn="mask_threshold",threshold=1;particle_tracking:max_distance=3"      --output-folder ./results      --output-name tracked_particles
+   playnano analyze data/processed_sample.h5 \
+      --analysis-steps "feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3" \
+      --output-folder ./results      --output-name tracked_particles
 
 Or load the pipeline from a YAML/JSON file:
 
@@ -31,7 +33,7 @@ Or load the pipeline from a YAML/JSON file:
    analysis:
      - name: feature_detection
        mask_fn: mask_threshold
-       threshold: 5
+       threshold: 1
      - name: particle_tracking
        max_distance: 3
 
@@ -69,7 +71,11 @@ This is the general form of the analyze subcommand for CLI use:
 
 .. code-block:: bash
 
-   playnano analyze <input_file>      (--analysis-steps "step1:arg=val;step2:arg=val" | --analysis-file pipeline.yaml)      [--channel CHANNEL]      [--output-folder OUTPUT_DIR]      [--output-name BASE_NAME]
+   playnano analyze <input_file> \
+      (--analysis-steps 'step1:arg=val;step2:arg=val' | --analysis-file pipeline.yaml) \
+      [--channel CHANNEL] \
+      [--output-folder OUTPUT_DIR] \
+      [--output-name BASE_NAME]
 
 Common options:
 
@@ -217,7 +223,7 @@ Notes
 
 - The pipeline will create ``stack.provenance`` and ``stack.analysis`` if they do not exist.
 - ``stack.provenance["environment"]`` is set if not already present (gathered via the system info util).
-- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playNano.analysis.utils.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
+- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playNano.analysis.utils.common.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
 
 Troubleshooting & tips
 ----------------------

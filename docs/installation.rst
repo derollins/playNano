@@ -41,9 +41,10 @@ Create a reproducible conda environment and install **playNano**.
    setups, while Anaconda includes a full suite of scientific packages out of the box.
 
 .. code-block:: bash
+
    # 1) Create and activate a conda env
-   conda create -n playnano python=3.11
-   conda activate playnano
+   conda create -n playnano_env python=3.11
+   conda activate playnano_env
 
    # 2) Install the package from PyPI
    pip install playnano
@@ -98,8 +99,8 @@ the latest development version and make changes to the codebase.
    cd playNano
 
    # 2) Create and activate a conda env
-   conda create -n playnano python=3.11
-   conda activate playnano
+   conda create -n playnano_env python=3.11
+   conda activate playnano_env
 
    # 3) Install the package (from the project root)
    pip install -e .
@@ -120,11 +121,12 @@ You can also install optional extras for docs, notebooks, or development:
    pip install -e ".[dev]"        # developer dependencies (linting, testing, pre-commit)
 
 Developer usage
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Install all of the dependencies for linting, tests, docs and notebooks:
 
 .. code-block:: bash
+
    # After cloning the repo and activating your conda env
    pip install -e ".[dev,docs,notebooks]"
 

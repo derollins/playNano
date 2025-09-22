@@ -60,29 +60,39 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
     """
     Parse a semicolon-delimited string of processing steps into a structured list.
 
-    The list consists of (step_name, parameters) tuples.
     Each step in the string can optionally include parameters, separated by commas.
     Parameters are specified as key=value pairs.
 
-    Format examples:
-        - "remove_plane"
-        - "gaussian_filter:sigma=2.0"
-        - "threshold_mask:threshold=2,mode=soft"
+    Parameters
+    ----------
+    processing_str : str
+        Semicolon-delimited string specifying processing steps.
+        Each step may have optional parameters (seperated by commas) after a colon,
+        e.g., "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
 
-    Full example:
-        "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
+    Returns
+    -------
+    list of tuple
+        List of tuples, each containing:
+        - step_name (str): the name of the processing step
+        - kwargs (dict of str → object): dictionary of parameters for the step
 
-    Returns:
-        A list of tuples, each containing:
-            - step_name (str): the name of the processing step
-            - kwargs (dict[str, object]): a dictionary of parameters for the step
+    Examples
+    --------
+    >>> parse_processing_string("remove_plane")
+    [('remove_plane', {})]
 
-    Example output:
-        [
-            ("remove_plane", {}),
-            ("gaussian_filter", {"sigma": 2.0, "truncate": 4.0}),
-            ("threshold_mask", {"threshold": 2})
-        ]
+    >>> parse_processing_string("gaussian_filter:sigma=2.0,truncate=4.0")
+    [('gaussian_filter', {'sigma': 2.0, 'truncate': 4.0})]
+
+    >>> parse_processing_string(
+    ...     "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
+    ... )
+    [
+        ('remove_plane', {}),
+        ('gaussian_filter', {'sigma': 2.0}),
+        ('threshold_mask', {'threshold': 2})
+    ]
     """
     steps: list[tuple[str, dict[str, object]]] = []
 

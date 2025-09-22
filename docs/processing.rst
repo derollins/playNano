@@ -145,7 +145,8 @@ The **playNano** wizard allows processing pipelines to be built interactively.
 To launch this you use the ``wizard`` subcommand followed by a path to the file you
 are processing and flags that define the output folder and file name (see :doc:`cli`).
 
-.. code-block::
+.. code-block:: bash
+
   playnano wizard .test/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
 
 Programmatic usage
@@ -188,7 +189,7 @@ The processing system supports exporting processed results and snapshots to:
 - **GIF** - annotated animated GIF (requires timing metadata for correct frame rates).
 
 Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
-control export behaviour (See :docs:`cli` for CLI flag details).
+control export behaviour (See :doc:`cli` for CLI flag details).
 
 What the pipeline records
 ^^^^^^^^^^^^^^^^^^^^^^^^^

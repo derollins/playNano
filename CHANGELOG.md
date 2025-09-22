@@ -68,7 +68,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - N/A (initial public release).
 
----
-
 [Unreleased]: https://github.com/derollins/playNano/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0

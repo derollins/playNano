@@ -69,9 +69,9 @@ def save_ome_tiff_stack(
         Output path for the OME-TIFF file (will be overwritten).
     afm_stack : AFMImageStack
         The image stack to export (its `.data` or `.processed['raw']`).
-    raw : bool, default=False
+    raw : bool
         If True, use the raw snapshot (`.processed['raw']`), otherwise
-        use the current `.data` array (post-filtered).
+        use the current `.data` array (post-filtered). Default is False.
 
     Returns
     -------
@@ -157,9 +157,10 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
         Base filepath for the .npz (the “.npz” extension will be added).
     stack : AFMImageStack
         The stack to serialize.
-    raw : bool, default=False
+    raw : bool
         If True, save only the raw snapshot (`stack.processed['raw']`), and
         exclude `.processed` and `.masks`. Otherwise, save the entire AFMImageStack.
+        Default is False.
 
     Returns
     -------
@@ -205,29 +206,40 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
 
 def save_h5_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
     """
-    Save an AFMImageStack (data + metadata + processed + masks) into a single HDF5 file.
+    Save an AFMImageStack (data, metadata, processed, masks) into a single HDF5 file.
 
-    File structure:
-      /data                 float32 dataset, (n_frames, H, W)
-      /processed/<step>     float32 datasets, per-step snapshots
-      /masks/<mask>         boolean datasets, per-mask
-      /timestamps           float64 dataset, (n_frames,)
-      /frame_metadata_json  variable-length UTF-8 string, JSON dump of list of dicts
-      /provenance_json      variable-length UTF-8 string, JSON dump of provenance dict
+    File structure
+    --------------
+    - ``/data`` : float32 dataset, shape (n_frames, H, W)
 
-    Attributes on root:
-      pixel_size_nm : float
-      channel       : UTF-8 string
+    - ``/processed/<step>`` : float32 datasets, per-step snapshots
+
+    - ``/masks/<mask>`` : boolean datasets, per-mask
+
+    - ``/timestamps`` : float64 dataset, shape (n_frames,)
+
+    - ``/frame_metadata_json`` : variable-length UTF-8 string, JSON dump of list of
+      dicts
+
+    - ``/provenance_json`` : variable-length UTF-8 string, JSON dump of provenance dict
+
+    Root attributes
+    ---------------
+    - ``pixel_size_nm`` : float
+
+    - ``channel`` : UTF-8 string
 
     Parameters
     ----------
     path : Path
-        Base filepath for the .h5 (the “.h5” extension will be added).
+        Base filepath for the HDF5 file (the ``.h5`` extension will be added if
+        missing).
     stack : AFMImageStack
         The stack to serialize.
-    raw : bool, default=False
-        If True, save only the raw snapshot (`stack.processed['raw']`), and
-        exclude `.processed` and `.masks`. Otherwise, save the entire AFMImageStack.
+    raw : bool
+        If True, save only the raw snapshot (``stack.processed['raw']``), excluding
+        ``.processed`` and ``.masks``. Otherwise, save the entire AFMImageStack.
+        Default is False.
 
     Returns
     -------
@@ -322,9 +334,9 @@ def export_bundles(
         Base filename (no extension) for each export.
     formats : list of {"tif", "npz", "h5"}
         Formats to produce.
-    raw : bool, default=False
+    raw : bool
         If True, the exports will contain the raw snapshot
-        (``.processed['raw']``)
+        (``.processed['raw']``). Default is False.
 
     Raises
     ------

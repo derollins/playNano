@@ -18,6 +18,7 @@ To access these notebooks you will need to clone the **playNano** repository fro
 and install the optional notebook dependancies using ``pip install .[notebooks]``.
 
 .. code-block:: bash
+
     git clone https://github.com/derollins/playNano.git   # Clone the repository
     cd playNano
     pip install -e . [notebooks]  # Install the package and notebook dependencies

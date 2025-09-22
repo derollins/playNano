@@ -61,8 +61,8 @@ Arguments & common options
 - **--scale-bar-nm** (*int*, default=100)  
   Length of the scale bar drawn on images (set ``0`` to disable).
 
-- **--zmin**, **--zmax** (*float* or ``"auto"``)  
-  Initial display z-limits. ``"auto"`` uses the 1st / 99th percentiles by default.
+- **--zmin**, **--zmax** (*float* or *str*, optional)
+  Initial display z-limits. Use the string ``"auto"`` to automatically set 1st / 99th percentiles.
 
 Main window
 -----------
@@ -101,7 +101,7 @@ Raw vs Processed data behaviour
 
 
 Export behaviour & filenames
----------------------------
+----------------------------
 
 - **GIF**: exported GIF filename / folder is derived from ``--output-folder`` /
   ``--output-name`` or defaults to an ``output`` subfolder in the working directory.
