@@ -45,3 +45,6 @@ dist/
 *.egg-info/
 
 _version.py
+
+# Outputs from notebooks from running pipelines
+output/

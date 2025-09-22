@@ -77,7 +77,7 @@ The simpliest way to install **playNano** is through PyPi using the command:
 pip install playnano
 ```
 
-Alternitavly clone the repository from GitHUb into a new folder:
+Alternitavly clone the repository from GitHub into a new folder:
 
 ```bash
 git clone https://github.com/derollins/playNano.git
@@ -93,7 +93,7 @@ pip install -e .
 Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
 scipy, scikit-learn, python-dateutil, tifffile, AFMReader.
 
-More information is available in the documentation: <https://derollins.github.io/playNano/installation.html>
+More information on installation is available in the documentation: <https://derollins.github.io/playNano/installation.html>
 
 ## 🚀 Quickstart
 
@@ -122,6 +122,21 @@ playnano process ./tests/resources/sample_0.h5-jpk \
 
 See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/cli.html),
 [GUI guide](https://derollins.github.io/playNano/gui.html), filters, YAML schemas, and examples.
+
+## Notebooks
+
+<p align="center">
+  <img src="docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
+</p>
+
+To access and use the [Notebooks](https://derollins.github.io/playNano/notebooks.html) you need to clone the
+repository and install the required dependancies `pip install -e .[notebooks]' see the docs page for more
+deatils and full instructions: <https://derollins.github.io/playNano/notebooks.html>
+
+Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks\ folder. These
+notebooks allow the user to experiment with using **playNano** programmatically and allows the user to test
+pipelines interactively and with rapid feedback on the parameters that may need adjusting in order to process
+a high-speed dataset.
 
 ## ⚠️ Notes
 

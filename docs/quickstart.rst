@@ -21,8 +21,8 @@ A simnple way to clone the **playNano** repository:
    conda create -n playnano python=3.12 -c conda-forge
    conda activate playnano
 
-2. Install playNano (editable)
-------------------------------
+2. Install playNano
+-------------------
 
 Navigate to the playNano project root (where ``pyproject.toml`` / ``src/`` live) and run:
 
