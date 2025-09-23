@@ -111,7 +111,7 @@ Masks
    Use the ``clear`` step to reset masks.
 
 Plugins
--------
+^^^^^^^
 
 Extend the pipeline by registering filter functions via entry points under
 ``playNano.filters``. This can be any callable that accepts a 2D numpy array
@@ -144,10 +144,24 @@ The processing pipeline can defined in the CLI and run in the CLI or the GUI.
 The **playNano** wizard allows processing pipelines to be built interactively.
 To launch this you use the ``wizard`` subcommand followed by a path to the file you
 are processing and flags that define the output folder and file name (see :doc:`cli`).
+Once built the pipeline can be saved as yaml file that can be used in future runs or
+run immediately within the wizard.
+
+Run the wizard with:
 
 .. code-block:: bash
 
   playnano wizard .test/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
+
+Once the data is loaded, use the ``add`` command followed by the name of a filter, mask
+or mask to add steps to the pipeline. The wizard will then prompt you to enter optional or
+required parameters. Once the pipeline is complete use the ``save`` with the path to a ``.yaml``
+file to save the pipeline.
+
+Once constructed and saved the processing pipeline that has been built can be run with the
+``run`` command which will run the processing pipeline, step-by-step, with the configured
+parameters. The wizard will then ask if you would like to export the processed data as ``.npz``,
+``.h5`` or ``.ome-tiff`` and then if you would like to generate a ``.gif``.
 
 Programmatic usage
 ------------------
@@ -179,7 +193,7 @@ snapshots can be accessed through ``stack.processed``.
 
 
 Saved data & exports
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 The processing system supports exporting processed results and snapshots to:
 
@@ -282,7 +296,7 @@ Tips & troubleshooting
   (use the HDF5 bundle instead).
 
 See also
---------
+^^^^^^^^
 
 - :doc:`cli` - command-line reference
 - :doc:`gui` - GUI behaviour and export options

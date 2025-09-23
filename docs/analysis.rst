@@ -44,7 +44,7 @@ Or load the pipeline from a YAML/JSON file:
 Overview & behaviour
 --------------------
 
-- Analysis pipelines are conceptually similar to processing pipelines but operate
+- Analysis pipelines are conceptually similar to :doc:`processing`` pipelines but operate
   on derived results rather than on image arrays.
 - Analysis **adds** results into ``stack.analysis`` (it does **not** replace
   ``stack.data``).
@@ -53,6 +53,9 @@ Overview & behaviour
   stored result keys) under ``stack.provenance['analysis']``.
 - If ``log_to`` is provided to programmatic runs or the CLI, a **sanitised JSON**
   summary is written (arrays and complex objects are summarised for JSON friendliness).
+- Some analysis modules have requirements such as being proceeded by cirtain other
+  analysis modules, i.e. tracking modules require the detections of particles prior to
+  tracking in order to have particles to track.
 
 Available analysis modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -218,6 +221,13 @@ After a run ``stack.provenance["analysis"]`` contains:
 
 - ``frame_times`` - result of ``stack.get_frame_times()`` (if present), else ``None``.
 
+Extending with Custom Modules
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can create your own analysis modules and register them as plugins.
+See :doc:`custom_analysis_modules` for full details, including requirements,
+examples, and best practices.
+
 Notes
 ^^^^^
 
@@ -233,15 +243,8 @@ Troubleshooting & tips
 - For large or complex outputs prefer HDF5 export - sanitised JSON may truncate or summarise arrays.
 - If analyses expect processed frames, run a processing pipeline first (see :doc:`processing`).
 
-Extending with Custom Modules
------------------------------
-
-You can create your own analysis modules and register them as plugins.
-See :doc:`custom_analysis_modules` for full details, including requirements,
-examples, and best practices.
-
 See also
---------
+^^^^^^^^
 
 - :doc:`processing` - pre-processing & pipeline snapshots
 - :doc:`cli` - command-line reference and examples

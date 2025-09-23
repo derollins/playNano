@@ -35,6 +35,7 @@ coverage.xml
 
 # Documentation builds
 docs/_build/
+docs/_generated/
 
 # Jupyter notebook checkpoints
 **/.ipynb_checkpoints/

@@ -10,7 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Next change in the project
+- **GitHub**
+  - Issue templates added for bug reports and feature requests.
+
+### Changed
+
+- **Documentation**
+  - Documents and docstrings updated to correct typos address sphinx build warnings.
+  - Instructions for installation from PyPi to the user docs.
+  - Clearer instruction for the installation procedure to use notebooks added.
+
+- **Notebooks**
+  - Added a root search funciton so hard coded paths to demo data from the tests folder
+    can be accessed whereever jupyter is launched from.
 
 ## [0.1.0] - 2025-09-17
 
