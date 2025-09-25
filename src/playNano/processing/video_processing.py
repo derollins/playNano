@@ -14,7 +14,7 @@ with shape (n_frames, height, width). Outputs are either processed
 stacks, metadata dictionaries, or both.
 """
 
-from typing import Any, Sequence
+from typing import Any, Literal, Sequence
 
 import numpy as np
 from scipy.signal import correlate2d, fftconvolve
@@ -161,7 +161,8 @@ def align_frames(
 # -----------------------------------------------------------------------------#
 
 
-def intersection_crop(stack: np.ndarray) -> np.ndarray:
+@versioned_filter("0.1.0")
+def intersection_crop(stack: np.ndarray) -> tuple[np.ndarray, dict]:
     """
     Crop aligned stack to the largest common intersection region.
 
@@ -173,14 +174,44 @@ def intersection_crop(stack: np.ndarray) -> np.ndarray:
     Returns
     -------
     cropped : ndarray
-        Cropped stack containing only valid (non-NaN) regions.
+        Cropped stack containing only valid (non-NaN) pixels, or original stack if
+        no valid pixels exist.
+    meta : dict
+        Metadata about cropping parameters.
     """
-    raise NotImplementedError
+    valid_mask = np.all(np.isfinite(stack), axis=0)
+    rows = np.any(valid_mask, axis=1)
+    cols = np.any(valid_mask, axis=0)
+
+    if not np.any(rows) or not np.any(cols):
+        # No valid pixels, return original stack
+        meta = {
+            "operation": "crop_intersection",
+            "original_shape": stack.shape[1:],
+            "new_shape": stack.shape[1:],
+            "bounds": None,
+            "note": "No finite pixels found, returned original stack",
+        }
+        return stack.copy(), meta
+
+    y_min, y_max = np.where(rows)[0][[0, -1]]
+    x_min, x_max = np.where(cols)[0][[0, -1]]
+
+    cropped = stack[:, y_min : y_max + 1, x_min : x_max + 1]
+
+    meta = {
+        "operation": "crop_intersection",
+        "original_shape": stack.shape[1:],
+        "new_shape": cropped.shape[1:],
+        "bounds": (y_min, y_max, x_min, x_max),
+    }
+    return cropped, meta
 
 
-def crop_square(stack: np.ndarray) -> np.ndarray:
+@versioned_filter("0.1.0")
+def crop_square(stack: np.ndarray) -> tuple[np.ndarray, dict]:
     """
-    Crop aligned stack to a square region.
+    Crop aligned stack to the largest centered square region.
 
     Parameters
     ----------
@@ -191,29 +222,100 @@ def crop_square(stack: np.ndarray) -> np.ndarray:
     -------
     cropped : ndarray
         Cropped stack with square height and width.
+    meta : dict
+        Metadata about cropping parameters.
     """
-    raise NotImplementedError
+    cropped, inter_meta = intersection_crop(stack)
+    H, W = cropped.shape[1:]
+    size = min(H, W)
+    # Center crop
+    r_start = (H - size) // 2
+    c_start = (W - size) // 2
+    cropped_sq = cropped[:, r_start : r_start + size, c_start : c_start + size]
+
+    meta = {
+        "operation": "crop_square",
+        "original_shape": stack.shape[1:],
+        "intersection_shape": inter_meta["new_shape"],
+        "new_shape": cropped_sq.shape[1:],
+        "square_size": size,
+        "offset": (r_start, c_start),
+    }
+    return cropped_sq, meta
 
 
-def replace_nan(stack: np.ndarray, mode: str = "zero") -> np.ndarray:
+@versioned_filter("0.1.0")
+def replace_nan(
+    stack: np.ndarray,
+    mode: Literal["zero", "mean", "median", "global_mean", "constant"] = "zero",
+    value: float | None = None,
+) -> np.ndarray:
     """
-    Replace NaN padding values for visualization or export.
+    Replace NaN values in a 2D frame or 3D AFM image stack using various strategies.
+
+    Primarily used in video pipelines after alignment, but also applicable to single
+    frames.
 
     Parameters
     ----------
-    stack : ndarray of shape (n_frames, height, width)
-        Input stack with possible NaN values.
-    mode : {"zero", "mean"}, optional
-        Replacement strategy:
-        - "zero": replace NaNs with 0
-        - "mean": replace NaNs with frame mean
+    stack : np.ndarray
+        Input 3D array of shape (n_frames, height, width) or 2D frame (height, width)
+        that may contain NaN values.
+    mode : {"zero", "mean", "median", "global_mean", "constant"}, optional
+        Replacement strategy. Default is "zero".
+        - "zero" : Replace NaNs with 0.
+        - "mean" : Replace NaNs with the mean of each frame.
+        - "median" : Replace NaNs with the median of each frame.
+        - "global_mean" : Replace NaNs with the mean of the entire stack.
+        - "constant" : Replace NaNs with a user-specified constant `value`.
+    value : float, optional
+        Constant value to use when `mode="constant"`. Must be provided in that case.
 
     Returns
     -------
-    filled : ndarray
-        Stack with NaNs replaced according to `mode`.
+    filled : np.ndarray
+        Stack of the same shape as `stack` with NaNs replaced according to `mode`.
+
+    Raises
+    ------
+    ValueError
+        If `mode` is unknown or if `mode="constant"` and `value` is not provided.
+
+    Notes
+    -----
+    - Frame-wise operations like "mean" and "median" compute statistics per frame
+      independently.
+    - Preserves the dtype of the input stack.
     """
-    raise NotImplementedError
+    filled = stack.copy()
+
+    if mode == "zero":
+        filled[np.isnan(filled)] = 0
+    elif mode == "mean":
+        for i in range(filled.shape[0]):
+            frame = filled[i]
+            mask = np.isnan(frame)
+            if np.any(mask):
+                frame_mean = np.nanmean(frame)
+                frame[mask] = frame_mean
+    elif mode == "median":
+        for i in range(filled.shape[0]):
+            frame = filled[i]
+            mask = np.isnan(frame)
+            if np.any(mask):
+                frame_median = np.nanmedian(frame)
+                frame[mask] = frame_median
+    elif mode == "global_mean":
+        global_mean = np.nanmean(filled)
+        filled[np.isnan(filled)] = global_mean
+    elif mode == "constant":
+        if value is None:
+            raise ValueError("Must provide 'value' for constant mode.")
+        filled[np.isnan(filled)] = value
+    else:
+        raise ValueError(f"Unknown mode: {mode}")
+
+    return filled
 
 
 # -----------------------------------------------------------------------------#
