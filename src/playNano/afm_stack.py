@@ -11,13 +11,19 @@ from typing import Any
 
 import numpy as np
 
-from playNano.processing import filters, mask_generators, masked_filters
+from playNano.processing import (
+    filters,
+    mask_generators,
+    masked_filters,
+    video_processing,
+)
 from playNano.utils.time_utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
 FILTER_MAP = filters.register_filters()
 MASK_MAP = mask_generators.register_masking()
 MASK_FILTERS_MAP = masked_filters.register_mask_filters()
+VIDEO_FILTER_MAP = video_processing.register_video_processing()
 
 logger = logging.getLogger(__name__)
 
@@ -201,10 +207,18 @@ class AFMImageStack:
         if step in FILTER_MAP:
             return "filter", FILTER_MAP[step]
 
+        # 5) Video processing step in VIDEO_FILTER_MAP?
+
+        if step in VIDEO_FILTER_MAP:
+            return "video_filter", VIDEO_FILTER_MAP[step]
+
         # 5) No match
         raise ValueError(
-            f"Unrecognized step '{step}'. Available masks: {list(MASK_MAP)}; "
-            f"built-in filters: {list(FILTER_MAP)}; methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "  # noqa
+            f"Unrecognized step '{step}'. "
+            f"Available masks: {list(MASK_MAP)}; "
+            f"built-in filters: {list(FILTER_MAP)}; "
+            f"video filters: {list(VIDEO_FILTER_MAP)}; "
+            f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."  # noqa
         )
 
@@ -345,6 +359,8 @@ class AFMImageStack:
 
         afm = load_afm_stack(path, channel)
         afm.frame_metadata = normalize_timestamps(afm.frame_metadata)
+        afm.provenance.setdefault("processing", {"steps": [], "keys_by_name": {}})
+
         return afm
 
     @property
