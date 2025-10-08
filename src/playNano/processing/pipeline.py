@@ -13,7 +13,8 @@ from __future__ import annotations
 import importlib.metadata
 import inspect
 import logging
-from typing import Any
+from collections import defaultdict
+from typing import Any, Optional, Tuple
 
 import numpy as np
 
@@ -151,200 +152,523 @@ class ProcessingPipeline:
 
     def run(self) -> np.ndarray:
         """
-        Execute configured steps on the AFMImageStack, stores outputs and provenance.
+        Execute the full processing pipeline on the AFMImageStack.
 
-        Behavior:
-        1. Record or update environment metadata via `gather_environment_info()`
-           into `stack.provenance["environment"]`.
-        2. Reset previous processing provenance under `stack.provenance["processing"]`,
-           ensuring keys `"steps"` (list) and `"keys_by_name"` (dict) exist
-           and are cleared.
-        3. If not already present, snapshot the original data as `"raw"` in
-        `stack.processed`.
-        4. Iterate over self.steps in order (1-based index):
-           - Resolve step type via `stack._resolve_step(step_name)`, yielding
-           (step_type, fn).
-           - Record a timestamp (`utc_now_iso()`), index, name, params, step_type,
-            function version (via `fn.__version__` or plugin lookup), and module name.
-           - If step_type == "clear":
-               * reset current mask to None
-               * record `"mask_cleared": True` in provenance entry
-           - If step_type == "mask":
-               * call `stack._execute_mask_step(fn, arr, **kwargs)` to get a boolean
-               mask array
-               * if no existing mask: store under a new key `step_<idx>_<mask_name>`
-               in `stack.masks`
-                 else overlay with previous mask (logical OR) under derived key
-               * update current mask, record `"mask_key"` and `"mask_summary"` in
-               provenance
-           - Else (filter/method/plugin):
-               * call `stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)`
-               to get new array
-               * store result under `stack.processed["step_<idx>_<safe_name>"]`,
-               update arr
-               * record `"processed_key"` and `"output_summary"` in provenance
-        5. After all steps, overwrite `stack.data = arr`.
-        6. Build `stack.provenance["processing"]["keys_by_name"]` mapping each
-        step name to the list of stored keys (processed_key or mask_key) in order.
-        7. Return the final processed array.
+        This method iterates over all configured steps, executing each in order
+        and recording structured provenance information. It supports multiple
+        step types including clear, mask, filter, method, plugin, video_filter,
+        and stack_edit (with delegation to drop_frames when necessary).
+
+        The processed array is stored back into `stack.data` and snapshots of
+        intermediate arrays or masks are stored in `stack.processed` and
+        `stack.masks`, respectively. A comprehensive provenance record is
+        maintained in `stack.provenance["processing"]["steps"]` and
+        `keys_by_name`.
 
         Returns
         -------
         np.ndarray
-            The final processed data array (shape (n_frames, height, width)), now
-            stored as `stack.data`.
+            The final processed data array, now also stored in `stack.data`.
 
         Raises
         ------
         RuntimeError
-            If a step cannot be resolved or executed due to misconfiguration.
-        ValueError
-            If overlaying a mask fails due to missing previous mask key (propagated).
+            If a step cannot be resolved.
+        TypeError
+            If a stack_edit step returns an invalid type.
         Exception
-            Any exception from individual steps is logged then re-raised.
+            Any exception raised by a step function is logged and re-raised.
 
-        Examples
-        --------
-        >>> stack = AFMImageStack(data, pixel_size_nm=1.0, channel="h", file_path=".")
-        >>> pipeline = ProcessingPipeline(stack)
-        >>> pipeline.add_filter("gaussian_filter", sigma=1.0)
-        >>> pipeline.add_mask("threshold_mask", threshold=0.5)
-        >>> result = pipeline.run()
-        >>> # Final array in stack.data:
-        >>> result.shape
-        (n_frames, height, width)
-        >>> # Provenance entries:
-        >>> for rec in stack.provenance["processing"]["steps"]:
-        ...     print(
-        ...         rec["index"],
-        ...         rec["name"],
-        ...         rec.get("processed_key") or rec.get("mask_key")
-        ...     )
-        >>> # Keys by name:
-        >>> print(stack.provenance["processing"]["keys_by_name"])
-        >>> # Environment info:
-        >>> print(stack.provenance["environment"])
+        Notes
+        -----
+        - The method ensures a raw copy of the original stack exists under
+          `stack.processed["raw"]`.
+        - Mask steps may be overlaid with previous masks using logical OR.
+        - Non-drop_frames stack_edit steps automatically delegate to drop_frames
+          to maintain provenance consistency.
         """
-        # Record environment info (overwrite or only if empty)
+        self._prepare_environment_and_provenance()
+        arr = self._snapshot_raw_data()
+        mask = None
+
+        for step_idx, (step_name, kwargs) in enumerate(self.steps, start=1):
+            arr, mask = self._run_single_step(step_idx, step_name, kwargs, arr, mask)
+
+        self.stack.data = arr
+        self._finalize_provenance()
+        logger.info("Processing pipeline completed successfully.")
+        return arr
+
+    # -------------------------------------------------------------------------
+    # Core setup and teardown helpers
+    # -------------------------------------------------------------------------
+
+    def _prepare_environment_and_provenance(self) -> None:
+        """
+        Record environment metadata and reset processing provenance.
+
+        This method overwrites the previous environment information and clears
+        all processing history under `stack.provenance["processing"]`.
+
+        Side Effects
+        ------------
+        - Modifies `stack.provenance["environment"]`.
+        - Clears `stack.provenance["processing"]["steps"]`.
+        - Clears `stack.provenance["processing"]["keys_by_name"]`.
+        """
         env = gather_environment_info()
         self.stack.provenance["environment"] = env
-
-        # Reset previous processing history
         proc_prov = self.stack.provenance["processing"]
         proc_prov["steps"].clear()
         proc_prov["keys_by_name"].clear()
 
-        # Snapshot raw once
+    def _snapshot_raw_data(self) -> np.ndarray:
+        """
+        Ensure a copy of the original stack data exists.
+
+        If 'raw' is not present in `stack.processed`, this method stores a
+        copy of the current stack data for provenance purposes.
+
+        Returns
+        -------
+        np.ndarray
+            A reference to the current stack data array for processing.
+
+        Side Effects
+        ------------
+        - Modifies `stack.processed["raw"]` if it does not already exist.
+        """
         if "raw" not in self.stack.processed:
             self.stack.processed["raw"] = self.stack.data.copy()
+        return self.stack.data
 
-        arr = self.stack.data
-        mask = None  # current mask or None
-        step_idx = 0
+    def _finalize_provenance(self) -> None:
+        """
+        Populate `keys_by_name` mapping for processed and mask keys.
 
-        for step_name, kwargs in self.steps:
-            step_idx += 1
-            logger.info(
-                f"[processing] Applying step {step_idx}: '{step_name}' with args {kwargs}"  # noqa
-            )
-            # Prepare record for this step
-            timestamp = utc_now_iso()
-            step_record: dict[str, Any] = {
-                "index": step_idx,
-                "name": step_name,
-                "params": kwargs,
-                "timestamp": timestamp,
-                # we'll fill 'step_type' and reference keys and any summary
-            }
-            # Resolve step type
-            try:
-                step_type, fn = self.stack._resolve_step(step_name)
-            except Exception as e:
-                logger.error(f"Failed to resolve step {step_idx}: {step_name}: {e}")
-                raise
-            step_record["step_type"] = step_type
+        This method iterates over all recorded steps in
+        `stack.provenance["processing"]["steps"]` and builds a dictionary
+        mapping each step name to a list of processed or mask keys in order
+        of execution.
 
-            func_version = getattr(fn, "__version__", None)
-            if func_version is None and step_type == "plugin":
-                func_version = _get_plugin_version(fn)
-            step_record["version"] = func_version
-            step_record["function_module"] = getattr(fn, "__module__", None)
-
-            if step_type == "clear":
-                mask = None
-                # No snapshot stored in stack.processed/masks
-                # Record that mask was cleared
-                step_record["mask_cleared"] = True
-                self.stack.provenance["processing"]["steps"].append(step_record)
-                continue
-
-            if step_type == "mask":
-                # Compute new mask
-                new_mask = self.stack._execute_mask_step(fn, arr, **kwargs)
-                if mask is None:
-                    # First mask: store under a unique key as before
-                    key = f"step_{step_idx}_{step_name}"
-                    self.stack.masks[key] = new_mask.copy()
-                else:
-                    # Overlay: combine and store under derived key
-                    combined = np.logical_or(mask, new_mask)
-                    try:
-                        last_mask_key = list(self.stack.masks)[-1]
-                        last_mask_part = "_".join(last_mask_key.split("_")[2:])
-                    except IndexError:
-                        last_mask_part = "overlay"
-                        logger.warning(
-                            "No previous mask found when overlaying; using 'overlay'"
-                        )
-
-                    key = f"step_{step_idx}_{last_mask_part}_{step_name}"
-                    self.stack.masks[key] = combined.copy()
-                    new_mask = combined
-                mask = new_mask
-                # Record the mask snapshot key in history (no need to duplicate array)
-                step_record["mask_key"] = key
-                # Optionally record mask shape/dtype summary
-                step_record["mask_summary"] = {
-                    "shape": new_mask.shape,
-                    "dtype": str(new_mask.dtype),
-                }
-                self.stack.provenance["processing"]["steps"].append(step_record)
-                continue
-
-            # Else: filter/method/plugin
-            try:
-                new_arr = self.stack._execute_filter_step(
-                    fn, arr, mask, step_name, **kwargs
-                )
-            except Exception as e:
-                logger.error(f"Failed to apply filter '{step_name}': {e}")
-                raise
-            # Store snapshot under unique key
-            safe_name = step_name.replace(" ", "_")
-            proc_key = f"step_{step_idx}_{safe_name}"
-            self.stack.processed[proc_key] = new_arr.copy()
-            # Update arr for next steps
-            arr = new_arr
-            # Record processed_key in history
-            step_record["processed_key"] = proc_key
-            step_record["output_summary"] = {
-                "shape": new_arr.shape,
-                "dtype": str(new_arr.dtype),
-            }
-            self.stack.provenance["processing"]["steps"].append(step_record)
-
-        # After all steps, overwrite stack.data
-        self.stack.data = arr
-        logger.info("Processing pipeline completed successfully.")
-        # Optionally also attach a name→list-of-keys view
-        from collections import defaultdict
-
+        Side Effects
+        ------------
+        - Modifies `stack.provenance["processing"]["keys_by_name"]`.
+        """
         keys_by_name: dict[str, list[str]] = defaultdict(list)
         for rec in self.stack.provenance["processing"]["steps"]:
-            name = rec["name"]
-            if "processed_key" in rec:
-                keys_by_name[name].append(rec["processed_key"])
-            elif "mask_key" in rec:
-                keys_by_name[name].append(rec["mask_key"])
+            if key := rec.get("processed_key") or rec.get("mask_key"):
+                keys_by_name[rec["name"]].append(key)
         self.stack.provenance["processing"]["keys_by_name"] = dict(keys_by_name)
-        return arr
+
+    # -------------------------------------------------------------------------
+    # Step dispatch and resolution
+    # -------------------------------------------------------------------------
+
+    def _run_single_step(
+        self,
+        step_idx: int,
+        step_name: str,
+        kwargs: dict[str, Any],
+        arr: np.ndarray,
+        mask: Optional[np.ndarray],
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """
+        Execute a single pipeline step based on its resolved type.
+
+        Parameters
+        ----------
+        step_idx : int
+            1-based index of the current step.
+        step_name : str
+            Name of the step to execute.
+        kwargs : dict
+            Keyword arguments to pass to the step function.
+        arr : np.ndarray
+            Current working array.
+        mask : np.ndarray or None
+            Current mask array or None.
+
+        Returns
+        -------
+        tuple
+            Tuple of (updated array, updated mask). Mask is None for non-mask
+            steps.
+
+        Notes
+        -----
+        - Resolves the step type using `stack._resolve_step`.
+        - Logs execution start and provenance information.
+        - Delegates execution to specialized `_handle_*` functions based on type.
+        """
+        logger.info(f"[processing] Step {step_idx}: '{step_name}' with args {kwargs}")
+        step_record = self._init_step_record(step_idx, step_name, kwargs)
+
+        step_type, fn = self._resolve_step_with_logging(step_idx, step_name)
+        step_record["step_type"] = step_type
+        step_record["version"] = self._get_step_version(fn, step_type)
+        step_record["function_module"] = getattr(fn, "__module__", None)
+
+        if step_type == "clear":
+            return self._handle_clear_step(step_record)
+        elif step_type == "mask":
+            return self._handle_mask_step(
+                step_idx, step_name, fn, arr, mask, step_record
+            )
+        elif step_type in {"filter", "method", "plugin"}:
+            return self._handle_filter_step(
+                step_idx, step_name, fn, arr, mask, step_record, kwargs
+            )
+        elif step_type == "video_filter":
+            return self._handle_video_filter_step(
+                step_idx, step_name, fn, arr, step_record, kwargs
+            )
+        elif step_type == "stack_edit":
+            return self._handle_stack_edit_step(
+                step_idx, step_name, fn, arr, step_record, kwargs
+            )
+        else:
+            logger.warning(f"Unrecognized step_type '{step_type}' for {step_name}")
+            return arr, mask
+
+    def _init_step_record(
+        self, step_idx: int, step_name: str, kwargs: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Initialize a provenance dictionary for a processing step.
+
+        Parameters
+        ----------
+        step_idx : int
+            The 1-based step index.
+        step_name : str
+            Name of the step.
+        kwargs : dict
+            Parameters passed to the step.
+
+        Returns
+        -------
+        dict
+            A dictionary with fields 'index', 'name', 'params', and 'timestamp'.
+        """
+        return {
+            "index": step_idx,
+            "name": step_name,
+            "params": kwargs,
+            "timestamp": utc_now_iso(),
+        }
+
+    def _resolve_step_with_logging(self, step_idx: int, step_name: str):
+        """
+        Resolve a processing step to its type and callable, with error logging.
+
+        This method attempts to determine what kind of processing step is
+        requested (mask, filter, method, plugin, video filter, stack edit),
+        and returns the step type along with a callable implementing it.
+
+        If the step cannot be resolved, the original exception is logged and
+        re-raised, preserving its type.
+
+        Parameters
+        ----------
+        step_idx : int
+            The 1-based index of the step within the pipeline.
+        step_name : str
+            Name of the step to resolve.
+
+        Returns
+        -------
+        tuple[str, callable | None]
+            - step type: one of "clear", "mask", "method", "plugin", "filter",
+            "video_filter", "stack_edit"
+            - callable implementing the step, or None if step_type == "clear"
+
+        Raises
+        ------
+        ValueError
+            If the step name is not recognized among masks, filters, methods,
+            plugins, video filters, or stack edits.
+        """
+        try:
+            return self.stack._resolve_step(step_name)
+        except Exception as e:
+            # Log the failure for debugging
+            logger.error(f"Failed to resolve step {step_idx}: {step_name}: {e}")
+            # Re-raise the original exception so that its type is preserved
+            raise
+
+    def _get_step_version(self, fn, step_type: str) -> Optional[str]:
+        """
+        Get the version of a step function or plugin.
+
+        Parameters
+        ----------
+        fn : callable
+            Step function.
+        step_type : str
+            Step type ('plugin' triggers special lookup).
+
+        Returns
+        -------
+        str or None
+            Version string if available.
+        """
+        version = getattr(fn, "__version__", None)
+        if version is None and step_type == "plugin":
+            version = _get_plugin_version(fn)
+        return version
+
+    # -------------------------------------------------------------------------
+    # Step handlers (all with detailed docstrings)
+    # -------------------------------------------------------------------------
+
+    def _handle_clear_step(
+        self, step_record: dict[str, Any]
+    ) -> Tuple[np.ndarray, None]:
+        """
+        Handle a 'clear' step by resetting the current mask.
+
+        Parameters
+        ----------
+        step_record : dict
+            Provenance dictionary for this step.
+
+        Returns
+        -------
+        tuple
+            (current array, None) since mask is cleared.
+
+        Side Effects
+        ------------
+        - Appends the step record to `stack.provenance["processing"]["steps"]`.
+        """
+        step_record["mask_cleared"] = True
+        self._record_step(step_record)
+        return self.stack.data, None
+
+    def _handle_mask_step(
+        self,
+        step_idx: int,
+        step_name: str,
+        fn,
+        arr: np.ndarray,
+        mask: Optional[np.ndarray],
+        step_record: dict[str, Any],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Compute a new mask or overlay with previous masks.
+
+        Parameters
+        ----------
+        step_idx : int
+            Index of the step.
+        step_name : str
+            Step name.
+        fn : callable
+            Mask-generating function.
+        arr : np.ndarray
+            Current array.
+        mask : np.ndarray or None
+            Current mask.
+        step_record : dict
+            Step provenance dictionary.
+
+        Returns
+        -------
+        tuple
+            (arr, new_mask)
+
+        Side Effects
+        ------------
+        - Updates `stack.masks` with new mask.
+        - Updates step record with 'mask_key' and 'mask_summary'.
+        """
+        new_mask = self.stack._execute_mask_step(fn, arr, **step_record["params"])
+        if mask is None:
+            key = f"step_{step_idx}_{step_name}"
+            self.stack.masks[key] = new_mask.copy()
+        else:
+            combined = np.logical_or(mask, new_mask)
+            try:
+                last_mask_key = list(self.stack.masks)[-1]
+                last_mask_part = "_".join(last_mask_key.split("_")[2:])
+            except IndexError:
+                last_mask_part = "overlay"
+                logger.warning(
+                    "No previous mask found when overlaying; using 'overlay'"
+                )
+            key = f"step_{step_idx}_{last_mask_part}_{step_name}"
+            self.stack.masks[key] = combined.copy()
+            new_mask = combined
+
+        step_record["mask_key"] = key
+        step_record["mask_summary"] = {
+            "shape": new_mask.shape,
+            "dtype": str(new_mask.dtype),
+        }
+        self._record_step(step_record)
+        return arr, new_mask
+
+    def _handle_filter_step(
+        self,
+        step_idx: int,
+        step_name: str,
+        fn,
+        arr: np.ndarray,
+        mask: Optional[np.ndarray],
+        step_record: dict[str, Any],
+        kwargs: dict[str, Any],
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """
+        Execute a 'filter', 'method', or 'plugin' step.
+
+        Parameters
+        ----------
+        step_idx : int
+        step_name : str
+        fn : callable
+        arr : np.ndarray
+        mask : np.ndarray or None
+        step_record : dict
+        kwargs : dict
+
+        Returns
+        -------
+        tuple
+            (updated array, mask unchanged)
+        """
+        try:
+            new_arr = self.stack._execute_filter_step(
+                fn, arr, mask, step_name, **kwargs
+            )
+        except Exception as e:
+            logger.error(f"Failed to apply filter '{step_name}': {e}")
+            raise
+        safe_name = step_name.replace(" ", "_")
+        proc_key = f"step_{step_idx}_{safe_name}"
+        self.stack.processed[proc_key] = new_arr.copy()
+        step_record["processed_key"] = proc_key
+        step_record["output_summary"] = {
+            "shape": new_arr.shape,
+            "dtype": str(new_arr.dtype),
+        }
+        self._record_step(step_record)
+        return new_arr, mask
+
+    def _handle_video_filter_step(
+        self,
+        step_idx: int,
+        step_name: str,
+        fn,
+        arr: np.ndarray,
+        step_record: dict[str, Any],
+        kwargs: dict[str, Any],
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """
+        Execute a 'video_filter' step, producing a new array for all frames.
+
+        Returns
+        -------
+        tuple
+            (new array, None)
+        """
+        try:
+            new_arr = self.stack._execute_video_processing_step(fn, arr, **kwargs)
+        except Exception as e:
+            logger.error(f"Video filter '{step_name}' failed: {e}")
+            raise
+        proc_key = f"step_{step_idx}_{step_name}"
+        self.stack.processed[proc_key] = new_arr.copy()
+        step_record["processed_key"] = proc_key
+        step_record["output_summary"] = {
+            "shape": new_arr.shape,
+            "dtype": str(new_arr.dtype),
+        }
+        self._record_step(step_record)
+        return new_arr, None
+
+    def _handle_stack_edit_step(
+        self,
+        step_idx: int,
+        step_name: str,
+        fn,
+        arr: np.ndarray,
+        step_record: dict[str, Any],
+        kwargs: dict[str, Any],
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """
+        Execute a 'stack_edit' step.
+
+        If the step is not 'drop_frames', delegates to 'drop_frames' to maintain
+        consistent processing provenance.
+
+        Parameters
+        ----------
+        step_idx : int
+        step_name : str
+        fn : callable
+        arr : np.ndarray
+        step_record : dict
+        kwargs : dict
+
+        Returns
+        -------
+        tuple
+            (arr after edit, None)
+
+        Raises
+        ------
+        TypeError
+            If a non-drop_frames stack_edit does not return a list or array of indices.
+        """
+        try:
+            if step_name == "drop_frames":
+                new_arr = self.stack._execute_stack_edit_step(fn, arr, **kwargs)
+                delegated_to = None
+            else:
+                indices_to_drop = fn(self.stack.data, **kwargs)
+                if not isinstance(indices_to_drop, (list, np.ndarray)):
+                    raise TypeError(
+                        f"Stack edit '{step_name}' must return list or array of indices, "  # noqa
+                        f"got {type(indices_to_drop).__name__}"
+                    )
+                delegated_to = "drop_frames"
+                drop_fn = self.stack._resolve_step(delegated_to)[1]
+                new_arr = self.stack._execute_stack_edit_step(
+                    drop_fn, arr, indices_to_drop=indices_to_drop
+                )
+
+        except Exception as e:
+            logger.error(f"Stack edit '{step_name}' failed: {e}")
+            raise
+
+        proc_key = f"step_{step_idx}_drop_frames"
+        self.stack.processed[proc_key] = new_arr.copy()
+        step_record["processed_key"] = proc_key
+        step_record["output_summary"] = {
+            "stack_edit_function_used": step_name,
+            "delegated_to": delegated_to,
+            "shape": new_arr.shape,
+            "dtype": str(new_arr.dtype),
+        }
+        self._record_step(step_record)
+        return new_arr, None
+
+    # -------------------------------------------------------------------------
+    # Provenance recording
+    # -------------------------------------------------------------------------
+
+    def _record_step(self, step_record: dict[str, Any]) -> None:
+        """
+        Append a step record to the processing provenance.
+
+        Parameters
+        ----------
+        step_record : dict
+            Metadata dictionary describing the executed step.
+
+        Side Effects
+        ------------
+        - Updates `stack.provenance["processing"]["steps"]`.
+        """
+        self.stack.provenance["processing"]["steps"].append(step_record)

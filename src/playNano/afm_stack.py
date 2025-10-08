@@ -15,6 +15,7 @@ from playNano.processing import (
     filters,
     mask_generators,
     masked_filters,
+    stack_edit,
     video_processing,
 )
 from playNano.utils.time_utils import normalize_timestamps
@@ -24,6 +25,7 @@ FILTER_MAP = filters.register_filters()
 MASK_MAP = mask_generators.register_masking()
 MASK_FILTERS_MAP = masked_filters.register_mask_filters()
 VIDEO_FILTER_MAP = video_processing.register_video_processing()
+STACK_EDIT_MAP = stack_edit.register_stack_edit_processing()
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +150,7 @@ class AFMImageStack:
             "processing": {"steps": [], "keys_by_name": {}},
             "analysis": {"frame_times": None, "steps": [], "results_by_name": {}},
         }
+        self.state_backups: dict[str, Any] = {}
 
     def _resolve_step(self, step: str) -> tuple[str, callable]:
         """
@@ -159,6 +162,10 @@ class AFMImageStack:
           3. Bound method on this AFMImageStack instance
           4. Plugin from entry points "playNano.filters"
           5. Filter from FILTER_MAP
+          6. Video filter from VIDEO_FILTER_MAP
+          7. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
+             the stack, the other funcitons return lists of indices to be passed to
+             ``drop_frames`` - this is done within the ProcesssingPipeline)
 
         Parameters
         ----------
@@ -169,7 +176,8 @@ class AFMImageStack:
         Returns
         -------
         tuple[str, callable | None]
-            - step type: one of "clear", "mask", "method", "plugin", "filter"
+            - step type: one of "clear", "mask", "method", "plugin", "filter",
+              "video_filter", "stack_edit"
             - callable implementing the step, or None if step_type == "clear".
 
         Raises
@@ -178,19 +186,20 @@ class AFMImageStack:
             If the step name is not recognized among clear, masks, methods,
             plugins, or filters.
         """
+        # 1) Clear existing mask?
         if step == "clear":
             return "clear", None
 
-        # 1) Mask generator?
+        # 2) Mask generator?
         if step in MASK_MAP:
             return "mask", MASK_MAP[step]
 
-        # 2) Bound method on self? (e.g. a custom method on AFMImageStack)
+        # 3) Bound method on self? (e.g. a custom method on AFMImageStack)
         method = getattr(self, step, None)
         if callable(method):
             return "method", method
 
-        # 3) Plugin filter entry point?
+        # 4) Plugin filter entry point?
         try:
             ep = next(
                 ep
@@ -203,16 +212,19 @@ class AFMImageStack:
             fn = ep.load()
             return "plugin", fn
 
-        # 4) Unmasked filter in FILTER_MAP?
+        # 5) Unmasked filter in FILTER_MAP?
         if step in FILTER_MAP:
             return "filter", FILTER_MAP[step]
 
-        # 5) Video processing step in VIDEO_FILTER_MAP?
-
+        # 6) Video processing step in VIDEO_FILTER_MAP?
         if step in VIDEO_FILTER_MAP:
             return "video_filter", VIDEO_FILTER_MAP[step]
 
-        # 5) No match
+        # 7) Stack edit step ie. drop_frames?
+        if step in STACK_EDIT_MAP:
+            return "stack_edit", STACK_EDIT_MAP[step]
+
+        # 8) No match
         raise ValueError(
             f"Unrecognized step '{step}'. "
             f"Available masks: {list(MASK_MAP)}; "
@@ -220,6 +232,7 @@ class AFMImageStack:
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
             f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."  # noqa
+            f"stack_edit: {list(STACK_EDIT_MAP)}; "
         )
 
     def _execute_mask_step(
@@ -336,6 +349,151 @@ class AFMImageStack:
 
         return new_arr
 
+    def _execute_video_processing_step(
+        self, video_fn: callable, arr: np.ndarray, **kwargs
+    ) -> np.ndarray:
+        """
+        Execute a video processing function on a full image stack.
+
+        This method applies a given callable to a 3D array representing
+        an image stack of shape ``(n_frames, height, width)``. It safely
+        handles errors by catching exceptions and returning the original
+        array if the function fails.
+
+        Parameters
+        ----------
+        video_fn : callable
+            A function that accepts a 3D NumPy array and optionally keyword arguments,
+            and returns a new 3D array of processed frames. The callable should have
+            a signature such as:
+
+            ``video_fn(arr: np.ndarray, **kwargs) -> np.ndarray``
+        arr : np.ndarray
+            Input 3D image stack with shape ``(n_frames, height, width)``.
+        **kwargs : dict, optional
+            Additional keyword arguments passed to ``video_fn``.
+
+        Returns
+        -------
+        np.ndarray
+            Processed 3D image stack. If ``video_fn`` raises an exception,
+            the original array ``arr`` is returned unchanged.
+
+        Notes
+        -----
+        - This method is typically used internally by the processing pipeline
+        to apply a uniform operation (e.g., flattening, filtering,
+        background subtraction) to all frames in a video stack.
+        - If the provided function does not accept keyword arguments, the method
+        will attempt to call it without them before failing.
+        - All errors are logged via the module logger with the name of the
+        failing function.
+        """
+        try:
+            return video_fn(arr, **kwargs)
+        except TypeError:
+            try:
+                return video_fn(arr)
+            except Exception as e:
+                logger.warning(
+                    f"Video processing step '{video_fn.__name__}' failed: {e}"
+                )
+                return arr
+        except Exception as e:
+            logger.warning(f"Video processing step '{video_fn.__name__}' failed: {e}")
+            return arr
+
+    def _execute_stack_edit_step(self, fn, arr: np.ndarray, **kwargs) -> np.ndarray:
+        """
+        Execute a structural edit operation on the AFMImageStack.
+
+        This method should not be used directly outside of ProcessingPipeline.
+        This internal method applies a function that modifies the structure of the stack
+        (for example, dropping or reordering frames) and ensures that the associated
+        frame metadata remains synchronized with the resulting array.
+
+        The previous frame metadata is automatically backed up in
+        ``self.state_backups["frame_metadata_before_edit"]`` before any modification,
+        allowing later restoration through :meth:`restore_frame_metadata`.
+
+        Parameters
+        ----------
+        fn : callable
+            A function that performs the edit operation. Must accept the current 3D
+            image stack (``arr``) as its first argument and return a modified
+            3D NumPy array with shape ``(n', h, w)``.
+        arr : numpy.ndarray
+            The 3D input array representing the current stack data, with shape
+            ``(n, height, width)``.
+        **kwargs : dict
+            Additional keyword arguments to pass to the edit function.
+            Typically includes:
+
+            - ``indices`` : list of int, optional
+              The frame indices that were removed. If provided, the corresponding
+              entries in ``self.frame_metadata`` are also dropped.
+
+        Returns
+        -------
+        numpy.ndarray
+            The modified 3D array after the edit has been applied.
+
+        Raises
+        ------
+        RuntimeError
+            If the length of ``self.frame_metadata`` does not match the number
+            of frames in the returned array after editing.
+        Exception
+            Propagates any exception raised by the edit function ``fn``.
+
+        Notes
+        -----
+        - The previous metadata state is only backed up once per edit sequence
+          to prevent redundant copies.
+        - This method does **not** record provenance directly; provenance
+          tracking is handled by the :class:`ProcessingPipeline`.
+        - Structural edits should only modify the number or ordering of frames,
+          not the spatial dimensions or data type.
+
+        See Also
+        --------
+        drop_frames : Remove specific frames from a stack.
+        restore_frame_metadata : Restore original frame metadata after edits.
+        ProcessingPipeline._execute_filter_step : Execute a standard filter step.
+        """
+        # Run the edit function to get the new 3D array
+        new_arr = fn(arr, **kwargs)
+
+        # Only backup once per edit series to avoid redundant copies
+        if "frame_metadata_before_edit" not in self.state_backups:
+            self.state_backups["frame_metadata_before_edit"] = list(self.frame_metadata)
+
+        # Update frame metadata by removing corresponding entries
+        dropped_indices = kwargs.get("indices_to_drop", [])
+        if dropped_indices:
+            self.frame_metadata = [
+                meta
+                for i, meta in enumerate(self.frame_metadata)
+                if i not in dropped_indices
+            ]
+
+        # Optional: sanity check
+        if len(self.frame_metadata) != new_arr.shape[0]:
+            raise RuntimeError(
+                f"frame_metadata length mismatch after edit "
+                f"({len(self.frame_metadata)} vs {new_arr.shape[0]})."
+            )
+        return new_arr
+
+    def restore_frame_metadata(self):
+        """Restore frame metadata from the last state backup, if available."""
+        backup = self.state_backups.pop("frame_metadata_before_edit", None)
+        if backup is not None:
+            self.frame_metadata = backup
+            logger.info("Frame metadata restored from state_backups.")
+        else:
+            logger.debug("No frame metadata backup found.")
+
     @classmethod
     def load_data(
         cls, path: str | Path, channel: str = "height_trace"
@@ -378,7 +536,7 @@ class AFMImageStack:
     @property
     def height(self) -> int:
         """
-        Get the frame number of pixel rows.
+        Get the number of pixel rows (frame height).
 
         Returns
         -------
@@ -834,4 +992,9 @@ class AFMImageStack:
 
         self.data = self.processed["raw"].copy()
         logger.info("Data restored from raw snapshot.")
+        # Restore frame metadata if it was backed up
+        self.restore_frame_metadata()
+        logger.debug(
+            "Metadata restored from state_backups['frame_metadata_before_edit']."
+        )
         return self.data

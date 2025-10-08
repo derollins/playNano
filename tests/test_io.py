@@ -458,6 +458,7 @@ class DummyStack:
         self.frame_metadata = metadata
         self.pixel_size_nm = pixel_size
         self.file_path = path
+        self.state_backups = {"frame_metadata_before_edit": []}
 
 
 @pytest.mark.parametrize(

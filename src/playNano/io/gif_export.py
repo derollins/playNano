@@ -217,7 +217,9 @@ def export_gif(
     Notes
     -----
     - Uses processed data if available; otherwise falls back to raw data.
-    - Timestamps and pixel size are read from ``afm_stack`` metadata.
+    - Timestamps and pixel size are read from ``afm_stack`` metadata although if raw
+      data is exported after an edit_stack processing step then the timestamps in
+      ``afm_stack.state_backups['frame_metadata_before_edit']`` are retrived and used.
     - Output file name includes ``"_filtered"`` if processed data is exported.
     """
     if not make_gif:
@@ -234,18 +236,28 @@ def export_gif(
         filtered_exists = raw_exists and any(
             key != "raw" for key in afm_stack.processed.keys()
         )
+        timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
         if filtered_exists:
             base = f"{base}_filtered"
+
     elif raw is True:
         if "raw" in afm_stack.processed:
             stack_data = afm_stack.processed["raw"]
+            if "frame_metadata_before_edit" in afm_stack.state_backups:
+                timestamps = [
+                    md["timestamp"]
+                    for md in afm_stack.state_backups.get(
+                        "frame_metadata_before_edit", afm_stack.frame_metadata
+                    )
+                ]
+            else:
+                timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
         else:
             logger.debug("Requested raw export on unprocessed data; using loaded data.")
             stack_data = afm_stack.data
+            timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
 
     gif_path = out_dir / f"{base}.gif"
-
-    timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
 
     pixel_to_nm = afm_stack.pixel_size_nm
 

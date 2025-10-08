@@ -4,12 +4,9 @@ import pytest
 from playNano.processing.video_processing import (
     align_frames,
     crop_square,
-    drop_frames,
     intersection_crop,
     replace_nan,
     rolling_frame_align,
-    select_frame_range,
-    select_frames,
 )
 
 # --- Fixtures --- #
@@ -258,30 +255,6 @@ def test_crop_square_centering():
     cropped, meta = crop_square(stack)
     assert cropped.shape == (1, 5, 5)
     np.testing.assert_array_equal(cropped[0], stack[0][:, 1:6])
-
-
-# --- Tests for frame selection --- #
-
-
-def test_select_and_drop_frames(dummy_stack):
-    """Test select_frames and drop_frames."""
-    selected, _ = select_frames(dummy_stack, [0, 2, 4])
-    dropped, _ = drop_frames(dummy_stack, [1, 3])
-    np.testing.assert_array_equal(selected, dropped)
-
-
-def test_select_frame_range_basic(dummy_stack):
-    """Test contiguous frame range selection."""
-    subset, meta = select_frame_range(dummy_stack, 1, 4)
-    np.testing.assert_array_equal(subset, dummy_stack[1:4])
-    assert meta["new_n_frames"] == 3
-
-
-def test_select_frame_range_full(dummy_stack):
-    """Test selecting full range returns original stack."""
-    subset, meta = select_frame_range(dummy_stack, 0, 5)
-    np.testing.assert_array_equal(subset, dummy_stack)
-    assert meta["new_n_frames"] == 5
 
 
 # --- Integration test --- #
