@@ -28,7 +28,7 @@ def process_stack(
             pipeline.clear_mask()
         elif name == "mask":
             pipeline.add_mask(name, **kwargs)
-        else:
+        elif name:
             pipeline.add_filter(name, **kwargs)
     pipeline.run()
     return stack

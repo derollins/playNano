@@ -14,6 +14,7 @@ import yaml
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis.pipeline import AnalysisPipeline
 from playNano.analysis.utils.common import export_to_hdf5, make_json_safe
+from playNano.analysis.utils.loader import load_analysis_module
 from playNano.cli.utils import (
     _sanitize_for_dump,
     ask_for_analysis_params,
@@ -31,6 +32,7 @@ from playNano.gui.main import gui_entry
 from playNano.io.export_data import export_bundles
 from playNano.io.gif_export import export_gif
 from playNano.processing.core import process_stack
+from playNano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
 
@@ -224,8 +226,11 @@ def analyze_pipeline_mode(
     # 5) write HDF5
     h5_path = out_dir / f"{base_name}.h5"
     logger.debug("Writing analysis HDF5 to %s", h5_path)
-    export_to_hdf5(raw_record, out_path=h5_path)
-    logger.info("Wrote analysis HDF5 to %s", h5_path)
+    try:
+        export_to_hdf5(raw_record, out_path=h5_path)
+        logger.info("Wrote analysis HDF5 to %s", h5_path)
+    except Exception as e:
+        logger.error("Failed to write analysis HDF5: %s", e)
 
 
 def play_pipeline_mode(
@@ -619,17 +624,34 @@ class Wizard:
         self.process_steps.insert(new_i, item)
         self.io.say(f"Moved step from position {old_i+1} to {new_i+1}.")
 
-    def handle_save(self, parts: List[str]) -> None:
+    def handle_save(self, parts: list[str]) -> None:
         """Save current processing steps to a YAML file."""
         if len(parts) != 2:
             self.io.say("Usage: save <path/to/output.yaml>")
             return
+
         save_path = Path(parts[1])
         processing_dict = {"filters": []}
+
         for name, kw in self.process_steps:
             entry = {"name": name}
-            entry.update(kw)
+
+            # Get the registered processing function (if available)
+            try:
+                name, func = self.afm_stack._resolve_step(name)
+            except Exception:
+                func = None
+
+            # Apply param pruning (removes inactive or None params)
+            if func is not None:
+                filtered = prune_kwargs(func, kw)
+            else:
+                # fallback: simple None-filtering
+                filtered = {k: v for k, v in kw.items() if v is not None}
+
+            entry.update(filtered)
             processing_dict["filters"].append(entry)
+
         try:
             save_path.parent.mkdir(parents=True, exist_ok=True)
             with open(save_path, "w", encoding="utf8") as f:
@@ -921,37 +943,42 @@ class Wizard:
         except Exception as e:
             self.io.say(f"Error loading analysis file: {e}")
 
-    def handle_asave(self, parts: List[str]) -> None:
-        """Save analysis steps to a YAML/JSON file (sanitized for portability)."""
+    def handle_asave(self, parts: list[str]) -> None:
+        """Save current analysis steps to a YAML file."""
         if len(parts) != 2:
-            self.io.say("Usage: asave <path.yaml or .json>")
+            self.io.say("Usage: asave <path/to/output.yaml>")
             return
-        path = Path(parts[1])
 
-        # Build safe steps where 'name' is the first key for readability
-        safe_steps = []
+        save_path = Path(parts[1])
+        analysis_dict = {"analysis": []}
+
         for name, kw in self.analysis_steps:
-            safe_kw = _sanitize_for_dump(kw) if kw else {}
-            # Ensure name is first key in the emitted mapping
-            # (yaml.safe_dump + sort_keys=False)
             entry = {"name": name}
-            entry.update(safe_kw)
-            safe_steps.append(entry)
+            try:
+                module = load_analysis_module(name)
+                # Analysis modules are expected to implement a `run()` method.
+                func = getattr(module, "run", None)
+            except Exception:
+                func = None
 
-        out = {"analysis": safe_steps}
+            if func:
+                filtered = prune_kwargs(func, kw)
+            else:
+                filtered = {k: v for k, v in kw.items() if v is not None}
 
-        # Write YAML or JSON; YAML via safe_dump to avoid Python tags
-        if path.suffix.lower() in (".yaml", ".yml"):
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "w", encoding="utf8") as f:
-                yaml.safe_dump(
-                    out, f, sort_keys=False, default_flow_style=False
-                )  # noqa
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "w", encoding="utf8") as f:
-                json.dump(out, f, indent=2)
-        self.io.say(f"Analysis saved to {path}")
+            entry.update(filtered)
+            analysis_dict["analysis"].append(entry)
+
+        try:
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            safe_dict = _sanitize_for_dump(analysis_dict)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(save_path, "w", encoding="utf8") as f:
+                yaml.safe_dump(safe_dict, f, sort_keys=False)
+
+            self.io.say(f"Analysis saved to {save_path}")
+        except Exception as e:
+            self.io.say(f"Error saving analysis: {e}")
 
     def _normalize_steps(
         self, steps: List[Tuple[str, Dict[str, Any]]]
@@ -1121,6 +1148,7 @@ class Wizard:
                 self.process_steps
             )  # keep snapshot up-to-date
             self.io.say(f"Analysis complete (ran on {source}).")
+            logger.info("Analysis successfully completed.")
         except Exception as e:
             # log full traceback for debugging while keeping CLI output friendly
             logger.exception("Analysis failed")

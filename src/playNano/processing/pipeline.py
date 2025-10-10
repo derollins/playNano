@@ -563,29 +563,56 @@ class ProcessingPipeline:
         arr: np.ndarray,
         step_record: dict[str, Any],
         kwargs: dict[str, Any],
-    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    ) -> Tuple[np.ndarray, Optional[dict]]:
         """
         Execute a 'video_filter' step, producing a new array for all frames.
 
+        Parameters
+        ----------
+        step_idx : int
+            Index of the step within the pipeline.
+        step_name : str
+            Name of the filter function being executed.
+        fn : callable
+            The filter function to apply.
+        arr : np.ndarray
+            Input 3D image stack or 2D frame array.
+        step_record : dict
+            Provenance record to update.
+        kwargs : dict
+            Additional keyword arguments for the filter function.
+
         Returns
         -------
-        tuple
-            (new array, None)
+        new_arr : np.ndarray
+            The filtered array.
+        metadata : dict or None
+            Metadata returned by the filter function, if available.
         """
         try:
-            new_arr = self.stack._execute_video_processing_step(fn, arr, **kwargs)
+            result = self.stack._execute_video_processing_step(fn, arr, **kwargs)
+
+            if isinstance(result, tuple) and len(result) == 2:
+                new_arr, metadata = result
+            else:
+                new_arr, metadata = result, {}
+
         except Exception as e:
             logger.error(f"Video filter '{step_name}' failed: {e}")
             raise
+
         proc_key = f"step_{step_idx}_{step_name}"
         self.stack.processed[proc_key] = new_arr.copy()
+
         step_record["processed_key"] = proc_key
+        step_record["metadata"] = metadata
         step_record["output_summary"] = {
             "shape": new_arr.shape,
             "dtype": str(new_arr.dtype),
         }
+
         self._record_step(step_record)
-        return new_arr, None
+        return new_arr, metadata
 
     def _handle_stack_edit_step(
         self,

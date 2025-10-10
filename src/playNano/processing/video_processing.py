@@ -10,8 +10,8 @@ This module provides functions that operate on 3D numpy arrays
 - Future extensions such as spatio-temporal denoising
 
 All functions follow a NumPy-style API: input stacks are 3D arrays
-with shape (n_frames, height, width). Outputs are either processed
-stacks, metadata dictionaries, or both.
+with shape (n_frames, height, width). Outputs are processed
+stacks and a metadata dictionary.
 """
 
 from collections import deque
@@ -23,6 +23,7 @@ from scipy.signal import correlate2d, fftconvolve
 from skimage.registration import phase_cross_correlation
 
 from playNano.processing.versioning import versioned_filter
+from playNano.utils.param_utils import param_conditions
 
 # -----------------------------------------------------------------------------#
 # Alignment
@@ -637,12 +638,13 @@ def crop_square(stack: np.ndarray) -> tuple[np.ndarray, dict]:
     return cropped_sq, meta
 
 
+@param_conditions(value=lambda p: p.get("mode") == "constant")
 @versioned_filter("0.1.0")
 def replace_nan(
     stack: np.ndarray,
     mode: Literal["zero", "mean", "median", "global_mean", "constant"] = "zero",
     value: float | None = None,
-) -> np.ndarray:
+) -> tuple[np.ndarray, dict]:
     """
     Replace NaN values in a 2D frame or 3D AFM image stack using various strategies.
 
@@ -668,6 +670,9 @@ def replace_nan(
     -------
     filled : np.ndarray
         Stack of the same shape as `stack` with NaNs replaced according to `mode`.
+    meta : dict
+        Metadata about the NaN replacement operation (e.g., count, mode, constant used).
+
 
     Raises
     ------
@@ -681,7 +686,7 @@ def replace_nan(
     - Preserves the dtype of the input stack.
     """
     filled = stack.copy()
-
+    nan_count = np.isnan(filled).sum()
     if mode == "zero":
         filled[np.isnan(filled)] = 0
     elif mode == "mean":
@@ -708,7 +713,13 @@ def replace_nan(
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
-    return filled
+    meta = {
+        "nans_filled": int(nan_count),
+        "mode": mode,
+        "value_used": value if mode == "constant" else None,
+    }
+
+    return filled, meta
 
 
 # -----------------------------------------------------------------------------#

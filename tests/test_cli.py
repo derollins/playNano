@@ -8,6 +8,7 @@ import tempfile
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Optional, Union
 from unittest.mock import MagicMock, mock_open, patch
 
 import numpy as np
@@ -609,7 +610,7 @@ def test_wizard_asave_generates_yaml(tmp_path):
             "",  # min_size default
             "",  # remove_edge default
             "",  # fill_holes default
-            "0.3",  # hole_area 0.3])  # default
+            "3",  # hole_area 3])  # default
             f"asave {yaml_file}",
             "quit",
         ]
@@ -630,7 +631,6 @@ def test_wizard_asave_generates_yaml(tmp_path):
                 "min_size": 10,
                 "remove_edge": True,
                 "fill_holes": False,
-                "hole_area": "0.3",
             }
         ]
     }
@@ -1926,3 +1926,25 @@ def test_io_say(capsys):
     io_adapter.say("test message")
     captured = capsys.readouterr()
     assert "test message" in captured.out
+
+
+@pytest.mark.parametrize(
+    "s, expected_type, default, expected",
+    [
+        ("4", int, None, 4),
+        ("4.5", float, None, 4.5),
+        ("", float, 1.23, 1.23),
+        ("True", bool, False, True),
+        ("no", bool, True, False),
+        ("1,2,3", list, None, ["1", "2", "3"]),
+        ("a,b", tuple, None, ("a", "b")),
+        ("4", Optional[int], None, 4),
+        ("", Optional[int], 9, 9),
+        ("5", Union[int, None], None, 5),
+        ("", Union[int, None], 0, 0),
+        ("abc", str, None, "abc"),
+    ],
+)
+def test_cast_input(s, expected_type, default, expected):
+    """Test the _cast_input utility function with various inputs and types."""
+    assert cli_utils._cast_input(s, expected_type, default) == expected

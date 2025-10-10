@@ -235,8 +235,11 @@ def test_rolling_frame_align_modes(synthetic_stack, mode):
 )
 def test_replace_nan(stack_with_nans, mode, value):
     """Test NaN replacement."""
-    filled = replace_nan(stack_with_nans, mode=mode, value=value)
+    filled, meta = replace_nan(stack_with_nans, mode=mode, value=value)
     assert np.all(np.isfinite(filled))
+    assert meta["mode"] == mode
+    assert meta["value_used"] == value
+    assert meta["nans_filled"] == 3
 
 
 # --- Tests for cropping --- #
@@ -288,7 +291,7 @@ def test_pipeline_variants(synthetic_stack_integration, pipeline):
         assert square.shape[1] == square.shape[2]
 
     elif pipeline == "align_replace_nan":
-        filled = replace_nan(aligned, mode="zero")
+        filled, meta_replace = replace_nan(aligned, mode="zero")
         result = filled
     # --- universal assertions ---
     assert np.all(np.isfinite(result)), f"{pipeline} left NaNs behind"

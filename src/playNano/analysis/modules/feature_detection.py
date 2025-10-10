@@ -14,6 +14,7 @@ from skimage.morphology import remove_small_holes
 
 from playNano.analysis.base import AnalysisModule
 from playNano.processing.mask_generators import register_masking
+from playNano.utils.param_utils import param_conditions
 
 MASK_MAP = register_masking()
 
@@ -225,6 +226,11 @@ class FeatureDetectionModule(AnalysisModule):
             ),
         }
 
+    @param_conditions(
+        mask_fn=lambda p: not p.get("mask_key"),
+        mask_key=lambda p: not p.get("mask_fn"),
+        hole_area=lambda p: p.get("fill_holes", False),
+    )
     def run(
         self,
         stack,
