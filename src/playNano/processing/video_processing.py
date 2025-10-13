@@ -22,7 +22,7 @@ from scipy.ndimage import gaussian_filter
 from scipy.signal import correlate2d, fftconvolve
 from skimage.registration import phase_cross_correlation
 
-from playNano.processing.versioning import versioned_filter
+from playNano.utils.versioning import versioned_filter
 from playNano.utils.param_utils import param_conditions
 
 # -----------------------------------------------------------------------------#

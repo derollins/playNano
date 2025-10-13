@@ -21,7 +21,7 @@ from typing import Callable
 
 import numpy as np
 
-from playNano.processing.versioning import versioned_filter
+from playNano.utils.versioning import versioned_filter
 
 
 @versioned_filter("0.1.0")
