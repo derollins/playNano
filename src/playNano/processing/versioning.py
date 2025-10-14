@@ -3,7 +3,7 @@
 
 def versioned_filter(version: str):
     """
-    Decorator to assign a version number to a filter or mask function.
+    Add decorator to assign a version number to a filter or mask function.
 
     This adds a ``__version__`` attribute to the decorated function, which can
     be used for provenance tracking or documentation purposes.
