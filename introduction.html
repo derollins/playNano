@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Notebooks" href="notebooks.html"><link rel="prev" title="Introduction" href="introduction.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Quickstart" href="quickstart.html"><link rel="prev" title="playNano Documentation" href="index.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
-        <title>Quickstart - playNano 0.1.0 documentation</title>
+        <title>Introduction - playNano 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -192,8 +192,8 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
@@ -253,7 +253,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="_sources/quickstart.rst.txt" title="View this page">
+  <a class="muted-link" href="_sources/introduction.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -271,80 +271,54 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="quickstart">
-<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
-<p>This short quickstart gets <strong>playNano</strong> running quickly (recommended: <strong>conda</strong>) using
-the CLI and GUI. For full details see the linked pages (<a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>, <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>,
-<a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a>, <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a>, <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a>).</p>
-<section id="create-a-conda-environment-recommended">
-<h2>1. Create a conda environment (recommended)<a class="headerlink" href="#create-a-conda-environment-recommended" title="Link to this heading">¶</a></h2>
-<p>Ensure you have Anaconda or Miniconda installed (see <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> for links) and
-open the terminal (Anaconda PowerShel Pront for Windows).</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>playnano_env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
-conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
-</pre></div>
-</div>
+          <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p><strong>playNano</strong> is an open-source Python toolkit for time-aware processing and analysis
+of atomic force microscopy (AFM) data.
+It is designed to handle complete AFM time series—such as high-speed AFM
+(HS-AFM) videos—as unified datasets rather than isolated frames.
+The software provides a reproducible, provenance-tracked workflow for preparing,
+visualising, and analysing AFM data within a modular Python environment.</p>
 </section>
-<section id="install-playnano-from-pypi">
-<h2>2. Install playNano from PyPi<a class="headerlink" href="#install-playnano-from-pypi" title="Link to this heading">¶</a></h2>
-<p>Install the latest release of <strong>playNano</strong> from PyPi using pip.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>playnano
-</pre></div>
-</div>
+<section id="motivation-and-design">
+<h2>Motivation and Design<a class="headerlink" href="#motivation-and-design" title="Link to this heading">¶</a></h2>
+<p>Conventional AFM image-processing tools often treat each frame independently,
+making it difficult to perform consistent operations or analyses across time-series
+data. <strong>playNano</strong> was developed to address this gap by introducing a
+<strong>pipeline-based</strong>, <strong>time-aware</strong>, and <strong>FAIR-compliant</strong> approach built using Python
+tools and libraries.</p>
+<p>The design philosophy is to keep the architecture transparent and simple enough
+for experimental scientists to use and extend, while ensuring every processing
+and analysis step is fully recorded for reproducibility.
+Each pipeline—whether for image processing or analysis—stores its operations
+and parameters directly in the dataset’s provenance, allowing complete
+reconstruction of results at any stage.</p>
 </section>
-<section id="quick-verification">
-<h2>3. Quick verification<a class="headerlink" href="#quick-verification" title="Link to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>--help
-python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import playNano; print(playNano.__version__)&quot;</span>
-</pre></div>
-</div>
+<section id="core-components">
+<h2>Core Components<a class="headerlink" href="#core-components" title="Link to this heading">¶</a></h2>
+<p><strong>playNano</strong> is organised around four main stages:</p>
+<ol class="arabic simple">
+<li><p><strong>Loading</strong> - Imports a sequence of AFM frames into an
+<a class="reference internal" href="api/playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>, preserving timestamps and metadata.
+The following AFM file formats are supported:
+<code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code>, <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>, and <code class="docutils literal notranslate"><span class="pre">.spm</span></code>.</p></li>
+<li><p><strong>Processing</strong> - Applies flattening, filtering, and frame-alignment operations
+to prepare data for analysis and export. Pipelines are defined as ordered
+lists of steps that run serially on the stack.</p></li>
+<li><p><strong>Analysis</strong> - Executes configurable pipelines of analysis modules, such as
+particle detection, clustering, and tracking. Modules can be combined to
+create custom workflows.</p></li>
+<li><p><strong>Export</strong> - Saves processed data and analysis results in multiple open
+formats for reuse, sharing, and publication.</p></li>
+</ol>
 </section>
-<section id="most-common-actions-one-liners">
-<h2>4. Most common actions (one-liners)<a class="headerlink" href="#most-common-actions-one-liners" title="Link to this heading">¶</a></h2>
-<section id="launch-interactive-gui">
-<h3>Launch interactive GUI:<a class="headerlink" href="#launch-interactive-gui" title="Link to this heading">¶</a></h3>
-<p>To open a sample file in the GUI, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w">  </span><span class="c1"># Opens GUI with loaded file</span>
-</pre></div>
-</div>
-<p>This opens a sample AFM file when run in the project root. Change the path to your
-own data to view other files. There is a preset processing pipeline can can be
-applied by pressing the “F” key or the “Apply Filters” button in the GUI. You can
-find out more about using the GUI in <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a>.</p>
-</section>
-<section id="batch-process-analyis-and-export-no-gui">
-<h3>Batch process, analyis and export (no GUI):<a class="headerlink" href="#batch-process-analyis-and-export-no-gui" title="Link to this heading">¶</a></h3>
-<p>For batch processing and analysis the processing and analyis pipelines are run through seperate commands.
-To run these commands on example data, these commands can be run from the project root.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="se">\</span>
-<span class="w">  </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--export<span class="w"> </span>h5,tif,npz<span class="w"> </span>--make-gif<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>sample_processed
-</pre></div>
-</div>
-<p>This will load demo data, apply a processing pipeline, export the processed data as an HDF5 file (<code class="docutils literal notranslate"><span class="pre">h5</span></code>), a
-NumPy zipped archive (<code class="docutils literal notranslate"><span class="pre">npz</span></code>) and a multi-page OME-TIFF (<code class="docutils literal notranslate"><span class="pre">tif</span></code>) to the <code class="docutils literal notranslate"><span class="pre">./results</span></code> folder. It will also
-generate an animated GIF (from <code class="docutils literal notranslate"><span class="pre">--make-gif</span></code>) with scale bar and frame timestamp annotations.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">_filtered</span></code> is automatically appended to the output name when processing is applied.</p>
-</div>
-<p>Run analysis (detection + tracking):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>./results/sample_processed_filtered.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3&quot;</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="where-to-go-next">
-<h2>5. Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>Full installation instructions and platform notes: <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a></p></li>
-<li><p>CLI reference and flags: <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a></p></li>
-<li><p>GUI overview and shortcuts: <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a></p></li>
-<li><p>Processing pipeline details + YAML schema: <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a></p></li>
-<li><p>Analysis API and CLI usage: <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a></p></li>
-<li><p>Step-by-step Jupyter demo: <a class="reference internal" href="notebooks.html"><span class="doc">Notebooks</span></a></p></li>
-</ul>
+<hr class="docutils" />
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
+<p>→ Continue to <a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> to load your first AFM file and run a basic
+processing workflow.</p>
 </section>
 </section>
 
@@ -353,23 +327,23 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="notebooks.html">
+          <a class="next-page" href="quickstart.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Notebooks</div>
+                <div class="title">Quickstart</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="introduction.html">
+          <a class="prev-page" href="index.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Introduction</div>
+                <div class="title">Home</div>
                 
               </div>
             </a>
@@ -403,16 +377,11 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Quickstart</a><ul>
-<li><a class="reference internal" href="#create-a-conda-environment-recommended">1. Create a conda environment (recommended)</a></li>
-<li><a class="reference internal" href="#install-playnano-from-pypi">2. Install playNano from PyPi</a></li>
-<li><a class="reference internal" href="#quick-verification">3. Quick verification</a></li>
-<li><a class="reference internal" href="#most-common-actions-one-liners">4. Most common actions (one-liners)</a><ul>
-<li><a class="reference internal" href="#launch-interactive-gui">Launch interactive GUI:</a></li>
-<li><a class="reference internal" href="#batch-process-analyis-and-export-no-gui">Batch process, analyis and export (no GUI):</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#where-to-go-next">5. Where to go next</a></li>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#motivation-and-design">Motivation and Design</a></li>
+<li><a class="reference internal" href="#core-components">Core Components</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
 </ul>

@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Custom Analysis Modules" href="custom_analysis_modules.html" /><link rel="prev" title="Processing" href="processing.html" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Custom Analysis Modules" href="custom_analysis_modules.html"><link rel="prev" title="GUI: Interactive Playback" href="gui.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
         <title>Analysis - playNano 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -22,14 +22,14 @@
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
       }
     }
@@ -144,14 +144,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -161,8 +157,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -170,8 +165,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -179,8 +173,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -199,31 +192,32 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI: Interactive Playback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">GUI: Interactive Playback</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api/modules.html">playNano</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of playNano</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playNano.html">playNano package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of playNano package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.analysis.html">playNano.analysis package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of playNano.analysis package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/modules.html">playNano</a><input aria-label="Toggle navigation of playNano" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playNano.html">playNano package</a><input aria-label="Toggle navigation of playNano package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.analysis.html">playNano.analysis package</a><input aria-label="Toggle navigation of playNano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/playNano.analysis.modules.html">playNano.analysis.modules package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/playNano.analysis.utils.html">playNano.analysis.utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="api/playNano.cli.html">playNano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.gui.html">playNano.gui package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of playNano.gui package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.gui.html">playNano.gui package</a><input aria-label="Toggle navigation of playNano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/playNano.gui.widgets.html">playNano.gui.widgets package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.io.html">playNano.io package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of playNano.io package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playNano.io.html">playNano.io package</a><input aria-label="Toggle navigation of playNano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/playNano.io.formats.html">playNano.io.formats package</a></li>
 </ul>
 </li>
@@ -235,7 +229,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
@@ -265,8 +259,7 @@
   </a>
 </div>
 <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -274,15 +267,14 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
           <section id="analysis">
 <h1>Analysis<a class="headerlink" href="#analysis" title="Link to this heading">¶</a></h1>
 <p>The analysis system in <strong>playNano</strong> provides a provenance-aware pipeline
-for running a variety of analaysis modules including built in modules for
+for running a variety of analysis modules including built in modules for
 feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
@@ -296,14 +288,16 @@ and reproducibility.</p>
 <section id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
 <p>Run an inline analysis pipeline from the CLI:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=&quot;</span>mask_threshold<span class="s2">&quot;,threshold=1;particle_tracking:max_distance=3&quot;</span><span class="w">      </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
 </pre></div>
 </div>
 <p>Or load the pipeline from a YAML/JSON file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature_detection</span>
 <span class="w">    </span><span class="nt">mask_fn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
-<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
 <span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </pre></div>
@@ -315,7 +309,7 @@ and reproducibility.</p>
 <section id="overview-behaviour">
 <h2>Overview &amp; behaviour<a class="headerlink" href="#overview-behaviour" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Analysis pipelines are conceptually similar to processing pipelines but operate
+<li><p>Analysis pipelines are conceptually similar to <span class="xref std std-doc">processing`</span> pipelines but operate
 on derived results rather than on image arrays.</p></li>
 <li><p>Analysis <strong>adds</strong> results into <code class="docutils literal notranslate"><span class="pre">stack.analysis</span></code> (it does <strong>not</strong> replace
 <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>).</p></li>
@@ -324,6 +318,9 @@ on derived results rather than on image arrays.</p></li>
 stored result keys) under <code class="docutils literal notranslate"><span class="pre">stack.provenance['analysis']</span></code>.</p></li>
 <li><p>If <code class="docutils literal notranslate"><span class="pre">log_to</span></code> is provided to programmatic runs or the CLI, a <strong>sanitised JSON</strong>
 summary is written (arrays and complex objects are summarised for JSON friendliness).</p></li>
+<li><p>Some analysis modules have requirements such as being proceeded by cirtain other
+analysis modules, i.e. tracking modules require the detections of particles prior to
+tracking in order to have particles to track.</p></li>
 </ul>
 <section id="available-analysis-modules">
 <h3>Available analysis modules<a class="headerlink" href="#available-analysis-modules" title="Link to this heading">¶</a></h3>
@@ -331,7 +328,7 @@ summary is written (arrays and complex objects are summarised for JSON friendlin
 <ul class="simple">
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.count_nonzero">count_nonzero</a>  - Analysis module for counting non-zero data points in an array.</p></li>
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.dbscan_clustering">dbscan_clustering</a>  - DBSCAN clustering on features over the entire stack in 3D (x, y, time).</p></li>
-<li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.feature_detection">feature_detection</a>  - Module for threshold based feature detection.</p></li>
+<li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.feature_detection">feature_detection</a>  - Threshold-based feature detection for AFM image stacks.</p></li>
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.k_means_clustering">k_means_clustering</a>  - K-Means clustering on features over the entire stack in 3D (x, y, time).</p></li>
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.log_blob_detection">log_blob_detection</a>  - Module for LoG blob detection.</p></li>
 <li><p><a class="reference external" href="../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.particle_tracking">particle_tracking</a>  - Module for linking particle features across frames to build trajectories.</p></li>
@@ -343,7 +340,11 @@ summary is written (arrays and complex objects are summarised for JSON friendlin
 <h2>CLI usage<a class="headerlink" href="#cli-usage" title="Link to this heading">¶</a></h2>
 <p>The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.</p>
 <p>This is the general form of the analyze subcommand for CLI use:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>&lt;input_file&gt;<span class="w">      </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">&quot;step1:arg=val;step2:arg=val&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w">      </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w">      </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w">      </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s1">&#39;step1:arg=val;step2:arg=val&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
 </pre></div>
 </div>
 <p>Common options:</p>
@@ -486,12 +487,18 @@ dict, array, DataFrame, etc.).</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">frame_times</span></code> - result of <code class="docutils literal notranslate"><span class="pre">stack.get_frame_times()</span></code> (if present), else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </section>
+<section id="extending-with-custom-modules">
+<h3>Extending with Custom Modules<a class="headerlink" href="#extending-with-custom-modules" title="Link to this heading">¶</a></h3>
+<p>You can create your own analysis modules and register them as plugins.
+See <a class="reference internal" href="custom_analysis_modules.html"><span class="doc">Custom Analysis Modules</span></a> for full details, including requirements,
+examples, and best practices.</p>
+</section>
 <section id="notes">
 <h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>The pipeline will create <code class="docutils literal notranslate"><span class="pre">stack.provenance</span></code> and <code class="docutils literal notranslate"><span class="pre">stack.analysis</span></code> if they do not exist.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;environment&quot;]</span></code> is set if not already present (gathered via the system info util).</p></li>
-<li><p>When <code class="docutils literal notranslate"><span class="pre">log_to</span></code> is supplied, the pipeline writes a sanitised JSON summary using <code class="xref py py-func docutils literal notranslate"><span class="pre">playNano.analysis.utils.sanitize_analysis_for_logging()</span></code> (this is intended to produce small, JSON-friendly summaries suitable for logs).</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">log_to</span></code> is supplied, the pipeline writes a sanitised JSON summary using <a class="reference internal" href="api/playNano.analysis.utils.html#playNano.analysis.utils.common.sanitize_analysis_for_logging" title="playNano.analysis.utils.common.sanitize_analysis_for_logging"><code class="xref py py-func docutils literal notranslate"><span class="pre">playNano.analysis.utils.common.sanitize_analysis_for_logging()</span></code></a> (this is intended to produce small, JSON-friendly summaries suitable for logs).</p></li>
 </ul>
 </section>
 </section>
@@ -503,21 +510,15 @@ or that a plugin exposing the correct entry point is installed.</p></li>
 <li><p>For large or complex outputs prefer HDF5 export - sanitised JSON may truncate or summarise arrays.</p></li>
 <li><p>If analyses expect processed frames, run a processing pipeline first (see <a class="reference internal" href="processing.html"><span class="doc">Processing</span></a>).</p></li>
 </ul>
-</section>
-<section id="extending-with-custom-modules">
-<h2>Extending with Custom Modules<a class="headerlink" href="#extending-with-custom-modules" title="Link to this heading">¶</a></h2>
-<p>You can create your own analysis modules and register them as plugins.
-See <a class="reference internal" href="custom_analysis_modules.html"><span class="doc">Custom Analysis Modules</span></a> for full details, including requirements,
-examples, and best practices.</p>
-</section>
 <section id="see-also">
-<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<h3>See also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="processing.html"><span class="doc">Processing</span></a> - pre-processing &amp; pipeline snapshots</p></li>
 <li><p><a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a> - command-line reference and examples</p></li>
 <li><p><a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> - interactive playback &amp; exporting</p></li>
 <li><p><a class="reference internal" href="custom_analysis_modules.html"><span class="doc">Custom Analysis Modules</span></a> - writing and registering new analysis steps</p></li>
 </ul>
+</section>
 </section>
 </section>
 
@@ -535,14 +536,14 @@ examples, and best practices.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="processing.html">
+          <a class="prev-page" href="gui.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Processing</div>
+                <div class="title">GUI: Interactive Playback</div>
                 
               </div>
             </a>
@@ -594,12 +595,14 @@ examples, and best practices.</p>
 <li><a class="reference internal" href="#module-loading">Module loading</a></li>
 <li><a class="reference internal" href="#result-storage-layout">Result storage layout</a></li>
 <li><a class="reference internal" href="#provenance-structure">Provenance structure</a></li>
+<li><a class="reference internal" href="#extending-with-custom-modules">Extending with Custom Modules</a></li>
 <li><a class="reference internal" href="#notes">Notes</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#troubleshooting-tips">Troubleshooting &amp; tips</a></li>
-<li><a class="reference internal" href="#extending-with-custom-modules">Extending with Custom Modules</a></li>
+<li><a class="reference internal" href="#troubleshooting-tips">Troubleshooting &amp; tips</a><ul>
 <li><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

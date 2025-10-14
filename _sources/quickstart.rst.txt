@@ -1,46 +1,29 @@
 Quickstart
 ==========
 
-This short quickstart gets **playNano** running quickly (recommended: **conda**).
-For full details see the linked pages (:doc:`installation`, :doc:`cli`,
+This short quickstart gets **playNano** running quickly (recommended: **conda**) using
+the CLI and GUI. For full details see the linked pages (:doc:`installation`, :doc:`cli`,
 :doc:`gui`, :doc:`processing`, :doc:`analysis`).
-
-Before you start ensure you have a copy of the **playNano** source code, either clone the repository or downlaod a relase from github.
-
-A simnple way to clone the **playNano** repository:
-
-..clode-block:: bash
-   git clone https://github.com/derollins/playNano.git   # Clones the repo to a folder called playNano
 
 1. Create a conda environment (recommended)
 -------------------------------------------
 
-.. code-block:: bash
-
-   # from the project root (where pyproject.toml / src/ live)
-   conda create -n playnano python=3.12 -c conda-forge
-   conda activate playnano
-
-2. Install playNano (editable)
-------------------------------
-
-Navigate to the playNano project root (where ``pyproject.toml`` / ``src/`` live) and run:
+Ensure you have Anaconda or Miniconda installed (see :doc:`installation` for links) and
+open the terminal (Anaconda PowerShel Pront for Windows).
 
 .. code-block:: bash
 
-   pip install -e .
+   conda create -n playnano_env python=3.11
+   conda activate playnano_env
 
-Optional extras (docs, notebooks):
+2. Install playNano from PyPi
+-----------------------------
+
+Install the latest release of **playNano** from PyPi using pip.
 
 .. code-block:: bash
 
-   pip install -e ".[docs]" ".[notebooks]"
-
-.. note::
-
-   The ``-e`` flag installs **playNano** in editable mode, allowing you to
-   modify the source code and see changes immediately—recommended for development
-   and experimentation.
+   pip install playnano
 
 3. Quick verification
 ---------------------
@@ -63,7 +46,9 @@ To open a sample file in the GUI, run:
    playnano play ./tests/resources/sample_0.h5-jpk  # Opens GUI with loaded file
 
 This opens a sample AFM file when run in the project root. Change the path to your
-own data to view other files.
+own data to view other files. There is a preset processing pipeline can can be
+applied by pressing the "F" key or the "Apply Filters" button in the GUI. You can
+find out more about using the GUI in :doc:`gui`.
 
 Batch process, analyis and export (no GUI):
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -74,15 +59,22 @@ To run these commands on example data, these commands can be run from the projec
 .. code-block:: bash
 
    playnano process ./tests/resources/sample_0.h5-jpk\
-     --processing "remove_plane;mask_mean_offset:factor=1;row_median_align" \
+     --processing "remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2" \
      --export h5,tif,npz --make-gif --output-folder ./results --output-name sample_processed
+
+This will load demo data, apply a processing pipeline, export the processed data as an HDF5 file (``h5``), a
+NumPy zipped archive (``npz``) and a multi-page OME-TIFF (``tif``) to the ``./results`` folder. It will also
+generate an animated GIF (from ``--make-gif``) with scale bar and frame timestamp annotations.
+
+.. note::
+   ``_filtered`` is automatically appended to the output name when processing is applied.
 
 Run analysis (detection + tracking):
 
 .. code-block:: bash
 
-   playnano analyze ./results/sample_processed.h5 \
-     --analysis-steps "feature_detection:threshold=5;track_particles:max_distance=3"
+   playnano analyze ./results/sample_processed_filtered.h5 \
+     --analysis-steps "feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3"
 
 5. Where to go next
 -------------------

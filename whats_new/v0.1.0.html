@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="What’s New" href="index.html" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="prev" title="What’s New" href="index.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
         <title>What’s New in playNano 0.1.0 - playNano 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -22,14 +22,14 @@
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
       }
     }
@@ -144,14 +144,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -161,8 +157,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -170,8 +165,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -179,8 +173,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -199,31 +192,32 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface (CLI)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../gui.html">GUI: Interactive Playback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui.html">GUI: Interactive Playback</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../api/modules.html">playNano</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of playNano</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../api/playNano.html">playNano package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of playNano package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.analysis.html">playNano.analysis package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of playNano.analysis package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/modules.html">playNano</a><input aria-label="Toggle navigation of playNano" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/playNano.html">playNano package</a><input aria-label="Toggle navigation of playNano package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.analysis.html">playNano.analysis package</a><input aria-label="Toggle navigation of playNano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/playNano.analysis.modules.html">playNano.analysis.modules package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../api/playNano.analysis.utils.html">playNano.analysis.utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../api/playNano.cli.html">playNano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.gui.html">playNano.gui package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of playNano.gui package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.gui.html">playNano.gui package</a><input aria-label="Toggle navigation of playNano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/playNano.gui.widgets.html">playNano.gui.widgets package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.io.html">playNano.io package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of playNano.io package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/playNano.io.html">playNano.io package</a><input aria-label="Toggle navigation of playNano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../api/playNano.io.formats.html">playNano.io.formats package</a></li>
 </ul>
 </li>
@@ -235,7 +229,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">What’s New</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
@@ -265,8 +259,7 @@
   </a>
 </div>
 <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -274,27 +267,26 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
           <section id="what-s-new-in-playnano-0-1-0">
 <h1>What’s New in <em>playNano</em> 0.1.0<a class="headerlink" href="#what-s-new-in-playnano-0-1-0" title="Link to this heading">¶</a></h1>
-<p><strong>Release date:</strong> 2025‑09‑17</p>
+<p><strong>Release date:</strong> 2025-09-17</p>
 <p>Welcome to the first public release of <em>playNano</em>! This version introduces a complete workflow for
-<strong>loading, processing, exploring, exporting, and analyzing</strong> high‑speed AFM (HS‑AFM) video data—together with a
-reproducible provenance model, notebooks, and full documentation.</p>
+<strong>loading, processing, exploring, exporting, and analyzing</strong> high-speed AFM (HS-AFM) video data—
+together with a reproducible provenance model, notebooks, and full documentation.</p>
 <section id="highlights">
 <h2>✨ Highlights<a class="headerlink" href="#highlights" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>AFM data loading &amp; playback</strong> from <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> and <code class="docutils literal notranslate"><span class="pre">.asd</span></code> files, and from folders containing <code class="docutils literal notranslate"><span class="pre">.spm</span></code> or <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> files.</p></li>
-<li><p><strong>Processing pipeline</strong> with masks and <strong>complete provenance</strong> (<code class="docutils literal notranslate"><span class="pre">stack.provenance</span></code>), storing per‑step outputs under
+<li><p><strong>Processing pipeline</strong> with masks and <strong>complete provenance</strong> (<code class="docutils literal notranslate"><span class="pre">stack.provenance</span></code>), storing per-step outputs under
 keys like <code class="docutils literal notranslate"><span class="pre">step_&lt;n&gt;_&lt;name&gt;</span></code>.</p></li>
-<li><p><strong>Export &amp; re‑import</strong>: save to <strong>.h5</strong> or <strong>.npz</strong> and reload later with <strong>all stages, masks, and provenance preserved</strong>.</p></li>
-<li><p><strong>GUI (PySide6)</strong> with manual/auto <strong>Z‑range</strong> and <strong>annotations/overlays</strong> (timestamps, “RAW” label, scale bar).</p></li>
-<li><p><strong>Exports</strong> to <strong>OME‑TIFF</strong> and <strong>GIF</strong> (optional scale bars) for sharing and presentations.</p></li>
-<li><p><strong>Analysis framework</strong> with built‑in modules (LoG blobs, DBSCAN/K‑Means/X‑Means, particle tracking) and pluggable extensions.</p></li>
+<li><p><strong>Export &amp; re-import</strong>: save to <strong>.h5</strong> or <strong>.npz</strong> and reload later with <strong>all stages, masks, and provenance preserved</strong>.</p></li>
+<li><p><strong>GUI (PySide6)</strong> with manual/auto <strong>Z-range</strong> and <strong>annotations/overlays</strong> (timestamps, “RAW” label, scale bar).</p></li>
+<li><p><strong>Exports</strong> to <strong>OME-TIFF</strong> and <strong>GIF</strong> (optional scale bars) for sharing and presentations.</p></li>
+<li><p><strong>Analysis framework</strong> with built-in modules (LoG blobs, DBSCAN/K-Means/X-Means, particle tracking) and pluggable extensions.</p></li>
 <li><p><strong>Documentation &amp; notebooks</strong>: Sphinx site (User Guide, API, CLI) and example notebooks.</p></li>
 </ul>
 </section>
@@ -306,37 +298,37 @@ keys like <code class="docutils literal notranslate"><span class="pre">step_&lt;
 <li><p>Intermediate results are snapshotted and ordered as <code class="docutils literal notranslate"><span class="pre">step_&lt;n&gt;_&lt;name&gt;</span></code> for reliable comparison and debugging.</p></li>
 </ul>
 </section>
-<section id="export-reimport">
-<h2>💾 Export &amp; Re‑import<a class="headerlink" href="#export-reimport" title="Link to this heading">¶</a></h2>
+<section id="export-re-import">
+<h2>💾 Export &amp; Re-import<a class="headerlink" href="#export-re-import" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Save current stack (data, stages, masks, provenance) to <strong>HDF5 (<code class="docutils literal notranslate"><span class="pre">.h5</span></code>)</strong> or <strong>NumPy (<code class="docutils literal notranslate"><span class="pre">.npz</span></code>)</strong> bundles.</p></li>
 <li><p>Reload bundles to continue processing or run analyses with <strong>full history intact</strong>.</p></li>
-<li><p>Export to <strong>OME‑TIFF</strong> for interoperability and <strong>GIF</strong> for rapid previews.</p></li>
+<li><p>Export to <strong>OME-TIFF</strong> for interoperability and <strong>GIF</strong> for rapid previews.</p></li>
 </ul>
 </section>
 <section id="gui-pyside6">
 <h2>🖥️ GUI (PySide6)<a class="headerlink" href="#gui-pyside6" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Real‑time playback, frame seeking, and snapshot previews.</p></li>
-<li><p><strong>Z‑range control</strong>: auto or manual min/max for consistent visual scaling across frames.</p></li>
+<li><p>Real-time playback, frame seeking, and snapshot previews.</p></li>
+<li><p><strong>Z-range control</strong>: auto or manual min/max for consistent visual scaling across frames.</p></li>
 <li><p><strong>Annotations/overlays</strong>: timestamps, “RAW” label, and scale bar can be rendered on top of frames.</p></li>
-<li><p>Dark theme stylesheet for high‑contrast analysis.</p></li>
+<li><p>Dark theme stylesheet for high-contrast analysis.</p></li>
 </ul>
 </section>
 <section id="analysis-framework">
 <h2>📊 Analysis Framework<a class="headerlink" href="#analysis-framework" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Build pipelines from built‑in and pluggable modules.</p></li>
-<li><p>Included modules: LoG blob detection, DBSCAN/K‑Means/X‑Means clustering, and particle tracking.</p></li>
-<li><p>Outputs: labeled masks, per‑feature properties (area, min/max/mean, bbox, centroid), and per‑frame
-summaries—tracked in provenance.</p></li>
+<li><p>Build pipelines from built-in and pluggable modules.</p></li>
+<li><p>Included modules: LoG blob detection, DBSCAN/K-Means/X-Means clustering, and particle tracking.</p></li>
+<li><p>Outputs: labeled masks, per-feature properties (area, min/max/mean, bbox, centroid), and per-frame summaries—
+tracked in provenance.</p></li>
 </ul>
 </section>
 <section id="cli">
 <h2>🔧 CLI<a class="headerlink" href="#cli" title="Link to this heading">¶</a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">playnano</span></code> command to run pipelines headless, export bundles, and create GIFs:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span><span class="s2">&quot;path/to/jpk_folder&quot;</span><span class="w"> </span>--channel<span class="w"> </span>height_trace<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--processing-file<span class="w"> </span>processing.yaml<span class="w"> </span>--export<span class="w"> </span>tif,npz,h5<span class="w"> </span>--make-gif
+<span class="w">    </span>--processing-file<span class="w"> </span>processing.yaml<span class="w"> </span>--export<span class="w"> </span>tif,npz,h5<span class="w"> </span>--make-gif
 </pre></div>
 </div>
 </section>
@@ -392,7 +384,7 @@ summaries—tracked in provenance.</p></li>
 <li><a class="reference internal" href="#">What’s New in <em>playNano</em> 0.1.0</a><ul>
 <li><a class="reference internal" href="#highlights">✨ Highlights</a></li>
 <li><a class="reference internal" href="#processing-provenance">🧪 Processing &amp; Provenance</a></li>
-<li><a class="reference internal" href="#export-reimport">💾 Export &amp; Re‑import</a></li>
+<li><a class="reference internal" href="#export-re-import">💾 Export &amp; Re-import</a></li>
 <li><a class="reference internal" href="#gui-pyside6">🖥️ GUI (PySide6)</a></li>
 <li><a class="reference internal" href="#analysis-framework">📊 Analysis Framework</a></li>
 <li><a class="reference internal" href="#cli">🔧 CLI</a></li>

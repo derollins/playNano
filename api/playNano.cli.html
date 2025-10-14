@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="playNano.gui package" href="playNano.gui.html" /><link rel="prev" title="playNano.analysis.utils package" href="playNano.analysis.utils.html" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="playNano.gui package" href="playNano.gui.html"><link rel="prev" title="playNano.analysis.utils package" href="playNano.analysis.utils.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
         <title>playNano.cli package - playNano 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -22,14 +22,14 @@
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
       }
     }
@@ -144,14 +144,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -161,8 +157,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -170,8 +165,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -179,8 +173,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -199,31 +192,32 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface (CLI)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../gui.html">GUI: Interactive Playback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui.html">GUI: Interactive Playback</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="modules.html">playNano</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of playNano</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current has-children"><a class="reference internal" href="playNano.html">playNano package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of playNano package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.analysis.html">playNano.analysis package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of playNano.analysis package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="modules.html">playNano</a><input aria-label="Toggle navigation of playNano" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="playNano.html">playNano package</a><input aria-label="Toggle navigation of playNano package" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.analysis.html">playNano.analysis package</a><input aria-label="Toggle navigation of playNano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="playNano.analysis.modules.html">playNano.analysis.modules package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="playNano.analysis.utils.html">playNano.analysis.utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">playNano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.gui.html">playNano.gui package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of playNano.gui package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.gui.html">playNano.gui package</a><input aria-label="Toggle navigation of playNano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="playNano.gui.widgets.html">playNano.gui.widgets package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.io.html">playNano.io package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of playNano.io package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.io.html">playNano.io package</a><input aria-label="Toggle navigation of playNano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="playNano.io.formats.html">playNano.io.formats package</a></li>
 </ul>
 </li>
@@ -235,7 +229,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
@@ -265,8 +259,7 @@
   </a>
 </div>
 <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -274,8 +267,7 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
@@ -298,57 +290,57 @@
 <p>Utility functions for the playNano CLI.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.ask_for_analysis_params">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">ask_for_analysis_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#ask_for_analysis_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.ask_for_analysis_params" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">ask_for_analysis_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#ask_for_analysis_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.ask_for_analysis_params" title="Link to this definition">¶</a></dt>
 <dd><p>Introspect module_name.run signature and interactively ask for param values.</p>
 <p>Returns kwargs dict.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.ask_for_processing_params">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">ask_for_processing_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#ask_for_processing_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.ask_for_processing_params" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">ask_for_processing_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#ask_for_processing_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.ask_for_processing_params" title="Link to this definition">¶</a></dt>
 <dd><p>Introspect a processing callable’s parameters and ask interactively.</p>
 <p>Skips the first positional arguments (data, mask).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.get_processing_step_type">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">get_processing_step_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#get_processing_step_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.get_processing_step_type" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">get_processing_step_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#get_processing_step_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.get_processing_step_type" title="Link to this definition">¶</a></dt>
 <dd><p>Return the type of a processing step.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.is_valid_analysis_step">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">is_valid_analysis_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#is_valid_analysis_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.is_valid_analysis_step" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">is_valid_analysis_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#is_valid_analysis_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.is_valid_analysis_step" title="Link to this definition">¶</a></dt>
 <dd><p>Return True if <cite>name</cite> is a built-in analysis, plugin or the ‘clear’ step.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.is_valid_step">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">is_valid_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#is_valid_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.is_valid_step" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">is_valid_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#is_valid_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.is_valid_step" title="Link to this definition">¶</a></dt>
 <dd><p>Return True if <cite>name</cite> is a built-in filter, mask, plugin or the ‘clear’ step.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.parse_analysis_file">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_analysis_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_analysis_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_analysis_file" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_analysis_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_analysis_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_analysis_file" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a YAML or JSON analysis file into a list of (name, parameters) tuples.</p>
 <p>This reads a saved analysis pipeline definition, validates its structure,
 and normalizes any complex types (e.g., tuples) into YAML/JSON-safe forms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path to the YAML or JSON file containing the analysis definition.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the YAML or JSON file containing the analysis definition.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A list where each element is <code class="docutils literal notranslate"><span class="pre">(analysis_step_name,</span> <span class="pre">kwargs_dict)</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">kwargs_dict</span></code> contains parameters for that analysis step.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list of tuple</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>FileNotFoundError</strong> – If the file does not exist.</p></li>
-<li><p><strong>ValueError</strong> – If the file cannot be parsed as YAML or JSON, or if the
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.14)"><strong>FileNotFoundError</strong></a> – If the file does not exist.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the file cannot be parsed as YAML or JSON, or if the
     top-level key <code class="docutils literal notranslate"><span class="pre">analysis</span></code> is missing.</p></li>
 </ul>
 </dd>
@@ -389,7 +381,7 @@ The <code class="docutils literal notranslate"><span class="pre">kwargs_dict</sp
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.parse_analysis_string">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_analysis_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analysis_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_analysis_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_analysis_string" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_analysis_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analysis_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_analysis_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_analysis_string" title="Link to this definition">¶</a></dt>
 <dd><p>Parse ; delimited analysis strings into a list (analysis_step_name, kwargs) tuples.</p>
 <dl class="simple">
 <dt>Each segment in <cite>analysis_str</cite> is of the form:</dt><dd><p>analysis_module_name
@@ -410,7 +402,7 @@ analysis_module_name:param1=value1,param2=value2</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.parse_processing_file">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_file" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_file" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</p>
 <dl class="simple">
 <dt>Expected YAML schema:</dt><dd><dl class="simple">
@@ -432,43 +424,44 @@ order: 2</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playNano.cli.utils.parse_processing_string">
-<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_string" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playNano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/cli/utils.html#parse_processing_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.cli.utils.parse_processing_string" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a semicolon-delimited string of processing steps into a structured list.</p>
-<p>The list consists of (step_name, parameters) tuples.
-Each step in the string can optionally include parameters, separated by commas.
+<p>Each step in the string can optionally include parameters, separated by commas.
 Parameters are specified as key=value pairs.</p>
-<dl class="simple">
-<dt>Format examples:</dt><dd><ul class="simple">
-<li><p>“remove_plane”</p></li>
-<li><p>“gaussian_filter:sigma=2.0”</p></li>
-<li><p>“threshold_mask:threshold=2,mode=soft”</p></li>
-</ul>
-</dd>
-<dt>Full example:</dt><dd><p>“remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”</p>
-</dd>
-</dl>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p>step_name (str): the name of the processing step</p></li>
-<li><p>kwargs (dict[str, object]): a dictionary of parameters for the step</p></li>
-</ul>
-</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>processing_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Semicolon-delimited string specifying processing steps.
+Each step may have optional parameters (seperated by commas) after a colon,
+e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of tuples, each containing</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of tuples, each containing:
+- step_name (str): the name of the processing step
+- kwargs (dict of str → object): dictionary of parameters for the step</p>
 </dd>
-</dl>
-<dl>
-<dt>Example output:</dt><dd><dl class="simple">
-<dt>[</dt><dd><p>(“remove_plane”, {}),
-(“gaussian_filter”, {“sigma”: 2.0, “truncate”: 4.0}),
-(“threshold_mask”, {“threshold”: 2})</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
 </dd>
 </dl>
-<p>]</p>
-</dd>
-</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_processing_string</span><span class="p">(</span><span class="s2">&quot;remove_plane&quot;</span><span class="p">)</span>
+<span class="go">[(&#39;remove_plane&#39;, {})]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_processing_string</span><span class="p">(</span><span class="s2">&quot;gaussian_filter:sigma=2.0,truncate=4.0&quot;</span><span class="p">)</span>
+<span class="go">[(&#39;gaussian_filter&#39;, {&#39;sigma&#39;: 2.0, &#39;truncate&#39;: 4.0})]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_processing_string</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">[</span>
+<span class="go">    (&#39;remove_plane&#39;, {}),</span>
+<span class="go">    (&#39;gaussian_filter&#39;, {&#39;sigma&#39;: 2.0}),</span>
+<span class="go">    (&#39;threshold_mask&#39;, {&#39;threshold&#39;: 2})</span>
+<span class="go">]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

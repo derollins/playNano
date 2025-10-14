@@ -1,13 +1,13 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="../../../">
-  <head><meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2025.07.19 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
         <title>playNano.processing.pipeline - playNano 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
     
@@ -21,14 +21,14 @@
   }
   @media not print {
     body[data-theme="dark"] {
-      --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
-        --color-code-background: #2b2b2b;
-  --color-code-foreground: #f8f8f2;
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
       }
     }
@@ -143,14 +143,10 @@
   </symbol>
 </svg>
 
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
-<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation">
-  <div class="visually-hidden">Hide navigation sidebar</div>
-</label>
-<label class="overlay toc-overlay" for="__toc">
-  <div class="visually-hidden">Hide table of contents sidebar</div>
-</label>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
 <a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
@@ -160,8 +156,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
-        <div class="visually-hidden">Toggle site navigation sidebar</div>
-        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
       </label>
     </div>
     <div class="header-center">
@@ -169,8 +164,7 @@
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
-        <button class="theme-toggle">
-          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
           <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
           <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -178,8 +172,7 @@
         </button>
       </div>
       <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
-        <div class="visually-hidden">Toggle table of contents sidebar</div>
-        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
   </header>
@@ -198,31 +191,32 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command Line Interface (CLI)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../gui.html">GUI: Interactive Playback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gui.html">GUI: Interactive Playback</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../custom_analysis_modules.html">Custom Analysis Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules.html">playNano</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of playNano</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/playNano.html">playNano package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of playNano package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.analysis.html">playNano.analysis package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of playNano.analysis package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules.html">playNano</a><input aria-label="Toggle navigation of playNano" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/playNano.html">playNano package</a><input aria-label="Toggle navigation of playNano package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.analysis.html">playNano.analysis package</a><input aria-label="Toggle navigation of playNano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/playNano.analysis.modules.html">playNano.analysis.modules package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/playNano.analysis.utils.html">playNano.analysis.utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/playNano.cli.html">playNano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.gui.html">playNano.gui package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of playNano.gui package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.gui.html">playNano.gui package</a><input aria-label="Toggle navigation of playNano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/playNano.gui.widgets.html">playNano.gui.widgets package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.io.html">playNano.io package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of playNano.io package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../api/playNano.io.html">playNano.io package</a><input aria-label="Toggle navigation of playNano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../api/playNano.io.formats.html">playNano.io.formats package</a></li>
 </ul>
 </li>
@@ -234,7 +228,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../whats_new/index.html">What’s New</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of What’s New</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 </ul>
 </li>
@@ -258,8 +252,7 @@
         </a>
         <div class="content-icon-container">
           <div class="theme-toggle-container theme-toggle-content">
-            <button class="theme-toggle">
-              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
@@ -267,8 +260,7 @@
             </button>
           </div>
           <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
-            <div class="visually-hidden">Toggle table of contents sidebar</div>
-            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
@@ -309,7 +301,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fn : Callable</span>
+<span class="sd">    fn : callable</span>
 <span class="sd">        The function object for which to infer the package version. Typically</span>
 <span class="sd">        a plugin filter or similar user-provided function.</span>
 
@@ -332,20 +324,23 @@
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProcessingPipeline</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Orchestrates a sequence of masks and filters (or other processing steps).</span>
+<span class="sd">    Orchestrates a sequence of masking and filtering steps on an AFMImageStack.</span>
 
-<span class="sd">    Acts on an AFMImageStack, recording outputs and detailed provenance.</span>
-<span class="sd">    Each step is specified by name and kwargs:</span>
-<span class="sd">      - “clear” resets any active mask</span>
-<span class="sd">      - mask steps compute boolean masks stored under `stack.masks[...]`</span>
-<span class="sd">      - filter/method/plugin steps apply to the current data (and mask if present),</span>
-<span class="sd">        storing results in `stack.processed[...]`</span>
-<span class="sd">    Provenance for each step (index, name, params, timestamp, step_type, version,</span>
-<span class="sd">    keys, summaries) is appended to `stack.provenance[&quot;processing&quot;][&quot;steps&quot;]`. A</span>
-<span class="sd">    mapping from step name to list of snapshot keys is built as</span>
-<span class="sd">    `stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]`. The final processed array</span>
-<span class="sd">    overwrites `stack.data`. Environment info is captured once under</span>
-<span class="sd">    `stack.provenance[&quot;environment&quot;]`.</span>
+<span class="sd">    This pipeline records outputs and detailed provenance for each step. Each step is</span>
+<span class="sd">    specified by a name and keyword arguments:</span>
+
+<span class="sd">    - ``&quot;clear&quot;``: resets any active mask.</span>
+<span class="sd">    - Mask steps: compute boolean masks stored in ``stack.masks[...]``.</span>
+<span class="sd">    - Filter/method/plugin steps: apply to the current data (and mask if present),</span>
+<span class="sd">      storing results in ``stack.processed[...]``.</span>
+
+<span class="sd">    Provenance for each step, including index, name, parameters, timestamp, step type,</span>
+<span class="sd">    version, keys, and summaries, is appended to</span>
+<span class="sd">    ``stack.provenance[&quot;processing&quot;][&quot;steps&quot;]``. Additionally, a mapping from step</span>
+<span class="sd">    name to a list of snapshot keys is stored in</span>
+<span class="sd">    ``stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]``. The final processed array</span>
+<span class="sd">    overwrites ``stack.data``, and environment metadata is captured once in</span>
+<span class="sd">    ``stack.provenance[&quot;environment&quot;]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -370,6 +365,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        mask_name : str</span>
 <span class="sd">            The name of the registered mask function to apply.</span>
+
 <span class="sd">        **kwargs</span>
 <span class="sd">            Additional parameters passed to the mask function.</span>
 
@@ -397,6 +393,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        filter_name : str</span>
 <span class="sd">            The name of the registered filter function to apply.</span>
+
 <span class="sd">        **kwargs</span>
 <span class="sd">            Additional keyword arguments for the filter function.</span>
 
@@ -439,41 +436,61 @@
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Execute configured steps on the AFMImageStack, stores outputs and provenance.</span>
+<span class="sd">        Execute configured steps on the AFMImageStack, storing outputs and provenance.</span>
 
-<span class="sd">        Behavior:</span>
-<span class="sd">        1. Record or update environment metadata via `gather_environment_info()`</span>
-<span class="sd">           into `stack.provenance[&quot;environment&quot;]`.</span>
-<span class="sd">        2. Reset previous processing provenance under `stack.provenance[&quot;processing&quot;]`,</span>
-<span class="sd">           ensuring keys `&quot;steps&quot;` (list) and `&quot;keys_by_name&quot;` (dict) exist</span>
-<span class="sd">           and are cleared.</span>
-<span class="sd">        3. If not already present, snapshot the original data as `&quot;raw&quot;` in</span>
-<span class="sd">        `stack.processed`.</span>
-<span class="sd">        4. Iterate over self.steps in order (1-based index):</span>
-<span class="sd">           - Resolve step type via `stack._resolve_step(step_name)`, yielding</span>
-<span class="sd">           (step_type, fn).</span>
-<span class="sd">           - Record a timestamp (`utc_now_iso()`), index, name, params, step_type,</span>
-<span class="sd">            function version (via `fn.__version__` or plugin lookup), and module name.</span>
-<span class="sd">           - If step_type == &quot;clear&quot;:</span>
-<span class="sd">               * reset current mask to None</span>
-<span class="sd">               * record `&quot;mask_cleared&quot;: True` in provenance entry</span>
-<span class="sd">           - If step_type == &quot;mask&quot;:</span>
-<span class="sd">               * call `stack._execute_mask_step(fn, arr, **kwargs)` to get a boolean</span>
-<span class="sd">               mask array</span>
-<span class="sd">               * if no existing mask: store under a new key `step_&lt;idx&gt;_&lt;mask_name&gt;`</span>
-<span class="sd">               in `stack.masks`</span>
-<span class="sd">                 else overlay with previous mask (logical OR) under derived key</span>
-<span class="sd">               * update current mask, record `&quot;mask_key&quot;` and `&quot;mask_summary&quot;` in</span>
-<span class="sd">               provenance</span>
-<span class="sd">           - Else (filter/method/plugin):</span>
-<span class="sd">               * call `stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)`</span>
-<span class="sd">               to get new array</span>
-<span class="sd">               * store result under `stack.processed[&quot;step_&lt;idx&gt;_&lt;safe_name&gt;&quot;]`,</span>
-<span class="sd">               update arr</span>
-<span class="sd">               * record `&quot;processed_key&quot;` and `&quot;output_summary&quot;` in provenance</span>
-<span class="sd">        5. After all steps, overwrite `stack.data = arr`.</span>
-<span class="sd">        6. Build `stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]` mapping each</span>
-<span class="sd">        step name to the list of stored keys (processed_key or mask_key) in order.</span>
+<span class="sd">        The pipeline iterates through all added masks, filters, and plugins in order,</span>
+<span class="sd">        applying each to the current data. Masks are combined if multiple are applied</span>
+<span class="sd">        before a filter. Each step&#39;s output is stored in `stack.processed` (filters) or</span>
+<span class="sd">        `stack.masks` (masks), and a detailed provenance record is saved in</span>
+<span class="sd">        `stack.provenance[&quot;processing&quot;]`.</span>
+
+<span class="sd">        Behavior</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        1. Record or update environment metadata via ``gather_environment_info()`` into</span>
+<span class="sd">        ``stack.provenance[&quot;environment&quot;]``.</span>
+
+<span class="sd">        2. Reset previous processing provenance under</span>
+<span class="sd">        ``stack.provenance[&quot;processing&quot;]``, ensuring that keys ``&quot;steps&quot;`` (a list)</span>
+<span class="sd">        and ``&quot;keys_by_name&quot;`` (a dictionary) exist and are cleared.</span>
+
+<span class="sd">        3. If not already present, snapshot the original data as ``&quot;raw&quot;`` in</span>
+<span class="sd">        ``stack.processed``.</span>
+
+<span class="sd">        4. Iterate over ``self.steps`` in order (1-based index):</span>
+
+<span class="sd">        - Resolve the step type via ``stack._resolve_step(step_name)``, which returns</span>
+<span class="sd">          a tuple of the form (``step_type``, ``fn``).</span>
+<span class="sd">        - Record a timestamp (from ``utc_now_iso()``), index, name, parameters,</span>
+<span class="sd">          step type, function version (from ``fn.__version__`` or plugin lookup), and</span>
+<span class="sd">          module name.</span>
+
+<span class="sd">        - If ``step_type`` is ``&quot;clear&quot;``:</span>
+<span class="sd">            - Reset the current mask to ``None``.</span>
+<span class="sd">            - Record ``&quot;mask_cleared&quot;: True`` in the provenance entry.</span>
+
+<span class="sd">        - If ``step_type`` is ``&quot;mask&quot;``:</span>
+<span class="sd">            - Call ``stack._execute_mask_step(fn, arr, **kwargs)`` to compute a boolean</span>
+<span class="sd">              mask array.</span>
+<span class="sd">            - If there is no existing mask, store it under a new key</span>
+<span class="sd">              ``step_&lt;idx&gt;_&lt;mask_name&gt;`` in ``stack.masks``.</span>
+<span class="sd">            - Otherwise, overlay it with the previous mask (logical OR) under a derived</span>
+<span class="sd">              key.</span>
+<span class="sd">            - Update the current mask and record ``&quot;mask_key&quot;`` and ``&quot;mask_summary&quot;``</span>
+<span class="sd">              in provenance.</span>
+
+<span class="sd">        - Else (filter/method/plugin):</span>
+<span class="sd">            - Call ``stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)``</span>
+<span class="sd">              to obtain the new array.</span>
+<span class="sd">            - Store the result under</span>
+<span class="sd">              ``stack.processed[&quot;step_&lt;idx&gt;_&lt;safe_name&gt;&quot;]`` and update ``arr``.</span>
+<span class="sd">            - Record ``&quot;processed_key&quot;`` and ``&quot;output_summary&quot;`` in provenance.</span>
+
+<span class="sd">        5. After all steps, overwrite ``stack.data`` with ``arr``.</span>
+
+<span class="sd">        6. Build ``stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]``, mapping each step</span>
+<span class="sd">        name to the list of stored keys (``processed_key`` or ``mask_key``) in order.</span>
+
 <span class="sd">        7. Return the final processed array.</span>
 
 <span class="sd">        Returns</span>
@@ -486,8 +503,10 @@
 <span class="sd">        ------</span>
 <span class="sd">        RuntimeError</span>
 <span class="sd">            If a step cannot be resolved or executed due to misconfiguration.</span>
+
 <span class="sd">        ValueError</span>
 <span class="sd">            If overlaying a mask fails due to missing previous mask key (propagated).</span>
+
 <span class="sd">        Exception</span>
 <span class="sd">            Any exception from individual steps is logged then re-raised.</span>
 
