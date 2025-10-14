@@ -13,7 +13,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/playNano)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
-[![Tests](https://github.com/derollins/playNano/actions/workflows/test.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/tests.yaml)
+[![Tests](https://github.com/derollins/playNano/actions/workflows/test.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/test.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Code style: flake8](https://img.shields.io/badge/code%20style-flake8-456789.svg)](https://github.com/psf/flake8)
@@ -25,6 +25,12 @@
 such as high-speed AFM (HS-AFM) videos. It supports interactive playback, flexible processing pipelines,
 and provenance-aware analysis tracking, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
 HDF5 bundles, and animated GIFs.
+
+**playNano** handles complete time-series datasets—such as high-speed AFM videos—as unified, time-aware stacks rather
+than separate frames. Every step in a processing or analysis pipeline is recorded for full reproducibility and
+provenance tracking.
+
+Learn more about the motivation, design, and structure of playNano in the [Introduction](https://derollins.github.io/playNano/introduction.html).
 
 **Files read:**
 <div align="center">
@@ -38,7 +44,9 @@ This project requires Python 3.10 or newer and is in development. If you find an
 
 Questions? Email: <d.e.rollins@leeds.ac.uk>
 
-Full documentation (Sphinx): <https://derollins.github.io/playNano/>
+## 📘 Documentation
+
+Full documentation: <https://derollins.github.io/playNano/>
 
 📜 [Changelog](https://derollins.github.io/playNano/changelog.html)
 
@@ -46,29 +54,29 @@ Full documentation (Sphinx): <https://derollins.github.io/playNano/>
 
 ## ✨ Features
 
-- 📂 **Extracts AFM time-series (video) data** from `.h5-jpk` and `.asd` files and folders of `.jpk` and `.spm` files.
-- ▶️ **Animated video viewer**, an interactive PySide6 viewer with playback, z-scale configuration, and export tools.
-- 🪟 **Processing pipeline** (filters + masks) that records per-step provenance.
-- 📏 **Analysis pipeline** for detection/tracking; stores outputs and provenance in the stack.
-- 📩 **Exports** to OME-TIFF stacks, NPZ bundles, HDF5 bundles, and annotated GIFs.
-- 🔌 **Plugin system** for custom filters.
+- 📂 **AFM time-series extraction** — reads `.h5-jpk`, `.asd`, and folders of `.jpk` or `.spm` frames.
+- ▶️ **Interactive video viewer** — PySide6-based GUI with playback, z-scale control, and export tools.
+- 🪟 **Processing pipeline** — applies filters and masks with full provenance tracking.
+- 📏 **Analysis pipeline** — runs detection, clustering, and tracking with reproducible outputs.
+- 📩 **Flexible exports** — save to OME-TIFF, NPZ, HDF5, and annotated GIFs.
+- 🔌 **Extensible design** — add your own filters or analysis modules as plugins.
 
 ---
 
 ## 📦 Installation and Dependencies
 
-Requires Python 3.10–3.12.
+**Python compatibility:** 3.10 – 3.12
 
 It is recommended to use a virtual environment such as conda to isolate the installation. There
 are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/installation.html)
 
 If you have [Anaconda](https://anaconda.org/) or [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install)
 installed, open the terminal (or Anaconda PowerShell Prompt on Windows) and create and activate
-a new virtual enviroment.
+a new virtual environment.
 
  ```bash
- conda create -n playnano_env python=3.11 # Create a new virtual enviroment with Python 3.11
- conda activate playnano_env  # Activate the virtual enviroment
+ conda create -n playnano_env python=3.11 # Create a new virtual environment with Python 3.11
+ conda activate playnano_env  # Activate the virtual environment
  ```
 
 The simpliest way to install **playNano** is through PyPi using the command:
@@ -77,7 +85,7 @@ The simpliest way to install **playNano** is through PyPi using the command:
 pip install playnano
 ```
 
-Alternitavly clone the repository from GitHub into a new folder:
+Alternatively clone the repository from GitHub into a new folder:
 
 ```bash
 git clone https://github.com/derollins/playNano.git
@@ -130,8 +138,8 @@ See the full docs for the complete [CLI reference](https://derollins.github.io/p
 </p>
 
 To access and use the [Notebooks](https://derollins.github.io/playNano/notebooks.html) you need to clone the
-repository and install the required dependancies `pip install -e .[notebooks]' see the docs page for more
-deatils and full instructions: <https://derollins.github.io/playNano/notebooks.html>
+repository and install the required dependencies `pip install -e .[notebooks]' see the docs page for more
+details and full instructions: <https://derollins.github.io/playNano/notebooks.html>
 
 Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks\ folder. These
 notebooks allow the user to experiment with using **playNano** programmatically and allows the user to test
@@ -147,16 +155,7 @@ a high-speed dataset.
 - For .h5-jpk, .asd and other multi-frame formats, a single file is loaded. For formats like .jpk or .spm, provide a
     folder containing the frame files.
 
-## Example Notebooks
-
-- `notebooks/playnano_demo_notebook.ipynb`: step‑by‑step demo of loading, processing, analysing, and exporting time-series
- AFM data with playNano.
-
-Install playNano using `pip install .[notebooks]` to include the `jupyter` dependency.
-
 ## 🧩 Dependencies
-
-Requires Python 3.10, 3.11 or 3.12.
 
 This project requires the following Python packages:
 
@@ -199,11 +198,19 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](htt
 
 ## 📖 Citing playNano
 
-If you use **playNano** in academic work, please cite it appropriately.
+If you use **playNano** in academic work, please cite it as:
 
-- For now, please cite the GitHub repository:
-  > Rollins, D. (2025). playNano: AFM Video Reader and Analysis Toolkit.
-  > GitHub repository: <https://github.com/derollins/playNano>
+> Rollins, D. (2025). *playNano: AFM Video Reader and Analysis Toolkit.*
+> GitHub repository: <https://github.com/derollins/playNano>
+
+```bibtex
+@misc{rollins2025playnano,
+  author = {Rollins, D.},
+  title  = {playNano: AFM Video Reader and Analysis Toolkit},
+  year   = {2025},
+  url    = {https://github.com/derollins/playNano}
+}
+```
 
 ## Included Fonts
 
