@@ -35,6 +35,7 @@ coverage.xml
 
 # Documentation builds
 docs/_build/
+docs/_generated/
 
 # Jupyter notebook checkpoints
 **/.ipynb_checkpoints/
@@ -45,3 +46,6 @@ dist/
 *.egg-info/
 
 _version.py
+
+# Outputs from notebooks from running pipelines
+output/

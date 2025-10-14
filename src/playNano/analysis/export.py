@@ -15,6 +15,7 @@ def export_analysis_to_json(out_path: str, analysis_record: dict[str, Any]) -> N
     ----------
     out_path : str
         Output file path.
+
     analysis_record : dict
         Analysis record to serialize.
 

@@ -34,7 +34,7 @@ def _get_plugin_version(fn) -> str | None:
 
     Parameters
     ----------
-    fn : Callable
+    fn : callable
         The function object for which to infer the package version. Typically
         a plugin filter or similar user-provided function.
 
@@ -55,20 +55,23 @@ def _get_plugin_version(fn) -> str | None:
 
 class ProcessingPipeline:
     """
-    Orchestrates a sequence of masks and filters (or other processing steps).
+    Orchestrates a sequence of masking and filtering steps on an AFMImageStack.
 
-    Acts on an AFMImageStack, recording outputs and detailed provenance.
-    Each step is specified by name and kwargs:
-      - “clear” resets any active mask
-      - mask steps compute boolean masks stored under `stack.masks[...]`
-      - filter/method/plugin steps apply to the current data (and mask if present),
-        storing results in `stack.processed[...]`
-    Provenance for each step (index, name, params, timestamp, step_type, version,
-    keys, summaries) is appended to `stack.provenance["processing"]["steps"]`. A
-    mapping from step name to list of snapshot keys is built as
-    `stack.provenance["processing"]["keys_by_name"]`. The final processed array
-    overwrites `stack.data`. Environment info is captured once under
-    `stack.provenance["environment"]`.
+    This pipeline records outputs and detailed provenance for each step. Each step is
+    specified by a name and keyword arguments:
+
+    - ``"clear"``: resets any active mask.
+    - Mask steps: compute boolean masks stored in ``stack.masks[...]``.
+    - Filter/method/plugin steps: apply to the current data (and mask if present),
+      storing results in ``stack.processed[...]``.
+
+    Provenance for each step, including index, name, parameters, timestamp, step type,
+    version, keys, and summaries, is appended to
+    ``stack.provenance["processing"]["steps"]``. Additionally, a mapping from step
+    name to a list of snapshot keys is stored in
+    ``stack.provenance["processing"]["keys_by_name"]``. The final processed array
+    overwrites ``stack.data``, and environment metadata is captured once in
+    ``stack.provenance["environment"]``.
     """
 
     def __init__(self, stack: AFMImageStack) -> None:
@@ -91,6 +94,7 @@ class ProcessingPipeline:
         ----------
         mask_name : str
             The name of the registered mask function to apply.
+
         **kwargs
             Additional parameters passed to the mask function.
 
@@ -115,6 +119,7 @@ class ProcessingPipeline:
         ----------
         filter_name : str
             The name of the registered filter function to apply.
+
         **kwargs
             Additional keyword arguments for the filter function.
 
@@ -151,41 +156,61 @@ class ProcessingPipeline:
 
     def run(self) -> np.ndarray:
         """
-        Execute configured steps on the AFMImageStack, stores outputs and provenance.
+        Execute configured steps on the AFMImageStack, storing outputs and provenance.
 
-        Behavior:
-        1. Record or update environment metadata via `gather_environment_info()`
-           into `stack.provenance["environment"]`.
-        2. Reset previous processing provenance under `stack.provenance["processing"]`,
-           ensuring keys `"steps"` (list) and `"keys_by_name"` (dict) exist
-           and are cleared.
-        3. If not already present, snapshot the original data as `"raw"` in
-        `stack.processed`.
-        4. Iterate over self.steps in order (1-based index):
-           - Resolve step type via `stack._resolve_step(step_name)`, yielding
-           (step_type, fn).
-           - Record a timestamp (`utc_now_iso()`), index, name, params, step_type,
-            function version (via `fn.__version__` or plugin lookup), and module name.
-           - If step_type == "clear":
-               * reset current mask to None
-               * record `"mask_cleared": True` in provenance entry
-           - If step_type == "mask":
-               * call `stack._execute_mask_step(fn, arr, **kwargs)` to get a boolean
-               mask array
-               * if no existing mask: store under a new key `step_<idx>_<mask_name>`
-               in `stack.masks`
-                 else overlay with previous mask (logical OR) under derived key
-               * update current mask, record `"mask_key"` and `"mask_summary"` in
-               provenance
-           - Else (filter/method/plugin):
-               * call `stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)`
-               to get new array
-               * store result under `stack.processed["step_<idx>_<safe_name>"]`,
-               update arr
-               * record `"processed_key"` and `"output_summary"` in provenance
-        5. After all steps, overwrite `stack.data = arr`.
-        6. Build `stack.provenance["processing"]["keys_by_name"]` mapping each
-        step name to the list of stored keys (processed_key or mask_key) in order.
+        The pipeline iterates through all added masks, filters, and plugins in order,
+        applying each to the current data. Masks are combined if multiple are applied
+        before a filter. Each step's output is stored in `stack.processed` (filters) or
+        `stack.masks` (masks), and a detailed provenance record is saved in
+        `stack.provenance["processing"]`.
+
+        Behavior
+        --------
+
+        1. Record or update environment metadata via ``gather_environment_info()`` into
+        ``stack.provenance["environment"]``.
+
+        2. Reset previous processing provenance under
+        ``stack.provenance["processing"]``, ensuring that keys ``"steps"`` (a list)
+        and ``"keys_by_name"`` (a dictionary) exist and are cleared.
+
+        3. If not already present, snapshot the original data as ``"raw"`` in
+        ``stack.processed``.
+
+        4. Iterate over ``self.steps`` in order (1-based index):
+
+        - Resolve the step type via ``stack._resolve_step(step_name)``, which returns
+          a tuple of the form (``step_type``, ``fn``).
+        - Record a timestamp (from ``utc_now_iso()``), index, name, parameters,
+          step type, function version (from ``fn.__version__`` or plugin lookup), and
+          module name.
+
+        - If ``step_type`` is ``"clear"``:
+            - Reset the current mask to ``None``.
+            - Record ``"mask_cleared": True`` in the provenance entry.
+
+        - If ``step_type`` is ``"mask"``:
+            - Call ``stack._execute_mask_step(fn, arr, **kwargs)`` to compute a boolean
+              mask array.
+            - If there is no existing mask, store it under a new key
+              ``step_<idx>_<mask_name>`` in ``stack.masks``.
+            - Otherwise, overlay it with the previous mask (logical OR) under a derived
+              key.
+            - Update the current mask and record ``"mask_key"`` and ``"mask_summary"``
+              in provenance.
+
+        - Else (filter/method/plugin):
+            - Call ``stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)``
+              to obtain the new array.
+            - Store the result under
+              ``stack.processed["step_<idx>_<safe_name>"]`` and update ``arr``.
+            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.
+
+        5. After all steps, overwrite ``stack.data`` with ``arr``.
+
+        6. Build ``stack.provenance["processing"]["keys_by_name"]``, mapping each step
+        name to the list of stored keys (``processed_key`` or ``mask_key``) in order.
+
         7. Return the final processed array.
 
         Returns
@@ -198,8 +223,10 @@ class ProcessingPipeline:
         ------
         RuntimeError
             If a step cannot be resolved or executed due to misconfiguration.
+
         ValueError
             If overlaying a mask fails due to missing previous mask key (propagated).
+
         Exception
             Any exception from individual steps is logged then re-raised.
 

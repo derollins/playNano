@@ -19,8 +19,8 @@ def parse_spm_header(file_path, max_bytes=65536):
     ----------
     file_path : str or Path
         Path to the `.spm` file.
-    max_bytes : int, default=65536
-        Number of bytes to read from the start of the file.
+    max_bytes : int
+        Number of bytes to read from the start of the file. Default is 65536.
 
     Returns
     -------

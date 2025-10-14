@@ -46,8 +46,8 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     ----------
     path : Path
         Path to the `.npz` file.
-    channel: str = "height_trace"
-        For being called by load_afm_stack but ignored.
+    channel: str
+        For being called by load_afm_stack but ignored. Default is "height_trace".
 
     Returns
     -------
@@ -129,35 +129,41 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
 def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an AFMImageStack from a `.h5` bundle produced by `save_h5_bundle`.
+    Load an AFMImageStack from a `.h5` bundle produced by ``save_h5_bundle``.
 
-    Expects:
-      - /data                 float32 (n_frames, H, W)
-      - /processed/<step>     float32 subgroups
-      - /masks/<mask>         boolean subgroups
-      - /timestamps           float64 (n_frames,)
-      - /frame_metadata_json  UTF-8 string (JSON list of dict)
-      - /provenance_json      UTF-8 string (JSON dict)
-      Attributes:
-      - pixel_size_nm : float
-      - channel       : UTF-8 string
+    Expected groups
+    ---------------
+    - ``/data`` : float32, shape (n_frames, H, W)
+    - ``/processed/<step>`` : float32 subgroups
+    - ``/masks/<mask>`` : boolean subgroups
+    - ``/timestamps`` : float64, shape (n_frames,)
+    - ``/frame_metadata_json`` : UTF-8 string (JSON list of dict)
+    - ``/provenance_json`` : UTF-8 string (JSON dict)
+
+    File attributes
+    ---------------
+    - ``pixel_size_nm`` : float
+    - ``channel`` : UTF-8 string
 
     Parameters
     ----------
     path : Path
         Path to the `.h5` file.
-    channel: str = "height_trace"
-        For being called by load_afm_stack but ignored.
+
+    channel : str, default="height_trace"
+        Required for compatibility with ``load_afm_stack`` but ignored.
 
     Returns
     -------
     AFMImageStack
-        Reconstructed stack, with `.processed`, `.masks`, and `.provenance` filled.
+        Reconstructed stack, with ``.processed``, ``.masks``,
+        and ``.provenance`` filled.
+
     Raises
     ------
     ValueError
-        If required datasets (`frame_metadata_json` or `provenance_json`) are missing
-        or contain invalid JSON.
+        If required datasets (``frame_metadata_json`` or ``provenance_json``)
+        are missing or contain invalid JSON.
     """
     with h5py.File(str(path), "r") as f:
         data = f["data"][()].astype(np.float32)

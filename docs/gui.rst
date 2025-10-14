@@ -61,8 +61,8 @@ Arguments & common options
 - **--scale-bar-nm** (*int*, default=100)  
   Length of the scale bar drawn on images (set ``0`` to disable).
 
-- **--zmin**, **--zmax** (*float* or ``"auto"``)  
-  Initial display z-limits. ``"auto"`` uses the 1st / 99th percentiles by default.
+- **--zmin**, **--zmax** (*float* or *str*, optional)
+  Initial display z-limits. Use the string ``"auto"`` to automatically set 1st / 99th percentiles.
 
 Main window
 -----------
@@ -76,7 +76,8 @@ Main window
   Playback controls and filter buttons are located below the viewer.
 
 - **Right-side tabs** - includes:
-  - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin/zmax.
+  - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin (red)
+    and zmax (blue).
   - **GIF Export**: choose raw/processed and save an annotated animated GIF.
   - **Data Export**: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.
 
@@ -101,7 +102,7 @@ Raw vs Processed data behaviour
 
 
 Export behaviour & filenames
----------------------------
+----------------------------
 
 - **GIF**: exported GIF filename / folder is derived from ``--output-folder`` /
   ``--output-name`` or defaults to an ``output`` subfolder in the working directory.
@@ -137,6 +138,7 @@ How to control annotations
   - Uncheck **Show Timestamp** to remove timestamps from the exported GIF.
   - Uncheck **Show Scale Bar** (or set ``--scale-bar-nm`` to ``0``) to remove the scale bar.
 - Choose **Save Raw** or **Save Processed** in the GIF export panel to pick the data source.
+  - The *RAW* label that appears in the viewer when raw data is selected is not included in the GIF.
 - Use the histogram or spinboxes to set the precise z-range that will be used in the GIF.
 
 Troubleshooting & tips

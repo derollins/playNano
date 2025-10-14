@@ -123,8 +123,9 @@ def load_analysis_from_hdf5(
     ----------
     file_path : str or Path
         Path to the HDF5 file containing the saved analysis dictionary.
-    dataset_name : str, default='analysis_record'
+    dataset_name : str
         Name of the top-level group in the HDF5 file where the dictionary is stored.
+        Default is 'analysis_record'.
 
     Returns
     -------

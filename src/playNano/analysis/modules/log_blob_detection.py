@@ -1,11 +1,8 @@
 """
 Module for LoG blob detection.
 
-Module: LoGBlobDetectionModule
-Detect “blobs” in each frame of an AFM image stack using the Laplacian-of-Gaussian
-method.
-
-Provides automatic multi-scale blob detection and optional radius estimation.
+Detect "blobs" in each frame of an AFM image stack using the Laplacian-of-Gaussian
+method. Provides automatic multi-scale blob detection and optional radius estimation.
 """
 
 from typing import Any, Optional
@@ -21,11 +18,6 @@ class LoGBlobDetectionModule(AnalysisModule):
     using the Laplacian-of-Gaussian algorithm from `skimage.feature.blob_log`. It
     supports automatic scale selection and optional estimation of blob radii.
 
-    Attributes
-    ----------
-    name : str
-        The name identifier for this analysis module.
-
     Methods
     -------
     run(stack, previous_results=None, *, min_sigma=1.0, max_sigma=5.0, num_sigma=10,
@@ -36,7 +28,13 @@ class LoGBlobDetectionModule(AnalysisModule):
     Version
     -------
     0.1.0
-        Initial implementation.
+
+    Examples
+    --------
+    >>> module = LoGBlobDetectionModule()
+    >>> result = module.run(stack, min_sigma=1.0, max_sigma=5.0, num_sigma=10)
+    >>> result['summary']['total_blobs']
+    42
     """
 
     version = "0.1.0"
@@ -49,7 +47,7 @@ class LoGBlobDetectionModule(AnalysisModule):
         Returns
         -------
         str
-            The string identifier for this module: "dbscan_clustering".
+            The string identifier for this module: "log_blob_detection".
         """
         return "log_blob_detection"
 
@@ -66,38 +64,45 @@ class LoGBlobDetectionModule(AnalysisModule):
         include_radius: bool = True,
     ) -> dict[str, Any]:
         """
-        Detect “blobs” in each frame via a Laplacian-of-Gaussian filter.
+        Detect "blobs" in each frame via a Laplacian-of-Gaussian filter.
 
         Parameters
         ----------
         stack : AFMImageStack
             Must have stack.data of shape (n_frames, H, W).
-        min_sigma, max_sigma, num_sigma : float|int
+
+        min_sigma, max_sigma : float
             Parameters passed to skimage.feature.blob_log.
+
+        num_sigma : int
+            Parameter passed to skimage.feature.blob_log.
+
         threshold : float
             Absolute intensity threshold for LoG response.
+
         overlap : float
             If two detected blobs overlap more than this fraction,
             only the larger is kept.
+
         include_radius : bool
             If True, append the estimated blob radius in each feature-dict.
 
         Returns
         -------
-        {
-          "features_per_frame": List[List[dict]],
-          "summary": {
-             "total_frames": int,
-             "total_blobs": int,
-             "avg_blobs_per_frame": float
-          }
-        }
+        dict[str, Any]
+            Dictionary with keys:
 
-        Each feature-dict contains at least:
-          - "frame_timestamp": float
-          - "y", "x": blob center coordinates
-          - "sigma": scale at which it was detected
-          - **optional** "radius": sqrt(2) * sigma  (if include_radius=True)
+            - features_per_frame : list of list of dict
+                Per-frame list of detected blobs. Each dict contains:
+                - frame_timestamp : float
+                - y, x : float
+                - sigma : float
+                - radius : float, optional (if include_radius=True)
+            - summary : dict
+                Aggregate metrics:
+                - total_frames : int
+                - total_blobs : int
+                - avg_blobs_per_frame : float
         """
         from skimage.feature import blob_log
 

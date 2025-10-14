@@ -1,6 +1,7 @@
 """Core functions for loading and processing AFMImageStacks."""
 
 from pathlib import Path
+from typing import Dict, List, Tuple
 
 from playNano.afm_stack import AFMImageStack
 from playNano.errors import LoadError
@@ -10,12 +11,35 @@ from playNano.processing.pipeline import ProcessingPipeline
 def process_stack(
     input_path: Path,
     channel: str,
-    steps: list[tuple[str, dict]],
+    steps: List[Tuple[str, Dict]],
 ) -> AFMImageStack:
     """
-    Load an AFMImageStack, apply the given steps, and return it.
+    Load an AFMImageStack from a file, apply a list of processing steps, and return it.
 
-    Raises LoadError on load failure.
+    Parameters
+    ----------
+    input_path : Path
+        Path to the AFM stack file.
+
+    channel : str
+        Channel to load (e.g., 'h', 'z', etc.).
+
+    steps : list of tuple
+        List of processing steps in the form (step_name, kwargs). Special step_name
+        values:
+        - "clear" : clears the current mask
+        - "mask"  : applies a mask function with kwargs
+        - otherwise : treated as a filter name with kwargs
+
+    Returns
+    -------
+    AFMImageStack
+        The processed AFMImageStack.
+
+    Raises
+    ------
+    LoadError
+        If the AFM stack cannot be loaded from `input_path`.
     """
     try:
         stack = AFMImageStack.load_data(input_path, channel=channel)

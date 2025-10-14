@@ -9,20 +9,27 @@ Parameters
 ----------
 coord_key : str
     Key in previous_results containing `features_per_frame`.
+
 coord_columns : Sequence[str]
     Which keys in each feature-dict to use (e.g. ("x","y")).
+
 use_time : bool
     If True and coord_columns length is 2, append frame time as the third dimension.
+
 eps : float
     The maximum distance between two samples for them to be considered as in the
     same neighborhood (in normalized units if `normalise=True`).
+
 min_samples : int
     The number of samples in a neighborhood for a point to be considered as a core
     point.
+
 normalise : bool
     If True, min-max normalize each axis before clustering.
+
 time_weight : float | None
     If given, multiply the time axis by this weight.
+
 **dbscan_kwargs
     Forwarded to sklearn.cluster.DBSCAN.
 """
@@ -47,7 +54,6 @@ class DBSCANClusteringModule(AnalysisModule):
     Version
     -------
     0.1.0
-        Initial implementation.
     """
 
     version = "0.1.0"
@@ -89,33 +95,36 @@ class DBSCANClusteringModule(AnalysisModule):
         stack : AFMImageStack
             The input stack with `.data` and `.time_for_frame()` method.
 
-        previous_results : dict of str to Any, optional
+        previous_results : dict[str, Any], optional
             Output from previous analysis steps. Must contain features under
             the given `detection_module` and `coord_key`.
 
-        detection_module : str, default="feature_detection"
-            Which module's output to use from `previous_results`.
+        detection_module : str
+            Which module's output to use from `previous_results`. Default
+            is "feature_detection".
 
-        coord_key : str, default="features_per_frame"
+        coord_key : str
             Key in `previous_results[detection_module]` containing the list
-            of per-frame features.
+            of per-frame features. Default is "features_per_frame".
 
-        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+        coord_columns : Sequence[str]
             Keys to extract coordinates from each feature. If missing, will fall back
-            to `centroid` tuple.
+            to `centroid` tuple. Default is ("centroid_x", "centroid_y").
 
-        use_time : bool, default=True
-            Whether to append frame timestamp as a third coordinate.
+        use_time : bool
+            Whether to append frame timestamp as a third coordinate. Dafaulr is True.
 
-        eps : float, default=0.3
+        eps : float
             Maximum distance for neighborhood inclusion (in normalized units if
-            `normalise=True`).
+            `normalise=True`). Default is 0.3.
 
-        min_samples : int, default=5
+        min_samples : int
             Minimum number of points in a neighborhood to form a core point.
+            Default is 5.
 
-        normalise : bool, default=True
+        normalise : bool
             If True, normalize coordinate axes to [0, 1] range before clustering.
+            Default is True.
 
         time_weight : float or None, optional
             Scaling factor for the time axis (after normalization). If None,
@@ -126,8 +135,9 @@ class DBSCANClusteringModule(AnalysisModule):
 
         Returns
         -------
-        dict
+        dict[str, Any]
             Output dictionary with the following keys:
+
                 - "clusters": list of dicts, one per cluster, containing:
                     - "id": cluster ID (int)
                     - "frames": list of frame indices

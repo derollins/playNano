@@ -1,7 +1,6 @@
 """
-Module for threshold based feature detection.
+Threshold-based feature detection for AFM image stacks.
 
-Module: FeatureDetectionModule
 Detect features in each frame of an AFM image stack through thresholding methods.
 """
 
@@ -32,35 +31,45 @@ class FeatureDetectionModule(AnalysisModule):
     mask_fn : callable, optional
         A function `frame -> bool_2D_array` used to generate a mask for each frame.
         Required if `mask_key` is not provided.
+
     mask_key : str, optional
         Name of a boolean mask array from a previous analysis (e.g.
         `previous_results["your_mask_key"]`). Required if `mask_fn` is not provided.
-    min_size : int, default=10
-        Minimum area (in pixels) for a region to be kept.
-    remove_edge : bool, default=True
-        If True, discard any region that touches the frame boundary.
-    fill_holes : bool, default=False
-        If True, fill holes in each mask before labeling.
-    hole_area : int or None, default=None
-        If set, fills only holes smaller than this area.
-    **mask_kwargs
+
+    min_size : int
+        Minimum area (in pixels) for a region to be kept. Default is 10.
+
+    remove_edge : bool
+        If True, discard any region that touches the frame boundary. Default is True.
+
+    fill_holes : bool
+        If True, fill holes in each mask before labeling. Default is False.
+
+    hole_area : int or None
+        If set, fills only holes smaller than this area. Default is None (all
+        holes filled).
+
+    **mask_kwargs : Any
         Additional keyword arguments forwarded to `mask_fn(frame, **mask_kwargs)`.
+
 
     Raises
     ------
     ValueError
         If neither `mask_fn` nor `mask_key` is provided, or if the mask array
         has the wrong shape/dtype.
+
     KeyError
         If `mask_key` is not found in `previous_results`.
 
     Returns
     -------
     dict[str, Any]
-        A dictionary with keys:
+        Dictionary with the following keys:
 
-        - **features_per_frame** : list of list of dict
+        - features_per_frame : list of list of dict
           Per-frame list of feature stats dicts, each with:
+
             - `"frame_timestamp"` : float
             - `"label"`           : int
             - `"area"`            : int
@@ -68,11 +77,12 @@ class FeatureDetectionModule(AnalysisModule):
             - `"bbox"`            : (min_row, min_col, max_row, max_col)
             - `"centroid"`        : (row, col)
 
-        - **labeled_masks** : list of np.ndarray
+        - labeled_masks : list of np.ndarray
           The final labeled mask (integer labels) for each frame.
 
-        - **summary** : dict
+        - summary : dict
           Aggregate metrics:
+
             - `"total_frames"` : int
             - `"total_features"` : int
             - `"avg_features_per_frame"` : float
@@ -80,7 +90,6 @@ class FeatureDetectionModule(AnalysisModule):
     Version
     -------
     0.1.0
-        Initial implementation.
 
     Examples
     --------
@@ -250,38 +259,23 @@ class FeatureDetectionModule(AnalysisModule):
         ----------
         stack : AFMImageStack
             The AFM stack whose `.data` (3D array) and `.time_for_frame()` are used.
+
         previous_results : dict[str, Any], optional
             Mapping of earlier analysis outputs. If `mask_key` is given,
             must contain a boolean mask array under that key.
+
         mask_fn : callable, optional
             Function frame->bool array for masking.
             Required if `mask_key` is None.
-        mask_key : str, optional
-            Key in `previous_results` whose value is a boolean
-            mask array of same shape as `stack.data`.
-        min_size : int, default 10
-            Minimum area (in pixels) to keep a region.
-        remove_edge : bool, default=True
-            If True, discard regions touching any image boundary.
-        fill_holes : bool, default=False
-            Whether to fill holes before labeling.
-        hole_area : int or None, default=None
-            If set, only fill holes smaller than this area.
-        **mask_kwargs
-            Passed to `mask_fn(frame, **mask_kwargs)`.
 
         Returns
         -------
         dict[str, Any]
-            {
-                "features_per_frame": List[List[dict[str, Any]]],
-                "labeled_masks": List[np.ndarray],  # labeled mask per frame
-                "summary": {
-                    "total_frames": int,
-                    "total_features": int,
-                    "avg_features_per_frame": float,
-                }
-            }
+            Dictionary containing:
+
+            - features_per_frame : list of lists of dict
+            - labeled_masks : list of np.ndarray
+            - summary : dict with total_features, total_frames, avg_features_per_frame
 
         Raises
         ------
@@ -290,6 +284,11 @@ class FeatureDetectionModule(AnalysisModule):
             or neither `mask_fn` nor `mask_key` provided.
         KeyError
             If `mask_key` not found in `previous_results`.
+
+        Examples
+        --------
+        >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20)
+        >>> result = pipeline.run(stack)
         """
         data = stack.data
         if data is None:

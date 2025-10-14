@@ -16,6 +16,9 @@ class AnalysisModule(ABC):
 
     - a ``name`` property returning a unique string identifier
     - a ``run(stack, previous_results=None, **params) -> dict`` method
+
+    Inherits from :class:`abc.ABC`.
+
     """
 
     @property
@@ -42,20 +45,27 @@ class AnalysisModule(ABC):
         ----------
         stack : AFMImageStack
             The AFMImageStack instance, containing `.data` and metadata.
-        previous_results : dict or None
+
+        previous_results : dict[str, Any] or None, optional
             Outputs from earlier modules in the pipeline, if any.
+
         **params : dict
             Module-specific parameters, e.g., threshold, min_size, etc.
 
         Returns
         -------
         AnalysisOutputs
-            A dictionary mapping output names (strings) to results. Example::
+            Dictionary mapping output names (strings) to results. Example::
 
                 {
-                    "coords": numpy array of shape (N, 3),
-                    "masks": numpy array of shape (n_frames, H, W),
+                    "coords": numpy.ndarray of shape (N, 3),
+                    "masks": numpy.ndarray of shape (n_frames, H, W)
                 }
 
+        Notes
+        -----
+        Subclasses must implement this method. The returned dictionary can
+        contain any data the analysis module produces, but must be keyed by
+        unique output names.
         """
         raise NotImplementedError("Subclasses must implement 'run' method")

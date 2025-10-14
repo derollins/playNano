@@ -27,28 +27,37 @@ class AFMImageStack:
     Manage stacks of AFM images with metadata, analysis results, and provenance.
 
     Contains snapshots of each stage of processing (including the raw data after the
-    first processing step), any masks generated, analysis results and the provenance
-    of each of processing and analysis step.
+    first processing step), any masks generated, analysis results, and the provenance
+    of each processing and analysis step.
 
     Attributes
     ----------
     data : np.ndarray
-        3D array of shape (n_frames, height, width) holding the raw or current data.
+        3D array of shape (n_frames, ``height``, ``width``) holding the raw or current
+        data.
+
     pixel_size_nm : float
         Physical pixel size in nanometers.
+
     channel : str
         Channel name.
+
     file_path : Path
         Path to the source file or folder.
+
     frame_metadata : list[dict[str, Any]]
         Per-frame metadata dicts; each will include a normalized 'timestamp' key.
+
     processed : dict[str, np.ndarray]
         Snapshots of processed data arrays from filters. Keys like
         'step_1_remove_plane'.
+
     masks : dict[str, np.ndarray]
         Boolean mask arrays from mask steps. Keys like 'step_2_threshold'.
+
     analysis : dict[str, Any]
         Results of analysis modules, keyed by 'step_<i>_<module_name>'.
+
     provenance : dict[str, Any]
         Records environment info and provenance of processing and analysis pipelines::
 
@@ -74,23 +83,28 @@ class AFMImageStack:
         Parameters
         ----------
         data : np.ndarray
-            3D array of shape (n_frames, height, width) containing AFM image stack.
+            3D array of shape (n_frames, ``height``, ``width``) containing AFM image
+            stack.
+
         pixel_size_nm : float
             Pixel size in nanometers; must be positive.
+
         channel : str
             Channel name (e.g., 'height_trace').
+
         file_path : Path
             Source file or folder path.
+
         frame_metadata : list of dict, optional
             List of per-frame metadata dicts. Will be padded or trimmed to length
-            n_frames.
-            After initialization, each entry is normalized to include a numeric
-            'timestamp' (fallback to frame index if missing).
+            n_frames. After initialization, each entry is normalized to include a
+            numeric 'timestamp' (fallback to frame index if missing).
 
         Raises
         ------
         TypeError
             If data is not an np.ndarray.
+
         ValueError
             If data.ndim != 3 or pixel_size_nm <= 0, or metadata length mismatch.
         """
@@ -390,7 +404,7 @@ class AFMImageStack:
 
         Returns
         -------
-        tuple of (height, width)
+        tuple of (``height``, ``width``)
         """
         return self.data.shape[1:]
 
@@ -406,7 +420,7 @@ class AFMImageStack:
         Returns
         -------
         np.ndarray
-            2D array of shape (height, width) for the frame.
+            2D array of shape (``height``, ``width``) for the frame.
 
         Raises
         ------
@@ -671,7 +685,7 @@ class AFMImageStack:
         Returns
         -------
         np.ndarray
-            Final processed 3D array (shape (n_frames, height, width)).
+            Final processed 3D array (shape (n_frames, ``height``, ``width``)).
 
         Notes
         -----
@@ -764,7 +778,7 @@ class AFMImageStack:
 
         Returns
         -------
-        list of floats
+        list[float]
             List of timestamps per frame. If unavailable, the frame index is
             used as a fallback.
 

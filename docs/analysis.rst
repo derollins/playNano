@@ -2,7 +2,7 @@ Analysis
 ========
 
 The analysis system in **playNano** provides a provenance-aware pipeline
-for running a variety of analaysis modules including built in modules for
+for running a variety of analysis modules including built in modules for
 feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
@@ -22,7 +22,9 @@ Run an inline analysis pipeline from the CLI:
 
 .. code-block:: bash
 
-   playnano analyze data/processed_sample.h5 --analysis-steps "feature_detection:mask_fn="mask_threshold",threshold=1;particle_tracking:max_distance=3"      --output-folder ./results      --output-name tracked_particles
+   playnano analyze data/processed_sample.h5 \
+      --analysis-steps "feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3" \
+      --output-folder ./results      --output-name tracked_particles
 
 Or load the pipeline from a YAML/JSON file:
 
@@ -31,7 +33,7 @@ Or load the pipeline from a YAML/JSON file:
    analysis:
      - name: feature_detection
        mask_fn: mask_threshold
-       threshold: 5
+       threshold: 1
      - name: particle_tracking
        max_distance: 3
 
@@ -42,7 +44,7 @@ Or load the pipeline from a YAML/JSON file:
 Overview & behaviour
 --------------------
 
-- Analysis pipelines are conceptually similar to processing pipelines but operate
+- Analysis pipelines are conceptually similar to :doc:`processing`` pipelines but operate
   on derived results rather than on image arrays.
 - Analysis **adds** results into ``stack.analysis`` (it does **not** replace
   ``stack.data``).
@@ -51,6 +53,9 @@ Overview & behaviour
   stored result keys) under ``stack.provenance['analysis']``.
 - If ``log_to`` is provided to programmatic runs or the CLI, a **sanitised JSON**
   summary is written (arrays and complex objects are summarised for JSON friendliness).
+- Some analysis modules have requirements such as being proceeded by cirtain other
+  analysis modules, i.e. tracking modules require the detections of particles prior to
+  tracking in order to have particles to track.
 
 Available analysis modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -69,7 +74,11 @@ This is the general form of the analyze subcommand for CLI use:
 
 .. code-block:: bash
 
-   playnano analyze <input_file>      (--analysis-steps "step1:arg=val;step2:arg=val" | --analysis-file pipeline.yaml)      [--channel CHANNEL]      [--output-folder OUTPUT_DIR]      [--output-name BASE_NAME]
+   playnano analyze <input_file> \
+      (--analysis-steps 'step1:arg=val;step2:arg=val' | --analysis-file pipeline.yaml) \
+      [--channel CHANNEL] \
+      [--output-folder OUTPUT_DIR] \
+      [--output-name BASE_NAME]
 
 Common options:
 
@@ -212,12 +221,19 @@ After a run ``stack.provenance["analysis"]`` contains:
 
 - ``frame_times`` - result of ``stack.get_frame_times()`` (if present), else ``None``.
 
+Extending with Custom Modules
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can create your own analysis modules and register them as plugins.
+See :doc:`custom_analysis_modules` for full details, including requirements,
+examples, and best practices.
+
 Notes
 ^^^^^
 
 - The pipeline will create ``stack.provenance`` and ``stack.analysis`` if they do not exist.
 - ``stack.provenance["environment"]`` is set if not already present (gathered via the system info util).
-- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playNano.analysis.utils.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
+- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playNano.analysis.utils.common.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
 
 Troubleshooting & tips
 ----------------------
@@ -227,15 +243,8 @@ Troubleshooting & tips
 - For large or complex outputs prefer HDF5 export - sanitised JSON may truncate or summarise arrays.
 - If analyses expect processed frames, run a processing pipeline first (see :doc:`processing`).
 
-Extending with Custom Modules
------------------------------
-
-You can create your own analysis modules and register them as plugins.
-See :doc:`custom_analysis_modules` for full details, including requirements,
-examples, and best practices.
-
 See also
---------
+^^^^^^^^
 
 - :doc:`processing` - pre-processing & pipeline snapshots
 - :doc:`cli` - command-line reference and examples
