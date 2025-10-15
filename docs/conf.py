@@ -11,7 +11,15 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "playNano"
 copyright = "2025, Daniel E. Rollins"
 author = "Daniel E. Rollins"
-release = "0.1.0"
+
+# Version
+try:
+    from importlib.metadata import version
+
+    release = version("playNano")
+except Exception:
+    release = "unknown"
+
 
 # -- General configuration ---------------------------------------------------
 extensions = [
