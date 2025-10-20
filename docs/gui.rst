@@ -101,7 +101,7 @@ Raw vs Processed data behaviour
 
 
 Export behaviour & filenames
----------------------------
+----------------------------
 
 - **GIF**: exported GIF filename / folder is derived from ``--output-folder`` /
   ``--output-name`` or defaults to an ``output`` subfolder in the working directory.
@@ -160,4 +160,5 @@ Notes & links
 -------------
 
 - See :doc:`processing` for processing steps and masks used by the GUI.
+- See :doc:`exporting` for details on GIF and data bundle exports.
 - See :doc:`cli` for the full list of CLI options and non-GUI modes.

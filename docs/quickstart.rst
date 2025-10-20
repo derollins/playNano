@@ -91,5 +91,6 @@ Run analysis (detection + tracking):
 - CLI reference and flags: :doc:`cli`
 - GUI overview and shortcuts: :doc:`gui`
 - Processing pipeline details + YAML schema: :doc:`processing`
+- Exporting data and GIFs: :doc:`exporting`
 - Analysis API and CLI usage: :doc:`analysis`
 - Step-by-step Jupyter demo: :doc:`notebooks`

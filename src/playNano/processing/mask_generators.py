@@ -24,7 +24,7 @@ def mask_below_threshold(data: np.ndarray, threshold: float = 0.0) -> np.ndarray
 
 @versioned_filter("0.1.0")
 def mask_mean_offset(data: np.ndarray, factor: float = 1.0) -> np.ndarray:
-    """Mask values > mean +/- factor*std."""
+    """Mask values greater than mean plus factor × standard deviation."""
     return (data - np.mean(data)) > factor * np.std(data)
 
 
@@ -32,7 +32,7 @@ def mask_mean_offset(data: np.ndarray, factor: float = 1.0) -> np.ndarray:
 def mask_morphological(
     data: np.ndarray, threshold: float, structure_size: int = 3
 ) -> np.ndarray:
-    """Threshold+closing to mask foreground."""
+    """Threshold + closing to mask foreground."""
     binary = np.abs(data) > threshold
     structure = np.ones((structure_size, structure_size), dtype=bool)
     return ndimage.binary_closing(binary, structure=structure)

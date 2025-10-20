@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
     Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle
-    produced by :func:`~playNano.io.export.save_npz_bundle`.
+    produced by :func:`~playNano.io.export_data.save_npz_bundle`.
 
     The `.npz` file must contain the following keys:
 
@@ -54,7 +54,7 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     path : pathlib.Path
         Path to the `.npz` file.
     channel : str, default="height_trace"
-        Provided for API compatibility with :func:`~playNano.io.load_afm_stack`
+        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`
         but ignored when reading the bundle.
 
     Returns
@@ -134,7 +134,7 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
     Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle
-    produced by :func:`~playNano.io.export.save_h5_bundle`.
+    produced by :func:`~playNano.io.export_data.save_h5_bundle`.
 
     Expected HDF5 structure
     -----------------------
@@ -154,7 +154,7 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     path : pathlib.Path
         Path to the `.h5` file.
     channel : str, default="height_trace"
-        Provided for API compatibility with :func:`~playNano.io.load_afm_stack`
+        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`
         but ignored when reading the bundle.
 
     Returns
@@ -232,7 +232,7 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
     ----------
     path : pathlib.Path
         Path to the `.ome.tif` file created by
-        :func:`~playNano.io.export.save_ome_tiff_stack`.
+        :func:`~playNano.io.export_data.save_ome_tiff_stack`.
     channel : str, optional
         Fallback channel name if none is found in OME metadata.
 
