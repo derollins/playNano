@@ -1,0 +1,73 @@
+---
+name: 🚀 Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature] <short description>"
+labels: [enhancement]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a feature! Please fill out the form below to help us understand your idea.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: Provide a short, clear summary of the feature you'd like to see.
+      placeholder: e.g., Add support for XYZ file format
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this feature solve?
+      description: Describe the problem or limitation you're experiencing that this feature would address.
+      placeholder: I often run into...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: How would you like this feature to work? Be as specific as possible.
+      placeholder: I'd like it to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: Have you tried other solutions or workarounds? What were they?
+      placeholder: I've tried...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve usability
+        - High - Blocking or critical for my workflow
+    validations:
+      required: true
+  - type: checkboxes
+    id: context
+    attributes:
+      label: Additional Context
+      description: Check any that apply.
+      options:
+        - label: I am willing to help implement this feature
+        - label: I can provide example data or use cases
+        - label: This feature is related to a bug I reported
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Add any other context, links, or screenshots here.
+      placeholder: Related issues, references, mockups, etc.

@@ -15,7 +15,13 @@ class CountNonzeroModule(AnalysisModule):
     Version
     -------
     0.1.0
-        Initial implementation.
+
+    Examples
+    --------
+    >>> module = CountNonzeroModule()
+    >>> result = module.run(stack)
+    >>> result['counts'].shape
+    (n_frames,)
     """
 
     version = "0.1.0"
@@ -41,7 +47,7 @@ class CountNonzeroModule(AnalysisModule):
         stack : AFMImageStack
             Stack of AFM frames with `.data` of shape (n_frames, H, W).
 
-        previous_results : dict, optional
+        previous_results : dict[str, Any], optional
             Ignored by this module. Included for API compatibility.
 
         **params : dict
@@ -51,6 +57,7 @@ class CountNonzeroModule(AnalysisModule):
         -------
         dict
             Dictionary with key:
+
                 - "counts": np.ndarray of shape (n_frames,), number of non-zero
                   pixels per frame.
         """

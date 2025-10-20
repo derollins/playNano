@@ -398,7 +398,8 @@ def export_bundles(
     formats : list of {"tif", "npz", "h5"}
         Which formats to produce.
     raw : bool, optional
-        If True, exports only the unprocessed raw snapshot.
+        If True, exports only the unprocessed raw snapshot, (``.processed['raw']``).
+        Default is False.
 
     Raises
     ------

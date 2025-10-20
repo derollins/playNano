@@ -9,10 +9,10 @@ Features are matched across frames if they lie within a specified maximum
 distance. Tracks are formed by chaining these matches over time.
 
 Each resulting track includes:
-- A unique track ID
-- A list of frames where the particle appears
-- A list of point indices referencing the original features
-- A list of centroids describing the particle's positions
+    - A unique track ID
+    - A list of frames where the particle appears
+    - A list of point indices referencing the original features
+    - A list of centroids describing the particle's positions
 
 Optionally, per-track masks are extracted from the labeled feature masks.
 """
@@ -32,11 +32,6 @@ class ParticleTrackingModule(AnalysisModule):
     This module links features detected by a prior featuredetection module
     using nearest-neighbor centroid matching across adjacent frames. A new
     track is created for each unmatched feature.
-
-    Attributes
-    ----------
-    requires : list[str]
-        List of required analysis modules this module depends on.
 
     Version
     -------
@@ -76,34 +71,55 @@ class ParticleTrackingModule(AnalysisModule):
         ----------
         stack : AFMImageStack
             The input AFM image stack.
-        previous_results : dict of str to Any, optional
-            Must contain "feature_detection" results including:
+
+        previous_results : dict[str, Any], optional
+            Must contain results from a detection module, including:
+
             - coord_key (e.g., "features_per_frame"): list of dicts with per-frame
-            features.
+              features
             - "labeled_masks": per-frame mask of label regions
-        detection_module : str, default="feature_detection"
-            Which module to read features from.
-        coord_key : str, default="features_per_frame"
-            Key in previous_results[detection_module] containing per-frame feature
-            dicts.
-        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
-            Keys to extract coordinates from each feature. Falls back to "centroid"
-            if needed.
-        max_distance : float, default=5.0
-            Maximum allowed movement per frame (in coordinate units).
+
+        detection_module : str, optional
+            Which module to read features from (default: "feature_detection").
+
+        coord_key : str, optional
+            Key in previous_results[detection_module] containing per-frame feature dicts
+            (default: "features_per_frame").
+
+        coord_columns : Sequence[str], optional
+            Keys to extract coordinates from each feature; falls back to "centroid" if
+            needed. Default is ("centroid_x", "centroid_y")).
+
+        max_distance : float, optional
+            Maximum allowed movement per frame in coordinate units (default: 5.0).
 
         Returns
         -------
         dict
             Dictionary with keys:
-            - "tracks": list of dicts per track with:
-                    - "id": track ID
-                    - "frames": list of frame indices
-                    - "point_indices": list of indices into features_per_frame
-                    - "centroids": list of (x, y) positions
-            - "track_masks": dict of int → 2D boolean arrays (last mask per track)
-            - "n_tracks": total number of tracks
+
+            - tracks : list of dict
+                Per-track dictionaries containing:
+
+                - id : int
+                  Track ID
+
+                - frames : list of int
+                  Frame indices
+
+                - point_indices : list of int
+                  Indices into features_per_frame
+
+                - centroids : list of tuple[float, float]
+                  (x, y) positions of the tracked points
+
+            - track_masks : dict[int, np.ndarray]
+              Last mask per track
+
+            - n_tracks : int
+              Total number of tracks
         """
+
         if previous_results is None:
             raise RuntimeError(f"{self.name!r} requires previous results to run.")
 

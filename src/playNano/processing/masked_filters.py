@@ -20,6 +20,7 @@ def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     ----------
     data : np.ndarray
         2D AFM image.
+
     mask : np.ndarray
         Boolean mask of same shape; True=foreground (excluded),
         False=background (used to fit).
@@ -65,8 +66,10 @@ def polynomial_flatten_masked(
     ----------
     data : np.ndarray
         2D AFM image.
+
     order : int
         Polynomial order. Default order=2.
+
     mask : np.ndarray
         Boolean mask of same shape; True=foreground, False=background.
 

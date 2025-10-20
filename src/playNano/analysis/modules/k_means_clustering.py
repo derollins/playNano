@@ -11,16 +11,22 @@ Parameters
 coord_key : str
     Key in previous_results whose value is `features_per_frame`
     (list of lists of dicts).
+
 coord_columns : Sequence[str]
     Which keys in each feature-dict to use (e.g. ("x","y")).
+
 use_time : bool
     If True and coord_columns length is 2, append frame time as the third dimension.
+
 k : int
     Number of clusters.
+
 normalise : bool
     If True, min-max normalize each axis before clustering.
+
 time_weight : float | None
     If given, multiply the time axis by this weight.
+
 **kmeans_kwargs
     Forwarded to sklearn.cluster.KMeans.
 """
@@ -45,23 +51,28 @@ class KMeansClusteringModule(AnalysisModule):
     ----------
     coord_key : str
         Key in previous_results pointing to 'features_per_frame' structure.
+
     coord_columns : Sequence[str]
         Keys to extract coordinates from each feature (e.g. ("x", "y")).
+
     use_time : bool
         If True, appends frame timestamp as a third clustering dimension.
+
     k : int
         Number of clusters to fit.
+
     normalise : bool
         If True, normalize each axis to [0, 1] before clustering.
+
     time_weight : float or None
         Optional multiplier for time axis after normalization.
+
     **kmeans_kwargs
         Additional keyword arguments passed to sklearn.cluster.KMeans.
 
     Version
     -------
     0.1.0
-        Initial implementation.
     """
 
     version = "0.1.0"
@@ -105,30 +116,33 @@ class KMeansClusteringModule(AnalysisModule):
         stack : AFMImageStack
             The input image stack providing frame times and data context.
 
-        previous_results : dict of str to Any, optional
+        previous_results : dict[str, Any], optional
             Dictionary containing outputs from previous analysis steps.
             Must contain the selected detection_module and coord_key.
 
-        detection_module : str, default="feature_detection"
+        detection_module : str
             Key identifying which previous module's output to use.
+            Default is "feature_detection".
 
-        coord_key : str, default="features_per_frame"
+        coord_key : str
             Key under the detection module that holds per-frame feature dicts.
+            Default is "features_per_frame".
 
-        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+        coord_columns : Sequence[str]
             Keys to extract from each feature for clustering coordinates.
             If missing, fallback to the "centroid" tuple is attempted.
+            Default is ("centroid_x", "centroid_y")
 
-        use_time : bool, default=True
+        use_time : bool
             If True and `coord_columns` is 2D, append frame timestamp as third
-            dimension.
+            dimension. Default is True.
 
         k : int
             Number of clusters to compute.
 
-        normalise : bool, default=True
+        normalise : bool
             Whether to min-max normalize each axis of the feature points before
-            clustering.
+            clustering. Default is True.
 
         time_weight : float or None, optional
             Weighting factor for time axis (applied after normalization).

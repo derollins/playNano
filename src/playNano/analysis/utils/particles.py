@@ -37,18 +37,23 @@ def flatten_particle_features(
         Dictionary from a grouping module (e.g. clustering or tracking).
         Must contain a list of group objects under the `object_key`, where each
         object has lists of `frames` and `point_indices`.
+
     detection_output : dict
         Dictionary from a detection module (e.g. feature_detection), which must
         contain the key 'features_per_frame': a list of feature dicts per frame.
+
     object_key : str, optional
         Key in `grouping_output` pointing to the list of group objects.
         Default is "clusters".
+
     object_id_field : str, optional
         Column name to use in the output DataFrame to identify the group,
         e.g., "cluster_id" or "track_id". Default is "cluster_id".
+
     frame_key : str, optional
         Key in each group object listing the frames the object appears in.
         Default is "frames".
+
     index_key : str, optional
         Key in each group object listing the per-frame point indices (used
         to match detections in `features_per_frame`). Default is "point_indices".
@@ -58,15 +63,15 @@ def flatten_particle_features(
     pd.DataFrame
         Flattened DataFrame linking features to group membership.
         Includes feature metadata and:
-            - object_id_field (e.g. "cluster_id")
-            - frame
-            - timestamp
-            - label
-            - centroid_x, centroid_y
-            - area
-            - mean_intensity
-            - min_intensity
-            - max_intensity
+        - object_id_field (e.g. "cluster_id")
+        - frame
+        - timestamp
+        - label
+        - centroid_x, centroid_y
+        - area
+        - mean_intensity
+        - min_intensity
+        - max_intensity
     """
     if object_key is None:
         if "tracks" in grouping_output:

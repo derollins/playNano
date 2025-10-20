@@ -155,6 +155,40 @@ Example plugin function:
 
    def my_filter(frame: np.ndarray, **kwargs) -> np.ndarray:
        """Process a 2D array and return a filtered version."""
+
+
+When the plugin is installed, it appears in the same CLI/API list as the
+built-in filters.
+
+CLI / GUI Usage
+---------------
+
+The processing pipeline can defined in the CLI and run in the CLI or the GUI.
+
+The **playNano** wizard allows processing pipelines to be built interactively.
+To launch this you use the ``wizard`` subcommand followed by a path to the file you
+are processing and flags that define the output folder and file name (see :doc:`cli`).
+Once built the pipeline can be saved as yaml file that can be used in future runs or
+run immediately within the wizard.
+
+Run the wizard with:
+
+.. code-block:: bash
+
+  playnano wizard .test/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
+
+Once the data is loaded, use the ``add`` command followed by the name of a filter, mask
+or mask to add steps to the pipeline. The wizard will then prompt you to enter optional or
+required parameters. Once the pipeline is complete use the ``save`` with the path to a ``.yaml``
+file to save the pipeline.
+
+Once constructed and saved the processing pipeline that has been built can be run with the
+``run`` command which will run the processing pipeline, step-by-step, with the configured
+parameters. The wizard will then ask if you would like to export the processed data as ``.npz``,
+``.h5`` or ``.ome-tiff`` and then if you would like to generate a ``.gif``.
+
+Programmatic usage
+       """Process a 2D array and return a filtered version."""
        ...
 
 Installed plugins appear alongside built-in filters in the CLI and GUI.
@@ -178,7 +212,24 @@ custom pipelines:
    pipeline.add_filter("gaussian_filter", sigma=1.0)
    pipeline.run()   # updates stack.processed and stack.data
 
-What the Pipeline Records
+After execution, the processed frames are available via ``stack.data``, and intermediate
+snapshots can be accessed through ``stack.processed``.
+
+
+Saved data & exports
+--------------------
+
+The processing system supports exporting processed results and snapshots to:
+
+- **OME-TIFF** - multi-frame TIFF, compatible with ImageJ/Fiji.
+- **NPZ** - numpy zipped archive containing arrays and metadata.
+- **HDF5** - self-contained bundle including data, processed snapshots and provenance.
+- **GIF** - annotated animated GIF (requires timing metadata for correct frame rates).
+
+Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
+control export behaviour (See :doc:`cli` for CLI flag details).
+
+What the pipeline records
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After execution, the following are available:
@@ -234,8 +285,8 @@ Tips & Troubleshooting
   ``playNano.filters``.
 - For large datasets, prefer exporting HDF5 bundles instead of large JSON logs.
 
-See Also
---------
+See also
+^^^^^^^^
 
 - :doc:`processing-operations-reference` — list of all built-in operations
 - :doc:`cli` — command-line usage

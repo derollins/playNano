@@ -53,29 +53,41 @@ def create_gif_with_scale_and_timestamp(
     ----------
     image_stack : np.ndarray
         3D array of shape (N, H, W) representing the AFM image stack.
+
     pixel_size_nm : float
         Size of each pixel in nanometers.
-    timestamps : sequence of float, optional
+
+    timestamps : list[float] or tuple[float], optional
         Timestamps for each frame in seconds. If ``None`` or invalid,
         frame indices are used.
-    scale_bar_length_nm : int, default=100
-        Length of the scale bar in nanometers.
-    output_path : str, default="output"
-        Path where the GIF will be saved.
-    duration : float, default=0.5
-        Duration of each frame in seconds.
-    cmap_name : str, default="afmhot"
-        Name of the matplotlib colormap to apply.
-    zmin : float or {"auto"} or None, optional
-        Minimum z-value mapped to colormap low end. ``"auto"`` uses the
-        1st percentile. ``None`` uses the minimum value of each frame.
-    zmax : float or {"auto"} or None, optional
-        Maximum z-value mapped to colormap high end. ``"auto"`` uses the
-        99th percentile. ``None`` uses the maximum value of each frame.
-    draw_ts : bool, default=True
-        Whether to draw timestamps.
-    draw_scale : bool, default=True
-        Whether to draw a scale bar.
+
+    scale_bar_length_nm : int
+        Length of the scale bar in nanometers. Default is 100.
+
+    output_path : str
+        Path where the GIF will be saved. Default is 'output'.
+
+    duration : float
+        Duration of each frame in seconds. Default is 0.5.
+
+    cmap_name : str
+        Name of the matplotlib colormap to apply. Default is 'afmhot'.
+
+    zmin : float or str or None, optional
+        Minimum z-value mapped to colormap low end.
+        The string literal ``"auto"`` uses the 1st percentile.
+
+
+    zmax : float or str or None, optional
+        Maximum z-value mapped to colormap high end.
+        The string literal ``"auto"`` uses the 99th percentile.
+
+
+    draw_ts : bool
+        Whether to draw timestamps. Default is True.
+
+    draw_scale : bool
+        Whether to draw a scale bar. Default is True.
 
     Raises
     ------
@@ -90,7 +102,8 @@ def create_gif_with_scale_and_timestamp(
     -----
     - Timestamps and scale bars are drawn in white.
     - Frames are normalized globally if ``zmin`` and ``zmax`` are provided;
-    otherwise, per-frame.
+      otherwise, per-frame.
+
     """
     frames = []
     cmap = cm.get_cmap(cmap_name)
@@ -188,27 +201,38 @@ def export_gif(
     ----------
     afm_stack : AFMImageStack
         AFM stack object containing raw and/or processed data.
+
     make_gif : bool
         Whether to generate the GIF. If ``False``, the function exits immediately.
+
     output_folder : str or None
         Directory to save the GIF. Defaults to ``"output"`` if ``None``.
+
     output_name : str or None
         Base name for the GIF file. If ``None``, derived from the stack file name.
+
     scale_bar_nm : int or None
         Length of the scale bar in nanometers. Defaults to 100 nm.
-    raw : bool, default=False
+
+    raw : bool
         If ``True``, export raw (unprocessed) data; otherwise export processed data
-        if available.
-    zmin : float or {"auto"} or None, optional
-        Minimum z-value mapped to colormap low end. ``"auto"`` uses the 1st percentile.
-        ``None`` uses the minimum value of the data.
-    zmax : float or {"auto"} or None, optional
-        Maximum z-value mapped to colormap high end. ``"auto"`` uses the 99th
-        percentile. ``None`` uses the maximum value of the data.
-    draw_ts : bool, default=True
-        Whether to draw timestamps on each frame.
-    draw_scale : bool, default=True
-        Whether to draw a scale bar on each frame.
+        if available. Default is False.
+
+    zmin : float or None, optional
+        Minimum z-value mapped to colormap low end. The string literal ``"auto"``
+        can also be used to automatically set the 1st percentile. ``None`` uses
+        the minimum value of the data.
+
+    zmax : float or None, optional
+        Maximum z-value mapped to colormap high end. The string literal ``"auto"``
+        can also be used to automatically set the 99th percentile. ``None`` uses
+        the maximum value of the data.
+
+    draw_ts : bool
+        Whether to draw timestamps on each frame. Default is True.
+
+    draw_scale : bool
+        Whether to draw a scale bar on each frame. Default is True.
 
     Returns
     -------

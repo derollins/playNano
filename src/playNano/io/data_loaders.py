@@ -167,6 +167,8 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     ------
     ValueError
         If required datasets are missing or JSON decoding fails.
+        If required datasets (``frame_metadata_json`` or ``provenance_json``)
+        are missing or contain invalid JSON.
     """
     with h5py.File(str(path), "r") as f:
         data = f["data"][()].astype(np.float32)

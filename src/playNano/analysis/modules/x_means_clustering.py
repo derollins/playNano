@@ -36,17 +36,23 @@ class XMeansClusteringModule(AnalysisModule):
     ----------
     coord_key : str
         Key in previous_results[detection_module] to find feature list.
+
     coord_columns : Sequence[str]
         Names of feature dictionary keys to use for coordinates
         (e.g. centroid_x, centroid_y).
+
     use_time : bool
         Whether to append frame timestamps as the third coordinate.
+
     min_k : int
         Initial number of clusters (minimum).
+
     max_k : int
         Maximum number of clusters to allow.
+
     normalise : bool
         Whether to min-max normalize coordinate space before clustering.
+
     time_weight : float, optional
         Multiplier for time dimension (after normalization).
 
@@ -61,7 +67,6 @@ class XMeansClusteringModule(AnalysisModule):
     Version
     -------
     0.1.0
-        Initial implementation.
     """
 
     version = "0.1.0"
@@ -109,46 +114,52 @@ class XMeansClusteringModule(AnalysisModule):
         stack : AFMImageStack
             The input image stack providing frame timing and metadata context.
 
-        previous_results : dict of str to Any, optional
+        previous_results : dict[str, Any], optional
             Dictionary containing outputs from previous analysis steps.
             Must contain the selected detection_module and coord_key.
 
-        detection_module : str, default="feature_detection"
-            Key identifying which previous module’s output to use.
+        detection_module : str
+            Key identifying which previous modules output to use.
+            Default is "feature_detection".
 
-        coord_key : str, default="features_per_frame"
+        coord_key : str
             Key under the detection module that holds per-frame feature dicts.
+            Default is "features_per_frame".
 
-        coord_columns : Sequence[str], default=("centroid_x", "centroid_y")
+        coord_columns : Sequence[str]
             Keys to extract from each feature for clustering coordinates.
             If missing, will fall back to using the "centroid" tuple if available.
+            Defaults is ("centroid_x", "centroid_y").
 
-        use_time : bool, default=True
+        use_time : bool
             If True and `coord_columns` only gives 2D coordinates, appends the
-            frame timestamp as a third dimension.
+            frame timestamp as a third dimension. Default is True.
 
-        min_k : int, default=1
-            Initial number of clusters to start with.
+        min_k : int
+            Initial number of clusters to start with. Default is 1.
 
-        max_k : int, default=10
-            Maximum number of clusters allowed.
+        max_k : int
+            Maximum number of clusters allowed. Defalut is 10.
 
-        normalise : bool, default=True
+        normalise : bool
             Whether to normalize the feature coordinate axes to the [0, 1] range
-            before clustering.
+            before clustering. Default is True.
 
         time_weight : float or None, optional
             Multiplicative factor applied to the time axis (after normalization).
             Used only if time is included as a third coordinate.
 
-        replicates : int, default=3
+        replicates : int
             Number of times to run k-means internally to choose the best split.
+            Default is 3.
 
-        max_iter : int, default=300
+        max_iter : int
             Maximum number of iterations for each k-means call.
+            Default is 300.
 
-        bic_threshold : float, default=0.0
+        bic_threshold : float
             Minimum improvement in BIC required to split a cluster.
+            Default is 0.0 (any improvement allows a split).
 
         Returns
         -------
