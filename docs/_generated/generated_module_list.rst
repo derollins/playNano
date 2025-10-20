@@ -3,7 +3,7 @@
 - `dbscan_clustering <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.dbscan_clustering>`_  
   - DBSCAN clustering on features over the entire stack in 3D (x, y, time).
 - `feature_detection <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.feature_detection>`_  
-  - Module for threshold based feature detection.
+  - Threshold-based feature detection for AFM image stacks.
 - `k_means_clustering <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.k_means_clustering>`_  
   - K-Means clustering on features over the entire stack in 3D (x, y, time).
 - `log_blob_detection <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.log_blob_detection>`_  

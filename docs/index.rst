@@ -93,6 +93,7 @@ User Guide
    analysis
    custom_analysis_modules
    cli
+   gui
    changelog
 
 API Reference

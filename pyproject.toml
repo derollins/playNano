@@ -62,6 +62,7 @@ docs = [
     "sphinx-rtd-theme",
     "nbsphinx",
     "sphinxcontrib-programoutput",
+    "sphinx-multiversion"
 ]
 
 notebooks = ["jupyter"]

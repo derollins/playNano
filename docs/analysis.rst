@@ -44,7 +44,7 @@ Or load the pipeline from a YAML/JSON file:
 Overview & behaviour
 --------------------
 
-- Analysis pipelines are conceptually similar to :doc:`processing`` pipelines but operate
+- Analysis pipelines are conceptually similar to :doc:`processing` pipelines but operate
   on derived results rather than on image arrays.
 - Analysis **adds** results into ``stack.analysis`` (it does **not** replace
   ``stack.data``).

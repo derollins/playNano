@@ -1,17 +1,18 @@
 import importlib
 import os
 import pkgutil
-import sys
 import subprocess
+import sys
 
 import playNano.analysis.modules as modules
 
-sys.path.insert(0, os.path.abspath("../../src"))
+# Add src to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
-# -- Project information -----------------------------------------------------
+# -- Project info --------------------------------------------------
 project = "playNano"
-copyright = "2025, Daniel E. Rollins"
 author = "Daniel E. Rollins"
+copyright = "2025, Daniel E. Rollins"
 
 # -- Version and release -----------------------------------------------------
 # Pull version from environment variable set by GitHub Actions
@@ -52,10 +53,16 @@ extensions = [
     "myst_parser",
 ]
 
-templates_path = ["_templates"]
 exclude_patterns = []
 
 autosummary_generate = True
+
+extensions.append("sphinx_multiversion")
+
+# Optional: Configure which branches/tags to include
+smv_tag_whitelist = r"^v\d+\.\d+.*$"
+smv_branch_whitelist = r"^(main|dev)$"
+smv_remote_whitelist = r"^origin$"
 
 # Mock imports for modules that may not be installed
 autodoc_mock_imports = [
@@ -73,6 +80,28 @@ autodoc_mock_imports = [
 
 # -- HTML output options -----------------------------------------------------
 html_theme = "furo"
+
+
+# Make sure Sphinx knows where your templates & static files live
+templates_path = ["_templates"]  # ← don't forget this line
+html_static_path = ["_static"]
+
+# Load your switcher files (filenames are relative to _static/)
+html_js_files = ["version-switcher.js"]
+# optional
+html_css_files = ["version-switcher.css"]
+
+# Ensure the sidebar template path matches your file location
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/scroll-start.html",
+        "sidebar/versions.html",  # ← must exist at docs/_templates/sidebar/versions.html
+        "sidebar/scroll-end.html",
+    ]
+}
 
 # ---------------------------------------------------------------------------
 # Automatically generate the module list and autosummary stubs
@@ -104,52 +133,16 @@ with open(generated_list_path, "w", encoding="utf-8") as f:
         if summary:
             f.write(f"  - {summary}\n")
 
-# ---------------------------------------------------------------------------
-# Version dropdown context for templates
-# ---------------------------------------------------------------------------
-html_build_dir = os.path.abspath("_build/html")
-os.makedirs(html_build_dir, exist_ok=True)
-
-# Scan all built versions
-versions = [
-    d
-    for d in os.listdir(html_build_dir)
-    if os.path.isdir(os.path.join(html_build_dir, d))
-]
-versions.sort(reverse=True)
-
-html_context = {
-    "versions": versions,
-    "current_version": version,
-}
-
-# Sidebar: include the template for the dropdown
-html_sidebars = {
-    "**": [
-        "sidebar/scroll-start.html",
-        "sidebar/search.html",
-        "sidebar/scroll-end.html",
-        "version_selector.html",
-    ]
-}
-
-# Don't warn on unknown references like np.ndarray
+# -- Nitpick ignore ------------------------------------------------
 nitpick_ignore = [
-    # NumPy
     ("py:class", "np.ndarray"),
     ("py:class", "numpy.ndarray"),
     ("py:class", "json.encoder.JSONEncoder"),
-    # Pandas
     ("py:class", "pd.DataFrame"),
-    # ("py:class", "DataFrame"),
-    # ("py:class", "pandas.DataFrame"),
-    ("py:class", "pandas.core.frame.DataFrame"),
-    ("py:class", "lists"),  # literal warning in logs
-    # Matplotlib
+    ("py:class", "lists"),
     ("py:class", "Axes"),
     ("py:class", "matplotlib Axes"),
     ("py:class", "matplotlib.axes._axes.Axes"),
-    # PySide6
     ("py:class", "QWidget"),
     ("py:class", "PySide6.QtWidgets.QWidget"),
     ("py:class", "QResizeEvent"),
@@ -157,16 +150,13 @@ nitpick_ignore = [
     ("py:class", "QFont"),
     ("py:class", "PySide6.QtGui.QFont"),
     ("py:class", "QPaintEvent"),
-    # h5py
     ("py:class", "h5py._hl.group.Group"),
-    # standard library / typing
     ("py:class", "Path"),
     ("py:class", "pathlib.Path"),
     ("py:class", "optional"),
     ("py:class", "callable"),
-    # Your custom types
     ("py:class", "AnalysisOutputs"),
-    ("py:class", "analysis_record"),  # from your utils
+    ("py:class", "analysis_record"),
 ]
 
 # Intersphinx mapping lets Sphinx resolve external references in our docstrings

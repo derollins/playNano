@@ -7,10 +7,6 @@ Exporting Data
 in several interoperable formats. Exports can include raw data, processed
 frames, masks, provenance, and optional animated visualizations.
 
-.. contents::
-   :local:
-   :depth: 2
-
 Overview
 --------
 
