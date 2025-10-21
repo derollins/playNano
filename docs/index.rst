@@ -23,6 +23,7 @@ processing filters, data export, analysis pipelines, and the API reference.
 Quick links
 -----------
 
+- :doc:`introduction` - overview of playNano's motivation, design, and core workflow
 - :doc:`installation` - how to install playNano (pip / conda)
 - :doc:`quickstart` - 1-minute example: open a file, apply a filter, export GIF
 - :doc:`cli` - full command-line reference and examples
@@ -62,13 +63,14 @@ The **User Guide** is divided into two parts:
 **Practical Guides**
 ~~~~~~~~~~~~~~~~~~~~
 - :doc:`installation` - detailed installation and environment setup.
+- :doc:`cli` - running batch processing, exports, and automation from the command line.
+- :doc:`gui` - exploring AFM stacks interactively and exporting results.
 - :doc:`processing` - applying filters, masks, and flattening operations with
   provenance tracking.
-- :doc:`gui` - exploring AFM stacks interactively and exporting results.
 - :doc:`analysis` - running feature detection and tracking pipelines.
 - :doc:`custom_analysis_modules` - extending the analysis system with your
   own modules or research methods.
-- :doc:`cli` - running batch processing, exports, and automation from the command line.
+- :doc:`exporting` - saving processed data and analysis results in open formats.
 
 Each guide expands on concepts introduced in the Quickstart, combining practical
 examples with deeper technical reference.
