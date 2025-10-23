@@ -12,6 +12,8 @@ from playNano.processing.pipeline import ProcessingPipeline, _get_plugin_version
 
 
 def test_get_plugin_version_missing_module(monkeypatch):
+    """Test that _get_plugin_version returns None for missing module."""
+
     def fn():
         pass
 
@@ -20,6 +22,8 @@ def test_get_plugin_version_missing_module(monkeypatch):
 
 
 def test_get_plugin_version_no_module():
+    """Test that _get_plugin_version returns None when __module__ is None."""
+
     def fn():
         pass
 

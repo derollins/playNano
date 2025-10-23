@@ -1,7 +1,4 @@
 """
-playNano.io.loaders
-===================
-
 Data loaders for AFM image stacks exported by **playNano**.
 
 This module provides readers for serialized AFMImageStack bundles created
@@ -35,8 +32,7 @@ logger = logging.getLogger(__name__)
 
 def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle
-    produced by :func:`~playNano.io.export_data.save_npz_bundle`.
+    Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle.
 
     The `.npz` file must contain the following keys:
 
@@ -48,6 +44,8 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     - ``processed__<step>`` : optional processed frame arrays
     - ``masks__<mask>`` : optional boolean mask arrays
     - ``state_backups_json`` : optional JSON-encoded dict of saved states
+
+    This is the structure produced by :func:`playNano.io.export_data.save_npz_bundle`.
 
     Parameters
     ----------
@@ -133,8 +131,7 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
 def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle
-    produced by :func:`~playNano.io.export_data.save_h5_bundle`.
+    Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle.
 
     Expected HDF5 structure
     -----------------------
@@ -148,6 +145,9 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     Attributes
         - ``pixel_size_nm`` : scalar float
         - ``channel`` : string
+
+    Files with the structure are produced by
+    :func:`playNano.io.export_data.save_h5_bundle`.
 
     Parameters
     ----------

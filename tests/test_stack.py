@@ -15,6 +15,8 @@ import pytest
 import playNano.afm_stack as afm_stack_module
 from playNano.afm_stack import AFMImageStack, normalize_timestamps
 
+logger = logging.getLogger(__name__)
+
 
 def test_init_invalid_data_type():
     """Test that AFMImageStack raises TypeError for invalid data type."""
@@ -432,13 +434,54 @@ def test_restore_raw_raises_keyerror_when_missing():
 
 
 class DummyStack:
-    """Dummy class that delegates filter execution to AFMImageStack."""
+    """Dummy class that delegates processing steps to AFMImageStack."""
+
+    def __init__(self):
+        self.frame_metadata = [{"frame": i} for i in range(3)]
+        self.state_backups = {}
 
     def _execute_filter_step(self, filter_fn, arr, mask, step_name, **kwargs):
         """Execute a filter step using AFMImageStack's implementation."""
         return AFMImageStack._execute_filter_step(
             self, filter_fn, arr, mask, step_name, **kwargs
         )
+
+    def _execute_stack_edit_step(self, fn, arr, **kwargs):
+        """Execute a stack edit step and update frame metadata."""
+        new_arr = fn(arr, **kwargs)
+        if "frame_metadata_before_edit" not in self.state_backups:
+            self.state_backups["frame_metadata_before_edit"] = list(self.frame_metadata)
+
+        dropped_indices = kwargs.get("indices_to_drop", [])
+        if dropped_indices:
+            self.frame_metadata = [
+                meta
+                for i, meta in enumerate(self.frame_metadata)
+                if i not in dropped_indices
+            ]
+
+        if len(self.frame_metadata) != new_arr.shape[0]:
+            raise RuntimeError(
+                f"frame_metadata length mismatch after edit "
+                f"({len(self.frame_metadata)} vs {new_arr.shape[0]})."
+            )
+        return new_arr
+
+    def _execute_video_processing_step(self, video_fn, arr, **kwargs):
+        """Execute a video processing step with fallback handling."""
+        try:
+            return video_fn(arr, **kwargs)
+        except TypeError:
+            try:
+                return video_fn(arr)
+            except Exception as e:
+                logger.warning(
+                    f"Video processing step '{video_fn.__name__}' failed: {e}"
+                )
+                return arr
+        except Exception as e:
+            logger.warning(f"Video processing step '{video_fn.__name__}' failed: {e}")
+            return arr
 
 
 @pytest.fixture

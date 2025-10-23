@@ -486,7 +486,7 @@ def _cast_input(s: str, expected_type: Any, default: Any):
 
     if origin is Union:
         # try each non-None option in order
-        non_none = [a for a in args if a is not type(None)]
+        non_none = [a for a in args if not isinstance(a, type(None))]
         for opt in non_none:
             try:
                 return _cast_input(s, opt, default)
@@ -524,9 +524,7 @@ def _cast_input(s: str, expected_type: Any, default: Any):
 
 
 def ask_for_analysis_params(module_name: str) -> dict[str, Any]:
-    """
-    Introspect a module's `run()` or parameter spec and interactively ask for values.
-    """
+    """Introspect a module's `run()` or parameter spec and ask for values."""
     cls = _get_analysis_class(module_name)
 
     if hasattr(cls, "parameters") and callable(cls.parameters):

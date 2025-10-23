@@ -1,3 +1,5 @@
+"""Tests for playNano.processing.video_processing module."""
+
 import numpy as np
 import pytest
 
@@ -119,6 +121,54 @@ def test_align_frames_unknown_mode():
     stack = np.zeros((3, 5, 5))
     with pytest.raises(ValueError):
         align_frames(stack, mode="banana")
+
+
+def test_align_frames_max_jump():
+    """Test align_frames max_jump smoothing logic for i == 1 and i >= 2."""
+    # Create a synthetic stack of 3 frames with known shifts
+    H, W = 10, 10
+    base = np.zeros((H, W), dtype=np.float32)
+    base[4:6, 4:6] = 1.0
+
+    # Create shifted frames
+    frame1 = np.roll(base, shift=(2, 2), axis=(0, 1))  # shift by (2, 2)
+    frame2 = np.roll(base, shift=(6, 6), axis=(0, 1))  # jump to trigger smoothing
+
+    stack = np.stack([base, frame1, frame2])
+
+    # Run alignment with max_jump restriction
+    aligned, meta = align_frames(stack, reference_frame=0, max_jump=2)
+
+    # Extract shifts
+    shifts = meta["shifts"]
+
+    # Check that frame1 shift is close to (-2, -2)
+    assert tuple(shifts[1]) == (-2, -2)
+
+    # Check that frame2 shift is smoothed (not full jump of 6)
+    # Expected extrapolated shift: (-2, -2) + ((-2, -2) - (0, 0)) = (-4, -4)
+    assert tuple(shifts[2]) == (-4, -4)
+
+
+def test_rolling_frame_align_max_jump():
+    """Test rolling_frame_align max_jump smoothing logic for i >= 2."""
+    H, W = 10, 10
+    base = np.zeros((H, W), dtype=np.float32)
+    base[4:6, 4:6] = 1.0
+
+    # Create shifted frames
+    frame1 = np.roll(base, shift=(2, 2), axis=(0, 1))  # shift by (2, 2)
+    frame2 = np.roll(base, shift=(6, 6), axis=(0, 1))  # large jump
+    stack = np.stack([base, frame1, frame2])
+
+    # Run rolling alignment with max_jump restriction
+    aligned, meta = rolling_frame_align(stack, window=2, max_jump=2)
+
+    shifts = meta["shifts"]
+
+    # Expect negative shifts due to alignment direction
+    assert tuple(shifts[1]) == (-2, -2)
+    assert tuple(shifts[2]) == (-4, -4)  # extrapolated from (-2, -2) and (0, 0)
 
 
 @pytest.mark.parametrize("method", ["fft_cross_correlation", "full_cross_correlation"])

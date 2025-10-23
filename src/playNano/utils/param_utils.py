@@ -5,7 +5,7 @@ from typing import Callable
 
 def param_conditions(**conds: Callable[[dict], bool]):
     """
-    Decorator to attach parameter-conditions to a processing or analysis callable.
+    Decorate a processing or analysis callable with parameter-conditions.
 
     Each keyword is the parameter name and the value is a callable that will be
     called with the currently collected kwargs (a dict) and must return True if

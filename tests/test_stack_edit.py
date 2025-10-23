@@ -1,3 +1,5 @@
+""" "Tests for playNano.processing.stack_edit module."""
+
 import numpy as np
 import pytest
 

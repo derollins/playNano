@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 import tifffile
 from PIL import Image, ImageSequence
+from tifffile import TiffWriter
 
 from playNano.afm_stack import AFMImageStack
 from playNano.analysis.pipeline import AnalysisPipeline
@@ -20,6 +21,11 @@ from playNano.analysis.utils.common import (
     export_to_hdf5,
     make_json_safe,
     sanitize_analysis_for_logging,
+)
+from playNano.io.data_loaders import (
+    load_h5_bundle,
+    load_npz_bundle,
+    load_ome_tiff_stack,
 )
 from playNano.io.export_data import (
     check_path_is_path,
@@ -772,6 +778,106 @@ def sample_record():
     }
 
 
+def test_missing_provenance_json(tmp_path):
+    """Test ValueError when 'provenance_json' is missing."""
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json=json.dumps([{}]),
+    )
+    with pytest.raises(ValueError, match="missing 'provenance_json'"):
+        load_npz_bundle(tmp_path / "test.npz")
+
+
+def test_invalid_provenance_json(tmp_path):
+    """Test ValueError for corrupted JSON in 'provenance_json'."""
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json=json.dumps([{}]),
+        provenance_json="not-a-json",
+    )
+    with pytest.raises(ValueError, match="invalid JSON in 'provenance_json'"):
+        load_npz_bundle(tmp_path / "test.npz")
+
+
+def test_missing_frame_metadata_json_raises(tmp_path):
+    """Test ValueError when 'frame_metadata_json' is missing."""
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+    )
+    with pytest.raises(ValueError, match="missing 'frame_metadata_json'"):
+        load_npz_bundle(tmp_path / "test.npz")
+
+
+def test_invalid_json_in_frame_metadata(tmp_path):
+    """Test ValueError for corrupted JSON in 'frame_metadata_json'."""
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json="not-a-json",
+    )
+    with pytest.raises(ValueError, match="invalid JSON in 'frame_metadata_json'"):
+        load_npz_bundle(tmp_path / "test.npz")
+
+
+def test_state_backups_json_parsing(tmp_path):
+    """Test that state_backups_json is parsed and attached."""
+    valid_json = json.dumps({"some_state": "value"})
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json=json.dumps([{}]),
+        provenance_json=json.dumps({}),
+        state_backups_json=valid_json,
+    )
+    stack = load_npz_bundle(tmp_path / "test.npz")
+    assert stack.state_backups == {"some_state": "value"}
+
+
+def test_invalid_state_backups_json(tmp_path):
+    """Test ValueError for corrupted JSON in 'state_backups_json'."""
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json=json.dumps([{}]),
+        provenance_json=json.dumps({}),
+        state_backups_json="not-a-json",
+    )
+    with pytest.raises(ValueError, match="invalid JSON in 'state_backups_json'"):
+        load_npz_bundle(tmp_path / "test.npz")
+
+
+def test_masks_key_parsing(tmp_path):
+    """Test that masks__<mask> keys are parsed correctly."""
+    mask_data = np.ones((1, 10, 10), dtype=bool)
+    np.savez(
+        tmp_path / "test.npz",
+        data=np.zeros((1, 10, 10)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        frame_metadata_json=json.dumps([{}]),
+        provenance_json=json.dumps({}),
+        masks__test=mask_data,
+    )
+    stack = load_npz_bundle(tmp_path / "test.npz")
+    assert "test" in stack.masks
+    assert np.array_equal(stack.masks["test"], mask_data)
+
+
 def test_npz_export_and_reload_synthetic(tmp_path):
     """Ensure exporting and reloading a synthetic AFMImageStack as NPZ retains data."""
     # Create synthetic AFM stack
@@ -884,6 +990,82 @@ def test_h5_export_from_real_resource(tmp_path, resource_path):
     assert contents.data.shape == stack.data.shape
 
 
+def test_h5_missing_provenance_json(tmp_path):
+    """Test ValueError when 'provenance_json' is missing in HDF5."""
+    import h5py
+
+    path = tmp_path / "test.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("data", data=np.zeros((1, 10, 10)))
+        f.attrs["pixel_size_nm"] = 1.0
+        f.attrs["channel"] = "height_trace"
+        f.create_dataset("frame_metadata_json", data=json.dumps([{}]).encode("utf-8"))
+    with pytest.raises(ValueError, match="missing 'provenance_json'"):
+        load_h5_bundle(path)
+
+
+def test_h5_invalid_state_backups_json(tmp_path):
+    """Test ValueError for corrupted 'state_backups_json' in HDF5."""
+    import h5py
+
+    path = tmp_path / "test.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("data", data=np.zeros((1, 10, 10)))
+        f.attrs["pixel_size_nm"] = 1.0
+        f.attrs["channel"] = "height_trace"
+        f.create_dataset("frame_metadata_json", data=json.dumps([{}]).encode("utf-8"))
+        f.create_dataset("provenance_json", data=json.dumps({}).encode("utf-8"))
+        f.create_dataset("state_backups_json", data=b"not-a-json")
+    with pytest.raises(ValueError, match="invalid 'state_backups_json'"):
+        load_h5_bundle(path)
+
+
+def test_h5_valid_state_backups_json(tmp_path):
+    """Test that valid 'state_backups_json' is attached to stack."""
+    import h5py
+
+    path = tmp_path / "test.h5"
+    state_json = json.dumps({"step": "value"}).encode("utf-8")
+    with h5py.File(path, "w") as f:
+        f.create_dataset("data", data=np.zeros((1, 10, 10)))
+        f.attrs["pixel_size_nm"] = 1.0
+        f.attrs["channel"] = "height_trace"
+        f.create_dataset("frame_metadata_json", data=json.dumps([{}]).encode("utf-8"))
+        f.create_dataset("provenance_json", data=json.dumps({}).encode("utf-8"))
+        f.create_dataset("state_backups_json", data=state_json)
+    stack = load_h5_bundle(path)
+    assert stack.state_backups == {"step": "value"}
+
+
+def test_h5_missing_frame_metadata(tmp_path):
+    """Test ValueError when 'frame_metadata_json' is missing in HDF5."""
+    import h5py
+
+    path = tmp_path / "test.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("data", data=np.zeros((1, 10, 10)))
+        f.attrs["pixel_size_nm"] = 1.0
+        f.attrs["channel"] = "height_trace"
+        f.create_dataset("provenance_json", data=json.dumps({}).encode("utf-8"))
+    with pytest.raises(ValueError, match="missing 'frame_metadata_json'"):
+        load_h5_bundle(path)
+
+
+def test_h5_invalid_frame_metadata_json(tmp_path):
+    """Test ValueError for invalid JSON in 'frame_metadata_json'."""
+    import h5py
+
+    path = tmp_path / "test.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("data", data=np.zeros((1, 10, 10)))
+        f.attrs["pixel_size_nm"] = 1.0
+        f.attrs["channel"] = "height_trace"
+        f.create_dataset("frame_metadata_json", data=b"not-a-json")
+        f.create_dataset("provenance_json", data=json.dumps({}).encode("utf-8"))
+    with pytest.raises(ValueError, match="invalid JSON metadata"):
+        load_h5_bundle(path)
+
+
 def test_ome_tif_export_and_reload_synthetic(tmp_path):
     """Ensure exporting and reloading a synthetic AFMImageStack as TIF retains data."""
     # Create synthetic AFM stack
@@ -921,7 +1103,6 @@ def test_ome_tif_export_and_reload_synthetic(tmp_path):
 
 def test_ome_tif_export_from_real_resource(tmp_path, resource_path):
     """Test loading a real AFM file and saving to OME TIF format."""
-
     in_path = resource_path / "sample_0.h5-jpk"
     assert in_path.exists(), "Resource file missing"
 
@@ -941,6 +1122,50 @@ def test_ome_tif_export_from_real_resource(tmp_path, resource_path):
     assert np.allclose(contents.data, stack.data)
     assert contents.pixel_size_nm == 1.171875
     assert contents.data.shape == stack.data.shape
+
+
+def test_ome_tiff_invalid_image_description(tmp_path):
+    """Test fallback when ImageDescription tag contains invalid JSON."""
+    path = tmp_path / "test.ome.tif"
+    data = np.zeros((1, 10, 10), dtype=np.uint16)
+    tifffile.imwrite(path, data, description="not-a-json")
+    stack = load_ome_tiff_stack(path)
+    assert isinstance(stack, AFMImageStack)
+
+
+def test_ome_tiff_invalid_shape(tmp_path):
+    """Test ValueError for unsupported OME-TIFF shape."""
+
+    path = tmp_path / "test_invalid.ome.tif"
+    data = np.zeros((10, 10), dtype=np.uint16)  # 2D image
+    tifffile.imwrite(path, data)
+    with pytest.raises(ValueError, match="Unexpected OME-TIFF shape"):
+        load_ome_tiff_stack(path)
+
+
+def test_ome_tiff_invalid_user_data_provenance(tmp_path):
+    """Test fallback when UserDataProvenance contains invalid JSON."""
+    path = tmp_path / "test_user_data.ome.tif"
+    data = np.zeros((1, 10, 10), dtype=np.uint16)
+    metadata = {"UserDataProvenance": "not-a-json"}
+    tifffile.imwrite(path, data, description=json.dumps(metadata))
+    stack = load_ome_tiff_stack(path)
+    assert isinstance(stack.provenance, dict)
+
+
+def test_ome_tiff_invalid_custom_tag(tmp_path):
+    """Test warning and fallback when custom tag contains invalid JSON."""
+    path = tmp_path / "test_custom.ome.tif"
+    data = np.zeros((1, 10, 10), dtype=np.uint16)
+    with TiffWriter(path) as tif:
+        tif.write(
+            data,
+            metadata={"axes": "TYX"},
+            description="{}",
+            extratags=[(65000, "s", 1, b"not-a-json", True)],
+        )
+    stack = load_ome_tiff_stack(path)
+    assert isinstance(stack, AFMImageStack)
 
 
 def validate_analysis_record(record):
