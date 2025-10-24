@@ -203,6 +203,9 @@ If you use **playNano** in academic work, please cite it as:
 > Rollins, D. (2025). *playNano: AFM Video Reader and Analysis Toolkit.*
 > GitHub repository: <https://github.com/derollins/playNano>
 
+<details>
+<summary>Show BibTeX</summary>
+
 ```bibtex
 @misc{rollins2025playnano,
   author = {Rollins, D.},
@@ -211,6 +214,8 @@ If you use **playNano** in academic work, please cite it as:
   url    = {https://github.com/derollins/playNano}
 }
 ```
+
+</details>
 
 ## Included Fonts
 
