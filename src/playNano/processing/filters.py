@@ -7,7 +7,7 @@ from scipy import ndimage
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from playNano.processing.versioning import versioned_filter
+from playNano.utils.versioning import versioned_filter
 
 logger = logging.getLogger(__name__)
 

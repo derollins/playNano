@@ -162,4 +162,5 @@ Notes & links
 -------------
 
 - See :doc:`processing` for processing steps and masks used by the GUI.
+- See :doc:`exporting` for details on GIF and data bundle exports.
 - See :doc:`cli` for the full list of CLI options and non-GUI modes.

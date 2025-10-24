@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import h5py
 import matplotlib
@@ -12,11 +12,125 @@ import pandas as pd
 import pytest
 
 from playNano.analysis.utils import common, frames, particles
-from playNano.analysis.utils.common import NumpyEncoder, safe_json_dumps
+from playNano.analysis.utils.common import (
+    NumpyEncoder,
+    load_analysis_from_hdf5,
+    safe_json_dumps,
+)
 
 matplotlib.use("Agg")  # Use a non-interactive backend suitable for testing
 
 # --- Common Utils ---
+
+
+def create_hdf5_file(structure, dataset_name="analysis_record"):
+    """Make a hdf5 file for testing."""
+    temp_file = NamedTemporaryFile(delete=False, suffix=".h5")
+    with h5py.File(temp_file.name, "w") as h5file:
+        group = h5file.create_group(dataset_name)
+
+        def recurse_write(g, obj):
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    recurse_write(g.create_group(k), v)
+            elif isinstance(obj, list):
+                if len(obj) == 0:
+                    g.create_group("empty")
+                else:
+                    for i, item in enumerate(obj):
+                        recurse_write(g.create_group(f"item_{i}"), item)
+            elif isinstance(obj, np.ndarray):
+                g.create_dataset("values", data=obj)
+            elif isinstance(obj, (int, float, str)):
+                g.attrs["value"] = obj
+            else:
+                g.attrs["value"] = str(obj)
+
+        recurse_write(group, structure)
+    return temp_file.name
+
+
+def test_load_valid_structure():
+    """Test loading a nested structure with arrays, lists, dicts and strings."""
+    data = {
+        "a": np.array([1.0, 2.0]),
+        "b": [1.0, 2.0],
+        "c": {"d": 3.0},
+        "e": [],
+        "f": "text",
+    }
+    file_path = create_hdf5_file(data)
+    result = load_analysis_from_hdf5(file_path)
+    assert result["a"].tolist() == [1, 2]
+    assert result["b"] == [1, 2]
+    assert result["c"]["d"] == 3
+    assert result["e"] == []
+    assert result["f"] == "text"
+
+
+def test_missing_dataset():
+    """Test that a KeyError is raised when the specified dataset is missing."""
+    file_path = create_hdf5_file({}, dataset_name="other_record")
+    with pytest.raises(KeyError, match="Dataset 'analysis_record' not found"):
+        load_analysis_from_hdf5(file_path, dataset_name="analysis_record")
+
+
+def test_scalar_float_conversion():
+    """Test that scalar NumPy float is converted to int if it's integer-valued."""
+    data = {"x": np.array(5.0)}
+    file_path = create_hdf5_file(data)
+    result = load_analysis_from_hdf5(file_path)
+    assert result["x"] == 5
+
+
+def test_scalar_array_conversion():
+    """Test that scalar array with a single float value is converted to int."""
+    file_path = create_hdf5_file({"scalar": np.array(5.0)})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["scalar"] == 5
+
+
+def test_full_array_conversion():
+    """Test that a full NumPy float array with int values is converted to int array."""
+    file_path = create_hdf5_file({"array": np.array([1.0, 2.0, 3.0])})
+    result = load_analysis_from_hdf5(file_path)
+    assert isinstance(result["array"], np.ndarray)
+    assert result["array"].tolist() == [1, 2, 3]
+
+
+def test_string_array_conversion():
+    """Test that a NumPy byte string array is converted to a list of Python strings."""
+    file_path = create_hdf5_file({"strings": np.array([b"foo", b"bar"])})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["strings"].tolist() == ["foo", "bar"]
+
+
+def test_empty_list_handling():
+    """Test that an empty list is correctly reconstructed from the HDF5 group."""
+    file_path = create_hdf5_file({"empty_list": []})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["empty_list"] == []
+
+
+def test_value_attribute_handling():
+    """Test that primitive values stored in attributes are loaded and converted."""
+    file_path = create_hdf5_file({"value": 42.0})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["value"] == 42
+
+
+def test_list_structure_handling():
+    """Test that a list-like group with item_* keys reconstructs as a Python list."""
+    file_path = create_hdf5_file({"mylist": [1.0, 2.0, 3.0]})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["mylist"] == [1, 2, 3]
+
+
+def test_dict_structure_handling():
+    """Test that a dict-like group is reconstructed as a Python dictionary."""
+    file_path = create_hdf5_file({"mydict": {"a": 1.0, "b": 2.0}})
+    result = load_analysis_from_hdf5(file_path)
+    assert result["mydict"] == {"a": 1, "b": 2}
 
 
 def test_numpy_encoder_serializes_ndarray():

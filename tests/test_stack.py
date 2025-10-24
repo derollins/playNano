@@ -15,6 +15,8 @@ import pytest
 import playNano.afm_stack as afm_stack_module
 from playNano.afm_stack import AFMImageStack, normalize_timestamps
 
+logger = logging.getLogger(__name__)
+
 
 def test_init_invalid_data_type():
     """Test that AFMImageStack raises TypeError for invalid data type."""
@@ -432,13 +434,127 @@ def test_restore_raw_raises_keyerror_when_missing():
 
 
 class DummyStack:
-    """Dummy class that delegates filter execution to AFMImageStack."""
+    """Dummy class that delegates processing steps to AFMImageStack."""
+
+    def __init__(self):
+        """Initiate the dummy class."""
+        self.frame_metadata = [{"frame": i} for i in range(3)]
+        self.state_backups = {}
 
     def _execute_filter_step(self, filter_fn, arr, mask, step_name, **kwargs):
         """Execute a filter step using AFMImageStack's implementation."""
         return AFMImageStack._execute_filter_step(
             self, filter_fn, arr, mask, step_name, **kwargs
         )
+
+    def _execute_stack_edit_step(self, stack_edit_fn, arr, **kwargs):
+        """Execute a stack edit step using AFMImageStack's implementation."""
+        return AFMImageStack._execute_stack_edit_step(
+            self, stack_edit_fn, arr, **kwargs
+        )
+
+    def _execute_video_processing_step(self, video_filter_fn, arr, **kwargs):
+        """Execute a video filter step using AFMImageStack's implementation."""
+        return AFMImageStack._execute_video_processing_step(
+            self, video_filter_fn, arr, **kwargs
+        )
+
+
+def test_execute_video_processing_success():
+    """Test that a video processing function successfully modifies the image stack."""
+    arr = np.ones((5, 10, 10))
+    video_fn = Mock(return_value=arr * 2)
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr * 2)
+
+
+def test_execute_video_processing_typeerror_then_success():
+    """Test fallback execution of video function w/o kwargs when TypeError raised."""
+    arr = np.ones((5, 10, 10))
+
+    def video_fn(arr):
+        return arr * 3
+
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr * 3)
+
+
+def test_execute_video_processing_failure():
+    """Test original array is returned when the video function raises an exception."""
+    arr = np.ones((5, 10, 10))
+
+    def video_fn(arr, **kwargs):
+        raise ValueError("fail")
+
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr)
+
+
+def test_execute_stack_edit_step_successful_edit():
+    """Test successful structural edit and metadata update with frame removal."""
+    arr = np.ones((5, 10, 10))
+    new_arr = arr[:3]
+
+    def edit_fn(arr, **kwargs):
+        return arr[:3]
+
+    stack = DummyStack()
+    stack.frame_metadata = ["f0", "f1", "f2", "f3", "f4"]
+    stack.state_backups = {}
+
+    result = stack._execute_stack_edit_step(edit_fn, arr, indices_to_drop=[3, 4])
+    assert np.array_equal(result, new_arr)
+    assert stack.frame_metadata == ["f0", "f1", "f2"]
+    assert stack.state_backups["frame_metadata_before_edit"] == [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+    ]
+
+
+def test_execute_stack_edit_step_metadata_mismatch():
+    """Test a RuntimeError is raised when metadata length mismatches edited array."""
+    arr = np.ones((5, 10, 10))
+
+    def edit_fn(arr, **kwargs):
+        return arr[:2]  # mismatch with metadata
+
+    stack = DummyStack()
+    stack.frame_metadata = ["f0", "f1", "f2", "f3", "f4"]
+    stack.state_backups = {}
+
+    with pytest.raises(RuntimeError, match="frame_metadata length mismatch"):
+        stack._execute_stack_edit_step(edit_fn, arr, indices_to_drop=[3, 4])
+
+
+def test_execute_video_processing_typeerror_then_fallback_failure():
+    """Test that original array is returned when both video_fn calls fail."""
+    arr = np.ones((5, 10, 10))
+
+    class DualFail:
+        def __init__(self):
+            self.called_with_kwargs = False
+
+        def __call__(self, arr, **kwargs):
+            if kwargs:
+                self.called_with_kwargs = True
+                raise TypeError("unexpected kwargs")
+            else:
+                raise ValueError("still fails")
+
+        @property
+        def __name__(self):
+            return "dual_fail"
+
+    stack = DummyStack()
+    video_fn = DualFail()
+    result = stack._execute_video_processing_step(video_fn, arr, unexpected_kwarg=True)
+    assert np.array_equal(result, arr)
 
 
 @pytest.fixture

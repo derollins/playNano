@@ -8,7 +8,28 @@ import numpy as np
 import pytest
 
 from playNano.afm_stack import AFMImageStack
-from playNano.processing.pipeline import ProcessingPipeline
+from playNano.processing.pipeline import ProcessingPipeline, _get_plugin_version
+
+
+def test_get_plugin_version_missing_module(monkeypatch):
+    """Test that _get_plugin_version returns None for missing module."""
+
+    def fn():
+        pass
+
+    fn.__module__ = "nonexistent_pkg.submodule"
+    assert _get_plugin_version(fn) is None
+
+
+def test_get_plugin_version_no_module():
+    """Test that _get_plugin_version returns None when __module__ is None."""
+
+    def fn():
+        pass
+
+    # force inspect.getmodule to return None
+    fn.__module__ = None
+    assert _get_plugin_version(fn) is None
 
 
 @pytest.fixture
@@ -585,3 +606,176 @@ def test_processing_keys_by_name_handles_duplicates(mock_stack):
     print(keys)
     assert len(keys) == 2
     assert keys[0] != keys[1]
+
+
+def test_pipeline_restores_existing_state_backup(mock_stack):
+    """Ensure existing state_backup is preserved after run."""
+    mock_stack.state_backup = {"foo": "bar"}
+    mock_stack._resolve_step.return_value = ("filter", lambda d, **k: d)
+    mock_stack._execute_filter_step.side_effect = (
+        lambda fn, arr, mask, name, **kwargs: fn(arr, **kwargs)
+    )
+
+    pipeline = ProcessingPipeline(mock_stack)
+    pipeline.add_filter("noop")
+    pipeline.run()
+    assert mock_stack.state_backup == {"foo": "bar"}
+
+
+def test_get_step_version_direct_version(toy_stack):
+    """Test that a function with __version__ attribute returns it."""
+    pipeline = ProcessingPipeline(toy_stack)
+
+    def fn():
+        return lambda x: x
+
+    fn.__version__ = "1.2.3"
+    assert pipeline._get_step_version(fn, "filter") == "1.2.3"
+
+
+def test_get_step_version_none(toy_stack):
+    """Test that a function without version info returns None."""
+    pipeline = ProcessingPipeline(toy_stack)
+
+    def fn():
+        return lambda x: x
+
+    assert pipeline._get_step_version(fn, "filter") is None
+
+
+# ----------------------------
+# _handle_video_filter_step
+# ----------------------------
+
+
+def test_handle_video_filter_step(toy_stack, monkeypatch):
+    """Test that a video filter step processes data and records history."""
+    data = np.ones((3, 3))
+    pipeline = ProcessingPipeline(toy_stack)
+    toy_stack.data = data.copy()
+
+    # fake video processing function
+    def fake_video_fn(stack, arr, **kwargs):
+        return arr + 1  # modify array
+
+    step_record = {}
+    kwargs = {"param": 42}
+
+    # monkeypatch stack method
+    monkeypatch.setattr(toy_stack, "_execute_video_processing_step", fake_video_fn)
+
+    out, meta = pipeline._handle_video_filter_step(
+        step_idx=1,
+        step_name="video_filter_test",
+        fn=fake_video_fn,
+        arr=toy_stack.data,
+        step_record=step_record,
+        kwargs=kwargs,
+    )
+
+    # verify output array and mask
+    np.testing.assert_array_equal(out, data + 1)
+    assert meta == {}
+
+    # verify processed key added
+    key = "step_1_video_filter_test"
+    np.testing.assert_array_equal(toy_stack.processed[key], data + 1)
+    assert step_record["processed_key"] == key
+    assert step_record["output_summary"]["shape"] == data.shape
+    assert step_record["output_summary"]["dtype"] == str(data.dtype)
+    assert toy_stack.provenance["processing"]["steps"][-1] is step_record
+
+
+# ----------------------------
+# _handle_stack_edit_step
+# ----------------------------
+
+
+def test_handle_stack_edit_step_drop_frames(toy_stack, monkeypatch):
+    """Test that a drop_frames step processes data and records history."""
+    data = np.ones((3, 3))
+    pipeline = ProcessingPipeline(toy_stack)
+    toy_stack.data = data.copy()
+
+    def drop_fn(stack, arr, **kwargs):
+        return arr * 2
+
+    monkeypatch.setattr(toy_stack, "_execute_stack_edit_step", drop_fn)
+
+    step_record = {}
+    kwargs = {"indices_to_drop": [0]}
+    out, mask = pipeline._handle_stack_edit_step(
+        step_idx=1,
+        step_name="drop_frames",
+        fn=drop_fn,
+        arr=toy_stack.data,
+        step_record=step_record,
+        kwargs=kwargs,
+    )
+
+    np.testing.assert_array_equal(out, data * 2)
+    assert mask is None
+    key = "step_1_drop_frames"
+    np.testing.assert_array_equal(toy_stack.processed[key], data * 2)
+    assert step_record["processed_key"] == key
+    assert step_record["output_summary"]["stack_edit_function_used"] == "drop_frames"
+    assert step_record["output_summary"]["delegated_to"] is None
+
+
+def test_handle_stack_edit_step_delegation(toy_stack, monkeypatch):
+    """Test that a stack edit step delegating to drop_frames works correctly."""
+    data = np.ones((3, 3))
+    pipeline = ProcessingPipeline(toy_stack)
+    toy_stack.data = data.copy()
+
+    # non-drop_frames function returns indices
+    def fake_edit(arr, **kwargs):
+        return [0, 1]
+
+    # fake drop_frames function doubles array
+    def drop_fn(stack, arr, **kwargs):
+        return arr * 2
+
+    # monkeypatch stack methods
+    monkeypatch.setattr(toy_stack, "_execute_stack_edit_step", drop_fn)
+    monkeypatch.setattr(
+        toy_stack, "_resolve_step", lambda name: ("stack_edit", drop_fn)
+    )
+
+    step_record = {}
+    kwargs = {"foo": "bar"}
+
+    out, mask = pipeline._handle_stack_edit_step(
+        step_idx=2,
+        step_name="remove_some",
+        fn=fake_edit,
+        arr=toy_stack.data,
+        step_record=step_record,
+        kwargs=kwargs,
+    )
+
+    np.testing.assert_array_equal(out, data * 2)
+    assert mask is None
+    key = "step_2_drop_frames"
+    np.testing.assert_array_equal(toy_stack.processed[key], data * 2)
+    assert step_record["processed_key"] == key
+    assert step_record["output_summary"]["stack_edit_function_used"] == "remove_some"
+    assert step_record["output_summary"]["delegated_to"] == "drop_frames"
+
+
+def test_handle_stack_edit_step_invalid_return(toy_stack, monkeypatch):
+    """Test that a stack edit step returning invalid type raises TypeError."""
+    pipeline = ProcessingPipeline(toy_stack)
+
+    def bad_fn(data, **kwargs):
+        return "not a list or array"
+
+    with pytest.raises(TypeError):
+        pipeline._handle_stack_edit_step(
+            step_idx=1,
+            step_name="bad_edit",
+            fn=bad_fn,
+            arr=toy_stack.data,
+            step_record={},
+            kwargs={},
+        )

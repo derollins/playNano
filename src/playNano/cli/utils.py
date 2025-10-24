@@ -6,7 +6,7 @@ import logging
 import numbers
 from importlib import metadata
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Union, get_args, get_origin
 
 import numpy as np
 import yaml
@@ -15,11 +15,15 @@ from playNano.analysis import BUILTIN_ANALYSIS_MODULES
 from playNano.processing.filters import register_filters
 from playNano.processing.mask_generators import register_masking
 from playNano.processing.masked_filters import register_mask_filters
+from playNano.processing.stack_edit import register_stack_edit_processing
+from playNano.processing.video_processing import register_video_processing
 
 # Built-in filters and mask dictionaries
 FILTER_MAP = register_filters()
 MASK_MAP = register_masking()
 MASK_FILTERS_MAP = register_mask_filters()
+VIDEO_FILTER_MAP = register_video_processing()
+STACK_EDIT_MAP = register_stack_edit_processing()
 
 # Names of all entry-point plugins (if any third-party filters are installed)
 _PLUGIN_ENTRYPOINTS = {
@@ -33,6 +37,7 @@ _ANALYSIS_PLUGIN_ENTRYPOINTS = {
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
+SKIP_PARAM_NAMES = {"data", "image", "arr", "mask", "stack", "debug"}
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +49,8 @@ def is_valid_step(name: str) -> bool:
         or name in FILTER_MAP
         or name in MASK_MAP
         or name in _PLUGIN_ENTRYPOINTS
+        or name in VIDEO_FILTER_MAP
+        or name in STACK_EDIT_MAP
     )
 
 
@@ -430,21 +437,20 @@ def _get_analysis_class(module_name: str):
         raise
 
 
-def _cast_input(s: str, expected_type: type, default: Any):
+def _cast_input(s: str, expected_type: Any, default: Any):
     """
     Convert a string input into a specified Python type, with fallback defaults.
 
-    Performs a best-effort conversion based on the expected type. Supports basic
-    types such as `str`, `bool`, `int`, `float`, `tuple`, and `list`. If the
+    Handles `Optional` and `Union` annotations, and performs best-effort conversion
+    for standard Python types (str, bool, int, float, tuple, list). If the
     conversion fails or the string is empty, returns the provided default value.
 
     Parameters
     ----------
     s : str
         The string to convert.
-    expected_type : type
-        The Python type to convert the string into. If `None` or `inspect._empty`,
-        the string is returned as-is.
+    expected_type : type | Any
+        The Python type or type annotation to convert the string into.
     default : Any
         Value to return if the string is empty or conversion is not possible.
 
@@ -458,78 +464,203 @@ def _cast_input(s: str, expected_type: type, default: Any):
     - Boolean conversion recognizes '1', 'true', 'yes', 'y', 't'
       (case-insensitive) as True.
     - Tuple and list types assume comma-separated values in the string.
+    - `Optional[T]` and `Union[T, NoneType]` are treated as `T`.
+    - For generic types like `list[int]`, the element type hint is ignored,
+      but the container conversion still applies.
     """
-    # best-effort conversion
     if s == "":
         return default
-    if expected_type in (str, None) or expected_type is inspect._empty:
+
+    # handle missing annotations
+    if expected_type is None or expected_type is inspect._empty:
         return s
-    if expected_type is bool:
-        s2 = s.lower()
-        return s2 in ("1", "true", "yes", "y", "t")
-    try:
-        # common numeric types
-        if expected_type is int:
-            return int(s)
-        if expected_type is float:
-            return float(s)
-        if expected_type is tuple:
-            # comma separated
-            return tuple(x.strip() for x in s.split(",") if x.strip())
-        if expected_type is list:
-            return [x.strip() for x in s.split(",") if x.strip()]
-    except Exception:
+
+    origin = get_origin(expected_type)
+    args = get_args(expected_type)
+
+    # Union / Optional
+    if origin is None and isinstance(expected_type, type):
+        base = expected_type
+    else:
+        base = None
+
+    if origin is Union:
+        # try each non-None option in order
+        non_none = [a for a in args if not isinstance(a, type(None))]
+        for opt in non_none:
+            try:
+                return _cast_input(s, opt, default)
+            except Exception:
+                continue
         # fallback
+        return default if type(None) in args else s
+
+    # Handle plain tuple/list types
+    if origin is None:
+        if expected_type is tuple:
+            items = [item.strip() for item in s.split(",") if item.strip()]
+            return tuple(items)
+        if expected_type is list:
+            items = [item.strip() for item in s.split(",") if item.strip()]
+            return items
+
+    # simple types
+    try:
+        if base is bool:
+            s2 = s.lower()
+            return s2 in ("1", "true", "yes", "y", "t")
+        if base is int:
+            return int(s)
+        if base is float:
+            return float(s)
+        if base is str:
+            return s
+    except Exception:
+        # fall through to return default/string
         return s
+
+    # fallback
     return s
 
 
 def ask_for_analysis_params(module_name: str) -> dict[str, Any]:
-    """
-    Introspect module_name.run signature and interactively ask for param values.
-
-    Returns kwargs dict.
-    """
+    """Introspect a module's `run()` or parameter spec and ask for values."""
     cls = _get_analysis_class(module_name)
-    # Prefer a module-provided spec if available
-    if hasattr(cls, "parameters") and callable(cls.parameters):
-        # parameters() -> list of (name, type, default, help) would be ideal
-        spec = cls.parameters()
-        kwargs = {}
-        for entry in spec:
-            name = entry["name"]
-            typ = entry.get("type", str)
-            default = entry.get("default", "")
-            prompt = f"  Enter {name} (default={default}): "
-            val_str = input(prompt).strip()
-            kwargs[name] = _cast_input(val_str, typ, default)
-        return kwargs
 
-    # Fallback to signature of run()
+    if hasattr(cls, "parameters") and callable(cls.parameters):
+        spec = cls.parameters()
+        return _ask_with_spec(spec)
+    else:
+        return _ask_with_signature(cls)
+
+
+def _ask_with_spec(spec: list[dict[str, Any]]) -> dict[str, Any]:
+    """Prompt user for parameter values based on a module-provided spec."""
+    kwargs = {}
+    pending = list(spec)
+    while pending:
+        progressed, to_retry = _process_pending_entries(pending, kwargs)
+        if not progressed:
+            _prompt_remaining(to_retry, kwargs)
+            break
+        pending = to_retry
+    return kwargs
+
+
+def _ask_with_signature(cls) -> dict[str, Any]:
+    """Prompt user for parameter values based on `run()` signature."""
     sig = inspect.signature(cls.run)
     kwargs = {}
-    for pname, param in sig.parameters.items():
-        # skip positional-only params: skip stack, previous_results
-        if pname in ("self", "stack", "previous_results"):
+    conds = getattr(cls.run, "_param_conditions", {})
+
+    pending = [
+        (name, param)
+        for name, param in sig.parameters.items()
+        if name not in ("self", "stack", "previous_results")
+        and param.kind != inspect.Parameter.VAR_KEYWORD
+    ]
+    while pending:
+        progressed, to_retry = _process_signature_pending(pending, kwargs, conds)
+        if not progressed:
+            _prompt_signature_remaining(to_retry, kwargs, conds)
+            break
+        pending = to_retry
+    return kwargs
+
+
+# === Internal shared helpers ===
+
+
+def _process_pending_entries(pending, kwargs):
+    """Process pending spec entries with conditions."""
+    progressed = False
+    to_retry = []
+    for entry in pending:
+        name, typ, default, cond = (
+            entry["name"],
+            entry.get("type", str),
+            entry.get("default", ""),
+            entry.get("condition"),
+        )
+        should_ask = _resolve_condition(cond, kwargs)
+        if should_ask is None:
+            to_retry.append(entry)
             continue
-        # skip **kwargs maybe, but still allow user to add via raw spec
-        if param.kind == inspect.Parameter.VAR_KEYWORD:
-            # can't introspect further — ask for none or allow raw later
+        if not should_ask:
+            progressed = True
+            continue
+        val = _prompt_and_cast(name, typ, default)
+        if val is not None:
+            kwargs[name] = val
+        progressed = True
+    return progressed, to_retry
+
+
+def _process_signature_pending(pending, kwargs, conds):
+    """Process pending signature parameters with conditions."""
+    progressed = False
+    to_retry = []
+    for pname, param in pending:
+        cond = conds.get(pname, getattr(param, "condition", None))
+        should_ask = _resolve_condition(cond, kwargs)
+        if should_ask is None:
+            to_retry.append((pname, param))
+            continue
+        if not should_ask:
+            progressed = True
             continue
         default = param.default if param.default is not inspect._empty else None
         ann = param.annotation if param.annotation is not inspect._empty else None
-        # Show the parameter and default
-        prompt_default = default if default is not None else ""
-        prompt = f"  Enter {pname} (type={getattr(ann,'__name__',str(ann))}, default={prompt_default}): "  # noqa
-        val_str = input(prompt).strip()
-        try:
-            val = _cast_input(val_str, ann, default)
-        except Exception:
-            val = val_str or default
-        # Only add if user provided something or default exists
+        kwargs[pname] = _prompt_and_cast(pname, ann, default)
+        progressed = True
+    return progressed, to_retry
+
+
+def _prompt_remaining(to_retry, kwargs):
+    """Prompt user for remaining spec entries."""
+    for entry in to_retry:
+        name, typ, default, cond = (
+            entry["name"],
+            entry.get("type", str),
+            entry.get("default", ""),
+            entry.get("condition"),
+        )
+        if cond and not _resolve_condition(cond, kwargs):
+            continue
+        val = _prompt_and_cast(name, typ, default)
         if val is not None:
-            kwargs[pname] = val
-    return kwargs
+            kwargs[name] = val
+
+
+def _prompt_signature_remaining(to_retry, kwargs, conds):
+    """Prompt user for remaining signature parameters."""
+    for pname, param in to_retry:
+        cond = conds.get(pname, getattr(param, "condition", None))
+        if cond and not _resolve_condition(cond, kwargs):
+            continue
+        default = param.default if param.default is not inspect._empty else None
+        ann = param.annotation if param.annotation is not inspect._empty else None
+        val = _prompt_and_cast(pname, ann, default)
+        kwargs[pname] = val
+
+
+def _resolve_condition(cond, kwargs):
+    """Safely evaluate a conditional parameter dependency."""
+    if cond is None:
+        return True
+    try:
+        return bool(cond(kwargs))
+    except KeyError:
+        return None
+    except Exception:
+        return True
+
+
+def _prompt_and_cast(name, typ, default):
+    """Prompt user for a value and cast appropriately."""
+    prompt = f"  Enter {name} (type={getattr(typ, '__name__', str(typ))}, default={default}): "  # noqa
+    val_str = input(prompt).strip()
+    return _cast_input(val_str, typ, default)
 
 
 def _get_processing_callable(step_name: str):
@@ -545,6 +676,10 @@ def _get_processing_callable(step_name: str):
             return MASK_MAP[step_name]
         if step_name in MASK_FILTERS_MAP:
             return MASK_FILTERS_MAP[step_name]
+        if step_name in VIDEO_FILTER_MAP:
+            return VIDEO_FILTER_MAP[step_name]
+        if step_name in STACK_EDIT_MAP:
+            return STACK_EDIT_MAP[step_name]
         if step_name in _PLUGIN_ENTRYPOINTS:
             return _PLUGIN_ENTRYPOINTS[step_name].load()
         raise ValueError(f"Processing step '{step_name}' not found")
@@ -563,6 +698,10 @@ def get_processing_step_type(step_name: str) -> str:
         return "mask filter"
     if step_name in _PLUGIN_ENTRYPOINTS:
         return "plugin filter"
+    if step_name in VIDEO_FILTER_MAP:
+        return "video filter"
+    if step_name in STACK_EDIT_MAP:
+        return "stack edit"
     return "unknown"
 
 
@@ -572,19 +711,65 @@ def ask_for_processing_params(step_name: str) -> dict[str, Any]:
 
     Skips the first positional arguments (data, mask).
     """
-    func = _get_processing_callable(step_name)
+    func = _get_processing_callable(step_name)  # your existing resolver
     sig = inspect.signature(func)
-    kwargs = {}
-    for pname, param in sig.parameters.items():
-        # Skip data/mask args
-        if pname in ("data", "image", "arr", "mask"):
-            continue
+    conditions = getattr(func, "_param_conditions", {})
 
-        default = param.default if param.default is not inspect._empty else None
-        ann = param.annotation if param.annotation is not inspect._empty else None
-        prompt = f"  Enter {pname} (type={getattr(ann, '__name__', str(ann))}, default={default}): "  # noqa
-        val_str = input(prompt).strip()
-        kwargs[pname] = _cast_input(val_str, ann, default)
+    # parameters in signature order, excluding data-like args
+    params = [(n, p) for n, p in sig.parameters.items() if n not in SKIP_PARAM_NAMES]
+
+    kwargs: dict[str, Any] = {}
+    pending = params[:]  # list of (name, param)
+    # keep trying until done or no progress
+    while pending:
+        progressed = False
+        to_retry = []
+        for name, param in pending:
+            cond = conditions.get(name)
+            # If there is no condition -> we should ask it
+            if cond is None:
+                should_ask = True
+            else:
+                try:
+                    should_ask = bool(cond(kwargs))
+                except KeyError:
+                    # condition depends on missing answers; postpone
+                    should_ask = None
+                except Exception:
+                    # if condition raises, ask to be safe
+                    should_ask = True
+
+            if should_ask is None:
+                to_retry.append((name, param))
+                continue
+
+            progressed = True
+            # Remove from pending implicitly by not adding to to_retry
+
+            # If should_ask is False, skip parameter (do not include)
+            if not should_ask:
+                continue
+
+            default = param.default if param.default is not inspect._empty else None
+            ann = param.annotation if param.annotation is not inspect._empty else None
+            prompt = f"  Enter {name} (type={getattr(ann,'__name__', str(ann))}, default={default}): "  # noqa
+            val_str = input(prompt).strip()
+            kwargs[name] = _cast_input(val_str, ann, default)
+
+        if not progressed:
+            # nothing progressed – break and ask remaining params defensively
+            # (prevents infinite loop if conditions depend on each other circularly)
+            for name, param in to_retry:
+                default = param.default if param.default is not inspect._empty else None
+                ann = (
+                    param.annotation if param.annotation is not inspect._empty else None
+                )
+                prompt = f"  Enter {name} (type={getattr(ann,'__name__', str(ann))}, default={default}): "  # noqa
+                val_str = input(prompt).strip()
+                kwargs[name] = _cast_input(val_str, ann, default)
+            break
+        pending = to_retry
+
     return kwargs
 
 

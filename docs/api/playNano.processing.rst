@@ -44,10 +44,18 @@ playNano.processing.pipeline module
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.versioning module
--------------------------------------
+playNano.processing.stack\_edit module
+--------------------------------------
 
-.. automodule:: playNano.processing.versioning
+.. automodule:: playNano.processing.stack_edit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+playNano.processing.video\_processing module
+--------------------------------------------
+
+.. automodule:: playNano.processing.video_processing
    :members:
    :undoc-members:
    :show-inheritance:

@@ -5,7 +5,7 @@ import logging
 import numpy as np
 from scipy import ndimage
 
-from playNano.processing.versioning import versioned_filter
+from playNano.utils.versioning import versioned_filter
 
 logger = logging.getLogger(__name__)
 

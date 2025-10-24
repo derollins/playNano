@@ -1,19 +1,20 @@
 """
-Data loaders for stacks exported by playNano.
+Data loaders for AFM image stacks exported by **playNano**.
 
-This module provides readers for AFMImageStack bundles created
-by our export routines (`.npz`, `.h5`, and OME-TIFF). Each loader
-will reconstruct an AFMImageStack with correct data, pixel size,
-channel, and per-frame metadata (timestamps).
+This module provides readers for serialized AFMImageStack bundles created
+by the export routines (``.npz``, ``.h5``, and OME-TIFF). Each loader
+reconstructs a :class:`~playNano.afm_stack.AFMImageStack` with correct
+data, pixel size, channel name, and per-frame metadata (timestamps).
+All loaders restore provenance and any stored processing or mask data.
 
 Functions
 ---------
 load_npz_bundle
-    Load a `.npz` bundle into an AFMImageStack.
+    Load a `.npz` bundle into an :class:`~playNano.afm_stack.AFMImageStack`.
 load_h5_bundle
-    Load an HDF5 bundle into an AFMImageStack.
+    Load a `.h5` bundle into an :class:`~playNano.afm_stack.AFMImageStack`.
 load_ome_tiff_stack
-    Load an OME-TIFF bundle into an AFMImageStack.
+    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.
 """
 
 import json
@@ -31,72 +32,74 @@ logger = logging.getLogger(__name__)
 
 def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an AFMImageStack from a `.npz` bundle produced by `save_npz_bundle`.
+    Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle.
 
-    Expects keys:
-      - data               : float32 (n_frames, H, W)
-      - pixel_size_nm      : float32 scalar
-      - channel            : object scalar
-      - frame_metadata_json: object scalar (JSON list of dict)
-      - provenance_json    : object scalar (JSON dict)
-      - processed__<step>  : float32 arrays
-      - masks__<mask>      : boolean arrays
+    The `.npz` file must contain the following keys:
+
+    - ``data`` : ``float32`` array of shape ``(n_frames, H, W)``
+    - ``pixel_size_nm`` : scalar ``float``
+    - ``channel`` : ``str`` scalar
+    - ``frame_metadata_json`` : JSON-encoded list of dicts
+    - ``provenance_json`` : JSON-encoded dict
+    - ``processed__<step>`` : optional processed frame arrays
+    - ``masks__<mask>`` : optional boolean mask arrays
+    - ``state_backups_json`` : optional JSON-encoded dict of saved states
+
+    This is the structure produced by :func:`playNano.io.export_data.save_npz_bundle`.
 
     Parameters
     ----------
-    path : Path
+    path : pathlib.Path
         Path to the `.npz` file.
-    channel: str
-        For being called by load_afm_stack but ignored. Default is "height_trace".
+    channel : str, default="height_trace"
+        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`
+        but ignored when reading the bundle.
 
     Returns
     -------
-    AFMImageStack
-        Reconstructed stack, with `.processed`, `.masks`, and `.provenance` filled.
+    playNano.afm_stack.AFMImageStack
+        Reconstructed AFM image stack with attributes populated:
+        ``.processed``, ``.masks``, and ``.provenance``.
 
     Raises
     ------
     ValueError
-        If required arrays (`frame_metadata_json` or `provenance_json`) are missing
-        or contain invalid JSON.
-
+        If required keys are missing or JSON blobs cannot be decoded.
     """
     arrs = np.load(str(path), allow_pickle=True)
 
-    # core
+    # Core data
     data = arrs["data"]
     pixel_size_nm = float(arrs["pixel_size_nm"].item())
-    # timestamps = list(arrs["timestamps"]) # read from frame metadata
     channel = str(arrs["channel"].item())
 
-    # metadata blobs
+    # Metadata
     try:
-        raw_meta = arrs["frame_metadata_json"].item()
+        frame_metadata = json.loads(arrs["frame_metadata_json"].item())
     except KeyError:
-        raise ValueError(
-            f"{path} is not a playNano NPZ bundle (missing frame_metadata_json)"
-        ) from None
-
-    try:
-        frame_metadata = json.loads(raw_meta)
+        raise ValueError(f"{path} missing 'frame_metadata_json'") from None
     except Exception as e:
         raise ValueError(
             f"{path}: invalid JSON in 'frame_metadata_json': {e}"
         ) from None
 
     try:
-        raw_prov = arrs["provenance_json"].item()
+        provenance = json.loads(arrs["provenance_json"].item())
     except KeyError:
-        raise ValueError(
-            f"{path} is not a playNano NPZ bundle (missing provenance_json)"
-        ) from None
-
-    try:
-        provenance = json.loads(raw_prov)
+        raise ValueError(f"{path} missing 'provenance_json'") from None
     except Exception as e:
         raise ValueError(f"{path}: invalid JSON in 'provenance_json': {e}") from None
 
-    # build stack
+    state_backups = None
+    if "state_backups_json" in arrs:
+        try:
+            state_backups = json.loads(arrs["state_backups_json"].item())
+        except Exception as e:
+            raise ValueError(
+                f"{path}: invalid JSON in 'state_backups_json': {e}"
+            ) from None
+
+    # Build stack
     stack = AFMImageStack(
         data=data,
         pixel_size_nm=pixel_size_nm,
@@ -104,16 +107,17 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
         file_path=path,
         frame_metadata=frame_metadata,
     )
+    if state_backups is not None:
+        stack.state_backups = state_backups
 
-    # Mark that this came from an export bundle
-    # first, load the saved provenance
+    # Provenance
     saved_prov = provenance.copy()
     # annotate bundle info
     saved_prov.setdefault("bundle", {}).update(bundle_file=str(path), bundle_type="npz")
     # then replace stack.provenance wholesale
     stack.provenance = saved_prov
 
-    # extract processed & masks
+    # Processed and mask layers
     for key in arrs.files:
         if key.startswith("processed__"):
             step = key.split("__", 1)[1]
@@ -122,46 +126,47 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
             mask = key.split("__", 1)[1]
             stack.masks[mask] = arrs[key].astype(bool)
 
-    # overwrite data if last processed step should become current?
-    # (optional; typically leave data==raw)
     return stack
 
 
 def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an AFMImageStack from a `.h5` bundle produced by ``save_h5_bundle``.
+    Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle.
 
-    Expected groups
-    ---------------
-    - ``/data`` : float32, shape (n_frames, H, W)
-    - ``/processed/<step>`` : float32 subgroups
-    - ``/masks/<mask>`` : boolean subgroups
-    - ``/timestamps`` : float64, shape (n_frames,)
-    - ``/frame_metadata_json`` : UTF-8 string (JSON list of dict)
-    - ``/provenance_json`` : UTF-8 string (JSON dict)
+    Expected HDF5 structure
+    -----------------------
+    Datasets
+        - ``/data`` : ``float32`` array of shape ``(n_frames, H, W)``
+        - ``/processed/<step>`` : optional processed datasets
+        - ``/masks/<mask>`` : optional boolean mask datasets
+        - ``/frame_metadata_json`` : UTF-8 encoded JSON (list of dicts)
+        - ``/provenance_json`` : UTF-8 encoded JSON (dict)
+        - ``/state_backups_json`` : optional UTF-8 JSON (dict)
+    Attributes
+        - ``pixel_size_nm`` : scalar float
+        - ``channel`` : string
 
-    File attributes
-    ---------------
-    - ``pixel_size_nm`` : float
-    - ``channel`` : UTF-8 string
+    Files with the structure are produced by
+    :func:`playNano.io.export_data.save_h5_bundle`.
 
     Parameters
     ----------
-    path : Path
+    path : pathlib.Path
         Path to the `.h5` file.
-
     channel : str, default="height_trace"
-        Required for compatibility with ``load_afm_stack`` but ignored.
+        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`
+        but ignored when reading the bundle.
 
     Returns
     -------
-    AFMImageStack
-        Reconstructed stack, with ``.processed``, ``.masks``,
-        and ``.provenance`` filled.
+    playNano.afm_stack.AFMImageStack
+        Fully reconstructed AFM image stack with provenance, processed steps,
+        and masks restored.
 
     Raises
     ------
     ValueError
+        If required datasets are missing or JSON decoding fails.
         If required datasets (``frame_metadata_json`` or ``provenance_json``)
         are missing or contain invalid JSON.
     """
@@ -170,46 +175,29 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
         pixel_size_nm = float(f.attrs["pixel_size_nm"])
         channel = str(f.attrs["channel"])
 
-        # Load all processed snapshots
-        processed = {}
-        if "processed" in f:
-            for name, ds in f["processed"].items():
-                processed[name] = ds[()].astype(np.float32)
+        processed = {
+            n: ds[()].astype(np.float32) for n, ds in f.get("processed", {}).items()
+        }
+        masks = {n: ds[()].astype(bool) for n, ds in f.get("masks", {}).items()}
 
-        # Load masks
-        masks = {}
-        if "masks" in f:
-            for name, ds in f["masks"].items():
-                masks[name] = ds[()].astype(bool)
-
-        # timestamps = list(f["timestamps"][()])    # Read from frame metadata
-
-        # Metadata
         if "frame_metadata_json" not in f:
-            raise ValueError(
-                f"{path} is not a playNano HDF5 bundle (missing 'frame_metadata_json')"
-            )
-        raw_meta = f["frame_metadata_json"][()]
-        try:
-            frame_metadata = json.loads(raw_meta.decode("utf-8"))
-        except Exception as e:
-            raise ValueError(
-                f"{path}: invalid JSON in 'frame_metadata_json': {e}"
-            ) from None
-
+            raise ValueError(f"{path} missing 'frame_metadata_json'")
         if "provenance_json" not in f:
-            raise ValueError(
-                f"{path} is not a playNano HDF5 bundle (missing 'provenance_json')"
-            )
-        raw_prov = f["provenance_json"][()]
-        try:
-            provenance = json.loads(raw_prov.decode("utf-8"))
-        except Exception as e:
-            raise ValueError(
-                f"{path}: invalid JSON in 'provenance_json': {e}"
-            ) from None
+            raise ValueError(f"{path} missing 'provenance_json'")
 
-        # Construct AFMImageStack
+        try:
+            frame_metadata = json.loads(f["frame_metadata_json"][()].decode("utf-8"))
+            provenance = json.loads(f["provenance_json"][()].decode("utf-8"))
+        except Exception as e:
+            raise ValueError(f"{path}: invalid JSON metadata: {e}") from None
+
+        state_backups = None
+        if "state_backups_json" in f:
+            try:
+                state_backups = json.loads(f["state_backups_json"][()].decode("utf-8"))
+            except Exception as e:
+                raise ValueError(f"{path}: invalid 'state_backups_json': {e}") from None
+
         stack = AFMImageStack(
             data=data,
             pixel_size_nm=pixel_size_nm,
@@ -220,10 +208,11 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
         stack.processed = processed
         stack.masks = masks
+        if state_backups is not None:
+            stack.state_backups = state_backups
 
         # Attach provenance and mark as bundle
         saved_prov = provenance.copy()
-        # annotate bundle info
         saved_prov.setdefault("bundle", {}).update(
             bundle_file=str(path), bundle_type="h5"
         )
@@ -235,40 +224,44 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
 def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an OME-TIFF bundle into an AFMImageStack.
+    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.
+
+    Attempts to parse OME-XML and custom metadata tags to reconstruct
+    pixel size, timestamps, and provenance. Falls back gracefully if
+    certain metadata are unavailable.
 
     Parameters
     ----------
-    path : Path
-        Path to the `.ome.tif` file produced by `save_ome_tiff_stack`.
+    path : pathlib.Path
+        Path to the `.ome.tif` file created by
+        :func:`~playNano.io.export_data.save_ome_tiff_stack`.
     channel : str, optional
         Fallback channel name if none is found in OME metadata.
 
     Returns
     -------
-    AFMImageStack
+    playNano.afm_stack.AFMImageStack
         Reconstructed AFMImageStack with:
-        - `data`: 3D float32 array `(T, H, W)` or 5D float32 array `(T, 1, 1, H, W)`
-        - `pixel_size_nm`: float (converted from µm metadata if available)
-        - `channel`: first entry of `ChannelName` OME tag or the `channel` parameter
-        - `frame_metadata`: list of dicts with `"timestamp"` if available
+
+        - ``data`` : 3D ``float32`` array ``(T, H, W)``
+        - ``pixel_size_nm`` : float, derived from OME physical size
+        - ``channel`` : str, from OME Channel or fallback
+        - ``frame_metadata`` : list of dicts containing timestamps
+        - ``provenance`` : dict reconstructed from custom or embedded tags
 
     Raises
     ------
     ValueError
-        If required datasets (`frame_metadata_json` or `provenance_json`) are missing
-        or contain invalid JSON.
+        If the image array shape is unsupported or essential metadata
+        cannot be parsed.
     """
-    import json
     import xml.etree.ElementTree as ET
 
     # read image + ome metadata
     with tifffile.TiffFile(path) as tif:
         img = tif.asarray()
         ome_xml = tif.ome_metadata
-
-        # Try to read ImageDescription tag as JSON metadata fallback
-        description_tag = tif.pages[0].tags.get("ImageDescription", None)
+        description_tag = tif.pages[0].tags.get("ImageDescription")
         metadata_dict = {}
         if description_tag is not None:
             try:
@@ -280,22 +273,20 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
         custom_tag_id = 65000
         custom_tag_data = None
         if custom_tag_id in tif.pages[0].tags:
-            tag = tif.pages[0].tags[custom_tag_id]
             try:
-                # The tag value is bytes, decode and parse JSON
-                custom_tag_data = json.loads(tag.value.decode("utf-8"))
-            except Exception as e:
-                logger.warning(
-                    f"Could not decode custom tag {custom_tag_id} from {path}: {e}"
+                custom_tag_data = json.loads(
+                    tif.pages[0].tags[custom_tag_id].value.decode("utf-8")
                 )
+            except Exception as e:
+                logger.warning(f"Could not decode custom tag {custom_tag_id}: {e}")
 
-        # Handle array dimensions
+        # Normalize dimensions
         if img.ndim == 5:
             data = img[:, 0, 0, :, :].astype(np.float32)
         elif img.ndim == 3:
             data = img.astype(np.float32)
         else:
-            raise ValueError(f"Unexpected OME-TIFF array shape: {img.shape}")
+            raise ValueError(f"Unexpected OME-TIFF shape: {img.shape}")
 
         # Defaults
         ps_nm = 1.0
@@ -306,20 +297,18 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
         try:
             root = ET.fromstring(ome_xml)
             ns = {"ome": "http://www.openmicroscopy.org/Schemas/OME/2016-06"}
-            pixels = root.find(".//ome:Pixels", namespaces=ns)
-            if pixels is not None:
-                ps_x = pixels.attrib.get("PhysicalSizeX")
-                if ps_x is not None:
-                    ps_nm = float(ps_x) * 1e3  # µm → nm
 
+            pixels = root.find(".//ome:Pixels", namespaces=ns)
+            if pixels is not None and pixels.attrib.get("PhysicalSizeX"):
+                ps_nm = float(pixels.attrib["PhysicalSizeX"]) * 1e3  # µm → nm
+
+            planes = root.findall(".//ome:Plane", namespaces=ns)
             time_points = [
-                float(t.attrib.get("DeltaT", i))
-                for i, t in enumerate(root.findall(".//ome:Plane", namespaces=ns))
+                float(p.attrib.get("DeltaT", i)) for i, p in enumerate(planes)
             ]
             if time_points:
                 timestamps = time_points
-            else:
-                logger.info("Could not read timestamps, defaulting to frame indices.")
+
             channel_elem = root.find(".//ome:Channel", namespaces=ns)
             if channel_elem is not None and "Name" in channel_elem.attrib:
                 channel_name = channel_elem.attrib["Name"]
@@ -336,10 +325,7 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
             frame_metadata=frame_metadata,
         )
 
-        # Recover provenance JSON from custom tag or fallback to
-        # ImageDescription metadata
         provenance_clean = {}
-
         if custom_tag_data is not None:
             provenance_clean = custom_tag_data
         elif "UserDataProvenance" in metadata_dict:

@@ -4,8 +4,8 @@ Introduction
 Overview
 --------
 
-**playNano** is an open-source Python toolkit for time-aware processing and analysis
-of atomic force microscopy (AFM) data.
+**playNano** is an open-source Python toolkit for time-aware :doc:`processing <processing>`
+and :doc:`analysis <analysis>` of atomic force microscopy (AFM) data.
 It is designed to handle complete AFM time series—such as high-speed AFM
 (HS-AFM) videos—as unified datasets rather than isolated frames.
 The software provides a reproducible, provenance-tracked workflow for preparing,
@@ -38,12 +38,12 @@ Core Components
    ``.jpk``, ``.asd``, ``.h5-jpk``, and ``.spm``.
 2. **Processing** - Applies flattening, filtering, and frame-alignment operations
    to prepare data for analysis and export. Pipelines are defined as ordered
-   lists of steps that run serially on the stack.
+   lists of steps that run serially on the stack. See more: :doc:`processing`.
 3. **Analysis** - Executes configurable pipelines of analysis modules, such as
    particle detection, clustering, and tracking. Modules can be combined to
-   create custom workflows.
+   create custom workflows. See more: :doc:`analysis`.
 4. **Export** - Saves processed data and analysis results in multiple open
-   formats for reuse, sharing, and publication.
+   formats for reuse, sharing, and publication. See more: :doc:`exporting`.
 
 ----
 

@@ -1,17 +1,45 @@
 import importlib
 import os
 import pkgutil
+import subprocess
 import sys
 
 import playNano.analysis.modules as modules
 
-sys.path.insert(0, os.path.abspath("../../src"))
+# Add src to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
-# -- Project information -----------------------------------------------------
+# -- Project info --------------------------------------------------
 project = "playNano"
-copyright = "2025, Daniel E. Rollins"
 author = "Daniel E. Rollins"
-release = "0.1.0"
+copyright = "2025, Daniel E. Rollins"
+
+# -- Version and release -----------------------------------------------------
+# Pull version from environment variable set by GitHub Actions
+# Default to 'latest' if building locally
+version_env = os.environ.get("VERSION", "latest")
+
+if version_env != "latest":
+    # Tagged release
+    version = version_env
+    release = version_env
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True
+        ).strip()
+        release = f"{version}+{commit}"
+    except Exception:
+        pass
+else:
+    # Main branch or local
+    version = "latest"
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True
+        ).strip()
+        release = f"{version}+{commit}"
+    except Exception:
+        release = version
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -25,10 +53,16 @@ extensions = [
     "myst_parser",
 ]
 
-templates_path = ["_templates"]
 exclude_patterns = []
 
 autosummary_generate = True
+
+extensions.append("sphinx_multiversion")
+
+# Optional: Configure which branches/tags to include
+smv_tag_whitelist = r"^v\d+\.\d+.*$"
+smv_branch_whitelist = r"^(main|dev)$"
+smv_remote_whitelist = r"^origin$"
 
 # Mock imports for modules that may not be installed
 autodoc_mock_imports = [
@@ -44,35 +78,44 @@ autodoc_mock_imports = [
     "shiboken6",
 ]
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
+# -- HTML output options -----------------------------------------------------
 html_theme = "furo"
-# html_static_path = ["_static"]
+
+
+# Make sure Sphinx knows where your templates & static files live
+templates_path = ["_templates"]  # ← don't forget this line
+html_static_path = ["_static"]
+
+# Load your switcher files (filenames are relative to _static/)
+html_js_files = ["version-switcher.js"]
+# optional
+html_css_files = ["version-switcher.css"]
+
+# Ensure the sidebar template path matches your file location
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/scroll-start.html",
+        "sidebar/versions.html",  # ← must exist at docs/_templates/sidebar/versions.html
+        "sidebar/scroll-end.html",
+    ]
+}
 
 # ---------------------------------------------------------------------------
 # Automatically generate the module list and autosummary stubs
 # ---------------------------------------------------------------------------
-
-# List all modules in playNano.analysis.modules
 module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
 autosummary_list = "\n   ".join(
     f"playNano.analysis.modules.{name}" for name in module_names
 )
 
-# Paths for the generated RST files
 generated_list_path = "_generated/generated_module_list.rst"
 os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
 
-
-# Path to the html api folder
 api_folder = os.path.abspath("html/api")
-
-# Compute the relative path from the RST file to the API folder
 rel_api_folder = os.path.relpath(api_folder, os.path.dirname(generated_list_path))
-
-# Create bulleted list instead of autosummary table
-module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
 
 with open(generated_list_path, "w", encoding="utf-8") as f:
     for name in module_names:
@@ -80,38 +123,26 @@ with open(generated_list_path, "w", encoding="utf-8") as f:
         module_html = "playNano.analysis.modules.html"
         anchor = f"#module-playNano.analysis.modules.{name}"
         link = os.path.join(rel_api_folder, module_html) + anchor
-        # Normalize to forward slashes for Sphinx links
         link = link.replace(os.sep, "/")
         try:
             mod = importlib.import_module(full_name)
-            # Get first line of module docstring
             summary = (mod.__doc__ or "").strip().splitlines()[0]
         except Exception:
             summary = "No description available."
-
-        # Write as bullet with link and optional description
-        f.write(f"- `{name} <{link}>`_")
-
+        f.write(f"- `{name} <{link}>`_  \n")
         if summary:
             f.write(f"  - {summary}\n")
 
-# Don't warn on unknown references like np.ndarray
+# -- Nitpick ignore ------------------------------------------------
 nitpick_ignore = [
-    # NumPy
     ("py:class", "np.ndarray"),
     ("py:class", "numpy.ndarray"),
     ("py:class", "json.encoder.JSONEncoder"),
-    # Pandas
     ("py:class", "pd.DataFrame"),
-    # ("py:class", "DataFrame"),
-    # ("py:class", "pandas.DataFrame"),
-    ("py:class", "pandas.core.frame.DataFrame"),
-    ("py:class", "lists"),  # literal warning in logs
-    # Matplotlib
+    ("py:class", "lists"),
     ("py:class", "Axes"),
     ("py:class", "matplotlib Axes"),
     ("py:class", "matplotlib.axes._axes.Axes"),
-    # PySide6
     ("py:class", "QWidget"),
     ("py:class", "PySide6.QtWidgets.QWidget"),
     ("py:class", "QResizeEvent"),
@@ -119,16 +150,13 @@ nitpick_ignore = [
     ("py:class", "QFont"),
     ("py:class", "PySide6.QtGui.QFont"),
     ("py:class", "QPaintEvent"),
-    # h5py
     ("py:class", "h5py._hl.group.Group"),
-    # standard library / typing
     ("py:class", "Path"),
     ("py:class", "pathlib.Path"),
     ("py:class", "optional"),
     ("py:class", "callable"),
-    # Your custom types
     ("py:class", "AnalysisOutputs"),
-    ("py:class", "analysis_record"),  # from your utils
+    ("py:class", "analysis_record"),
 ]
 
 # Intersphinx mapping lets Sphinx resolve external references in our docstrings

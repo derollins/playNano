@@ -14,6 +14,28 @@ data, and a modular analysis system that supports both built-in and custom exten
    :width: 420px
    :align: center
 
+Welcome to **playNano** - a Python toolkit for loading, processing, analysing
+and exporting high-speed AFM (HS-AFM) time-series data (`.h5-jpk`, `.jpk`,
+`.spm`, `.asd`).
+This documentation covers installation, command-line usage, the PySide6 GUI,
+processing filters, data export, analysis pipelines, and the API reference.
+
+Quick links
+-----------
+
+- :doc:`introduction` - overview of playNano's motivation, design, and core workflow
+- :doc:`installation` - how to install playNano (pip / conda)
+- :doc:`quickstart` - 1-minute example: open a file, apply a filter, export GIF
+- :doc:`cli` - full command-line reference and examples
+- :doc:`gui` - GUI walkthrough, keyboard shortcuts and export workflow
+- :doc:`processing` - filters, masks and pipeline behaviour
+   - :doc:`processing-operations-reference` - reference of all built-in processing operations
+- :doc:`exporting` - exporting data and GIFs from CLI, GUI, or programmatically
+- :doc:`analysis` - running analysis modules and provenance
+   - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
+- :doc:`whats_new/v0.1.0` - highlights of the latest release
+- :doc:`changelog` - release notes and history
+
 Quickstart (example)
 --------------------
 
@@ -41,13 +63,14 @@ The **User Guide** is divided into two parts:
 **Practical Guides**
 ~~~~~~~~~~~~~~~~~~~~
 - :doc:`installation` - detailed installation and environment setup.
+- :doc:`cli` - running batch processing, exports, and automation from the command line.
+- :doc:`gui` - exploring AFM stacks interactively and exporting results.
 - :doc:`processing` - applying filters, masks, and flattening operations with
   provenance tracking.
-- :doc:`gui` - exploring AFM stacks interactively and exporting results.
 - :doc:`analysis` - running feature detection and tracking pipelines.
 - :doc:`custom_analysis_modules` - extending the analysis system with your
   own modules or research methods.
-- :doc:`cli` - running batch processing, exports, and automation from the command line.
+- :doc:`exporting` - saving processed data and analysis results in open formats.
 
 Each guide expands on concepts introduced in the Quickstart, combining practical
 examples with deeper technical reference.
@@ -67,10 +90,12 @@ User Guide
    notebooks
    installation
    processing
-   gui
+   processing-operations-reference
+   exporting
    analysis
    custom_analysis_modules
    cli
+   gui
    changelog
 
 API Reference

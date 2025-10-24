@@ -282,3 +282,23 @@ def compute_zscale_range(
 
     logger.debug(f"[Z-scaling] zmin={zmin_val:.3f} nm, zmax={zmax_val:.3f} nm")
     return zmin_val, zmax_val
+
+
+def make_json_safe(obj):
+    """Recursively convert NumPy types and non-JSON objects into serializable ones."""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.integer, np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float32, np.float64)):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {k: make_json_safe(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [make_json_safe(v) for v in obj]
+    elif isinstance(obj, tuple):
+        return tuple(make_json_safe(v) for v in obj)
+    elif callable(obj):  # convert functions to their names
+        return obj.__name__
+    else:
+        return obj

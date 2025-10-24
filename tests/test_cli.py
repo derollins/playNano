@@ -2,12 +2,15 @@
 
 import argparse
 import builtins
+import inspect
 import json
 import logging
 import tempfile
 from argparse import Namespace
+from collections import UserDict
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Optional, Union
 from unittest.mock import MagicMock, mock_open, patch
 
 import numpy as np
@@ -23,6 +26,15 @@ from playNano.cli.handlers import handle_analyze, handle_play, handle_wizard
 from playNano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
+    _ask_with_spec,
+    _get_analysis_class,
+    _get_processing_callable,
+    _normalize_loaded,
+    _process_pending_entries,
+    _resolve_condition,
+    _sanitize_for_dump,
+    ask_for_processing_params,
+    get_processing_step_type,
     is_valid_step,
     parse_analysis_file,
     parse_analysis_string,
@@ -609,7 +621,7 @@ def test_wizard_asave_generates_yaml(tmp_path):
             "",  # min_size default
             "",  # remove_edge default
             "",  # fill_holes default
-            "0.3",  # hole_area 0.3])  # default
+            "3",  # hole_area 3])  # default
             f"asave {yaml_file}",
             "quit",
         ]
@@ -630,7 +642,6 @@ def test_wizard_asave_generates_yaml(tmp_path):
                 "min_size": 10,
                 "remove_edge": True,
                 "fill_holes": False,
-                "hole_area": "0.3",
             }
         ]
     }
@@ -810,6 +821,44 @@ def test_parse_analysis_string_unknown_step():
         parse_analysis_string("does_not_exist:param=1")
 
 
+def test_parse_analysis_string_empty_segment():
+    """Test that empty segments are skipped."""
+    result = parse_analysis_string(" ; ;log_blob_detection:min_sigma=1.0")
+    assert result == [("log_blob_detection", {"min_sigma": 1.0})]
+
+
+def test_parse_analysis_string_invalid_param_expression():
+    """Test that malformed param expression raises ValueError."""
+    with pytest.raises(
+        ValueError,
+        match="Invalid parameter expression 'badparam' in analysis step 'log_blob_detection'",  # noqa
+    ):
+        parse_analysis_string("log_blob_detection:badparam")
+
+
+def test_parse_analysis_string_skips_empty_segments():
+    """Test that empty segments are skipped."""
+
+    result = parse_analysis_string(" ; ;log_blob_detection:min_sigma=1.0")
+    assert result == [("log_blob_detection", {"min_sigma": 1.0})]
+
+
+def test_parse_analysis_string_skips_empty_param_pairs():
+    """Test that empty parameter pairs are skipped."""
+
+    result = parse_analysis_string("log_blob_detection:min_sigma=1.0,,max_sigma=5.0")
+    assert result == [("log_blob_detection", {"min_sigma": 1.0, "max_sigma": 5.0})]
+
+
+def test_parse_analysis_string_invalid_step_name():
+    """Test that unknown analysis step raises ValueError."""
+    with patch("playNano.cli.utils.is_valid_analysis_step", return_value=False):
+        from playNano.cli.utils import parse_analysis_string
+
+        with pytest.raises(ValueError, match="Unknown analysis step: 'bad_step'"):
+            parse_analysis_string("bad_step:param=1")
+
+
 def make_temp_analysis_file(data: dict, suffix=".yaml") -> str:
     """Create a temporary YAML or JSON analysis config file."""
     with tempfile.NamedTemporaryFile("w+", suffix=suffix, delete=False) as f:
@@ -924,6 +973,72 @@ def test_parse_analysis_file_invalid_yaml_and_json(monkeypatch):
         ValueError, match="Unable to parse analysis file as YAML or JSON"
     ):
         parse_analysis_file(path)
+
+
+def test__process_pending_entries(monkeypatch):
+    """Test processing of pending entries with conditions."""
+
+    # Mock _resolve_condition to return True for all conditions
+    monkeypatch.setattr(
+        "playNano.cli.utils._resolve_condition", lambda cond, kwargs: True
+    )
+
+    # Mock _prompt_and_cast to return a fixed value
+    monkeypatch.setattr(
+        "playNano.cli.utils._prompt_and_cast",
+        lambda name, typ, default: f"mocked_{name}",
+    )
+
+    pending = [
+        {"name": "param1", "type": str, "default": "default1", "condition": "always"},
+        {"name": "param2", "type": int, "default": 42, "condition": "always"},
+    ]
+    kwargs = {}
+
+    progressed, to_retry = _process_pending_entries(pending, kwargs)
+
+    assert progressed is True
+    assert to_retry == []
+    assert kwargs["param1"] == "mocked_param1"
+    assert kwargs["param2"] == "mocked_param2"
+
+
+def test__normalize_loaded():
+    """Test normalization of nested structures with tuples, lists, and dicts."""
+
+    input_data = {"a": (1, 2, {"b": (3, 4)}), "c": [5, (6, 7)], "d": "unchanged"}
+
+    expected_output = {"a": [1, 2, {"b": [3, 4]}], "c": [5, [6, 7]], "d": "unchanged"}
+
+    result = _normalize_loaded(input_data)
+    assert result == expected_output
+
+
+def test__get_analysis_class_value_error():
+    """Test ValueError raised when module isn't found in built-ins or entry points."""
+    with (
+        patch("playNano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
+        patch("playNano.cli.utils.metadata.entry_points") as mock_entry_points,
+    ):
+        mock_entry_points.return_value.select.return_value = []
+        with pytest.raises(
+            ValueError, match="Analysis module 'unknown_module' not found"
+        ):
+            _get_analysis_class("unknown_module")
+
+
+def test__get_analysis_class_generic_exception(caplog):
+    """Test generic Exception is logged and re-raised during entry point loading."""
+    with (
+        patch("playNano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
+        patch("playNano.cli.utils.metadata.entry_points") as mock_entry_points,
+    ):
+        mock_entry_points.return_value.select.side_effect = RuntimeError(
+            "entry point failure"
+        )
+        with pytest.raises(RuntimeError, match="entry point failure"):
+            _get_analysis_class("some_module")
+        assert "Failed to load analysis module 'some_module'" in caplog.text
 
 
 # --- Tests for the handlers
@@ -1672,6 +1787,299 @@ def test_wizard_run_with_export_and_gif(monkeypatch, tmp_path):
     assert called["gif"]
 
 
+def test_ask_for_processing_params_no_conditions(monkeypatch):
+    """Test asking for parameters with no conditions."""
+    from playNano.cli.utils import ask_for_processing_params
+
+    def dummy_func(data, param1: int = 5, param2: str = "default"):
+        pass
+
+    monkeypatch.setattr(
+        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+    )
+    monkeypatch.setattr(
+        "builtins.input", lambda prompt: "42" if "param1" in prompt else "hello"
+    )
+
+    result = ask_for_processing_params("dummy_step")
+    assert result == {"param1": 42, "param2": "hello"}
+
+
+def test_ask_for_processing_params_condition_false(monkeypatch):
+    """Test that parameters with False conditions are skipped."""
+
+    def dummy_func(data, param1: int = 5, param2: str = "default"):
+        pass
+
+    dummy_func._param_conditions = {"param1": lambda kwargs: False}
+
+    monkeypatch.setattr(
+        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+    )
+    monkeypatch.setattr("builtins.input", lambda prompt: "hello")
+
+    result = ask_for_processing_params("dummy_step")
+    assert result == {"param2": "hello"}  # param1 skipped
+
+
+def test_ask_for_processing_params_condition_keyerror(monkeypatch):
+    """Test that KeyError in condition postpones the parameter."""
+
+    def dummy_func(data, param1: int = 5, param2: str = "default"):
+        pass
+
+    dummy_func._param_conditions = {"param1": lambda kwargs: kwargs["missing"]}
+
+    monkeypatch.setattr(
+        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+    )
+    monkeypatch.setattr("builtins.input", lambda prompt: "42")
+
+    result = ask_for_processing_params("dummy_step")
+    assert result == {"param1": 42, "param2": "42"}  # param2 is str
+
+
+def test_parse_processing_file_not_found():
+    """Test that missing file raises FileNotFoundError."""
+    with pytest.raises(FileNotFoundError):
+        parse_processing_file("nonexistent.yaml")
+
+
+def test_parse_processing_file_invalid_yaml_and_json(tmp_path):
+    """Test that invalid YAML and JSON raises ValueError."""
+    path = tmp_path / "bad.yaml"
+    path.write_text("not: valid: yaml: or json")
+
+    with pytest.raises(
+        ValueError, match="Unable to parse processing file as YAML or JSON"
+    ):
+        parse_processing_file(str(path))
+
+
+def test_parse_processing_file_missing_filters_key(tmp_path):
+    """Test that missing 'filters' key raises ValueError."""
+    path = tmp_path / "nofilters.yaml"
+    path.write_text("not_filters: []")
+
+    with pytest.raises(ValueError, match="must contain top-level key 'filters'"):
+        parse_processing_file(str(path))
+
+
+def test_parse_processing_file_filters_not_list(tmp_path):
+    """Test that non-list 'filters' raises ValueError."""
+    path = tmp_path / "badfilters.yaml"
+    path.write_text("filters: not_a_list")
+
+    with pytest.raises(ValueError, match="'filters' must be a list"):
+        parse_processing_file(str(path))
+
+
+def test_parse_processing_file_entry_missing_name(tmp_path):
+    """Test that entry without 'name' raises ValueError."""
+    path = tmp_path / "missingname.yaml"
+    path.write_text("filters:\n  - threshold: 2")
+
+    with pytest.raises(ValueError, match="must be a dict containing 'name'"):
+        parse_processing_file(str(path))
+
+
+def test_parse_processing_file_invalid_step_name(tmp_path):
+    """Test that unknown step name raises ValueError."""
+    path = tmp_path / "badstep.yaml"
+    path.write_text("filters:\n  - name: not_a_step")
+
+    with patch("playNano.cli.utils.is_valid_step", return_value=False):
+        with pytest.raises(ValueError, match="Unknown processing step"):
+            parse_processing_file(str(path))
+
+
+def test_parse_processing_file_valid_yaml(tmp_path):
+    """Test that valid YAML returns parsed steps."""
+    path = tmp_path / "valid.yaml"
+    path.write_text(
+        """
+filters:
+  - name: gaussian_filter
+    sigma: 2.0
+  - name: threshold_mask
+    threshold: 5
+"""
+    )
+    with patch("playNano.cli.utils.is_valid_step", return_value=True):
+        result = parse_processing_file(str(path))
+        assert result == [
+            ("gaussian_filter", {"sigma": 2.0}),
+            ("threshold_mask", {"threshold": 5}),
+        ]
+
+
+def test_prompt_remaining_skips_on_false_condition():
+    """Test that _prompt_remaining skips entries with False condition."""
+    entry = {
+        "name": "param1",
+        "type": int,
+        "default": 0,
+        "condition": lambda kwargs: False,
+    }
+    kwargs = {}
+
+    with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
+        from playNano.cli.utils import _prompt_remaining
+
+        _prompt_remaining([entry], kwargs)
+        mock_cast.assert_not_called()
+        assert kwargs == {}
+
+
+def test_prompt_remaining_adds_value():
+    """Test that _prompt_remaining adds value when condition passes."""
+    entry = {"name": "param1", "type": int, "default": 0, "condition": None}
+    kwargs = {}
+
+    with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
+        from playNano.cli.utils import _prompt_remaining
+
+        _prompt_remaining([entry], kwargs)
+        assert kwargs == {"param1": 42}
+
+
+def test_prompt_signature_remaining_skips_on_false_condition():
+    """Test that _prompt_signature_remaining skips parameters with False condition."""
+    param = inspect.Parameter(
+        "param1", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=0, annotation=int
+    )
+    conds = {"param1": lambda kwargs: False}
+    kwargs = {}
+
+    with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
+        from playNano.cli.utils import _prompt_signature_remaining
+
+        _prompt_signature_remaining([("param1", param)], kwargs, conds)
+        mock_cast.assert_not_called()
+        assert kwargs == {}
+
+
+def test_prompt_signature_remaining_adds_value():
+    """Test that _prompt_signature_remaining adds value when condition passes."""
+    param = inspect.Parameter(
+        "param1", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=0, annotation=int
+    )
+    conds = {}
+    kwargs = {}
+
+    with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
+        from playNano.cli.utils import _prompt_signature_remaining
+
+        _prompt_signature_remaining([("param1", param)], kwargs, conds)
+        assert kwargs == {"param1": 42}
+
+
+def test_resolve_condition_keyerror():
+    """Test that KeyError in condition returns None."""
+
+    def condition(kwargs):
+        return kwargs["missing"]
+
+    assert _resolve_condition(condition, {}) is None
+
+
+def test_resolve_condition_exception():
+    """Test that general exceptions return True."""
+
+    def condition(kwargs):
+        raise RuntimeError("unexpected")
+
+    assert _resolve_condition(condition, {}) is True
+
+
+def test_resolve_condition_other_exception():
+    """Test that other exceptions return True."""
+
+    def cond():
+        return lambda kwargs: 1 / 0
+
+    assert _resolve_condition(cond, {}) is True
+
+
+def test_resolve_condition_false():
+    """Test that False condition returns False."""
+
+    def condition(kwargs):
+        return False
+
+    assert _resolve_condition(condition, {}) is False
+
+
+def test_resolve_condition_none():
+    """Test that None condition returns True."""
+    assert _resolve_condition(None, {}) is True
+
+
+@pytest.mark.parametrize(
+    "input_obj,expected",
+    [
+        (Path("/some/path"), str(Path("/some/path"))),
+        (np.int32(42), 42),
+        (np.float64(3.14), 3.14),
+        (np.array([1, 2, 3]), [1, 2, 3]),
+        (42, 42),
+        (3.14, 3.14),
+        ("hello", "hello"),
+        (True, True),
+        (None, None),
+        ((1, 2, 3), [1, 2, 3]),
+        ([1, (2, 3)], [1, [2, 3]]),
+        ({"a": (1, 2), "b": np.array([3, 4])}, {"a": [1, 2], "b": [3, 4]}),
+    ],
+)
+def test_sanitize_for_dump_basic(input_obj, expected):
+    """Test basic sanitization of various Python and NumPy types for safe dumping."""
+    result = _sanitize_for_dump(input_obj)
+    assert result == expected
+
+
+def test_sanitize_for_dump_nested_dict():
+    """Test recursive sanitization of a nested dictionary with mixed types."""
+    input_obj = {
+        "path": Path("/tmp/file"),
+        "data": {
+            "array": np.array([1.0, 2.0]),
+            "tuple": (np.int32(1), np.float64(2.0)),
+        },
+    }
+    expected = {
+        "path": str(Path("/tmp/file")),
+        "data": {
+            "array": [1.0, 2.0],
+            "tuple": [1, 2.0],
+        },
+    }
+    result = _sanitize_for_dump(input_obj)
+    assert result == expected
+
+
+def test_sanitize_for_dump_userdict():
+    """Test sanitization of a UserDict containing NumPy and Path types."""
+    user_dict = UserDict({"x": np.int32(5), "y": Path("/home")})
+    expected = {"x": 5, "y": str(Path("/home"))}
+    result = _sanitize_for_dump(user_dict)
+    assert result == expected
+
+
+def test_sanitize_for_dump_fallback():
+    """Test fallback string conversion for unsupported custom objects."""
+
+    class CustomObject:
+        """Custom object with string representation for fallback sanitization."""
+
+        def __str__(self):
+            return "custom"
+
+    obj = CustomObject()
+    result = _sanitize_for_dump(obj)
+    assert result == "custom"
+
+
 class CaptureIO(actions.IO):
     """IO adapter that takes an iterator of inputs and records outputs."""
 
@@ -1768,6 +2176,118 @@ def test_run_with_export_and_gif(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize(
+    "map_name,step_name",
+    [
+        ("FILTER_MAP", "filter_step"),
+        ("MASK_MAP", "mask_step"),
+        ("MASK_FILTERS_MAP", "mask_filter_step"),
+        ("VIDEO_FILTER_MAP", "video_filter_step"),
+        ("STACK_EDIT_MAP", "stack_edit_step"),
+    ],
+)
+def test_get_processing_callable_maps(map_name, step_name):
+    """Test that _get_processings_callable maps to correct function."""
+    module_path = "playNano.cli.utils"
+    with patch(f"{module_path}.{map_name}", {step_name: lambda x: x}):
+        result = _get_processing_callable(step_name)
+        assert callable(result)
+
+
+def test_get_processing_callable_filter():
+    """Test that a known filter step returns the correct callable."""
+
+    def dummy_func():
+        return lambda x: x
+
+    with patch("playNano.cli.utils.FILTER_MAP", {"dummy_filter": dummy_func}):
+        result = _get_processing_callable("dummy_filter")
+        assert result is dummy_func
+
+
+def test_get_processing_callable_mask():
+    """Test that a known filter step returns the correct callable."""
+
+    def dummy_mask():
+        return lambda x: x
+
+    with patch("playNano.cli.utils.MASK_MAP", {"dummy_mask": dummy_mask}):
+        result = _get_processing_callable("dummy_mask")
+        assert result is dummy_mask
+
+
+def test_get_processing_callable_plugin():
+    """Test that a plugin entry point is loaded correctly."""
+    mock_entry_point = MagicMock()
+    mock_entry_point.load.return_value = "plugin_callable"
+    with patch(
+        "playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": mock_entry_point}
+    ):
+        result = _get_processing_callable("plugin_step")
+        assert result == "plugin_callable"
+
+
+def test_get_processing_callable_not_found():
+    """Test that an unknown step raises ValueError."""
+    with (
+        patch("playNano.cli.utils.FILTER_MAP", {}),
+        patch("playNano.cli.utils.MASK_MAP", {}),
+        patch("playNano.cli.utils.MASK_FILTERS_MAP", {}),
+        patch("playNano.cli.utils.VIDEO_FILTER_MAP", {}),
+        patch("playNano.cli.utils.STACK_EDIT_MAP", {}),
+        patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+    ):
+        with pytest.raises(
+            ValueError, match="Processing step 'unknown_step' not found"
+        ):
+            _get_processing_callable("unknown_step")
+
+
+def test_get_processing_step_type_filter():
+    """Test that get_processing_step_type correctly identifies filters."""
+    with patch("playNano.cli.utils.FILTER_MAP", {"dummy_filter": lambda x: x}):
+        assert get_processing_step_type("dummy_filter") == "filter"
+
+
+def test_get_processing_step_type_plugin():
+    """Test that _get_processing_step_type identifies plugins."""
+    with patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": MagicMock()}):
+        assert get_processing_step_type("plugin_step") == "plugin filter"
+
+
+@pytest.mark.parametrize(
+    "map_name,step_name,expected_type",
+    [
+        ("FILTER_MAP", "filter_step", "filter"),
+        ("MASK_MAP", "mask_step", "mask generator"),
+        ("MASK_FILTERS_MAP", "mask_filter_step", "mask filter"),
+        ("_PLUGIN_ENTRYPOINTS", "plugin_step", "plugin filter"),
+        ("VIDEO_FILTER_MAP", "video_filter_step", "video filter"),
+        ("STACK_EDIT_MAP", "stack_edit_step", "stack edit"),
+    ],
+)
+def test_get_processing_step_type_known(map_name, step_name, expected_type):
+    """Test that get_processing step_type gives the expected type for known steps."""
+    module_path = "playNano.cli.utils"
+    with patch(f"{module_path}.{map_name}", {step_name: None}):
+        result = get_processing_step_type(step_name)
+        assert result == expected_type
+
+
+def test_get_processing_step_type_unknown():
+    """Test that get_processing_step_type handles unknown steps."""
+    with (
+        patch("playNano.cli.utils.FILTER_MAP", {}),
+        patch("playNano.cli.utils.MASK_MAP", {}),
+        patch("playNano.cli.utils.MASK_FILTERS_MAP", {}),
+        patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+        patch("playNano.cli.utils.VIDEO_FILTER_MAP", {}),
+        patch("playNano.cli.utils.STACK_EDIT_MAP", {}),
+    ):
+        result = get_processing_step_type("nonexistent_step")
+        assert result == "unknown"
+
+
+@pytest.mark.parametrize(
     "handler,args,expected",
     [
         (
@@ -1799,6 +2319,30 @@ def test_prompt_for_processing_params_retry(tmp_path):
     params = wiz.prompt_for_processing_params("polynomial_flatten")
     assert params.get("order") == 3
     assert any("Invalid" in s for s in io.outputs)
+
+
+def test_ask_with_spec_progresses():
+    """Test _ask_with_spec returns kwargs when progress is made."""
+    spec = [{"name": "param1", "type": str, "default": "default"}]
+
+    with patch("playNano.cli.utils._process_pending_entries") as mock_process:
+        mock_process.return_value = (True, [])  # progress made, no retry
+        result = _ask_with_spec(spec)
+        assert isinstance(result, dict)
+
+
+def test_ask_with_spec_falls_back_to_prompt_remaining():
+    """Test _ask_with_spec calls _prompt_remaining when no progress is made."""
+    spec = [{"name": "param1", "type": str, "default": "default"}]
+
+    with (
+        patch("playNano.cli.utils._process_pending_entries") as mock_process,
+        patch("playNano.cli.utils._prompt_remaining") as mock_prompt,
+    ):
+        mock_process.side_effect = [(False, spec)]
+        result = _ask_with_spec(spec)
+        mock_prompt.assert_called_once_with(spec, result)
+        assert isinstance(result, dict)
 
 
 @pytest.mark.parametrize(
@@ -1926,3 +2470,25 @@ def test_io_say(capsys):
     io_adapter.say("test message")
     captured = capsys.readouterr()
     assert "test message" in captured.out
+
+
+@pytest.mark.parametrize(
+    "s, expected_type, default, expected",
+    [
+        ("4", int, None, 4),
+        ("4.5", float, None, 4.5),
+        ("", float, 1.23, 1.23),
+        ("True", bool, False, True),
+        ("no", bool, True, False),
+        ("1,2,3", list, None, ["1", "2", "3"]),
+        ("a,b", tuple, None, ("a", "b")),
+        ("4", Optional[int], None, 4),
+        ("", Optional[int], 9, 9),
+        ("5", Union[int, None], None, 5),
+        ("", Union[int, None], 0, 0),
+        ("abc", str, None, "abc"),
+    ],
+)
+def test_cast_input(s, expected_type, default, expected):
+    """Test the _cast_input utility function with various inputs and types."""
+    assert cli_utils._cast_input(s, expected_type, default) == expected

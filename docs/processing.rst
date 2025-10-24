@@ -1,25 +1,42 @@
 Processing
 ==========
 
-The ``playNano.processing`` subpackage provides tools for flattening,
-filtering and masking AFM image stacks. Processing is applied frame-by-frame
-to stacks shaped ``(n_frames, height, width)`` so that snapshots and
-per-step provenance are retained while preserving stack shape.
+Overview
+--------
 
-This page covers:
-- quick start and CLI examples
-- common filters and masks
-- how to supply pipelines (inline or YAML)
-- programmatic usage
-- a concise summary of what the pipeline records
+The ``playNano.processing`` subpackage provides tools for preparing AFM time-series
+data for viewing and analysis. It includes functions for levelling, filtering,
+masking, alignment, and trimming. These
+:doc:`operations <processing-operations-reference>` are modular and composable,
+allowing reproducible pipelines tailored to specific datasets and goals.
 
-See also the :doc:`cli`, :doc:`gui` and :doc:`analysis` pages.
+Processing is coordinated by
+:class:`~playNano.processing.pipeline.ProcessingPipeline`, which manages the
+reproducible and provenance-tracked transformation of an
+:class:`~playNano.afm_stack.AFMImageStack`. A pipeline consists of an ordered list
+of steps, where each step defines an operation and its parameters. Steps are executed
+sequentially, and all parameters, versions, and outputs are logged for traceability.
 
-Quick start
------------
+This guide covers:
 
-Processing can be applied directly in a batch mode using the ``process`` subcommand.
-This can be used to apply a series of filters and export the results in the CLI:
+- CLI / GUI usage and examples
+- Pipeline structure and step types
+- Built-in processing operations and plugin support
+- Programmatic usage
+- What the pipeline records
+
+See also the :doc:`cli`, :doc:`gui`, and :doc:`analysis` pages for related workflows.
+
+CLI / GUI Usage
+---------------
+
+Processing can be applied directly from the CLI (``process`` subcommand) or in the
+interactive GUI (``play`` command). In both cases, processing steps are defined using
+a semicolon-separated string or a YAML file.
+
+The ``--processing`` argument accepts a semicolon-separated list of steps. Each step
+is either a data operation, a mask generator, with optional parameters passed via
+colon-separated key-value pairs or ``clear`` that resets masks. For example:
 
 .. code-block:: bash
 
@@ -30,7 +47,7 @@ This can be used to apply a series of filters and export the results in the CLI:
        --output-folder ./results \
        --output-name sample_processed
 
-Or use a YAML pipeline file:
+Alternatively, pipelines can be defined in YAML for better readability and reuse:
 
 .. code-block:: yaml
 
@@ -43,95 +60,102 @@ Or use a YAML pipeline file:
      - name: gaussian_filter
        sigma: 2.0
 
+Run it via:
+
 .. code-block:: bash
 
-   playnano process ./tests/resources/sample_0.h5-jpk --processing-file pipeline.yaml
+   playnano process ./tests/resources/sample_0.h5-jpk \
+       --processing-file pipeline.yaml \
+       --export tif,npz \
+       --make-gif \
+       --output-folder ./results \
+       --output-name sample_processed
 
-Concepts & behaviour
---------------------
+Interactive pipeline creation is supported via the ``wizard`` subcommand:
 
-- Processing operations are **2D functions** applied to each frame independently.
-- Supported step types:
-  - **Filters** - modify image data (flattening, smoothing, alignment).
-  - **Masks** - boolean masks used to exclude regions from subsequent filters.
-  - **Plugins** - third-party filters registered via entry points.
-- The pipeline maintains snapshots for raw and intermediate results and records
-  detailed provenance for reproducibility.
-- After a pipeline run the pipeline **updates ``stack.data``** to the final
-  processed array (so downstream code sees processed frames by default).
+.. code-block:: bash
 
-Built-in filters and masks
---------------------------
+   playnano wizard ./tests/resources/sample_0.h5-jpk \
+       --output-folder ./results \
+       --output-name processed_sample
 
-There are a number of built in functions that can be used to process AFM data.
+Use ``save <filename-to_save>.yaml`` within the wizard to export the constructed
+pipeline as YAML for reuse with ``--processing-file``.
 
-These functions take a numpy array as a argument along with any parameters and
-return a numpy array. In the case of the filters this is an array of floats while
-the mask functions output a binary array.
+Pipeline Structure and Step Types
+---------------------------------
 
-Certain filters (e.g. ``remove_plane``, ``row_median_align``) support masked computation.
-When a binary mask is provided, the operation is applied to the full image, but its internal
-parameters are estimated only from unmasked pixels. This is useful when regions of the image
-contain artifacts, noise, or irrelevant features that should not influence the operation,
-but the correction itself must be applied globally (i.e. flattening based on background pixels).
+A :class:`~playNano.processing.pipeline.ProcessingPipeline` organizes transformations
+into sequential steps applied to an
+:class:`~playNano.afm_stack.AFMImageStack`. Each step performs a specific task such
+as filtering, masking, or alignment and can be configured with parameters. Steps are
+executed in order, and results are tracked with metadata to ensure reproducibility.
 
-The output of each function is saved as a step and the masks can  also be used in analysis
-pipelines.
+After execution, the :attr:`~playNano.afm_stack.AFMImageStack.data` attribute is
+updated with the final processed array.
 
-Filters
-^^^^^^^
+Operation Types
+^^^^^^^^^^^^^^^
 
-- ``remove_plane`` - fit and subtract a 2D plane (useful for tilt removal).
-- ``polynomial_flatten`` - fit & subtract a 2D polynomial surface.
-  - parameter: ``order`` (int, default: 2)
-- ``row_median_align`` - subtract median per row to remove horizontal banding.
-- ``zero_mean`` - subtract global mean (centres data around zero or background around zero if a foreground
-    mask is applied).
-- ``gaussian_filter`` - gaussian smoothing.
-  - parameter: ``sigma`` (float, default: 1.0)
+- **Filters (2D frame operations)** — modify individual frames (e.g. flattening,
+  smoothing). Accept 2D NumPy arrays and return float arrays. Masked regions (if
+  defined by a preceding mask operation) are excluded automatically.
+- **Masks (2D binary operations)** — generate boolean masks to exclude regions from
+  filters or analysis. Masks are combined via logical OR. Use ``clear`` to reset.
+- **Video Processing (3D stack operations)** — apply transformations across full
+  time-series stacks, such as alignment or drift correction. Operate on 3D arrays and
+  may record metadata.
+- **Stack Edits (AFMImageStack-level operations)** — modify dataset structure (e.g.
+  cropping, frame removal). Return a new 3D array, with metadata and timestamps
+  updated automatically.
 
-Masks
-^^^^^
+Step Naming and Provenance
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- ``mask_threshold`` - mask values above ``threshold``.
-  - parameter: ``threshold`` (float, default: 0.0)
-- ``mask_below_threshold`` - mask values below ``threshold``.
-  - parameter: ``threshold`` (float, default: 0.0)
-- ``mask_mean_offset`` - mask values beyond mean ± factor x std.
-  - parameter: ``factor`` (float, default: 1.0)
-- ``mask_morphological`` - threshold + morphological closing (structure size param).
-  - parameter: ``threshold`` (float)
-  - parameter: ``structure_size`` (int, default= 3)
-- ``mask_adaptive`` - block-wise adaptive thresholding (``block_size``, ``offset``).
-  - parameter: ``block_size`` (int, default: 5)
-  - parameter: ``offset`` (float, default: 0.0)
+Each step is named as ``step_<index>_<operation_name>`` and its output is stored in
+:attr:`~playNano.afm_stack.AFMImageStack.processed` (for data) or
+:attr:`~playNano.afm_stack.AFMImageStack.masks` (for binary masks).
 
-.. note::
-   Masks are combined using logical OR (new masks overlay previous ones).
-   Use the ``clear`` step to reset masks.
+Provenance information is stored in
+:attr:`~playNano.afm_stack.AFMImageStack.provenance["processing"]` and includes:
+
+- ``steps`` — ordered list of step records (parameters, versions, timestamps, etc.)
+- ``keys_by_name`` — maps operation names to their snapshot keys.
+
+This ensures all transformations are traceable and reproducible.
+
+Processing Operations
+---------------------
+
+Built-in Filters & Masks
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Several built-in filters and masks are available. Each takes a NumPy array and optional
+parameters, returning either a processed float array (filters) or binary mask array
+(masks).
+
+See :doc:`processing-operations-reference` for a full list.
 
 Plugins
 ^^^^^^^
 
-Extend the pipeline by registering filter functions via entry points under
-``playNano.filters``. This can be any callable that accepts a 2D numpy array
-with optional parameters and returns a processed 2D array.
+Custom filters can be added via entry points under ``playNano.filters``. Any callable
+that accepts a 2D NumPy array and returns a processed array can be registered.
 
-Example `pyproject.toml` fragment:
+Example ``pyproject.toml`` snippet:
 
 .. code-block:: toml
 
    [project.entry-points."playNano.filters"]
    my_plugin = "my_pkg.module:my_filter"
 
-Plugin signature:
+Example plugin function:
 
 .. code-block:: python
 
    def my_filter(frame: np.ndarray, **kwargs) -> np.ndarray:
-       """
-       Accepts a 2D array (frame) and returns a processed 2D array.
-       """
+       """Process a 2D array and return a filtered version."""
+
 
 When the plugin is installed, it appears in the same CLI/API list as the
 built-in filters.
@@ -164,15 +188,16 @@ parameters. The wizard will then ask if you would like to export the processed d
 ``.h5`` or ``.ome-tiff`` and then if you would like to generate a ``.gif``.
 
 Programmatic usage
+       """Process a 2D array and return a filtered version."""
+       ...
+
+Installed plugins appear alongside built-in filters in the CLI and GUI.
+
+Programmatic Usage
 ------------------
 
-The processing pipeline can be used programmatically via the
-:class:`~playNano.processing.pipeline.ProcessingPipeline` class, which operates
-on a :class:`~playNano.afm_stack.AFMImageStack` object. Use the ``add_filter()`` and
-``add_mask()`` methods to build the pipeline step-by-step, and call ``run()``
-to execute it.
-
-Build and run a pipeline from Python:
+Use the :class:`~playNano.processing.pipeline.ProcessingPipeline` class directly for
+custom pipelines:
 
 .. code-block:: python
 
@@ -185,7 +210,6 @@ Build and run a pipeline from Python:
    pipeline.add_filter("remove_plane")
    pipeline.add_mask("mask_threshold", threshold=2.0)
    pipeline.add_filter("gaussian_filter", sigma=1.0)
-
    pipeline.run()   # updates stack.processed and stack.data
 
 After execution, the processed frames are available via ``stack.data``, and intermediate
@@ -208,97 +232,64 @@ control export behaviour (See :doc:`cli` for CLI flag details).
 What the pipeline records
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After a run the following are available on the :class:`~playNano.afm_stack.AFMImageStack`:
+After execution, the following are available:
 
-- ``stack.processed`` : dict
-  - Snapshots keyed by step name (see detailed section below) and raw data preserved in ``raw``.
-- ``stack.masks`` : dict
-  - Boolean mask snapshots keyed by step name.
-- ``stack.provenance["processing"]`` : dict
-  - ``steps`` : ordered list of per-step provenance records.
-  - ``keys_by_name`` : mapping of step names to created snapshot keys.
-- ``stack.provenance["environment"]`` : metadata about OS / Python / package versions.
+- ``stack.processed`` — processed frame snapshots keyed by step name
+- ``stack.masks`` — boolean masks keyed by step name
+- ``stack.provenance["processing"]`` — full step records and mappings
+- ``stack.provenance["environment"]`` — runtime metadata (Python/OS/package versions)
 
-These records enable reproducibility and inspection of intermediate results.
+These enable complete reproducibility and intermediate inspection.
 
-Advanced / Implementation details
----------------------------------
+Inspecting Results Programmatically
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Snapshot key naming
-^^^^^^^^^^^^^^^^^^^
-
-- Processed snapshot keys use the pattern::
-
-   step_<idx>_<step_name>
-
-  where ``idx`` is 1-based step index and ``step_name`` is the invoked step
-  name with spaces replaced by underscores. A ``"raw"`` snapshot is created
-  automatically (if missing) before the first processing step.
-
-- Mask snapshots are stored under ``stack.masks`` with similar keys. When
-  masks are overlaid the new mask key concatenates the previous mask suffixes
-  to preserve lineage.
-
-Provenance record structure
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For each run ``stack.provenance["processing"]`` is rebuilt and contains:
-
-- ``steps`` - list of dicts, each with fields:
-  - ``index`` : int (1-based)
-  - ``name`` : str (step name)
-  - ``params`` : dict (keyword args passed)
-  - ``timestamp`` : ISO-8601 UTC timestamp
-  - ``step_type`` : ``"filter"``, ``"mask"``, ``"clear"`` or ``"plugin"``
-  - ``version`` : optional version string if provided via a decorator or plugin metadata
-  - ``function_module`` : Python module path (where the function lives)
-  - *If mask*: ``mask_key`` and a concise ``mask_summary`` (shape/dtype)
-  - *If filter/plugin*: ``processed_key`` and an ``output_summary``
-
-- ``keys_by_name`` - dict mapping step name to ordered list of created keys.
-
-Other notes
-^^^^^^^^^^^
-
-- Indexing in snapshot keys is **1-based** (``step_1_*`` is the first applied step).
-- After pipeline completion ``stack.data`` is overwritten with the final processed
-  array so that subsequent consumers use the processed frames by default.
-- When you export a bundle (HDF5/NPZ) the provenance and snapshots are included.
-- If you pass ``log_to`` to programmatic run helpers, large arrays are sanitized
-  (summarized) for JSON-friendly logging.
-
-Inspecting results programmatically
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+After running a processing pipeline, processed arrays, masks, and provenance information
+are stored directly on the :class:`~playNano.afm_stack.AFMImageStack` object.
+You can use the following commands to explore what was generated:
 
 .. code-block:: python
 
-   # list snapshots
    print(sorted(stack.processed.keys()))
    print(sorted(stack.masks.keys()))
 
-   # walk provenance
    for step in stack.provenance["processing"]["steps"]:
-       print(step["index"], step["step_type"], step["name"], step.get("processed_key") or step.get("mask_key"))
+       print(step["index"], step["step_type"], step["name"])
 
-   # retrieve results produced by a named step
    for key in stack.provenance["processing"]["keys_by_name"].get("polynomial_flatten", []):
        arr = stack.processed[key]
-       # do stuff...
 
-Tips & troubleshooting
+.. code-block:: text
+
+  ['step_1_remove_plane', 'step_2_polynomial_flatten']
+  ['step_3_threshold_mask']
+  1 filter remove_plane
+  2 filter polynomial_flatten
+  3 mask threshold_mask
+
+This indicates two filters and one mask were applied in sequence.
+You can access a specific result directly:
+
+.. code-block:: python
+
+flattened = stack.processed["step_2_polynomial_flatten"]
+print(flattened.shape)
+
+which returns a NumPy array representing the processed frame or stack at that step.
+
+Tips & Troubleshooting
 ----------------------
 
-- If you expect a ``"raw"`` snapshot but do not see one, check whether you loaded
-  an HDF5 bundle; bundles may already contain ``raw`` snapshots.
-- If a plugin filter does not appear in the CLI, ensure the package is installed
-  and exposes the entry point group ``playNano.filters``.
-- For large stacks, avoid asking the pipeline to write the entire record as raw JSON
-  (use the HDF5 bundle instead).
+- If a ``raw`` snapshot is missing, check if it was loaded from an existing bundle.
+- If a plugin does not appear in the CLI, verify that its entry point group is
+  ``playNano.filters``.
+- For large datasets, prefer exporting HDF5 bundles instead of large JSON logs.
 
 See also
 ^^^^^^^^
 
-- :doc:`cli` - command-line reference
-- :doc:`gui` - GUI behaviour and export options
-- :doc:`analysis` - analysis pipeline and provenance for analysis steps
-
+- :doc:`processing-operations-reference` — list of all built-in operations
+- :doc:`cli` — command-line usage
+- :doc:`gui` — interactive GUI overview
+- :doc:`exporting` — export formats and options
+- :doc:`analysis` — analysis pipelines and provenance
