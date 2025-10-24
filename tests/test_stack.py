@@ -437,6 +437,7 @@ class DummyStack:
     """Dummy class that delegates processing steps to AFMImageStack."""
 
     def __init__(self):
+        """Initiate the dummy class."""
         self.frame_metadata = [{"frame": i} for i in range(3)]
         self.state_backups = {}
 

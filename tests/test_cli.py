@@ -2186,6 +2186,7 @@ def test_run_with_export_and_gif(tmp_path, monkeypatch):
     ],
 )
 def test_get_processing_callable_maps(map_name, step_name):
+    """Test that _get_processings_callable maps to correct function."""
     module_path = "playNano.cli.utils"
     with patch(f"{module_path}.{map_name}", {step_name: lambda x: x}):
         result = _get_processing_callable(step_name)
@@ -2242,11 +2243,13 @@ def test_get_processing_callable_not_found():
 
 
 def test_get_processing_step_type_filter():
+    """Test that get_processing_step_type correctly identifies filters."""
     with patch("playNano.cli.utils.FILTER_MAP", {"dummy_filter": lambda x: x}):
         assert get_processing_step_type("dummy_filter") == "filter"
 
 
 def test_get_processing_step_type_plugin():
+    """Test that _get_processing_step_type identifies plugins"""
     with patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": MagicMock()}):
         assert get_processing_step_type("plugin_step") == "plugin filter"
 
@@ -2263,6 +2266,7 @@ def test_get_processing_step_type_plugin():
     ],
 )
 def test_get_processing_step_type_known(map_name, step_name, expected_type):
+    """Test that get_processing step_type gives the expected type for known steps."""
     module_path = "playNano.cli.utils"
     with patch(f"{module_path}.{map_name}", {step_name: None}):
         result = get_processing_step_type(step_name)
@@ -2270,6 +2274,7 @@ def test_get_processing_step_type_known(map_name, step_name, expected_type):
 
 
 def test_get_processing_step_type_unknown():
+    """Test that get_processing_step_type handles unknown steps."""
     with (
         patch("playNano.cli.utils.FILTER_MAP", {}),
         patch("playNano.cli.utils.MASK_MAP", {}),
