@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0]
+
+This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.
+
 ### Added
 
 - **Documentation**
@@ -22,18 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Support for multi-version documentation builds via `sphinx-multiversion`.
   - Added project version/commit metadata injection to Sphinx `conf.py`.
 
-- **GitHub Actions**
-  - Overhauled `docs.yaml` workflow:
-    - Builds and deploys versioned docs on `main` and release tags.
-    - Adds PR preview artifact upload.
-    - Generates `versions.json` and root redirect index.
-    - Creates “stable” alias for latest release.
-  - Renamed job to “Build and Deploy Docs”.
-
 - **Codebase**
   - `AFMImageStack` now registers and resolves new processing groups:
     - `video_processing` and `stack_edit` modules added.
-  - Added internal state backup mechanism (`state_backups` attribute).
+  - Added internal state backup mechanism (`state_backups` attribute) for preserving
+    origonal metadata.
+  - Moved the versioning module for funcitons from the processing subpakage to the utils subpackage.
 
 - **Docs Generation**
   - Automatic inclusion of `playNano.analysis.utils.loader`, `playNano.processing.video_processing`, and
@@ -61,8 +59,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - Reorganize theme and HTML sidebar configuration.
     - Added `sphinx-multiversion` to `pyproject.toml` under `[project.optional-dependencies.docs]`.
 
+- **GitHub Actions**
+  - Overhauled `docs.yaml` workflow:
+    - Builds and deploys versioned docs on `main` and release tags.
+    - Adds PR preview artifact upload.
+    - Generates `versions.json` and root redirect index.
+    - Creates “stable” alias for latest release.
+  - Renamed job to “Build and Deploy Docs”.
+
   - **Notebooks**
-    - Added a root search funciton so hard coded paths to demo data from the tests folder
+    - Added a root search function so hard coded paths to demo data from the tests folder
       can be accessed whereever jupyter is launched from.
 
 ### Fixed
@@ -70,6 +76,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**
   - Corrected malformed Sphinx links and build warnings across multiple pages.
   - Improved auto-generated module list formatting and spacing.
+
+## [0.1.0.post1] - 2025-10-14
+
+### Changed
+
+- **GitHub**
+  - Add workflows for pypi publishing
+
+- **Documentation**
+  - Add badges for tests, PyPi python versino and PyPi relases.
+  - Added links to the documentation and user guide on github pages.
+  - Added a PyPi installation guide to the README and user guide.
+  - Some general rewriting and improvements
 
 ## [0.1.0] - 2025-09-17
 
@@ -129,3 +148,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/derollins/playNano/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
+[0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
+[0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
