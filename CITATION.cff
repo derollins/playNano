@@ -1,0 +1,37 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: 'playNano: AFM Video Reader and Analysis Toolkit'
+message: >-
+  If you use playNano in your research, please cite it using
+  the following metadata.
+type: software
+authors:
+  - family-names: Rollins
+    given-names: Daniel E.
+  - affiliation: University of Leeds
+    country: GB
+    city: Leeds
+repository-code: 'https://github.com/derollins/playNano'
+url: 'https://derollins.github.io/playNano/'
+abstract: >-
+  playNano is an open-source toolkit for reading,
+  processing, and analyzing AFM video data.
+keywords:
+  - AFM
+  - atomic force microscopy
+  - high-speed AFM
+  - image analysis
+  - nanoscience
+license: GPLv3+
+version: 0.1.0.post1
+date-released: '2025-10-14'
+preferred-citation:
+  type: misc
+  authors:
+    - family-names: Rollins
+      given-names: Daniel E.
+  title: 'playNano: AFM Video Reader and Analysis Toolkit'
+  year: 2025
+  url: 'https://github.com/derollins/playNano'
