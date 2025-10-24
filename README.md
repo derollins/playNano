@@ -30,7 +30,7 @@ HDF5 bundles, and animated GIFs.
 than separate frames. Every step in a processing or analysis pipeline is recorded for full reproducibility and
 provenance tracking.
 
-Learn more about the motivation, design, and structure of playNano in the [Introduction](https://derollins.github.io/playNano/introduction.html).
+Learn more about the motivation, design, and structure of playNano in the [Introduction](https://derollins.github.io/playNano/main/introduction.html).
 
 **Files read:**
 <div align="center">
@@ -48,7 +48,7 @@ Questions? Email: <d.e.rollins@leeds.ac.uk>
 
 Full documentation: <https://derollins.github.io/playNano/>
 
-📜 [Changelog](https://derollins.github.io/playNano/changelog.html)
+📜 [Changelog](https://derollins.github.io/playNano/main/changelog.html)
 
 ---
 
@@ -68,7 +68,7 @@ Full documentation: <https://derollins.github.io/playNano/>
 **Python compatibility:** 3.10 – 3.12
 
 It is recommended to use a virtual environment such as conda to isolate the installation. There
-are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/installation.html)
+are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/main/installation.html)
 
 If you have [Anaconda](https://anaconda.org/) or [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install)
 installed, open the terminal (or Anaconda PowerShell Prompt on Windows) and create and activate
@@ -101,7 +101,7 @@ pip install -e .
 Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
 scipy, scikit-learn, python-dateutil, tifffile, AFMReader.
 
-More information on installation is available in the documentation: <https://derollins.github.io/playNano/installation.html>
+More information on installation is available in the documentation: <https://derollins.github.io/playNano/main/installation.html>
 
 ## 🚀 Quickstart
 
@@ -128,8 +128,8 @@ playnano process ./tests/resources/sample_0.h5-jpk \
   --export tif,npz --make-gif --output-folder ./results
 ```
 
-See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/cli.html),
-[GUI guide](https://derollins.github.io/playNano/gui.html), filters, YAML schemas, and examples.
+See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/main/cli.html),
+[GUI guide](https://derollins.github.io/playNano/main/gui.html), filters, YAML schemas, and examples.
 
 ## Notebooks
 
@@ -137,9 +137,9 @@ See the full docs for the complete [CLI reference](https://derollins.github.io/p
   <img src="docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
 </p>
 
-To access and use the [Notebooks](https://derollins.github.io/playNano/notebooks.html) you need to clone the
+To access and use the [Notebooks](https://derollins.github.io/playNano/main/notebooks.html) you need to clone the
 repository and install the required dependencies `pip install -e .[notebooks]' see the docs page for more
-details and full instructions: <https://derollins.github.io/playNano/notebooks.html>
+details and full instructions: <https://derollins.github.io/playNano/main/notebooks.html>
 
 Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks\ folder. These
 notebooks allow the user to experiment with using **playNano** programmatically and allows the user to test
