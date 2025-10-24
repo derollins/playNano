@@ -447,42 +447,114 @@ class DummyStack:
             self, filter_fn, arr, mask, step_name, **kwargs
         )
 
-    def _execute_stack_edit_step(self, fn, arr, **kwargs):
-        """Execute a stack edit step and update frame metadata."""
-        new_arr = fn(arr, **kwargs)
-        if "frame_metadata_before_edit" not in self.state_backups:
-            self.state_backups["frame_metadata_before_edit"] = list(self.frame_metadata)
+    def _execute_stack_edit_step(self, stack_edit_fn, arr, **kwargs):
+        """Execute a stack edit step using AFMImageStack's implementation."""
+        return AFMImageStack._execute_stack_edit_step(
+            self, stack_edit_fn, arr, **kwargs
+        )
 
-        dropped_indices = kwargs.get("indices_to_drop", [])
-        if dropped_indices:
-            self.frame_metadata = [
-                meta
-                for i, meta in enumerate(self.frame_metadata)
-                if i not in dropped_indices
-            ]
+    def _execute_video_processing_step(self, video_filter_fn, arr, **kwargs):
+        """Execute a video filter step using AFMImageStack's implementation."""
+        return AFMImageStack._execute_video_processing_step(
+            self, video_filter_fn, arr, **kwargs
+        )
 
-        if len(self.frame_metadata) != new_arr.shape[0]:
-            raise RuntimeError(
-                f"frame_metadata length mismatch after edit "
-                f"({len(self.frame_metadata)} vs {new_arr.shape[0]})."
-            )
-        return new_arr
 
-    def _execute_video_processing_step(self, video_fn, arr, **kwargs):
-        """Execute a video processing step with fallback handling."""
-        try:
-            return video_fn(arr, **kwargs)
-        except TypeError:
-            try:
-                return video_fn(arr)
-            except Exception as e:
-                logger.warning(
-                    f"Video processing step '{video_fn.__name__}' failed: {e}"
-                )
-                return arr
-        except Exception as e:
-            logger.warning(f"Video processing step '{video_fn.__name__}' failed: {e}")
-            return arr
+def test_execute_video_processing_success():
+    """Test that a video processing function successfully modifies the image stack."""
+    arr = np.ones((5, 10, 10))
+    video_fn = Mock(return_value=arr * 2)
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr * 2)
+
+
+def test_execute_video_processing_typeerror_then_success():
+    """Test fallback execution of video function w/o kwargs when TypeError raised."""
+    arr = np.ones((5, 10, 10))
+
+    def video_fn(arr):
+        return arr * 3
+
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr * 3)
+
+
+def test_execute_video_processing_failure():
+    """Test original array is returned when the video function raises an exception."""
+    arr = np.ones((5, 10, 10))
+
+    def video_fn(arr, **kwargs):
+        raise ValueError("fail")
+
+    stack = DummyStack()
+    result = stack._execute_video_processing_step(video_fn, arr)
+    assert np.array_equal(result, arr)
+
+
+def test_execute_stack_edit_step_successful_edit():
+    """Test successful structural edit and metadata update with frame removal."""
+    arr = np.ones((5, 10, 10))
+    new_arr = arr[:3]
+
+    def edit_fn(arr, **kwargs):
+        return arr[:3]
+
+    stack = DummyStack()
+    stack.frame_metadata = ["f0", "f1", "f2", "f3", "f4"]
+    stack.state_backups = {}
+
+    result = stack._execute_stack_edit_step(edit_fn, arr, indices_to_drop=[3, 4])
+    assert np.array_equal(result, new_arr)
+    assert stack.frame_metadata == ["f0", "f1", "f2"]
+    assert stack.state_backups["frame_metadata_before_edit"] == [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+    ]
+
+
+def test_execute_stack_edit_step_metadata_mismatch():
+    """Test a RuntimeError is raised when metadata length mismatches edited array."""
+    arr = np.ones((5, 10, 10))
+
+    def edit_fn(arr, **kwargs):
+        return arr[:2]  # mismatch with metadata
+
+    stack = DummyStack()
+    stack.frame_metadata = ["f0", "f1", "f2", "f3", "f4"]
+    stack.state_backups = {}
+
+    with pytest.raises(RuntimeError, match="frame_metadata length mismatch"):
+        stack._execute_stack_edit_step(edit_fn, arr, indices_to_drop=[3, 4])
+
+
+def test_execute_video_processing_typeerror_then_fallback_failure():
+    """Test that original array is returned when both video_fn calls fail."""
+    arr = np.ones((5, 10, 10))
+
+    class DualFail:
+        def __init__(self):
+            self.called_with_kwargs = False
+
+        def __call__(self, arr, **kwargs):
+            if kwargs:
+                self.called_with_kwargs = True
+                raise TypeError("unexpected kwargs")
+            else:
+                raise ValueError("still fails")
+
+        @property
+        def __name__(self):
+            return "dual_fail"
+
+    stack = DummyStack()
+    video_fn = DualFail()
+    result = stack._execute_video_processing_step(video_fn, arr, unexpected_kwarg=True)
+    assert np.array_equal(result, arr)
 
 
 @pytest.fixture
