@@ -2249,7 +2249,7 @@ def test_get_processing_step_type_filter():
 
 
 def test_get_processing_step_type_plugin():
-    """Test that _get_processing_step_type identifies plugins"""
+    """Test that _get_processing_step_type identifies plugins."""
     with patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": MagicMock()}):
         assert get_processing_step_type("plugin_step") == "plugin filter"
 
