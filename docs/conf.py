@@ -15,31 +15,12 @@ author = "Daniel E. Rollins"
 copyright = "2025, Daniel E. Rollins"
 
 # -- Version and release -----------------------------------------------------
-# Pull version from environment variable set by GitHub Actions
-# Default to 'latest' if building locally
+
 version_env = os.environ.get("VERSION", "latest")
 
-if version_env != "latest":
-    # Tagged release
-    version = version_env
-    release = version_env
-    try:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], text=True
-        ).strip()
-        release = f"{version}+{commit}"
-    except Exception:
-        pass
-else:
-    # Main branch or local
-    version = "latest"
-    try:
-        commit = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], text=True
-        ).strip()
-        release = f"{version}+{commit}"
-    except Exception:
-        release = version
+# Use the actual version string for the title
+version = version_env
+release = version_env
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -80,7 +61,6 @@ autodoc_mock_imports = [
 
 # -- HTML output options -----------------------------------------------------
 html_theme = "furo"
-
 
 # Make sure Sphinx knows where your templates & static files live
 templates_path = ["_templates"]  # ← don't forget this line
