@@ -4,15 +4,10 @@ import pkgutil
 import subprocess
 import sys
 
+import playNano.analysis.modules as modules
+
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-
-try:
-    import playNano.analysis.modules as modules
-
-    module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
-except Exception:
-    module_names = []
 
 # -- Project info --------------------------------------------------
 project = "playNano"
@@ -20,12 +15,31 @@ author = "Daniel E. Rollins"
 copyright = "2025, Daniel E. Rollins"
 
 # -- Version and release -----------------------------------------------------
-
+# Pull version from environment variable set by GitHub Actions
+# Default to 'latest' if building locally
 version_env = os.environ.get("VERSION", "latest")
 
-# Use the actual version string for the title
-version = version_env
-release = version_env
+if version_env != "latest":
+    # Tagged release
+    version = version_env
+    release = version_env
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True
+        ).strip()
+        release = f"{version}+{commit}"
+    except Exception:
+        pass
+else:
+    # Main branch or local
+    version = "latest"
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True
+        ).strip()
+        release = f"{version}+{commit}"
+    except Exception:
+        release = version
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -91,32 +105,32 @@ html_sidebars = {
 # ---------------------------------------------------------------------------
 # Automatically generate the module list and autosummary stubs
 # ---------------------------------------------------------------------------
-if module_names:
-    autosummary_list = "\n   ".join(
-        f"playNano.analysis.modules.{name}" for name in module_names
-    )
+module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
+autosummary_list = "\n   ".join(
+    f"playNano.analysis.modules.{name}" for name in module_names
+)
 
-    generated_list_path = "_generated/generated_module_list.rst"
-    os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
+generated_list_path = "_generated/generated_module_list.rst"
+os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
 
-    api_folder = os.path.abspath("html/api")
-    rel_api_folder = os.path.relpath(api_folder, os.path.dirname(generated_list_path))
+api_folder = os.path.abspath("html/api")
+rel_api_folder = os.path.relpath(api_folder, os.path.dirname(generated_list_path))
 
-    with open(generated_list_path, "w", encoding="utf-8") as f:
-        for name in module_names:
-            full_name = f"playNano.analysis.modules.{name}"
-            module_html = "playNano.analysis.modules.html"
-            anchor = f"#module-playNano.analysis.modules.{name}"
-            link = os.path.join(rel_api_folder, module_html) + anchor
-            link = link.replace(os.sep, "/")
-            try:
-                mod = importlib.import_module(full_name)
-                summary = (mod.__doc__ or "").strip().splitlines()[0]
-            except Exception:
-                summary = "No description available."
-            f.write(f"- `{name} <{link}>`_\n")
-            if summary:
-                f.write(f"  - {summary}\n")
+with open(generated_list_path, "w", encoding="utf-8") as f:
+    for name in module_names:
+        full_name = f"playNano.analysis.modules.{name}"
+        module_html = "playNano.analysis.modules.html"
+        anchor = f"#module-playNano.analysis.modules.{name}"
+        link = os.path.join(rel_api_folder, module_html) + anchor
+        link = link.replace(os.sep, "/")
+        try:
+            mod = importlib.import_module(full_name)
+            summary = (mod.__doc__ or "").strip().splitlines()[0]
+        except Exception:
+            summary = "No description available."
+        f.write(f"- `{name} <{link}>`_  \n")
+        if summary:
+            f.write(f"  - {summary}\n")
 
 # -- Nitpick ignore ------------------------------------------------
 nitpick_ignore = [
