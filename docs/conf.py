@@ -1,8 +1,7 @@
-import importlib
 import os
-import pkgutil
-import subprocess
 import sys
+import pkgutil
+import importlib
 
 # Dynamically locate and add src/ to sys.path
 conf_dir = os.path.abspath(os.path.dirname(__file__))
@@ -11,9 +10,10 @@ src_path = os.path.join(repo_root, "src")
 
 if os.path.isdir(src_path):
     sys.path.insert(0, src_path)
+    print(f"Added to sys.path: {src_path}")
 else:
     print(f"WARNING: src/ not found at {src_path}")
-
+print("sys.path:", sys.path)
 # Try importing only after confirming src/ is in path
 try:
     import playNano.analysis.modules as modules

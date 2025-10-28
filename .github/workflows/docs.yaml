@@ -54,6 +54,14 @@ jobs:
             python docs/conf.py || echo "conf.py failed for $tag"
           done
 
+      - name: Inspect temp checkouts used by sphinx-multiversion
+        run: |
+          echo "Listing temp directories created by sphinx-multiversion..."
+          TMPDIR=$(mktemp -d)
+          sphinx-multiversion -v docs/ "$TMPDIR" || true
+          echo "Contents of temp checkout:"
+          find "$TMPDIR" -type d -name "playNano" -print
+
       - name: Build versioned HTML docs
         run: sphinx-multiversion docs/ docs/_build/html
 
