@@ -20,11 +20,42 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 keywords = [
-  "afm",
+  # Core domain
+  "AFM",
   "atomic force microscopy",
+  "high-speed AFM",
+  "HS-AFM",
+  "scanning probe microscopy",
+  "SPM",
+  "nanoscopy",
+  "nanometrology",
+
+  # Techniques and data
   "image processing",
+  "video processing",
   "video analysis",
-  "scientific visualization"
+  "time-series analysis",
+  "image segmentation",
+  "feature detection",
+  "particle tracking",
+  "clustering",
+  "flattening filters",
+
+  # Scientific software context
+  "scientific visualization",
+  "data analysis",
+  "microscopy data",
+  "scientific computing",
+  "open science",
+  "FAIR data",
+  "reproducible research",
+
+  # Target users
+  "materials science",
+  "biophysics",
+  "nanotechnology",
+  "biomolecular imaging",
+  "surface analysis",
 ]
 dependencies = [
   "numpy>=1.23,<2.0",
@@ -78,7 +109,10 @@ count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"
 particle_detect = "playNano.analysis.modules.detection:ParticleDetector"
 
 [project.urls]
-GitHub = "https://github.com/derollins/playNano"
+Homepage = "https://github.com/derollins/playNano"
+Documentation = "https://derollins.github.io/playNano"
+Issues = "https://github.com/derollins/playNano/issues"
+Changelog = "https://github.com/derollins/playNano/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -86,6 +120,9 @@ where = ["src"]
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["src", "README.md", "COPYING", "CITATION.cff", "pyproject.toml"]
 
 [tool.hatch.metadata]
 allow-ambiguous-features = true
