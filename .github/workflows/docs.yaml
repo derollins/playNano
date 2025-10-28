@@ -40,6 +40,7 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           else
             echo "VERSION=dev" >> $GITHUB_ENV
+          fi
 
       - name: Build versioned HTML docs
         run: sphinx-multiversion docs/ docs/_build/html
