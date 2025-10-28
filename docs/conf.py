@@ -4,10 +4,10 @@ import pkgutil
 import subprocess
 import sys
 
-import playNano.analysis.modules as modules
-
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
+import playNano.analysis.modules as modules
 
 # -- Project info --------------------------------------------------
 project = "playNano"
