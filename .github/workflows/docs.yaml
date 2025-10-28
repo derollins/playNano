@@ -32,6 +32,15 @@ jobs:
           # install your package with docs extra; ensure it includes sphinx, furo, sphinx-multiversion
           pip install -e .[docs]
 
+      - name: Set VERSION environment variable
+        run: |
+          if [[ "${GITHUB_REF}" == refs/heads/main ]]; then
+            echo "VERSION=latest" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "VERSION=dev" >> $GITHUB_ENV
+
       - name: Build versioned HTML docs
         run: sphinx-multiversion docs/ docs/_build/html
 

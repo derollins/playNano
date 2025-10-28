@@ -41,7 +41,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=playNano --cov-report=xml
+          PYTHONPATH=src python -m pytest --cov=playNano --cov-report=xml
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
