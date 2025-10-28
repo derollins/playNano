@@ -4,8 +4,17 @@ import pkgutil
 import subprocess
 import sys
 
-# Add src to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
+# Dynamically locate and add src/ to sys.path
+conf_dir = os.path.abspath(os.path.dirname(__file__))
+repo_root = os.path.abspath(os.path.join(conf_dir, ".."))
+src_path = os.path.join(repo_root, "src")
+
+if os.path.exists(src_path):
+    sys.path.insert(0, src_path)
+else:
+    print(f"WARNING: src/ not found at {src_path}")
+
 
 try:
     import playNano.analysis.modules as modules
