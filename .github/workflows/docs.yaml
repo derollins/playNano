@@ -63,6 +63,19 @@ jobs:
           sphinx-multiversion -v docs/ "$TMPDIR" || true
           echo "Contents of temp checkout:"
           find "$TMPDIR" -type d -name "playNano" -print
+      - name: Verify editable install
+        run: |
+          pip show -f playNano || true
+          python - <<'PY'
+          import sys, site
+          print("site-packages:", site.getsitepackages())
+          print("sys.path head:", sys.path[:5])
+          try:
+              import playNano
+              print("playNano loaded from:", getattr(playNano, "__file__", "<namespace>"))
+          except Exception as e:
+              print("Import failed:", e)
+          PY
 
       - name: Verify import path
         run: |

@@ -1,4 +1,3 @@
-# docs/conf.py
 import os
 import sys
 import importlib
@@ -115,11 +114,12 @@ intersphinx_mapping = {
 # ------------------------------------------------------------------------------
 def _discover_analysis_module_names():
     """
-    Try to discover playNano.analysis.modules.* without importing the package.
-    Prefer a filesystem scan to avoid import-time failures.
+    Discover playNano.analysis.modules.* by scanning the source tree.
+    Works even if the package cannot be imported.
     """
     candidates = []
-    # Try src/ layout first
+
+    # Prefer src/ layout
     base = Path(src_path) / "playNano" / "analysis" / "modules"
     if not base.is_dir():
         # Fallback to non-src layout (older tags)
@@ -145,7 +145,6 @@ def _write_generated_module_list(module_names):
     generated_list_path = Path("_generated") / "generated_module_list.rst"
     generated_list_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # These paths mirror your existing logic
     api_folder = Path("html") / "api"
     rel_api_folder = os.path.relpath(api_folder, generated_list_path.parent)
 
@@ -157,10 +156,12 @@ def _write_generated_module_list(module_names):
             link = link.replace(os.sep, "/")
             summary = "No description available."
 
-            # Try to import inside a guarded block. If it fails, we keep a stub.
+            # Try to import for the summary; failures are non-fatal
             try:
                 mod = importlib.import_module(f"playNano.analysis.modules.{name}")
-                summary = (mod.__doc__ or "").strip().splitlines()[0]
+                doc = (mod.__doc__ or "").strip().splitlines()
+                if doc:
+                    summary = doc[0]
             except Exception as e:
                 print(f"DEBUG: Could not import {name} for summary: {e}")
 
