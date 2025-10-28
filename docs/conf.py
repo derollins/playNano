@@ -13,7 +13,8 @@ if os.path.isdir(src_path):
     print(f"Added to sys.path: {src_path}")
 else:
     print(f"WARNING: src/ not found at {src_path}")
-# Try importing only after confirming src/ is in path
+
+# Delay the import until after sys.path is set
 try:
     import playNano.analysis.modules as modules
 
