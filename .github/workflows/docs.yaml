@@ -64,6 +64,13 @@ jobs:
           echo "Contents of temp checkout:"
           find "$TMPDIR" -type d -name "playNano" -print
 
+      - name: Verify import path
+        run: |
+          python - <<'PY'
+          import playNano, sys
+          print("playNano file:", getattr(playNano, "__file__", "<namespace>"))
+          print("sys.path[0:5]:", sys.path[:5])
+          PY
 
       - name: Debug sphinx-multiversion temp checkouts
         run: |
@@ -74,7 +81,6 @@ jobs:
           find "$TMPDIR" -type d -name "playNano" -print || true
           echo "Listing all files in temp checkouts with conf.py:"
           find "$TMPDIR" -type f -name "conf.py" -print || true
-
 
       - name: Build versioned HTML docs
         run: sphinx-multiversion docs/ docs/_build/html

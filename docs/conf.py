@@ -1,7 +1,8 @@
+# docs/conf.py
 import os
 import sys
-import pkgutil
 import importlib
+from pathlib import Path
 
 # ------------------------------------------------------------------------------
 # Make repo importable in all scenarios (SMV temp checkouts, local, CI)
@@ -10,50 +11,11 @@ conf_dir = os.path.abspath(os.path.dirname(__file__))
 repo_root = os.path.abspath(os.path.join(conf_dir, ".."))
 src_path = os.path.join(repo_root, "src")
 
-# Add both repo root and src/ to sys.path to support old/new layouts
 for p in (src_path, repo_root):
     if os.path.isdir(p) and p not in sys.path:
         sys.path.insert(0, p)
 
 print("DEBUG: sys.path head:", sys.path[:5])
-
-# ------------------------------------------------------------------------------
-# Mock imports EARLY to prevent import-time failures in CI/SMV
-# ------------------------------------------------------------------------------
-autodoc_mock_imports = [
-    "PySide2",
-    "PySide6",
-    "PyQt5",
-    "PyQt6",
-    "playNano.gui.main",
-    "playNano.gui.window",
-    "playNano.cli.actions",
-    "playNano.cli.entrypoint",
-    "playNano.cli.handlers",
-    "shiboken6",
-]
-
-# In CI, be extra defensive and mock the package if needed
-if os.environ.get("CI", "false").lower() == "true":
-    autodoc_mock_imports += ["playNano", "playNano.analysis.modules"]
-
-# ------------------------------------------------------------------------------
-# Try to discover analysis submodules (optional)
-# This must never crash. If import fails, we just skip listing.
-# ------------------------------------------------------------------------------
-module_names = []
-try:
-    import playNano  # noqa: F401
-
-    try:
-        import playNano.analysis.modules as modules  # noqa: F401
-
-        module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
-        print("DEBUG: discovered analysis modules:", module_names)
-    except Exception as e:
-        print(f"WARNING: Could not import playNano.analysis.modules: {e}")
-except Exception as e:
-    print(f"WARNING: playNano not importable: {e}")
 
 # ------------------------------------------------------------------------------
 # Project info
@@ -113,32 +75,6 @@ html_sidebars = {
 }
 
 # ------------------------------------------------------------------------------
-# Generated module list (only if we actually discovered modules)
-# ------------------------------------------------------------------------------
-if module_names:
-    generated_list_path = "_generated/generated_module_list.rst"
-    os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
-
-    api_folder = os.path.abspath("html/api")
-    rel_api_folder = os.path.relpath(api_folder, os.path.dirname(generated_list_path))
-
-    with open(generated_list_path, "w", encoding="utf-8") as f:
-        for name in module_names:
-            full_name = f"playNano.analysis.modules.{name}"
-            module_html = "playNano.analysis.modules.html"
-            anchor = f"#module-playNano.analysis.modules.{name}"
-            link = os.path.join(rel_api_folder, module_html) + anchor
-            link = link.replace(os.sep, "/")
-            try:
-                mod = importlib.import_module(full_name)
-                summary = (mod.__doc__ or "").strip().splitlines()[0]
-            except Exception:
-                summary = "No description available."
-            f.write(f"- `{name} <{link}>`_\n")
-            if summary:
-                f.write(f"  - {summary}\n")
-
-# ------------------------------------------------------------------------------
 # Nitpick and intersphinx
 # ------------------------------------------------------------------------------
 nitpick_ignore = [
@@ -172,3 +108,72 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable", None),
     "qt": ("https://doc.qt.io/qtforpython-6/", None),
 }
+
+
+# ------------------------------------------------------------------------------
+# Defer package-dependent work to build time (no top-level imports!)
+# ------------------------------------------------------------------------------
+def _discover_analysis_module_names():
+    """
+    Try to discover playNano.analysis.modules.* without importing the package.
+    Prefer a filesystem scan to avoid import-time failures.
+    """
+    candidates = []
+    # Try src/ layout first
+    base = Path(src_path) / "playNano" / "analysis" / "modules"
+    if not base.is_dir():
+        # Fallback to non-src layout (older tags)
+        base = Path(repo_root) / "playNano" / "analysis" / "modules"
+
+    if base.is_dir():
+        for p in base.glob("*.py"):
+            if p.name != "__init__.py":
+                candidates.append(p.stem)
+    else:
+        print(f"DEBUG: modules directory not found: {base}")
+    return sorted(set(candidates))
+
+
+def _write_generated_module_list(module_names):
+    """
+    Write _generated/generated_module_list.rst linking to the API page anchors.
+    """
+    if not module_names:
+        print("DEBUG: No analysis modules discovered; skipping generated list.")
+        return
+
+    generated_list_path = Path("_generated") / "generated_module_list.rst"
+    generated_list_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # These paths mirror your existing logic
+    api_folder = Path("html") / "api"
+    rel_api_folder = os.path.relpath(api_folder, generated_list_path.parent)
+
+    with generated_list_path.open("w", encoding="utf-8") as f:
+        for name in module_names:
+            module_html = "playNano.analysis.modules.html"
+            anchor = f"#module-playNano.analysis.modules.{name}"
+            link = os.path.join(rel_api_folder, module_html) + anchor
+            link = link.replace(os.sep, "/")
+            summary = "No description available."
+
+            # Try to import inside a guarded block. If it fails, we keep a stub.
+            try:
+                mod = importlib.import_module(f"playNano.analysis.modules.{name}")
+                summary = (mod.__doc__ or "").strip().splitlines()[0]
+            except Exception as e:
+                print(f"DEBUG: Could not import {name} for summary: {e}")
+
+            f.write(f"- `{name} <{link}>`_\n")
+            if summary:
+                f.write(f"  - {summary}\n")
+
+
+def setup(app):
+    # Generate the list late, when the builder is set up. This avoids conf.py
+    # import-time failures and lets SMV import the config safely.
+    def _on_builder_inited(_app):
+        names = _discover_analysis_module_names()
+        _write_generated_module_list(names)
+
+    app.connect("builder-inited", _on_builder_inited)
