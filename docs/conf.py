@@ -16,6 +16,7 @@ else:
 
 # Delay the import until after sys.path is set
 try:
+    print("DEBUG sys.path:", sys.path)
     import playNano.analysis.modules as modules
 
     module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
