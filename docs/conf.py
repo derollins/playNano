@@ -3,66 +3,23 @@ import sys
 import pkgutil
 import importlib
 
-# Dynamically locate and add src/ to sys.path
+# ------------------------------------------------------------------------------
+# Make repo importable in all scenarios (SMV temp checkouts, local, CI)
+# ------------------------------------------------------------------------------
 conf_dir = os.path.abspath(os.path.dirname(__file__))
 repo_root = os.path.abspath(os.path.join(conf_dir, ".."))
 src_path = os.path.join(repo_root, "src")
 
-if os.path.isdir(src_path):
-    sys.path.insert(0, src_path)
-    print("DEBUG: src_path added to sys.path:", src_path)
-    print("DEBUG: full sys.path:", sys.path)
-else:
-    print(f"WARNING: src/ not found at {src_path}")
+# Add both repo root and src/ to sys.path to support old/new layouts
+for p in (src_path, repo_root):
+    if os.path.isdir(p) and p not in sys.path:
+        sys.path.insert(0, p)
 
-# Delay the import until after sys.path is set
-try:
-    print("DEBUG sys.path:", sys.path)
-    import playNano.analysis.modules as modules
+print("DEBUG: sys.path head:", sys.path[:5])
 
-    module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
-except Exception as e:
-    print(f"WARNING: Failed to import playNano.analysis.modules: {e}")
-    module_names = []
-
-# -- Project info --------------------------------------------------
-project = "playNano"
-author = "Daniel E. Rollins"
-copyright = "2025, Daniel E. Rollins"
-
-# -- Version and release -----------------------------------------------------
-# Pull version from environment variable set by GitHub Actions
-# Default to 'latest' if building locally
-version_env = os.environ.get("VERSION", "latest")
-
-# Use the actual version string for the title
-version = version_env
-release = version_env
-
-# -- General configuration ---------------------------------------------------
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.intersphinx",
-    "sphinxcontrib.programoutput",
-    "nbsphinx",
-    "myst_parser",
-]
-
-exclude_patterns = []
-
-autosummary_generate = True
-
-extensions.append("sphinx_multiversion")
-
-# Optional: Configure which branches/tags to include
-smv_tag_whitelist = r"^v\d+\.\d+.*$"
-smv_branch_whitelist = r"^(main|dev)$"
-smv_remote_whitelist = r"^origin$"
-
-# Mock imports for modules that may not be installed
+# ------------------------------------------------------------------------------
+# Mock imports EARLY to prevent import-time failures in CI/SMV
+# ------------------------------------------------------------------------------
 autodoc_mock_imports = [
     "PySide2",
     "PySide6",
@@ -76,41 +33,89 @@ autodoc_mock_imports = [
     "shiboken6",
 ]
 
+# In CI, be extra defensive and mock the package if needed
 if os.environ.get("CI", "false").lower() == "true":
     autodoc_mock_imports += ["playNano", "playNano.analysis.modules"]
 
-# -- HTML output options -----------------------------------------------------
+# ------------------------------------------------------------------------------
+# Try to discover analysis submodules (optional)
+# This must never crash. If import fails, we just skip listing.
+# ------------------------------------------------------------------------------
+module_names = []
+try:
+    import playNano  # noqa: F401
+
+    try:
+        import playNano.analysis.modules as modules  # noqa: F401
+
+        module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
+        print("DEBUG: discovered analysis modules:", module_names)
+    except Exception as e:
+        print(f"WARNING: Could not import playNano.analysis.modules: {e}")
+except Exception as e:
+    print(f"WARNING: playNano not importable: {e}")
+
+# ------------------------------------------------------------------------------
+# Project info
+# ------------------------------------------------------------------------------
+project = "playNano"
+author = "Daniel E. Rollins"
+copyright = "2025, Daniel E. Rollins"
+
+# ------------------------------------------------------------------------------
+# Versioning
+# ------------------------------------------------------------------------------
+version_env = os.environ.get("VERSION", "latest")
+version = version_env
+release = version_env
+
+# ------------------------------------------------------------------------------
+# Extensions
+# ------------------------------------------------------------------------------
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinxcontrib.programoutput",
+    "nbsphinx",
+    "myst_parser",
+    "sphinx_multiversion",
+]
+
+autosummary_generate = True
+exclude_patterns = []
+
+# Sphinx-Multiversion selection (adjust as needed)
+smv_tag_whitelist = r"^v\d+\.\d+.*$"
+smv_branch_whitelist = r"^(main|dev)$"
+smv_remote_whitelist = r"^origin$"
+
+# ------------------------------------------------------------------------------
+# HTML theme and static files
+# ------------------------------------------------------------------------------
 html_theme = "furo"
-
-# Make sure Sphinx knows where your templates & static files live
-templates_path = ["_templates"]  # ← don't forget this line
+templates_path = ["_templates"]
 html_static_path = ["_static"]
-
-# Load your switcher files (filenames are relative to _static/)
 html_js_files = ["version-switcher.js"]
-# optional
 html_css_files = ["version-switcher.css"]
 
-# Ensure the sidebar template path matches your file location
 html_sidebars = {
     "**": [
         "sidebar/brand.html",
         "sidebar/search.html",
         "sidebar/navigation.html",
         "sidebar/scroll-start.html",
-        "sidebar/versions.html",  # ← must exist at docs/_templates/sidebar/versions.html
+        "sidebar/versions.html",
         "sidebar/scroll-end.html",
     ]
 }
 
-# ---------------------------------------------------------------------------
-# Automatically generate the module list and autosummary stubs
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Generated module list (only if we actually discovered modules)
+# ------------------------------------------------------------------------------
 if module_names:
-    autosummary_list = "\n   ".join(
-        f"playNano.analysis.modules.{name}" for name in module_names
-    )
-
     generated_list_path = "_generated/generated_module_list.rst"
     os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
 
@@ -133,7 +138,9 @@ if module_names:
             if summary:
                 f.write(f"  - {summary}\n")
 
-# -- Nitpick ignore ------------------------------------------------
+# ------------------------------------------------------------------------------
+# Nitpick and intersphinx
+# ------------------------------------------------------------------------------
 nitpick_ignore = [
     ("py:class", "np.ndarray"),
     ("py:class", "numpy.ndarray"),
@@ -159,11 +166,6 @@ nitpick_ignore = [
     ("py:class", "analysis_record"),
 ]
 
-# Intersphinx mapping lets Sphinx resolve external references in our docstrings
-# (e.g. numpy arrays, pandas DataFrames, matplotlib Axes, Qt types) and turn
-# them into links to the official documentation of those projects.
-# This avoids a flood of "reference not found" warnings and gives users
-# clickable cross-references in the generated HTML.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
