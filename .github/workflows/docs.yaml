@@ -34,7 +34,7 @@ jobs:
 
       - name: Set VERSION environment variable
         run: |
-          if [[ "${GITHUB_REF}" == refs/heads/main ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "VERSION=latest" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
