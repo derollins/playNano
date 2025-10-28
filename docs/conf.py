@@ -10,7 +10,8 @@ src_path = os.path.join(repo_root, "src")
 
 if os.path.isdir(src_path):
     sys.path.insert(0, src_path)
-    print(f"Added to sys.path: {src_path}")
+    print("DEBUG: src_path added to sys.path:", src_path)
+    print("DEBUG: full sys.path:", sys.path)
 else:
     print(f"WARNING: src/ not found at {src_path}")
 
@@ -74,6 +75,9 @@ autodoc_mock_imports = [
     "playNano.cli.handlers",
     "shiboken6",
 ]
+
+if os.environ.get("CI", "false").lower() == "true":
+    autodoc_mock_imports += ["playNano", "playNano.analysis.modules"]
 
 # -- HTML output options -----------------------------------------------------
 html_theme = "furo"
