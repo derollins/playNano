@@ -1,4 +1,4 @@
-playNano.analysis.modules package
+playnano.analysis.modules package
 =================================
 
 Submodules
@@ -7,18 +7,18 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   playNano.analysis.modules.count_nonzero
-   playNano.analysis.modules.dbscan_clustering
-   playNano.analysis.modules.feature_detection
-   playNano.analysis.modules.k_means_clustering
-   playNano.analysis.modules.log_blob_detection
-   playNano.analysis.modules.particle_tracking
-   playNano.analysis.modules.x_means_clustering
+   playnano.analysis.modules.count_nonzero
+   playnano.analysis.modules.dbscan_clustering
+   playnano.analysis.modules.feature_detection
+   playnano.analysis.modules.k_means_clustering
+   playnano.analysis.modules.log_blob_detection
+   playnano.analysis.modules.particle_tracking
+   playnano.analysis.modules.x_means_clustering
 
 Module contents
 ---------------
 
-.. automodule:: playNano.analysis.modules
+.. automodule:: playnano.analysis.modules
    :members:
    :undoc-members:
    :show-inheritance:
