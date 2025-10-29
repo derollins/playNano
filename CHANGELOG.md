@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1]
+
+### Changed
+
+- Package renames to all lowercase `playnano` to follow PEP8 and prevent cross-platform
+ issues with case-sensitivity.
+- The import path is now playnano (lowercase).
+  Update your code: `import playnano` instead of `import playNano`.
+- **Backward‑compatibility**: import playNano still works in v0.2.1 via a shim and emits
+  a DeprecationWarning.
+  The playNano path will be removed in a future release.
+- CLI unchanged: Keep using playnano on the command line.
+- Docs: Versioned documentation with main, stable, and tags; API reference updated
+  to playnano.*.
+
 ## [0.2.0]
 
 This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.
@@ -150,3 +165,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
+[0.2.1]: https://github.com/derollins/playNano/releases/tag/v0.2.1

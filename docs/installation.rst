@@ -84,6 +84,7 @@ Check version from Python:
 
    python -c "import playnano; print(playnano.__version__)"
 
+
 Developer install
 -----------------
 
