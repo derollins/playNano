@@ -48,54 +48,6 @@ jobs:
             echo "VERSION=dev" >> $GITHUB_ENV
           fi
 
-      - name: Debug conf.py loading (non-fatal)
-        run: |
-          set +e
-          current=$(git rev-parse --abbrev-ref HEAD || echo HEAD)
-          for tag in $(git tag); do
-            echo "Checking tag: $tag"
-            git checkout -f "$tag"
-            python - <<'PY' || echo "conf.py failed for $tag"
-
-      - name: Inspect temp checkouts used by sphinx-multiversion
-        run: |
-          echo "Listing temp directories created by sphinx-multiversion..."
-          TMPDIR=$(mktemp -d)
-          sphinx-multiversion -v docs/ "$TMPDIR" || true
-          echo "Contents of temp checkout:"
-          find "$TMPDIR" -type d -name "playnano" -print
-      - name: Verify editable install
-        run: |
-          pip show -f playnano || true
-          python - <<'PY'
-          import sys, site
-          print("site-packages:", site.getsitepackages())
-          print("sys.path head:", sys.path[:5])
-          try:
-              import playnano
-              print("playNano loaded from:", getattr(playnano, "__file__", "<namespace>"))
-          except Exception as e:
-              print("Import failed:", e)
-          PY
-
-      - name: Verify import path
-        run: |
-          python - <<'PY'
-          import playnano, sys
-          print("playNano file:", getattr(playnano, "__file__", "<namespace>"))
-          print("sys.path[0:5]:", sys.path[:5])
-          PY
-
-      - name: Debug sphinx-multiversion temp checkouts
-        run: |
-          TMPDIR=$(mktemp -d)
-          echo "Using temp dir: $TMPDIR"
-          sphinx-multiversion -v docs/ "$TMPDIR" || true
-          echo "Listing contents of temp checkouts:"
-          find "$TMPDIR" -type d -name "playnano" -print || true
-          echo "Listing all files in temp checkouts with conf.py:"
-          find "$TMPDIR" -type f -name "conf.py" -print || true
-
       - name: Build versioned HTML docs
         run: sphinx-multiversion docs/ docs/_build/html
 
