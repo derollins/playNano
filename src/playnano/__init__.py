@@ -49,7 +49,7 @@ class _PlayNanoAliasFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
             module.__name__.startswith(self._old + ".") and not self._warned
         ):
             warnings.warn(
-                "Importing 'playNano' (mixed case) is deprecated and will be removed in a future release. "
+                "Importing 'playNano' (mixed case) is deprecated and will be removed in a future release. "  # noqa
                 "Please import 'playnano' (lowercase) instead.",
                 DeprecationWarning,
                 stacklevel=2,
