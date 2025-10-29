@@ -1,45 +1,21 @@
-playnano.analysis.utils package
+playNano.analysis.utils package
 ===============================
 
 Submodules
 ----------
 
-playnano.analysis.utils.common module
--------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.analysis.utils.common
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.analysis.utils.frames module
--------------------------------------
-
-.. automodule:: playnano.analysis.utils.frames
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.analysis.utils.loader module
--------------------------------------
-
-.. automodule:: playnano.analysis.utils.loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.analysis.utils.particles module
-----------------------------------------
-
-.. automodule:: playnano.analysis.utils.particles
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playNano.analysis.utils.common
+   playNano.analysis.utils.frames
+   playNano.analysis.utils.loader
+   playNano.analysis.utils.particles
 
 Module contents
 ---------------
 
-.. automodule:: playnano.analysis.utils
+.. automodule:: playNano.analysis.utils
    :members:
    :undoc-members:
    :show-inheritance:

@@ -7,30 +7,20 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   playnano.analysis
-   playnano.cli
-   playnano.gui
-   playnano.io
-   playnano.processing
+   playNano.analysis
+   playNano.cli
+   playNano.gui
+   playNano.io
+   playNano.processing
 
 Submodules
 ----------
 
-playNano.afm\_stack module
---------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.afm_stack
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.errors module
-----------------------
-
-.. automodule:: playnano.errors
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playNano.afm_stack
+   playNano.errors
 
 Module contents
 ---------------
