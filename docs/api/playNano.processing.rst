@@ -1,4 +1,4 @@
-playNano.processing package
+playnano.processing package
 ===========================
 
 Submodules
@@ -7,18 +7,18 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   playNano.processing.core
-   playNano.processing.filters
-   playNano.processing.mask_generators
-   playNano.processing.masked_filters
-   playNano.processing.pipeline
-   playNano.processing.stack_edit
-   playNano.processing.video_processing
+   playnano.processing.core
+   playnano.processing.filters
+   playnano.processing.mask_generators
+   playnano.processing.masked_filters
+   playnano.processing.pipeline
+   playnano.processing.stack_edit
+   playnano.processing.video_processing
 
 Module contents
 ---------------
 
-.. automodule:: playNano.processing
+.. automodule:: playnano.processing
    :members:
    :undoc-members:
    :show-inheritance:

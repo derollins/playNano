@@ -1,4 +1,4 @@
-playNano.gui package
+playnano.gui package
 ====================
 
 Subpackages
@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   playNano.gui.widgets
+   playnano.gui.widgets
 
 Submodules
 ----------
@@ -15,13 +15,13 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   playNano.gui.main
-   playNano.gui.window
+   playnano.gui.main
+   playnano.gui.window
 
 Module contents
 ---------------
 
-.. automodule:: playNano.gui
+.. automodule:: playnano.gui
    :members:
    :undoc-members:
    :show-inheritance:
