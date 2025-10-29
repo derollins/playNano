@@ -14,6 +14,7 @@ import warnings
 class _PlayNanoAliasFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
     _old = "playNano"
     _new = "playnano"
+    _warned = False  # process-wide, one-shot
 
     def find_spec(self, fullname, path, target=None):
         # Map 'playNano' and 'playNano.*' to 'playnano' equivalents
@@ -22,7 +23,8 @@ class _PlayNanoAliasFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
             real_spec = importlib.util.find_spec(mapped)
             if real_spec is None:
                 return None
-            # Create a spec for the *old* name that we will populate from the mapped module
+            # Create a spec for the *old* name that we will populate from the mapped
+            # module
             spec = importlib.util.spec_from_loader(
                 fullname, self, origin=real_spec.origin
             )
@@ -40,15 +42,21 @@ class _PlayNanoAliasFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
     def exec_module(self, module):
         mapped = module.__spec__._mapped  # type: ignore[attr-defined]
         real = importlib.import_module(mapped)
-        # One-time deprecation warning only for top-level 'import playNano'
-        if module.__name__ == self._old:
+
+        # Emit the deprecation once either when top-level is imported,
+        # or if a submodule is imported and we haven't warned yet.
+        if module.__name__ == self._old or (
+            module.__name__.startswith(self._old + ".") and not self._warned
+        ):
             warnings.warn(
                 "Importing 'playNano' (mixed case) is deprecated and will be removed in a future release. "
                 "Please import 'playnano' (lowercase) instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
-        # Copy attributes into the alias module, then register in sys.modules
+            _PlayNanoAliasFinder._warned = True
+
+        # Copy attributes and register the alias
         module.__dict__.update(real.__dict__)
         sys.modules[module.__name__] = module
 
