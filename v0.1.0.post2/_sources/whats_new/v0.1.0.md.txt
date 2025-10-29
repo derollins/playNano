@@ -1,0 +1,52 @@
+# What's New in *playNano* 0.1.0
+
+**Release date:** 2025‑09‑17
+
+Welcome to the first public release of *playNano*! This version introduces a complete workflow for
+**loading, processing, exploring, exporting, and analyzing** high‑speed AFM (HS‑AFM) video data—together with a
+reproducible provenance model, notebooks, and full documentation.
+
+## ✨ Highlights
+
+- **AFM data loading & playback** from `.h5-jpk` and `.asd` files, and from folders containing `.spm` or `.jpk` files.
+- **Processing pipeline** with masks and **complete provenance** (`stack.provenance`), storing per‑step outputs under
+  keys like ``step_<n>_<name>``.
+- **Export & re‑import**: save to **.h5** or **.npz** and reload later with **all stages, masks, and provenance preserved**.
+- **GUI (PySide6)** with manual/auto **Z‑range** and **annotations/overlays** (timestamps, “RAW” label, scale bar).
+- **Exports** to **OME‑TIFF** and **GIF** (optional scale bars) for sharing and presentations.
+- **Analysis framework** with built‑in modules (LoG blobs, DBSCAN/K‑Means/X‑Means, particle tracking) and pluggable extensions.
+- **Documentation & notebooks**: Sphinx site (User Guide, API, CLI) and example notebooks.
+
+## 🧪 Processing & Provenance
+
+- Sequential filters and masks (e.g., plane removal, row/median alignment, polynomial flattening, Gaussian smoothing).
+- Each step records parameters, timestamps, and environment info in `stack.provenance`.
+- Intermediate results are snapshotted and ordered as ``step_<n>_<name>`` for reliable comparison and debugging.
+
+## 💾 Export & Re‑import
+
+- Save current stack (data, stages, masks, provenance) to **HDF5 (`.h5`)** or **NumPy (`.npz`)** bundles.
+- Reload bundles to continue processing or run analyses with **full history intact**.
+- Export to **OME‑TIFF** for interoperability and **GIF** for rapid previews.
+
+## 🖥️ GUI (PySide6)
+
+- Real‑time playback, frame seeking, and snapshot previews.
+- **Z‑range control**: auto or manual min/max for consistent visual scaling across frames.
+- **Annotations/overlays**: timestamps, “RAW” label, and scale bar can be rendered on top of frames.
+- Dark theme stylesheet for high‑contrast analysis.
+
+## 📊 Analysis Framework
+
+- Build pipelines from built‑in and pluggable modules.
+- Included modules: LoG blob detection, DBSCAN/K‑Means/X‑Means clustering, and particle tracking.
+- Outputs: labeled masks, per‑feature properties (area, min/max/mean, bbox, centroid), and per‑frame
+  summaries—tracked in provenance.
+
+## 🔧 CLI
+
+Use the `playnano` command to run pipelines headless, export bundles, and create GIFs:
+
+```bash
+playnano process "path/to/jpk_folder" --channel height_trace \
+  --processing-file processing.yaml --export tif,npz,h5 --make-gif
