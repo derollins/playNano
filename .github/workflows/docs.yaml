@@ -2,13 +2,10 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches:
-      - main
-    tags:
-      - 'v*'                # deploy on release tags too
+    branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch: {}
 
 jobs:
@@ -24,9 +21,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: List tags
-        run: git tag
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -35,7 +29,6 @@ jobs:
       - name: Install docs dependencies
         run: |
           python -m pip install --upgrade pip
-          # install your package with docs extra; ensure it includes sphinx, furo, sphinx-multiversion
           pip install -e .[docs]
 
       - name: Set VERSION environment variable
@@ -48,10 +41,19 @@ jobs:
             echo "VERSION=dev" >> $GITHUB_ENV
           fi
 
-      - name: Build versioned HTML docs
-        run: sphinx-multiversion docs/ docs/_build/html
+      # --- Build step varies by event ---
+      - name: Build docs (PR: single-version; Main/Tag: multiversion)
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "PR build -> single-version sphinx-build"
+            sphinx-build -b html docs docs/_build/html
+          else
+            echo "Main/Tag build -> sphinx-multiversion"
+            sphinx-multiversion docs/ docs/_build/html
+          fi
 
       - name: Create "stable" alias (latest v* tag)
+        if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           SITE_DIR="docs/_build/html"
@@ -66,6 +68,7 @@ jobs:
           fi
 
       - name: Create root index.html redirect to main/
+        shell: bash
         run: |
           SITE_DIR="docs/_build/html"
           mkdir -p "$SITE_DIR"
@@ -76,16 +79,16 @@ jobs:
           <meta http-equiv="refresh" content="0; url=./main/">
           <script>window.location.replace("./main/");</script>
           <p>If you are not redirected, ./main/click here</a>.</p>
-          HTML
+          <<'HTML'
 
       - name: Generate versions.json (project page /playNano base)
+        if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           SITE_DIR="docs/_build/html"
           cd "$SITE_DIR"
-          BASE="/playNano"   # because your site is served at https://derollins.github.io/playNano/
+          BASE="/playNano"   # repo path on GitHub Pages
 
-          # Collect version folders produced by sphinx-multiversion
           versions=$(ls -d */ | sed 's#/##' | grep -E '^(main|stable|v[0-9]+\.[0-9]+(\.[0-9]+)?)$' || true)
 
           json="["
@@ -97,13 +100,11 @@ jobs:
           fi
           if echo "$versions" | grep -qx "stable"; then
             entry="{\"name\":\"stable\",\"title\":\"stable (latest release)\",\"url\":\"${BASE}/stable/\"}"
-            if [ "$first" = true ]; then json="$json$entry"; first=false
-            else json="$json,$entry"; fi
+            if [ "$first" = true ]; then json="$json$entry"; first=false; else json="$json,$entry"; fi
           fi
           for v in $(echo "$versions" | grep -E '^v[0-9]+' | sort -Vr); do
             entry="{\"name\":\"$v\",\"title\":\"$v\",\"url\":\"${BASE}/$v/\"}"
-            if [ "$first" = true ]; then json="$json$entry"; first=false
-            else json="$json,$entry"; fi
+            if [ "$first" = true ]; then json="$json$entry"; first=false; else json="$json,$entry"; fi
           done
           json="$json]"
           echo "$json" > versions.json
@@ -111,12 +112,12 @@ jobs:
           cat versions.json
 
       - name: Configure Git (for gh-pages push)
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Optional artifact for PR preview
-      - name: Upload built site artifact
+      - name: Upload built site artifact (PR preview)
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
@@ -124,7 +125,7 @@ jobs:
           path: docs/_build/html
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
