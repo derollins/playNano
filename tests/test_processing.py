@@ -10,8 +10,8 @@ from playnano.errors import LoadError
 from playnano.processing import core
 
 
-@patch("playNano.processing.core.AFMImageStack.load_data")
-@patch("playNano.processing.core.ProcessingPipeline")
+@patch("playnano.processing.core.AFMImageStack.load_data")
+@patch("playnano.processing.core.ProcessingPipeline")
 def test_process_stack_runs_pipeline(mock_pipeline_cls, mock_load_data):
     """Test that process_stack loads data and runs the processing pipeline."""
     mock_stack = MagicMock()
@@ -33,8 +33,8 @@ def test_process_stack_runs_pipeline(mock_pipeline_cls, mock_load_data):
     assert result is mock_stack
 
 
-@patch("playNano.processing.core.AFMImageStack.load_data")
-@patch("playNano.processing.core.ProcessingPipeline")
+@patch("playnano.processing.core.AFMImageStack.load_data")
+@patch("playnano.processing.core.ProcessingPipeline")
 def test_process_stack_handles_clear_step(mock_pipeline_cls, mock_load_data):
     """Test that 'clear' step is handled correctly."""
     mock_stack = MagicMock()
@@ -53,7 +53,7 @@ def test_process_stack_handles_clear_step(mock_pipeline_cls, mock_load_data):
 
 
 @patch(
-    "playNano.cli.actions.AFMImageStack.load_data",
+    "playnano.cli.actions.AFMImageStack.load_data",
     side_effect=RuntimeError("file missing"),  # noqa: E501
 )
 def test_process_stack_raises_on_load_error(mock_load_data):

@@ -2,7 +2,7 @@
 Module for resolving and instantiating analysis modules.
 
 Handles lookup in the built-in registry and via entry points
-registered under the group 'playNano.analysis'.
+registered under the group 'playnano.analysis'.
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ def load_analysis_module(name: str) -> AnalysisModule:
     cls = BUILTIN_ANALYSIS_MODULES.get(name)
     if cls is None:
         eps = importlib.metadata.entry_points().select(
-            group="playNano.analysis", name=name
+            group="playnano.analysis", name=name
         )
         if not eps:
             raise ValueError(

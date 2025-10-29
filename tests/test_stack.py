@@ -244,7 +244,7 @@ def test_flatten_images_uses_apply(monkeypatch):
     #    Make AFMImageStack._load_plugin(...) return None so
     # the code falls back to FILTER_MAP.
     monkeypatch.setattr(
-        "playNano.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
+        "playnano.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
     )
 
     # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
@@ -315,7 +315,7 @@ def test_load_plugin(monkeypatch):
     monkeypatch.setattr(
         metadata,
         "entry_points",
-        lambda group=None: [fake_ep] if group == "playNano.filters" else [],
+        lambda group=None: [fake_ep] if group == "playnano.filters" else [],
     )
 
     plugin_fn = stack._load_plugin("dummy")
@@ -570,7 +570,7 @@ def test_masked_filter_success(arr_and_mask):
     arr, mask = arr_and_mask
     masked_fn = Mock(return_value=np.zeros((3, 3)))
 
-    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": masked_fn}):
+    with patch("playnano.afm_stack.MASK_FILTERS_MAP", {"dummy": masked_fn}):
         out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
         assert np.all(out == 0)
         assert masked_fn.call_count == 2
@@ -592,7 +592,7 @@ def test_masked_filter_typeerror_fallback(arr_and_mask):
         ]
     )
 
-    with patch("playNano.cli.utils.MASK_FILTERS_MAP", {"dummy": fallback_wrapper}):
+    with patch("playnano.cli.utils.MASK_FILTERS_MAP", {"dummy": fallback_wrapper}):
         out = DummyStack()._execute_filter_step(None, arr, mask, "dummy", foo=42)
         assert np.all(out == 1)
 
@@ -604,7 +604,7 @@ def test_masked_filter_fallback_on_error(arr_and_mask):
     def always_fail(*args, **kwargs):
         raise ValueError("bad frame")
 
-    with patch("playNano.cli.utils.MASK_FILTERS_MAP", {"dummy": always_fail}):
+    with patch("playnano.cli.utils.MASK_FILTERS_MAP", {"dummy": always_fail}):
         out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
         assert np.all(out == arr)  # fallback to original
 
@@ -652,7 +652,7 @@ def test_masked_filter_typeerror_then_exception(caplog, arr_and_mask):
             raise ValueError("Deliberate failure after fallback")
         raise TypeError("Deliberate TypeError")
 
-    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
+    with patch("playnano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
         with caplog.at_level(logging.ERROR):
             out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
 
@@ -671,7 +671,7 @@ def test_masked_filter_general_exception(caplog, arr_and_mask):
     def faulty_fn(a, m):
         raise RuntimeError("Immediate failure")
 
-    with patch("playNano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
+    with patch("playnano.afm_stack.MASK_FILTERS_MAP", {"dummy": faulty_fn}):
         with caplog.at_level(logging.ERROR):
             out = DummyStack()._execute_filter_step(None, arr, mask, "dummy")
 
@@ -777,9 +777,9 @@ def test_execute_mask_step_direct_exception(caplog):
     )
 
 
-@patch("playNano.afm_stack.MASK_MAP", {"mask_dummy": lambda frame, **kwargs: frame > 0})
+@patch("playnano.afm_stack.MASK_MAP", {"mask_dummy": lambda frame, **kwargs: frame > 0})
 @patch(
-    "playNano.afm_stack.FILTER_MAP", {"filter_dummy": lambda frame, **kwargs: frame + 2}
+    "playnano.afm_stack.FILTER_MAP", {"filter_dummy": lambda frame, **kwargs: frame + 2}
 )
 def test_apply_clear_mask_filter_sequence(monkeypatch):
     """Test 'clear' step resets mask, 'mask' sets new mask, 'filter' applies it."""
@@ -955,7 +955,7 @@ def test_export_analysis_log(tmp_path, monkeypatch):
         },
     }
 
-    monkeypatch.setattr("playNano.analysis.utils.common.NumpyEncoder", json.JSONEncoder)
+    monkeypatch.setattr("playnano.analysis.utils.common.NumpyEncoder", json.JSONEncoder)
 
     nested_path = tmp_path / "subdir" / "log.json"
     stack.export_analysis_log(str(nested_path))
@@ -1070,7 +1070,7 @@ def test_frames_with_metadata_skips_none_frame(caplog):
     stack.data = obj_data  # bypass validation — OK for this test
 
     # Step 3: trigger the method
-    caplog.set_level("WARNING", logger="playNano.afm_stack")
+    caplog.set_level("WARNING", logger="playnano.afm_stack")
     results = list(stack.frames_with_metadata())
 
     # Step 4: assert warning was issued and frame 1 was skipped
@@ -1120,8 +1120,8 @@ def test_resolve_step_plugin(monkeypatch):
     mock_eps = Mock()
     mock_eps.__iter__ = lambda self: iter([mock_ep])
     monkeypatch.setattr(
-        "playNano.afm_stack.metadata.entry_points",
-        lambda group=None: [mock_ep] if group == "playNano.filters" else [],
+        "playnano.afm_stack.metadata.entry_points",
+        lambda group=None: [mock_ep] if group == "playnano.filters" else [],
     )
 
     # Call _resolve_step and assert behavior

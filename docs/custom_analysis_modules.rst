@@ -8,7 +8,7 @@ methods, or specialised statistics into the standard pipeline.
 Stucture and Requirements
 -------------------------
 
-Custom modules must subclass :class:`playNano.analysis.base.AnalysisModule` and
+Custom modules must subclass :class:`playnano.analysis.base.AnalysisModule` and
 implement two things:
 
 - a ``name`` property returning a unique string identifier
@@ -68,12 +68,12 @@ This isn't fully fleshed out so if you encounter any isssue please raise and iss
 Registering the Module
 ----------------------
 
-Add an entry under ``[project.entry-points."playNano.analysis"]`` in
+Add an entry under ``[project.entry-points."playnano.analysis"]`` in
 ``pyproject.toml`` so the plugin system can discover your module:
 
 .. code-block:: toml
 
-   [project.entry-points."playNano.analysis"]
+   [project.entry-points."playnano.analysis"]
    my_module = "mypackage.mymodule:MyModule"
 
 After installation (``pip install .``), playNano will automatically detect

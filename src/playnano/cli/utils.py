@@ -27,12 +27,12 @@ STACK_EDIT_MAP = register_stack_edit_processing()
 
 # Names of all entry-point plugins (if any third-party filters are installed)
 _PLUGIN_ENTRYPOINTS = {
-    ep.name: ep for ep in metadata.entry_points(group="playNano.filters")
+    ep.name: ep for ep in metadata.entry_points(group="playnano.filters")
 }
 
 # Names of all entry-point plugins (if any third-party filters are installed)
 _ANALYSIS_PLUGIN_ENTRYPOINTS = {
-    ep.name: ep for ep in metadata.entry_points(group="playNano.analysis")
+    ep.name: ep for ep in metadata.entry_points(group="playnano.analysis")
 }
 
 INVALID_CHARS = r'\/:*?"<>|'
@@ -400,7 +400,7 @@ def _get_analysis_class(module_name: str):
 
     This function first checks the `BUILTIN_ANALYSIS_MODULES` dictionary. If the
     module is not found there, it attempts to load it from Python package entry points
-    registered under the `playNano.analysis` group.
+    registered under the `playnano.analysis` group.
 
     Parameters
     ----------
@@ -426,7 +426,7 @@ def _get_analysis_class(module_name: str):
         if cls is None:
             # try to load entry point
             eps = metadata.entry_points().select(
-                group="playNano.analysis", name=module_name
+                group="playnano.analysis", name=module_name
             )
             if not eps:
                 raise ValueError(f"Analysis module '{module_name}' not found")

@@ -174,7 +174,7 @@ class AFMImageStack:
           1. "clear"
           2. Mask from MASK_MAP
           3. Bound method on this AFMImageStack instance
-          4. Plugin from entry points "playNano.filters"
+          4. Plugin from entry points "playnano.filters"
           5. Filter from FILTER_MAP
           6. Video filter from VIDEO_FILTER_MAP
           7. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
@@ -217,7 +217,7 @@ class AFMImageStack:
         try:
             ep = next(
                 ep
-                for ep in metadata.entry_points(group="playNano.filters")
+                for ep in metadata.entry_points(group="playnano.filters")
                 if ep.name == step
             )
         except StopIteration:
@@ -245,7 +245,7 @@ class AFMImageStack:
             f"built-in filters: {list(FILTER_MAP)}; "
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
             f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
-            f"plugins: {[ep.name for ep in metadata.entry_points(group='playNano.filters')]}."  # noqa
+            f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
             f"stack_edit: {list(STACK_EDIT_MAP)}; "
         )
 
@@ -784,7 +784,7 @@ class AFMImageStack:
 
     def _load_plugin(self, name: str):
         """
-        Load a filter plugin dynamically from entry points under "playNano.filters".
+        Load a filter plugin dynamically from entry points under "playnano.filters".
 
         Parameters
         ----------
@@ -801,7 +801,7 @@ class AFMImageStack:
         ValueError
             If the plugin name is not found among entry points.
         """
-        for ep in metadata.entry_points(group="playNano.filters"):
+        for ep in metadata.entry_points(group="playnano.filters"):
             if ep.name == name:
                 logger.debug(f"Loaded plugin '{name}' from {ep.value}")
                 return ep.load()
@@ -839,7 +839,7 @@ class AFMImageStack:
           - "clear"       : reset any existing mask
           - mask names    : keys in MASK_MAP
           - filter names  : keys in FILTER_MAP
-          - plugin names  : entry points in 'playNano.filters'
+          - plugin names  : entry points in 'playnano.filters'
           - method names  : bound methods on this class
 
         ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.

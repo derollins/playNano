@@ -40,7 +40,7 @@ jobs:
           pip install pytest>=7.0 pytest-cov pytest-qt flake8 pre-commit
 
       - name: Run tests with coverage
-        run: python -m pytest --cov=playNano --cov-report=xml
+        run: python -m pytest --cov=playnano --cov-report=xml
         env:
           PYTHONPATH: src
 
@@ -51,5 +51,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unittests
-          name: playNano-tests-${{ matrix.os }}-py${{ matrix.python-version }}
+          name: playnano-tests-${{ matrix.os }}-py${{ matrix.python-version }}
           fail_ci_if_error: true

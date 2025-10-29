@@ -1,4 +1,4 @@
-playNano.analysis package
+playnano.analysis package
 =========================
 
 Subpackages
@@ -7,32 +7,32 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   playNano.analysis.modules
-   playNano.analysis.utils
+   playnano.analysis.modules
+   playnano.analysis.utils
 
 Submodules
 ----------
 
-playNano.analysis.base module
+playnano.analysis.base module
 -----------------------------
 
-.. automodule:: playNano.analysis.base
+.. automodule:: playnano.analysis.base
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.analysis.export module
+playnano.analysis.export module
 -------------------------------
 
-.. automodule:: playNano.analysis.export
+.. automodule:: playnano.analysis.export
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.analysis.pipeline module
+playnano.analysis.pipeline module
 ---------------------------------
 
-.. automodule:: playNano.analysis.pipeline
+.. automodule:: playnano.analysis.pipeline
    :members:
    :undoc-members:
    :show-inheritance:
@@ -40,7 +40,7 @@ playNano.analysis.pipeline module
 Module contents
 ---------------
 
-.. automodule:: playNano.analysis
+.. automodule:: playnano.analysis
    :members:
    :undoc-members:
    :show-inheritance:

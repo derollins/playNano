@@ -1,4 +1,4 @@
-"""Tests for playNano.processing.video_processing module."""
+"""Tests for playnano.processing.video_processing module."""
 
 import numpy as np
 import pytest

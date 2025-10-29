@@ -11,8 +11,8 @@ Overview
 --------
 
 Data can be exported using the **command-line interface (CLI)** or from Python
-using the functions in :mod:`playNano.io.export_data` and
-:mod:`playNano.io.gif_export`.
+using the functions in :mod:`playnano.io.export_data` and
+:mod:`playnano.io.gif_export`.
 
 Supported export formats include:
 
@@ -98,10 +98,10 @@ OME-TIFF Export
 
 **Format:** ``.ome.tif`` (single multi-frame image stack)
 
-:func:`playNano.io.export_data.save_ome_tiff_stack` exports OME-TIFF files.
+:func:`playnano.io.export_data.save_ome_tiff_stack` exports OME-TIFF files.
 
 The OME-TIFF export stores the processed AFM video from the
-:attr:`~playNano.afm_stack.AFMImageStack.data` attribute as a single stack
+:attr:`~playnano.afm_stack.AFMImageStack.data` attribute as a single stack
 of frames in a format compatible with ImageJ, Fiji, Bio-Formats, and general
 image analysis tools.
 
@@ -143,7 +143,7 @@ NPZ Export
 
 **Format:** ``.npz`` (NumPy compressed archive)
 
-:func:`playNano.io.export_data.save_npz_bundle` exports NPZ bundles.
+:func:`playnano.io.export_data.save_npz_bundle` exports NPZ bundles.
 
 **Contents**
 
@@ -194,7 +194,7 @@ HDF5 Export
 
 **Format:** ``.h5`` (Hierarchical data container)
 
-:func:`playNano.io.export_data.save_h5_bundle` exports HDF5 bundles.
+:func:`playnano.io.export_data.save_h5_bundle` exports HDF5 bundles.
 
 **Contents**
 
@@ -249,7 +249,7 @@ GIF Export
 
 **Format:** ``.gif`` (annotated animation)
 
-:func:`playNano.io.gif_export.export_gif` creates annotated GIFs.
+:func:`playnano.io.gif_export.export_gif` creates annotated GIFs.
 
 GIF exports provide a compact visualisation of the AFM video or processed
 stack, with optional annotations.
@@ -316,7 +316,7 @@ Advanced / Programmatic Usage
 Unified Export
 ^^^^^^^^^^^^^^
 
-Use :func:`~playNano.io.export_bundles` to export multiple formats in one call.
+Use :func:`~playnano.io.export_bundles` to export multiple formats in one call.
 
 .. code-block:: python
 

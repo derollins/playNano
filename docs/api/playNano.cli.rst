@@ -1,37 +1,37 @@
-playNano.cli package
+playnano.cli package
 ====================
 
 Submodules
 ----------
 
-playNano.cli.actions module
+playnano.cli.actions module
 ---------------------------
 
-.. automodule:: playNano.cli.actions
+.. automodule:: playnano.cli.actions
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.cli.entrypoint module
+playnano.cli.entrypoint module
 ------------------------------
 
-.. automodule:: playNano.cli.entrypoint
+.. automodule:: playnano.cli.entrypoint
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.cli.handlers module
+playnano.cli.handlers module
 ----------------------------
 
-.. automodule:: playNano.cli.handlers
+.. automodule:: playnano.cli.handlers
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.cli.utils module
+playnano.cli.utils module
 -------------------------
 
-.. automodule:: playNano.cli.utils
+.. automodule:: playnano.cli.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ playNano.cli.utils module
 Module contents
 ---------------
 
-.. automodule:: playNano.cli
+.. automodule:: playnano.cli
    :members:
    :undoc-members:
    :show-inheritance:

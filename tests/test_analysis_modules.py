@@ -1437,7 +1437,7 @@ def test_run_skips_negative_cluster_ids(monkeypatch):
         return labels, centers
 
     monkeypatch.setattr(
-        "playNano.analysis.modules.x_means_clustering.core_xmeans", fake_core_xmeans
+        "playnano.analysis.modules.x_means_clustering.core_xmeans", fake_core_xmeans
     )
 
     result = module.run(stack, previous_results)

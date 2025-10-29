@@ -82,7 +82,7 @@ Check version from Python:
 
 .. code-block:: bash
 
-   python -c "import playnano; print(playNano.__version__)"
+   python -c "import playnano; print(playnano.__version__)"
 
 Developer install
 -----------------

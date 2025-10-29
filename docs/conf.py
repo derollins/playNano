@@ -20,7 +20,7 @@ print("DEBUG: sys.path head:", sys.path[:5])
 # ------------------------------------------------------------------------------
 # Project info
 # ------------------------------------------------------------------------------
-project = "playNano"
+project = "playnano"
 author = "Daniel E. Rollins"
 copyright = "2025, Daniel E. Rollins"
 
@@ -116,13 +116,13 @@ intersphinx_mapping = {
 # ------------------------------------------------------------------------------
 def _discover_analysis_module_names():
     """
-    Discover playnano/playNano.analysis.modules.* by scanning the source tree.
+    Discover playnano/playnano.analysis.modules.* by scanning the source tree.
     Works even if the package cannot be imported.
     """
     candidates = []
 
     # Prefer src/ layout
-    for pkg_dirname in ("playNano", "playnano"):  # support both cases
+    for pkg_dirname in ("playnano", "playNano"):  # support both cases
         base = Path(src_path) / pkg_dirname / "analysis" / "modules"
         if base.is_dir():
             for p in base.glob("*.py"):
@@ -130,7 +130,7 @@ def _discover_analysis_module_names():
                     candidates.append(p.stem)
 
     # Fallback to non-src layout (older tags)
-    for pkg_dirname in ("playNano", "playnano"):
+    for pkg_dirname in ("playnano", "playnano"):
         base = Path(repo_root) / pkg_dirname / "analysis" / "modules"
         if base.is_dir():
             for p in base.glob("*.py"):

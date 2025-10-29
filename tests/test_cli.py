@@ -50,7 +50,7 @@ register_filters()
 register_masking()
 
 
-@patch("playNano.cli.actions.process_stack", side_effect=Exception("boom"))
+@patch("playnano.cli.actions.process_stack", side_effect=Exception("boom"))
 def test_process_pipeline_mode_load_error_logs_and_returns(mock_process, caplog):
     """Test that a processing failure logs an error and exits."""
     caplog.set_level(logging.ERROR)
@@ -71,12 +71,12 @@ def test_process_pipeline_mode_load_error_logs_and_returns(mock_process, caplog)
 
 
 @patch(
-    "playNano.cli.actions.parse_processing_string",
+    "playnano.cli.actions.parse_processing_string",
     return_value=[("f1", {}), ("f2", {"a": 1})],
 )
-@patch("playNano.cli.actions.process_stack")
-@patch("playNano.cli.actions.export_bundles")
-@patch("playNano.cli.actions.export_gif")
+@patch("playnano.cli.actions.process_stack")
+@patch("playnano.cli.actions.export_bundles")
+@patch("playnano.cli.actions.export_gif")
 def test_process_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_parse):
     """Test the full flow of process_pipeline_mode with processing string."""
     pipe = MagicMock()
@@ -101,7 +101,7 @@ def mock_pipeline(monkeypatch):
     """
     pipeline = MagicMock()
     pipeline.run.return_value = {"analysis": "result"}
-    monkeypatch.setattr("playNano.cli.actions.AnalysisPipeline", lambda: pipeline)
+    monkeypatch.setattr("playnano.cli.actions.AnalysisPipeline", lambda: pipeline)
     return pipeline
 
 
@@ -128,21 +128,21 @@ def test_analyze_pipeline_basic_flow(tmp_path, monkeypatch, mock_pipeline):
 
     # Mock dependencies
     mock_load_data = MagicMock(return_value="stack")
-    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+    monkeypatch.setattr("playnano.cli.actions.AFMImageStack.load_data", mock_load_data)
 
     mock_warn = MagicMock()
-    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", mock_warn)
+    monkeypatch.setattr("playnano.cli.actions.warn_if_unprocessed", mock_warn)
 
     mock_parse_analysis_string = MagicMock(return_value=[("step1", {"param": 1})])
     monkeypatch.setattr(
-        "playNano.cli.actions.parse_analysis_string", mock_parse_analysis_string
+        "playnano.cli.actions.parse_analysis_string", mock_parse_analysis_string
     )
 
     mock_make_json_safe = MagicMock(side_effect=lambda x: x)
-    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+    monkeypatch.setattr("playnano.cli.actions.make_json_safe", mock_make_json_safe)
 
     mock_export = MagicMock()
-    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+    monkeypatch.setattr("playnano.cli.actions.export_to_hdf5", mock_export)
 
     # Mock builtins.open for JSON writing
     m_open = mock_open()
@@ -190,21 +190,21 @@ def test_analyze_pipeline_prefers_file_over_str(tmp_path, monkeypatch, mock_pipe
     output_name = "customname"
 
     mock_load_data = MagicMock(return_value="stack")
-    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+    monkeypatch.setattr("playnano.cli.actions.AFMImageStack.load_data", mock_load_data)
 
-    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", MagicMock())
+    monkeypatch.setattr("playnano.cli.actions.warn_if_unprocessed", MagicMock())
 
     mock_parse_file = MagicMock(return_value=[("stepfile", {})])
-    monkeypatch.setattr("playNano.cli.actions.parse_analysis_file", mock_parse_file)
+    monkeypatch.setattr("playnano.cli.actions.parse_analysis_file", mock_parse_file)
 
     mock_parse_str = MagicMock()
-    monkeypatch.setattr("playNano.cli.actions.parse_analysis_string", mock_parse_str)
+    monkeypatch.setattr("playnano.cli.actions.parse_analysis_string", mock_parse_str)
 
     mock_make_json_safe = MagicMock(side_effect=lambda x: x)
-    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+    monkeypatch.setattr("playnano.cli.actions.make_json_safe", mock_make_json_safe)
 
     mock_export = MagicMock()
-    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+    monkeypatch.setattr("playnano.cli.actions.export_to_hdf5", mock_export)
 
     monkeypatch.setattr("builtins.open", lambda *args, **kwargs: MagicMock())
 
@@ -235,20 +235,20 @@ def test_analyze_pipeline_creates_output_folder(monkeypatch, tmp_path, mock_pipe
     output_name = None
 
     mock_load_data = MagicMock(return_value="stack")
-    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load_data)
+    monkeypatch.setattr("playnano.cli.actions.AFMImageStack.load_data", mock_load_data)
 
-    monkeypatch.setattr("playNano.cli.actions.warn_if_unprocessed", MagicMock())
+    monkeypatch.setattr("playnano.cli.actions.warn_if_unprocessed", MagicMock())
 
     mock_parse_analysis_string = MagicMock(return_value=[("step1", {})])
     monkeypatch.setattr(
-        "playNano.cli.actions.parse_analysis_string", mock_parse_analysis_string
+        "playnano.cli.actions.parse_analysis_string", mock_parse_analysis_string
     )
 
     mock_make_json_safe = MagicMock(side_effect=lambda x: x)
-    monkeypatch.setattr("playNano.cli.actions.make_json_safe", mock_make_json_safe)
+    monkeypatch.setattr("playnano.cli.actions.make_json_safe", mock_make_json_safe)
 
     mock_export = MagicMock()
-    monkeypatch.setattr("playNano.cli.actions.export_to_hdf5", mock_export)
+    monkeypatch.setattr("playnano.cli.actions.export_to_hdf5", mock_export)
 
     monkeypatch.setattr("builtins.open", lambda *args, **kwargs: MagicMock())
 
@@ -260,7 +260,7 @@ def test_analyze_pipeline_creates_output_folder(monkeypatch, tmp_path, mock_pipe
     mock_load_data.assert_called_once_with(input_file, channel=channel)
 
 
-@patch("playNano.cli.actions.AFMImageStack.load_data", side_effect=Exception("err"))
+@patch("playnano.cli.actions.AFMImageStack.load_data", side_effect=Exception("err"))
 def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
     """Test that play_pipeline_mode raises LoadError on loading failure."""
     caplog.set_level(logging.ERROR)
@@ -277,8 +277,8 @@ def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
     assert "Failed to load in.jpk" in str(exc.value)
 
 
-@patch("playNano.cli.actions.gui_entry")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.gui_entry")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_valid_zmin_zmax(
     mock_load_data, mock_gui_entry, tmp_path
 ):
@@ -305,8 +305,8 @@ def test_play_pipeline_mode_with_valid_zmin_zmax(
     assert kwargs["zmax"] == 1.0
 
 
-@patch("playNano.cli.actions.gui_entry")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.gui_entry")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_invalid_zmin_logs_error(
     mock_load_data, mock_gui_entry, caplog, tmp_path
 ):
@@ -332,8 +332,8 @@ def test_play_pipeline_mode_with_invalid_zmin_logs_error(
     assert "zmin must be either a number or the string 'auto'" in caplog.text
 
 
-@patch("playNano.cli.actions.gui_entry")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.gui_entry")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_with_invalid_zmax_logs_error(
     mock_load_data, mock_gui_entry, caplog, tmp_path
 ):
@@ -359,9 +359,9 @@ def test_play_pipeline_mode_with_invalid_zmax_logs_error(
     assert "zmax must be either a number or the string 'auto'" in caplog.text
 
 
-@patch("playNano.cli.actions.parse_processing_file")
-@patch("playNano.cli.actions.gui_entry")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.parse_processing_file")
+@patch("playnano.cli.actions.gui_entry")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_uses_processing_file(
     mock_load_data, mock_gui_entry, mock_parse_file
 ):
@@ -387,9 +387,9 @@ def test_play_pipeline_mode_uses_processing_file(
     mock_parse_file.assert_called_once_with("filters.yaml")
 
 
-@patch("playNano.cli.actions.parse_processing_string")
-@patch("playNano.cli.actions.gui_entry")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.parse_processing_string")
+@patch("playnano.cli.actions.gui_entry")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 def test_play_pipeline_mode_uses_processing_str(
     mock_load_data, mock_gui_entry, mock_parse_str
 ):
@@ -783,7 +783,7 @@ def test_parse_analysis_string_basic():
 
 def test_parse_analysis_string_multiple_steps(monkeypatch):
     """Parses multiple steps with numeric parameters."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     s = "step1:param1=1;step2:param2=2,param3=3"
     result = parse_analysis_string(s)
     assert result == [
@@ -794,7 +794,7 @@ def test_parse_analysis_string_multiple_steps(monkeypatch):
 
 def test_parse_analysis_string_with_booleans_and_strings(monkeypatch):
     """Parses booleans and strings in parameters."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     s = "foo:flag=true,label=sample"
     result = parse_analysis_string(s)
     assert result == [("foo", {"flag": True, "label": "sample"})]
@@ -802,7 +802,7 @@ def test_parse_analysis_string_with_booleans_and_strings(monkeypatch):
 
 def test_parse_analysis_string_no_params(monkeypatch):
     """Parses step with no parameters."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     s = "bar"
     result = parse_analysis_string(s)
     assert result == [("bar", {})]
@@ -810,7 +810,7 @@ def test_parse_analysis_string_no_params(monkeypatch):
 
 def test_parse_analysis_string_invalid_param_syntax(monkeypatch):
     """Raises on invalid param syntax with no '='."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     with pytest.raises(ValueError, match="Invalid parameter expression"):
         parse_analysis_string("step:invalidparam")
 
@@ -852,7 +852,7 @@ def test_parse_analysis_string_skips_empty_param_pairs():
 
 def test_parse_analysis_string_invalid_step_name():
     """Test that unknown analysis step raises ValueError."""
-    with patch("playNano.cli.utils.is_valid_analysis_step", return_value=False):
+    with patch("playnano.cli.utils.is_valid_analysis_step", return_value=False):
         from playnano.cli.utils import parse_analysis_string
 
         with pytest.raises(ValueError, match="Unknown analysis step: 'bad_step'"):
@@ -871,7 +871,7 @@ def make_temp_analysis_file(data: dict, suffix=".yaml") -> str:
 
 def test_parse_analysis_file_yaml(monkeypatch):
     """Parses YAML file into step/param tuples."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     data = {"analysis": [{"name": "foo", "param": 1}, {"name": "bar"}]}
     path = make_temp_analysis_file(data, ".yaml")
     result = parse_analysis_file(path)
@@ -880,7 +880,7 @@ def test_parse_analysis_file_yaml(monkeypatch):
 
 def test_parse_analysis_file_json(monkeypatch):
     """Parses JSON file into step/param tuples."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     data = {"analysis": [{"name": "step1", "thresh": 0.5}]}
     path = make_temp_analysis_file(data, ".json")
     result = parse_analysis_file(path)
@@ -908,7 +908,7 @@ def test_parse_analysis_file_invalid_schema(monkeypatch):
 
 def test_parse_analysis_file_invalid_entries(monkeypatch):
     """Raises if any entry in 'analysis' is not a dict with 'name'."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
     path = make_temp_analysis_file({"analysis": [123]}, ".yaml")
     with pytest.raises(
         ValueError, match="each step must be a mapping with a 'name' key"
@@ -918,7 +918,7 @@ def test_parse_analysis_file_invalid_entries(monkeypatch):
 
 def test_parse_analysis_file_unknown_step(monkeypatch):
     """Raises if a step name in the file is not recognized."""
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: False)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: False)
     path = make_temp_analysis_file({"analysis": [{"name": "does_not_exist"}]}, ".yaml")
     with pytest.raises(ValueError, match="Unknown analysis step"):
         parse_analysis_file(path)
@@ -937,7 +937,7 @@ def test_parse_analysis_file_fallback_to_json(monkeypatch):
         path = f.name
 
     # Monkeypatch to accept any step as valid
-    monkeypatch.setattr("playNano.cli.utils.is_valid_analysis_step", lambda name: True)
+    monkeypatch.setattr("playnano.cli.utils.is_valid_analysis_step", lambda name: True)
 
     # Should parse via fallback JSON logic
     result = parse_analysis_file(path)
@@ -980,12 +980,12 @@ def test__process_pending_entries(monkeypatch):
 
     # Mock _resolve_condition to return True for all conditions
     monkeypatch.setattr(
-        "playNano.cli.utils._resolve_condition", lambda cond, kwargs: True
+        "playnano.cli.utils._resolve_condition", lambda cond, kwargs: True
     )
 
     # Mock _prompt_and_cast to return a fixed value
     monkeypatch.setattr(
-        "playNano.cli.utils._prompt_and_cast",
+        "playnano.cli.utils._prompt_and_cast",
         lambda name, typ, default: f"mocked_{name}",
     )
 
@@ -1017,8 +1017,8 @@ def test__normalize_loaded():
 def test__get_analysis_class_value_error():
     """Test ValueError raised when module isn't found in built-ins or entry points."""
     with (
-        patch("playNano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
-        patch("playNano.cli.utils.metadata.entry_points") as mock_entry_points,
+        patch("playnano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
+        patch("playnano.cli.utils.metadata.entry_points") as mock_entry_points,
     ):
         mock_entry_points.return_value.select.return_value = []
         with pytest.raises(
@@ -1030,8 +1030,8 @@ def test__get_analysis_class_value_error():
 def test__get_analysis_class_generic_exception(caplog):
     """Test generic Exception is logged and re-raised during entry point loading."""
     with (
-        patch("playNano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
-        patch("playNano.cli.utils.metadata.entry_points") as mock_entry_points,
+        patch("playnano.cli.utils.BUILTIN_ANALYSIS_MODULES", {}),
+        patch("playnano.cli.utils.metadata.entry_points") as mock_entry_points,
     ):
         mock_entry_points.return_value.select.side_effect = RuntimeError(
             "entry point failure"
@@ -1061,7 +1061,7 @@ def test_handle_play_accepts_path_object():
         zmax="auto",
     )
 
-    with patch("playNano.cli.handlers.play_pipeline_mode") as mock_play:
+    with patch("playnano.cli.handlers.play_pipeline_mode") as mock_play:
         handle_play(args)
 
         # Check that the Path object was passed directly
@@ -1105,7 +1105,7 @@ def make_args(**kwargs) -> argparse.Namespace:
     return argparse.Namespace(**defaults)
 
 
-@patch("playNano.cli.handlers.Wizard")
+@patch("playnano.cli.handlers.Wizard")
 def test_handle_processing_wizard_success(mock_wizard):
     """Test the processing wizard handler with valid arguments."""
     args = make_args()
@@ -1119,7 +1119,7 @@ def test_handle_processing_wizard_success(mock_wizard):
     )
 
 
-@patch("playNano.cli.handlers.Wizard", side_effect=RuntimeError("Test error"))
+@patch("playnano.cli.handlers.Wizard", side_effect=RuntimeError("Test error"))
 def test_handle_processing_wizard_raises(mock_wizard, caplog):
     """Test that an error is raised if wizard mode fails."""
     args = make_args()
@@ -1137,7 +1137,7 @@ def test_handle_processing_wizard_raises(mock_wizard, caplog):
     mock_wizard.assert_called_once()
 
 
-@patch("playNano.cli.handlers.logging.basicConfig")
+@patch("playnano.cli.handlers.logging.basicConfig")
 def test_setup_logging_defaults(mock_basic_config):
     """Test that setup_logging uses default logging configuration."""
     setup_logging()  # uses default level=logging.INFO
@@ -1148,7 +1148,7 @@ def test_setup_logging_defaults(mock_basic_config):
     )
 
 
-@patch("playNano.cli.handlers.logging.basicConfig")
+@patch("playnano.cli.handlers.logging.basicConfig")
 def test_setup_logging_debug(mock_basic_config):
     """Test that setup_logging sets DEBUG level when specified."""
     setup_logging(logging.DEBUG)
@@ -1159,10 +1159,10 @@ def test_setup_logging_debug(mock_basic_config):
     )
 
 
-@patch("playNano.cli.actions.export_gif")
-@patch("playNano.cli.actions.export_bundles")
-@patch("playNano.cli.actions.process_stack")
-@patch("playNano.cli.actions.AFMImageStack.load_data")
+@patch("playnano.cli.actions.export_gif")
+@patch("playnano.cli.actions.export_bundles")
+@patch("playnano.cli.actions.process_stack")
+@patch("playnano.cli.actions.AFMImageStack.load_data")
 @patch("builtins.input")
 def test_wizard_mode_zscale_input(
     mock_input, mock_load_data, mock_process_stack, mock_export_bundles, mock_export_gif
@@ -1383,19 +1383,19 @@ def test_handle_aadd_and_handle_arun_analysis(monkeypatch, tmp_path):
     assert data["provenance"]["source"] == "test"
 
 
-@patch("playNano.cli.actions.ask_for_analysis_params")
+@patch("playnano.cli.actions.ask_for_analysis_params")
 def test_handle_aadd_inline_spec(mock_ask_params, wizard_mock_io):
     """Test adding a analysis step."""
     wiz = wizard_mock_io
     # Provide a spec with colon so parse_analysis_string is triggered
-    with patch("playNano.cli.actions.parse_analysis_string") as mock_parse_str:
+    with patch("playnano.cli.actions.parse_analysis_string") as mock_parse_str:
         mock_parse_str.return_value = [("step1", {"param": 1})]
         wiz.io = MagicMock()
         wiz.handle_aadd(["aadd", "step1:param=1"])
         assert ("step1", {"param": 1}) in wiz.analysis_steps
 
 
-@patch("playNano.cli.actions.ask_for_analysis_params")
+@patch("playnano.cli.actions.ask_for_analysis_params")
 def test_handle_aadd_interactive(mock_ask_params, wizard_mock_io):
     """Test adding ana nalysis step interactivly."""
     wiz = wizard_mock_io
@@ -1433,7 +1433,7 @@ def test_handle_aload(monkeypatch, tmp_path):
 
     # Monkeypatch parse_analysis_file to return a known value
     monkeypatch.setattr(
-        "playNano.cli.utils.parse_analysis_file", lambda path: [("stepX", {})]
+        "playnano.cli.utils.parse_analysis_file", lambda path: [("stepX", {})]
     )
 
     # Create Wizard instance
@@ -1457,7 +1457,7 @@ def test_handle_asave(tmp_path, wizard_mock_io):
     assert save_path.exists()
 
 
-@patch("playNano.cli.actions.AnalysisPipeline")
+@patch("playnano.cli.actions.AnalysisPipeline")
 def test_handle_arun_runs_processing_and_analysis(mock_pipeline_cls, wizard_mock_io):
     """Test that handle_arun runs the processing and analysis pipelines."""
     wiz = wizard_mock_io
@@ -1553,7 +1553,7 @@ def test_handle_analyze_exception(monkeypatch, caplog):
     def raise_exc(*a, **k):
         raise RuntimeError("fail")
 
-    monkeypatch.setattr("playNano.cli.actions.analyze_pipeline_mode", raise_exc)
+    monkeypatch.setattr("playnano.cli.actions.analyze_pipeline_mode", raise_exc)
 
     with patch("sys.exit") as mock_exit:
         with caplog.at_level(logging.ERROR):
@@ -1725,7 +1725,7 @@ def test_print_env_info(monkeypatch, capsys):
     """Help command should print available commands."""
     # Patch gather_environment_info in the namespace where print_env_info will import it
     monkeypatch.setattr(
-        "playNano.utils.system_info.gather_environment_info", lambda: {"k": "v"}
+        "playnano.utils.system_info.gather_environment_info", lambda: {"k": "v"}
     )
 
     actions.print_env_info()
@@ -1795,7 +1795,7 @@ def test_ask_for_processing_params_no_conditions(monkeypatch):
         pass
 
     monkeypatch.setattr(
-        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+        "playnano.cli.utils._get_processing_callable", lambda name: dummy_func
     )
     monkeypatch.setattr(
         "builtins.input", lambda prompt: "42" if "param1" in prompt else "hello"
@@ -1814,7 +1814,7 @@ def test_ask_for_processing_params_condition_false(monkeypatch):
     dummy_func._param_conditions = {"param1": lambda kwargs: False}
 
     monkeypatch.setattr(
-        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+        "playnano.cli.utils._get_processing_callable", lambda name: dummy_func
     )
     monkeypatch.setattr("builtins.input", lambda prompt: "hello")
 
@@ -1831,7 +1831,7 @@ def test_ask_for_processing_params_condition_keyerror(monkeypatch):
     dummy_func._param_conditions = {"param1": lambda kwargs: kwargs["missing"]}
 
     monkeypatch.setattr(
-        "playNano.cli.utils._get_processing_callable", lambda name: dummy_func
+        "playnano.cli.utils._get_processing_callable", lambda name: dummy_func
     )
     monkeypatch.setattr("builtins.input", lambda prompt: "42")
 
@@ -1888,7 +1888,7 @@ def test_parse_processing_file_invalid_step_name(tmp_path):
     path = tmp_path / "badstep.yaml"
     path.write_text("filters:\n  - name: not_a_step")
 
-    with patch("playNano.cli.utils.is_valid_step", return_value=False):
+    with patch("playnano.cli.utils.is_valid_step", return_value=False):
         with pytest.raises(ValueError, match="Unknown processing step"):
             parse_processing_file(str(path))
 
@@ -1905,7 +1905,7 @@ filters:
     threshold: 5
 """
     )
-    with patch("playNano.cli.utils.is_valid_step", return_value=True):
+    with patch("playnano.cli.utils.is_valid_step", return_value=True):
         result = parse_processing_file(str(path))
         assert result == [
             ("gaussian_filter", {"sigma": 2.0}),
@@ -1923,7 +1923,7 @@ def test_prompt_remaining_skips_on_false_condition():
     }
     kwargs = {}
 
-    with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
+    with patch("playnano.cli.utils._prompt_and_cast") as mock_cast:
         from playnano.cli.utils import _prompt_remaining
 
         _prompt_remaining([entry], kwargs)
@@ -1936,7 +1936,7 @@ def test_prompt_remaining_adds_value():
     entry = {"name": "param1", "type": int, "default": 0, "condition": None}
     kwargs = {}
 
-    with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
+    with patch("playnano.cli.utils._prompt_and_cast", return_value=42):
         from playnano.cli.utils import _prompt_remaining
 
         _prompt_remaining([entry], kwargs)
@@ -1951,7 +1951,7 @@ def test_prompt_signature_remaining_skips_on_false_condition():
     conds = {"param1": lambda kwargs: False}
     kwargs = {}
 
-    with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
+    with patch("playnano.cli.utils._prompt_and_cast") as mock_cast:
         from playnano.cli.utils import _prompt_signature_remaining
 
         _prompt_signature_remaining([("param1", param)], kwargs, conds)
@@ -1967,7 +1967,7 @@ def test_prompt_signature_remaining_adds_value():
     conds = {}
     kwargs = {}
 
-    with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
+    with patch("playnano.cli.utils._prompt_and_cast", return_value=42):
         from playnano.cli.utils import _prompt_signature_remaining
 
         _prompt_signature_remaining([("param1", param)], kwargs, conds)
@@ -2187,7 +2187,7 @@ def test_run_with_export_and_gif(tmp_path, monkeypatch):
 )
 def test_get_processing_callable_maps(map_name, step_name):
     """Test that _get_processings_callable maps to correct function."""
-    module_path = "playNano.cli.utils"
+    module_path = "playnano.cli.utils"
     with patch(f"{module_path}.{map_name}", {step_name: lambda x: x}):
         result = _get_processing_callable(step_name)
         assert callable(result)
@@ -2199,7 +2199,7 @@ def test_get_processing_callable_filter():
     def dummy_func():
         return lambda x: x
 
-    with patch("playNano.cli.utils.FILTER_MAP", {"dummy_filter": dummy_func}):
+    with patch("playnano.cli.utils.FILTER_MAP", {"dummy_filter": dummy_func}):
         result = _get_processing_callable("dummy_filter")
         assert result is dummy_func
 
@@ -2210,7 +2210,7 @@ def test_get_processing_callable_mask():
     def dummy_mask():
         return lambda x: x
 
-    with patch("playNano.cli.utils.MASK_MAP", {"dummy_mask": dummy_mask}):
+    with patch("playnano.cli.utils.MASK_MAP", {"dummy_mask": dummy_mask}):
         result = _get_processing_callable("dummy_mask")
         assert result is dummy_mask
 
@@ -2220,7 +2220,7 @@ def test_get_processing_callable_plugin():
     mock_entry_point = MagicMock()
     mock_entry_point.load.return_value = "plugin_callable"
     with patch(
-        "playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": mock_entry_point}
+        "playnano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": mock_entry_point}
     ):
         result = _get_processing_callable("plugin_step")
         assert result == "plugin_callable"
@@ -2229,12 +2229,12 @@ def test_get_processing_callable_plugin():
 def test_get_processing_callable_not_found():
     """Test that an unknown step raises ValueError."""
     with (
-        patch("playNano.cli.utils.FILTER_MAP", {}),
-        patch("playNano.cli.utils.MASK_MAP", {}),
-        patch("playNano.cli.utils.MASK_FILTERS_MAP", {}),
-        patch("playNano.cli.utils.VIDEO_FILTER_MAP", {}),
-        patch("playNano.cli.utils.STACK_EDIT_MAP", {}),
-        patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+        patch("playnano.cli.utils.FILTER_MAP", {}),
+        patch("playnano.cli.utils.MASK_MAP", {}),
+        patch("playnano.cli.utils.MASK_FILTERS_MAP", {}),
+        patch("playnano.cli.utils.VIDEO_FILTER_MAP", {}),
+        patch("playnano.cli.utils.STACK_EDIT_MAP", {}),
+        patch("playnano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
     ):
         with pytest.raises(
             ValueError, match="Processing step 'unknown_step' not found"
@@ -2244,13 +2244,13 @@ def test_get_processing_callable_not_found():
 
 def test_get_processing_step_type_filter():
     """Test that get_processing_step_type correctly identifies filters."""
-    with patch("playNano.cli.utils.FILTER_MAP", {"dummy_filter": lambda x: x}):
+    with patch("playnano.cli.utils.FILTER_MAP", {"dummy_filter": lambda x: x}):
         assert get_processing_step_type("dummy_filter") == "filter"
 
 
 def test_get_processing_step_type_plugin():
     """Test that _get_processing_step_type identifies plugins."""
-    with patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": MagicMock()}):
+    with patch("playnano.cli.utils._PLUGIN_ENTRYPOINTS", {"plugin_step": MagicMock()}):
         assert get_processing_step_type("plugin_step") == "plugin filter"
 
 
@@ -2267,7 +2267,7 @@ def test_get_processing_step_type_plugin():
 )
 def test_get_processing_step_type_known(map_name, step_name, expected_type):
     """Test that get_processing step_type gives the expected type for known steps."""
-    module_path = "playNano.cli.utils"
+    module_path = "playnano.cli.utils"
     with patch(f"{module_path}.{map_name}", {step_name: None}):
         result = get_processing_step_type(step_name)
         assert result == expected_type
@@ -2276,12 +2276,12 @@ def test_get_processing_step_type_known(map_name, step_name, expected_type):
 def test_get_processing_step_type_unknown():
     """Test that get_processing_step_type handles unknown steps."""
     with (
-        patch("playNano.cli.utils.FILTER_MAP", {}),
-        patch("playNano.cli.utils.MASK_MAP", {}),
-        patch("playNano.cli.utils.MASK_FILTERS_MAP", {}),
-        patch("playNano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
-        patch("playNano.cli.utils.VIDEO_FILTER_MAP", {}),
-        patch("playNano.cli.utils.STACK_EDIT_MAP", {}),
+        patch("playnano.cli.utils.FILTER_MAP", {}),
+        patch("playnano.cli.utils.MASK_MAP", {}),
+        patch("playnano.cli.utils.MASK_FILTERS_MAP", {}),
+        patch("playnano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+        patch("playnano.cli.utils.VIDEO_FILTER_MAP", {}),
+        patch("playnano.cli.utils.STACK_EDIT_MAP", {}),
     ):
         result = get_processing_step_type("nonexistent_step")
         assert result == "unknown"
@@ -2325,7 +2325,7 @@ def test_ask_with_spec_progresses():
     """Test _ask_with_spec returns kwargs when progress is made."""
     spec = [{"name": "param1", "type": str, "default": "default"}]
 
-    with patch("playNano.cli.utils._process_pending_entries") as mock_process:
+    with patch("playnano.cli.utils._process_pending_entries") as mock_process:
         mock_process.return_value = (True, [])  # progress made, no retry
         result = _ask_with_spec(spec)
         assert isinstance(result, dict)
@@ -2336,8 +2336,8 @@ def test_ask_with_spec_falls_back_to_prompt_remaining():
     spec = [{"name": "param1", "type": str, "default": "default"}]
 
     with (
-        patch("playNano.cli.utils._process_pending_entries") as mock_process,
-        patch("playNano.cli.utils._prompt_remaining") as mock_prompt,
+        patch("playnano.cli.utils._process_pending_entries") as mock_process,
+        patch("playnano.cli.utils._prompt_remaining") as mock_prompt,
     ):
         mock_process.side_effect = [(False, spec)]
         result = _ask_with_spec(spec)

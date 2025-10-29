@@ -1,21 +1,21 @@
-playNano.gui.widgets package
+playnano.gui.widgets package
 ============================
 
 Submodules
 ----------
 
-playNano.gui.widgets.controls module
+playnano.gui.widgets.controls module
 ------------------------------------
 
-.. automodule:: playNano.gui.widgets.controls
+.. automodule:: playnano.gui.widgets.controls
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.gui.widgets.viewer module
+playnano.gui.widgets.viewer module
 ----------------------------------
 
-.. automodule:: playNano.gui.widgets.viewer
+.. automodule:: playnano.gui.widgets.viewer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ playNano.gui.widgets.viewer module
 Module contents
 ---------------
 
-.. automodule:: playNano.gui.widgets
+.. automodule:: playnano.gui.widgets
    :members:
    :undoc-members:
    :show-inheritance:

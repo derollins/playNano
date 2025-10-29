@@ -76,7 +76,7 @@ def test_gather_environment_info_contains_expected_keys():
 
     assert "python_version" in info
     assert "platform" in info
-    assert "playNano_version" in info
+    assert "playnano_version" in info
 
     # Versions for key packages may or may not exist
     for pkg in ("numpy_version", "h5py_version", "scipy_version"):

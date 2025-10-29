@@ -50,7 +50,7 @@ def test_parse_args_defaults(monkeypatch):
     )
 
     # Patch out the GUI entry function so QApplication isn't called
-    monkeypatch.setattr("playNano.cli.actions.gui_entry", lambda *args, **kwargs: None)
+    monkeypatch.setattr("playnano.cli.actions.gui_entry", lambda *args, **kwargs: None)
 
     # Should not raise
     result = main()
@@ -231,7 +231,7 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
     from playnano.cli.handlers import handle_play
 
     mock_load = MagicMock(side_effect=Exception("load failed"))
-    monkeypatch.setattr("playNano.cli.actions.AFMImageStack.load_data", mock_load)
+    monkeypatch.setattr("playnano.cli.actions.AFMImageStack.load_data", mock_load)
 
     file = tmp_path / "file.jpk"
     file.write_text("data")
@@ -262,7 +262,7 @@ def test_handle_process_bad_output_folder(monkeypatch, tmp_path, caplog):
     good_stack = MagicMock()
     good_stack.frame_metadata = [{"timestamp": 1}]
     monkeypatch.setattr(
-        "playNano.cli.actions.AFMImageStack.load_data", lambda *a, **k: good_stack
+        "playnano.cli.actions.AFMImageStack.load_data", lambda *a, **k: good_stack
     )
 
     args = Namespace(
@@ -303,11 +303,11 @@ def test_handle_process_make_gif(monkeypatch, tmp_path):
 
     # Patch load_data to return our fake stack
     monkeypatch.setattr(
-        "playNano.cli.actions.AFMImageStack.load_data", lambda *a, **k: fake_stack
+        "playnano.cli.actions.AFMImageStack.load_data", lambda *a, **k: fake_stack
     )
 
     # Patch the actual gif creation so no file is written
-    monkeypatch.setattr("playNano.cli.actions.export_gif", lambda *a, **k: None)
+    monkeypatch.setattr("playnano.cli.actions.export_gif", lambda *a, **k: None)
 
     args = Namespace(
         input_file=str(tmp_path / "sample.jpk"),

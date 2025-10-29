@@ -122,7 +122,7 @@ class AnalysisPipeline:
         Load and instantiate an analysis module given its name.
 
         Modules are first looked up in a built-in registry, then via entry points
-        registered under the group 'playNano.analysis'. Loaded modules are cached
+        registered under the group 'playnano.analysis'. Loaded modules are cached
         to avoid re-instantiation on repeated `run()` calls.
 
         Parameters
@@ -155,9 +155,9 @@ class AnalysisPipeline:
         if cls is None:
             # 2) Try entry points
             eps = importlib.metadata.entry_points().select(
-                group="playNano.analysis", name=module_name
+                group="playnano.analysis", name=module_name
             )
-            # In older importlib.metadata: entry_points().get('playNano.analysis', [])
+            # In older importlib.metadata: entry_points().get('playnano.analysis', [])
             if not eps:
                 raise ValueError(
                     f"Analysis module '{module_name}' not found in registry or entry points"  # noqa

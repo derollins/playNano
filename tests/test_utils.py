@@ -105,7 +105,7 @@ def test_utc_now_iso():
         def now(cls, tz=None):
             return fixed_time
 
-    with patch("playNano.utils.time_utils.datetime", FixedDateTime):
+    with patch("playnano.utils.time_utils.datetime", FixedDateTime):
         result = utc_now_iso()
         assert result == "2025-06-25T12:00:00Z"
 
@@ -121,7 +121,7 @@ def test_gather_environment_info_keys():
     assert "timestamp" in info
     assert "python_version" in info
     assert "platform" in info
-    assert "playNano_version" in info
+    assert "playnano_version" in info
 
 
 def test_timestamp_format():
@@ -155,19 +155,19 @@ def test_dependency_versions(pkg):
         assert f"{pkg}_version" not in info
 
 
-def test_playNano_not_installed():
+def test_playnano_not_installed():
     """Test that playNano version is None if the package is not installed."""
     with patch("importlib.metadata.version") as mock_version:
 
         def side_effect(pkg):
-            if pkg == "playNano":
+            if pkg == "playnano":
                 raise importlib.metadata.PackageNotFoundError
             return "1.0.0"
 
         mock_version.side_effect = side_effect
 
         info = gather_environment_info()
-        assert info["playNano_version"] is None
+        assert info["playnano_version"] is None
 
 
 def test_missing_dependency_skipped():

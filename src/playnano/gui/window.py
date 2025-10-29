@@ -94,10 +94,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("playNano Player")
 
-        steps_path = files("playNano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
+        steps_path = files("playnano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
         steps_id = QFontDatabase.addApplicationFont(str(steps_path))
 
-        basic_path = files("playNano.fonts").joinpath("basic/basic_regular.ttf")
+        basic_path = files("playnano.fonts").joinpath("basic/basic_regular.ttf")
         basic_id = QFontDatabase.addApplicationFont(str(basic_path))
 
         steps_family = (

@@ -183,8 +183,8 @@ Module loading
 ^^^^^^^^^^^^^^
 
 - Modules are resolved first from the built-in registry
-  (``playNano.analysis.BUILTIN_ANALYSIS_MODULES``), then via Python entry points
-  in the ``playNano.analysis`` group. The first matching entry point is used.
+  (``playnano.analysis.BUILTIN_ANALYSIS_MODULES``), then via Python entry points
+  in the ``playnano.analysis`` group. The first matching entry point is used.
 - Loaded classes are instantiated and must subclass ``AnalysisModule``.
 - Instantiated modules are cached on the pipeline instance to avoid repeated
   re-instantiation.
@@ -233,7 +233,7 @@ Notes
 
 - The pipeline will create ``stack.provenance`` and ``stack.analysis`` if they do not exist.
 - ``stack.provenance["environment"]`` is set if not already present (gathered via the system info util).
-- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playNano.analysis.utils.common.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
+- When ``log_to`` is supplied, the pipeline writes a sanitised JSON summary using :func:`playnano.analysis.utils.common.sanitize_analysis_for_logging` (this is intended to produce small, JSON-friendly summaries suitable for logs).
 
 Troubleshooting & tips
 ----------------------

@@ -4,16 +4,16 @@ Processing
 Overview
 --------
 
-The ``playNano.processing`` subpackage provides tools for preparing AFM time-series
+The ``playnano.processing`` subpackage provides tools for preparing AFM time-series
 data for viewing and analysis. It includes functions for levelling, filtering,
 masking, alignment, and trimming. These
 :doc:`operations <processing-operations-reference>` are modular and composable,
 allowing reproducible pipelines tailored to specific datasets and goals.
 
 Processing is coordinated by
-:class:`~playNano.processing.pipeline.ProcessingPipeline`, which manages the
+:class:`~playnano.processing.pipeline.ProcessingPipeline`, which manages the
 reproducible and provenance-tracked transformation of an
-:class:`~playNano.afm_stack.AFMImageStack`. A pipeline consists of an ordered list
+:class:`~playnano.afm_stack.AFMImageStack`. A pipeline consists of an ordered list
 of steps, where each step defines an operation and its parameters. Steps are executed
 sequentially, and all parameters, versions, and outputs are logged for traceability.
 
@@ -85,13 +85,13 @@ pipeline as YAML for reuse with ``--processing-file``.
 Pipeline Structure and Step Types
 ---------------------------------
 
-A :class:`~playNano.processing.pipeline.ProcessingPipeline` organizes transformations
+A :class:`~playnano.processing.pipeline.ProcessingPipeline` organizes transformations
 into sequential steps applied to an
-:class:`~playNano.afm_stack.AFMImageStack`. Each step performs a specific task such
+:class:`~playnano.afm_stack.AFMImageStack`. Each step performs a specific task such
 as filtering, masking, or alignment and can be configured with parameters. Steps are
 executed in order, and results are tracked with metadata to ensure reproducibility.
 
-After execution, the :attr:`~playNano.afm_stack.AFMImageStack.data` attribute is
+After execution, the :attr:`~playnano.afm_stack.AFMImageStack.data` attribute is
 updated with the final processed array.
 
 Operation Types
@@ -113,11 +113,11 @@ Step Naming and Provenance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each step is named as ``step_<index>_<operation_name>`` and its output is stored in
-:attr:`~playNano.afm_stack.AFMImageStack.processed` (for data) or
-:attr:`~playNano.afm_stack.AFMImageStack.masks` (for binary masks).
+:attr:`~playnano.afm_stack.AFMImageStack.processed` (for data) or
+:attr:`~playnano.afm_stack.AFMImageStack.masks` (for binary masks).
 
 Provenance information is stored in
-:attr:`~playNano.afm_stack.AFMImageStack.provenance["processing"]` and includes:
+:attr:`~playnano.afm_stack.AFMImageStack.provenance["processing"]` and includes:
 
 - ``steps`` — ordered list of step records (parameters, versions, timestamps, etc.)
 - ``keys_by_name`` — maps operation names to their snapshot keys.
@@ -139,14 +139,14 @@ See :doc:`processing-operations-reference` for a full list.
 Plugins
 ^^^^^^^
 
-Custom filters can be added via entry points under ``playNano.filters``. Any callable
+Custom filters can be added via entry points under ``playnano.filters``. Any callable
 that accepts a 2D NumPy array and returns a processed array can be registered.
 
 Example ``pyproject.toml`` snippet:
 
 .. code-block:: toml
 
-   [project.entry-points."playNano.filters"]
+   [project.entry-points."playnano.filters"]
    my_plugin = "my_pkg.module:my_filter"
 
 Example plugin function:
@@ -196,7 +196,7 @@ Installed plugins appear alongside built-in filters in the CLI and GUI.
 Programmatic Usage
 ------------------
 
-Use the :class:`~playNano.processing.pipeline.ProcessingPipeline` class directly for
+Use the :class:`~playnano.processing.pipeline.ProcessingPipeline` class directly for
 custom pipelines:
 
 .. code-block:: python
@@ -245,7 +245,7 @@ Inspecting Results Programmatically
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After running a processing pipeline, processed arrays, masks, and provenance information
-are stored directly on the :class:`~playNano.afm_stack.AFMImageStack` object.
+are stored directly on the :class:`~playnano.afm_stack.AFMImageStack` object.
 You can use the following commands to explore what was generated:
 
 .. code-block:: python
@@ -282,7 +282,7 @@ Tips & Troubleshooting
 
 - If a ``raw`` snapshot is missing, check if it was loaded from an existing bundle.
 - If a plugin does not appear in the CLI, verify that its entry point group is
-  ``playNano.filters``.
+  ``playnano.filters``.
 - For large datasets, prefer exporting HDF5 bundles instead of large JSON logs.
 
 See also

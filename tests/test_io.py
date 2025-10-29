@@ -326,7 +326,7 @@ def test_load_afm_stack_folder_calls_correct_loader(tmp_path):
     )
 
     with patch(
-        "playNano.io.loader.load_jpk_folder", return_value=mock_stack
+        "playnano.io.loader.load_jpk_folder", return_value=mock_stack
     ) as mock_loader:
         mock_loader.__name__ = "load_jpk_folder"
         result = load_afm_stack(tmp_path)
@@ -517,7 +517,7 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
 
     output_path = tmp_path / "test.gif"
 
-    with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+    with patch("playnano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
 
         create_gif_with_scale_and_timestamp(
@@ -541,7 +541,7 @@ def test_fallback_to_index_if_no_timestamps(tmp_path):
 
     output_path = tmp_path / "test.gif"
 
-    with patch("playNano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+    with patch("playnano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
 
         create_gif_with_scale_and_timestamp(
@@ -608,7 +608,7 @@ def test_get_loader_for_folder_picks_first_supported(tmp_path):
     assert callable(loader)
 
 
-@patch("playNano.io.gif_export.create_gif_with_scale_and_timestamp")
+@patch("playnano.io.gif_export.create_gif_with_scale_and_timestamp")
 def test_export_gif_calls_create(mock_gif):
     """Test calls create_gif_with_scale_and_timestamp with correct parameters."""
     dummy = create_dummy_afm()

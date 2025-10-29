@@ -29,7 +29,7 @@ def main_window(qtbot):
     qtbot.wait(50)
 
 
-@patch("playNano.gui.window.AFMImageStack.load_data")
+@patch("playnano.gui.window.AFMImageStack.load_data")
 def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     """Test that the MainWindow loads and interacts correctly."""
 
@@ -98,8 +98,8 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     wnd.deleteLater()
 
 
-@patch("playNano.gui.main.QApplication")
-@patch("playNano.gui.main.MainWindow")
+@patch("playnano.gui.main.QApplication")
+@patch("playnano.gui.main.MainWindow")
 def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
     """Test that the GUI entry point launches the application correctly."""
     # Arrange: fake args with a dummy file path
@@ -137,10 +137,10 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
 def test_mainwindow_font_fallbacks(qtbot, caplog):
     """Test that font loading failures trigger warnings."""
     with patch(
-        "playNano.gui.window.QFontDatabase.addApplicationFont", return_value=-1
+        "playnano.gui.window.QFontDatabase.addApplicationFont", return_value=-1
     ):  #
         with patch(
-            "playNano.gui.window.QFontDatabase.applicationFontFamilies",
+            "playnano.gui.window.QFontDatabase.applicationFontFamilies",
             return_value=[],
         ):
             caplog.set_level(logging.WARNING)
@@ -327,8 +327,8 @@ def test_update_background_color_flat_branch():
     del wnd
 
 
-@patch("playNano.io.gif_export.export_gif")
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.gif_export.export_gif")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_gif_calls_export(mock_prepare, mock_export, qtbot):
     """Test that _export_gif calls prepare_output_directory and export_gif."""
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
@@ -358,8 +358,8 @@ def test_export_gif_calls_export(mock_prepare, mock_export, qtbot):
         (True, False, False),  # processed radio selected
     ],
 )
-@patch("playNano.io.gif_export.export_gif")
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.gif_export.export_gif")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_gif_branches(
     mock_prepare, mock_export, raw_present, raw_checked, expected_raw, qtbot
 ):
@@ -408,8 +408,8 @@ def test_export_gif_branches(
     wnd.deleteLater()
 
 
-@patch("playNano.io.gif_export.export_gif", side_effect=Exception("Export failed"))
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.gif_export.export_gif", side_effect=Exception("Export failed"))
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_gif_logs_error(mock_prepare, mock_export, qtbot, caplog):
     """Test that _export_gif logs an error on failure."""
     mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
@@ -481,8 +481,8 @@ def test_keypress_calls_super_for_other_keys(qtbot, monkeypatch):
     wnd.deleteLater()
 
 
-@patch("playNano.io.export_data.export_bundles")
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.export_data.export_bundles")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     """Test _export_gif branches on raw/processed data and z-range values."""
     # 1) Build a bare MainWindow without running its __init__
@@ -521,8 +521,8 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     del wnd
 
 
-@patch("playNano.io.export_data.export_bundles")
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.export_data.export_bundles")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
     """Test that _export_checked exports all formats when all checkboxes are set."""
     # 1) Build a bare MainWindow without running its __init__
@@ -561,8 +561,8 @@ def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
     del wnd
 
 
-@patch("playNano.gui.window.prepare_output_directory")
-@patch("playNano.io.export_data.export_bundles")
+@patch("playnano.gui.window.prepare_output_directory")
+@patch("playnano.io.export_data.export_bundles")
 def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
     """Test _export_checked logs a message and does nothing if no formats selected."""
     wnd = MainWindow.__new__(MainWindow)
@@ -583,8 +583,8 @@ def test_export_checked_no_formats(mock_export, mock_prepare, qtbot, caplog):
     del wnd
 
 
-@patch("playNano.io.export_data.export_bundles")
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.export_data.export_bundles")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_raw_requested_but_missing(
     mock_prepare, mock_export, qtbot, caplog
 ):
@@ -607,8 +607,8 @@ def test_export_checked_raw_requested_but_missing(
     del wnd
 
 
-@patch("playNano.io.export_data.export_bundles", side_effect=Exception("Export failed"))
-@patch("playNano.gui.window.prepare_output_directory", return_value="mock_dir")
+@patch("playnano.io.export_data.export_bundles", side_effect=Exception("Export failed"))
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
 def test_export_checked_logs_error(mock_prepare, mock_export, qtbot, caplog):
     """Test that _export_checked logs an error if export_bundles raises."""
     wnd = MainWindow.__new__(MainWindow)
@@ -821,7 +821,7 @@ def test_on_spinbox_changed_updates_attributes(which, show_flat, flat, attr_to_c
 @pytest.mark.parametrize(
     "show_flat, flat_data", [(True, np.array([1, 2, 3])), (False, None)]
 )
-@patch("playNano.gui.window.compute_zscale_range", return_value=(1.0, 9.0))
+@patch("playnano.gui.window.compute_zscale_range", return_value=(1.0, 9.0))
 def test_on_auto_recomputes_and_updates(mock_compute, show_flat, flat_data):
     """Test _on_auto recomputes z-scale, updates spinboxes, and refreshes viewer."""
     wnd = MainWindow.__new__(MainWindow)
@@ -926,12 +926,12 @@ def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
     widget._draw_scale_bar = False
     widget.show()
 
-    caplog.set_level("ERROR", logger="playNano.gui.widgets.viewer")
+    caplog.set_level("ERROR", logger="playnano.gui.widgets.viewer")
 
     with patch(
         "PySide6.QtGui.QPainter.fillRect", side_effect=RuntimeError("test error")
     ):
-        with caplog.at_level("ERROR", logger="playNano.gui.widgets.viewer"):
+        with caplog.at_level("ERROR", logger="playnano.gui.widgets.viewer"):
             widget.update()
             widget.repaint()
             qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)
@@ -961,9 +961,9 @@ def test_paint_event_zero_division_branch(widget, qtbot, caplog):
     widget._pixel_size_nm = ZeroDiv()
     widget._scale_bar_nm = 10
 
-    caplog.set_level("WARNING", logger="playNano.gui.widgets.viewer")
+    caplog.set_level("WARNING", logger="playnano.gui.widgets.viewer")
 
-    with caplog.at_level("WARNING", logger="playNano.gui.widgets.viewer"):
+    with caplog.at_level("WARNING", logger="playnano.gui.widgets.viewer"):
         widget.show()
         widget.repaint()
         qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)

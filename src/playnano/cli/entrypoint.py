@@ -275,7 +275,7 @@ def main() -> None:
     gui_parser = subparsers.add_parser("gui", help="Launch Qt GUI playback")
     gui_parser.add_argument("input_file", help="Path to AFM file/folder")
     gui_parser.set_defaults(
-        func=lambda args: __import__("playNano.gui.main").gui_entry(args)
+        func=lambda args: __import__("playnano.gui.main").gui_entry(args)
     )
 
     args = parser.parse_args()

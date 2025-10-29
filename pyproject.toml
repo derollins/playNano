@@ -99,14 +99,14 @@ docs = [
 notebooks = ["jupyter"]
 
 [project.scripts]
-playnano = "playNano.cli.entrypoint:main"
+playnano = "playnano.cli.entrypoint:main"
 
-[project.entry-points."playNano.filters"]
-median_filter = "playNano.processing.filters:median_filter"
+[project.entry-points."playnano.filters"]
+median_filter = "playnano.processing.filters:median_filter"
 
-[project.entry-points."playNano.analysis"]
-count_nonzero = "playNano.analysis.modules.count_nonzero:CountNonzeroModule"
-particle_detect = "playNano.analysis.modules.detection:ParticleDetector"
+[project.entry-points."playnano.analysis"]
+count_nonzero = "playnano.analysis.modules.count_nonzero:CountNonzeroModule"
+particle_detect = "playnano.analysis.modules.detection:ParticleDetector"
 
 [project.urls]
 Homepage = "https://github.com/derollins/playNano"
@@ -124,6 +124,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build]
 include = ["src", "README.md", "COPYING", "CITATION.cff", "pyproject.toml"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/playnano"]
+
 [tool.hatch.metadata]
 allow-ambiguous-features = true
 
@@ -131,14 +134,14 @@ allow-ambiguous-features = true
 source = "vcs"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/playNano/_version.py"
+version-file = "src/playnano/_version.py"
 
 [tool.isort]
 profile = "black"
 line_length = 88
 multi_line_output = 3
 include_trailing_comma = true
-known_first_party = ["playNano"]
+known_first_party = ["playnano"]
 
 [tool.black]
 line-length = 88
@@ -173,7 +176,7 @@ lint.ignore = [
 extend-exclude = [
   "docs",
   "notebooks",
-  "src/playNano/fonts",
+  "src/playnano/fonts",
   "tests/resources/spm_folder_0",
   "LICENSE",
 ]
@@ -182,4 +185,4 @@ extend-exclude = [
 "__init__.py" = ["F401"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=playNano --cov-report=term-missing --cov-append"
+addopts = "--cov=playnano --cov-report=term-missing --cov-append"

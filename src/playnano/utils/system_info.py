@@ -27,9 +27,9 @@ def gather_environment_info() -> dict:
         "platform": f"{platform.system()}-{platform.release()}-{platform.machine()}",
     }
     try:
-        info["playNano_version"] = importlib.metadata.version("playNano")
+        info["playnano_version"] = importlib.metadata.version("playnano")
     except importlib.metadata.PackageNotFoundError:
-        info["playNano_version"] = None
+        info["playnano_version"] = None
 
     for pkg in KEY_DEPENDENCIES:
         try:

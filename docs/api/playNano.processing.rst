@@ -1,61 +1,61 @@
-playNano.processing package
+playnano.processing package
 ===========================
 
 Submodules
 ----------
 
-playNano.processing.core module
+playnano.processing.core module
 -------------------------------
 
-.. automodule:: playNano.processing.core
+.. automodule:: playnano.processing.core
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.filters module
+playnano.processing.filters module
 ----------------------------------
 
-.. automodule:: playNano.processing.filters
+.. automodule:: playnano.processing.filters
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.mask\_generators module
+playnano.processing.mask\_generators module
 -------------------------------------------
 
-.. automodule:: playNano.processing.mask_generators
+.. automodule:: playnano.processing.mask_generators
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.masked\_filters module
+playnano.processing.masked\_filters module
 ------------------------------------------
 
-.. automodule:: playNano.processing.masked_filters
+.. automodule:: playnano.processing.masked_filters
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.pipeline module
+playnano.processing.pipeline module
 -----------------------------------
 
-.. automodule:: playNano.processing.pipeline
+.. automodule:: playnano.processing.pipeline
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.stack\_edit module
+playnano.processing.stack\_edit module
 --------------------------------------
 
-.. automodule:: playNano.processing.stack_edit
+.. automodule:: playnano.processing.stack_edit
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.processing.video\_processing module
+playnano.processing.video\_processing module
 --------------------------------------------
 
-.. automodule:: playNano.processing.video_processing
+.. automodule:: playnano.processing.video_processing
    :members:
    :undoc-members:
    :show-inheritance:
@@ -63,7 +63,7 @@ playNano.processing.video\_processing module
 Module contents
 ---------------
 
-.. automodule:: playNano.processing
+.. automodule:: playnano.processing
    :members:
    :undoc-members:
    :show-inheritance:
