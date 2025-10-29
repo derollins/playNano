@@ -1,4 +1,3 @@
-# docs/conf.py
 import importlib
 import os
 import sys
@@ -49,10 +48,13 @@ extensions = [
 autosummary_generate = True
 exclude_patterns = []
 
-# Sphinx-Multiversion selection (adjust as needed)
-smv_tag_whitelist = r"^v\d+\.\d+.*$"
-smv_branch_whitelist = r"^(main|dev)$"
-smv_remote_whitelist = r"^origin$"
+# ------------------------------------------------------------------------------
+# Sphinx-Multiversion selection (tight for now)
+#   Build only main until old tags are backported with a safe conf.py.
+# ------------------------------------------------------------------------------
+smv_tag_whitelist = r"^$"  # no tags yet
+smv_branch_whitelist = r"^(main)$"  # only main
+smv_remote_whitelist = r"^(origin)$"
 
 # ------------------------------------------------------------------------------
 # HTML theme and static files
@@ -112,11 +114,10 @@ intersphinx_mapping = {
 
 # ------------------------------------------------------------------------------
 # Defer package-dependent work to build time (no top-level imports!)
-# Also handle case-insensitive import of your package for summaries.
 # ------------------------------------------------------------------------------
 def _discover_analysis_module_names():
     """
-    Discover playnano/playnano.analysis.modules.* by scanning the source tree.
+    Discover playnano.analysis.modules.* by scanning the source tree.
     Works even if the package cannot be imported.
     """
     candidates = []
@@ -130,7 +131,7 @@ def _discover_analysis_module_names():
                     candidates.append(p.stem)
 
     # Fallback to non-src layout (older tags)
-    for pkg_dirname in ("playnano", "playnano"):
+    for pkg_dirname in ("playnano", "playNano"):  # FIXED: include both casings
         base = Path(repo_root) / pkg_dirname / "analysis" / "modules"
         if base.is_dir():
             for p in base.glob("*.py"):
@@ -144,9 +145,9 @@ def _discover_analysis_module_names():
 
 def _try_import_pkg():
     """
-    Try importing either 'playNano' or 'playnano', return (module, import_name) or (None, None).
+    Try importing either 'playnano' or 'playNano', return (module, import_name) or (None, None).
     """
-    for name in ("playNano", "playnano"):
+    for name in ("playnano", "playNano"):
         try:
             mod = importlib.import_module(name)
             return mod, name
@@ -158,6 +159,7 @@ def _try_import_pkg():
 def _write_generated_module_list(module_names, import_name):
     """
     Write _generated/generated_module_list.rst linking to the API page anchors.
+    Use lowercase 'playnano' in links/anchors to match Sphinx output.
     """
     if not module_names:
         print("DEBUG: No analysis modules discovered; skipping generated list.")
@@ -169,20 +171,17 @@ def _write_generated_module_list(module_names, import_name):
     api_folder = Path("html") / "api"
     rel_api_folder = os.path.relpath(api_folder, generated_list_path.parent)
 
-    # Use the import name for anchors (so playNano vs playnano anchors are consistent)
-    package_prefix = (
-        import_name or "playNano"
-    )  # default to historical anchor if unknown
+    PACKAGE_PREFIX_FOR_LINKS = "playnano"  # always lowercase for URLs/anchors
 
     with generated_list_path.open("w", encoding="utf-8") as f:
         for name in module_names:
-            module_html = f"{package_prefix}.analysis.modules.html"
-            anchor = f"#module-{package_prefix}.analysis.modules.{name}"
+            module_html = f"{PACKAGE_PREFIX_FOR_LINKS}.analysis.modules.html"
+            anchor = f"#module-{PACKAGE_PREFIX_FOR_LINKS}.analysis.modules.{name}"
             link = os.path.join(rel_api_folder, module_html) + anchor
             link = link.replace(os.sep, "/")
             summary = "No description available."
 
-            # Try to import to get a 1-line summary; if it fails, keep placeholder.
+            # Try to import for a 1-line summary; failures are non-fatal
             if import_name:
                 try:
                     mod = importlib.import_module(
@@ -207,7 +206,9 @@ def setup(app):
         mod, import_name = _try_import_pkg()
         if mod:
             print(
-                f"DEBUG: Imported package '{import_name}' from:",
+                "DEBUG: Imported package",
+                repr(import_name),
+                "from:",
                 getattr(mod, "__file__", "<namespace>"),
             )
         else:
