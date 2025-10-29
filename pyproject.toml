@@ -1,5 +1,5 @@
 [project]
-name = "playNano"
+name = "playnano"
 dynamic = ["version"]
 description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"

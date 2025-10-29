@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from playNano.processing.video_processing import (
+from playnano.processing.video_processing import (
     align_frames,
     crop_square,
     intersection_crop,

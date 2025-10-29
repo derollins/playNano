@@ -201,8 +201,8 @@ custom pipelines:
 
 .. code-block:: python
 
-   from playNano.afm_stack import AFMImageStack
-   from playNano.processing.pipeline import ProcessingPipeline
+   from playnano.afm_stack import AFMImageStack
+   from playnano.processing.pipeline import ProcessingPipeline
 
    stack = AFMImageStack.load_afm_stack("data/sample.h5-jpk", channel="height_trace")
 

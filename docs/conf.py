@@ -1,3 +1,4 @@
+# docs/conf.py
 import os
 import sys
 import importlib
@@ -111,30 +112,50 @@ intersphinx_mapping = {
 
 # ------------------------------------------------------------------------------
 # Defer package-dependent work to build time (no top-level imports!)
+# Also handle case-insensitive import of your package for summaries.
 # ------------------------------------------------------------------------------
 def _discover_analysis_module_names():
     """
-    Discover playNano.analysis.modules.* by scanning the source tree.
+    Discover playnano/playNano.analysis.modules.* by scanning the source tree.
     Works even if the package cannot be imported.
     """
     candidates = []
 
     # Prefer src/ layout
-    base = Path(src_path) / "playNano" / "analysis" / "modules"
-    if not base.is_dir():
-        # Fallback to non-src layout (older tags)
-        base = Path(repo_root) / "playNano" / "analysis" / "modules"
+    for pkg_dirname in ("playNano", "playnano"):  # support both cases
+        base = Path(src_path) / pkg_dirname / "analysis" / "modules"
+        if base.is_dir():
+            for p in base.glob("*.py"):
+                if p.name != "__init__.py":
+                    candidates.append(p.stem)
 
-    if base.is_dir():
-        for p in base.glob("*.py"):
-            if p.name != "__init__.py":
-                candidates.append(p.stem)
-    else:
-        print(f"DEBUG: modules directory not found: {base}")
+    # Fallback to non-src layout (older tags)
+    for pkg_dirname in ("playNano", "playnano"):
+        base = Path(repo_root) / pkg_dirname / "analysis" / "modules"
+        if base.is_dir():
+            for p in base.glob("*.py"):
+                if p.name != "__init__.py":
+                    candidates.append(p.stem)
+
+    if not candidates:
+        print("DEBUG: modules directory not found in expected locations.")
     return sorted(set(candidates))
 
 
-def _write_generated_module_list(module_names):
+def _try_import_pkg():
+    """
+    Try importing either 'playNano' or 'playnano', return (module, import_name) or (None, None).
+    """
+    for name in ("playNano", "playnano"):
+        try:
+            mod = importlib.import_module(name)
+            return mod, name
+        except Exception:
+            continue
+    return None, None
+
+
+def _write_generated_module_list(module_names, import_name):
     """
     Write _generated/generated_module_list.rst linking to the API page anchors.
     """
@@ -148,22 +169,30 @@ def _write_generated_module_list(module_names):
     api_folder = Path("html") / "api"
     rel_api_folder = os.path.relpath(api_folder, generated_list_path.parent)
 
+    # Use the import name for anchors (so playNano vs playnano anchors are consistent)
+    package_prefix = (
+        import_name or "playNano"
+    )  # default to historical anchor if unknown
+
     with generated_list_path.open("w", encoding="utf-8") as f:
         for name in module_names:
-            module_html = "playNano.analysis.modules.html"
-            anchor = f"#module-playNano.analysis.modules.{name}"
+            module_html = f"{package_prefix}.analysis.modules.html"
+            anchor = f"#module-{package_prefix}.analysis.modules.{name}"
             link = os.path.join(rel_api_folder, module_html) + anchor
             link = link.replace(os.sep, "/")
             summary = "No description available."
 
-            # Try to import for the summary; failures are non-fatal
-            try:
-                mod = importlib.import_module(f"playNano.analysis.modules.{name}")
-                doc = (mod.__doc__ or "").strip().splitlines()
-                if doc:
-                    summary = doc[0]
-            except Exception as e:
-                print(f"DEBUG: Could not import {name} for summary: {e}")
+            # Try to import to get a 1-line summary; if it fails, keep placeholder.
+            if import_name:
+                try:
+                    mod = importlib.import_module(
+                        f"{import_name}.analysis.modules.{name}"
+                    )
+                    doc = (mod.__doc__ or "").strip().splitlines()
+                    if doc:
+                        summary = doc[0]
+                except Exception as e:
+                    print(f"DEBUG: Could not import {name} for summary: {e}")
 
             f.write(f"- `{name} <{link}>`_\n")
             if summary:
@@ -175,6 +204,14 @@ def setup(app):
     # import-time failures and lets SMV import the config safely.
     def _on_builder_inited(_app):
         names = _discover_analysis_module_names()
-        _write_generated_module_list(names)
+        mod, import_name = _try_import_pkg()
+        if mod:
+            print(
+                f"DEBUG: Imported package '{import_name}' from:",
+                getattr(mod, "__file__", "<namespace>"),
+            )
+        else:
+            print("DEBUG: Could not import package; proceeding without summaries.")
+        _write_generated_module_list(names, import_name)
 
     app.connect("builder-inited", _on_builder_inited)

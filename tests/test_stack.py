@@ -12,8 +12,8 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-import playNano.afm_stack as afm_stack_module
-from playNano.afm_stack import AFMImageStack, normalize_timestamps
+import playnano.afm_stack as afm_stack_module
+from playnano.afm_stack import AFMImageStack, normalize_timestamps
 
 logger = logging.getLogger(__name__)
 
@@ -697,7 +697,7 @@ def test_execute_filter_step_masked_fn_raises_inner_exception(monkeypatch, caplo
             raise ValueError("Expected ValueError without kwargs")
 
     test_step_name = "test_step"
-    from playNano.afm_stack import MASK_FILTERS_MAP, AFMImageStack
+    from playnano.afm_stack import MASK_FILTERS_MAP, AFMImageStack
 
     MASK_FILTERS_MAP[test_step_name] = masked_fn_wrapper
 
@@ -751,7 +751,7 @@ def test_execute_mask_step_direct_exception(caplog):
     faulty_mask_fn.__name__ = "faulty_mask_fn"
 
     # Dummy instance with _execute_mask_step
-    from playNano.afm_stack import AFMImageStack
+    from playnano.afm_stack import AFMImageStack
 
     class Dummy:
         _execute_mask_step = AFMImageStack._execute_mask_step
@@ -847,7 +847,7 @@ def test_execute_mask_step_typeerror_then_failure(caplog):
     mock_mask_fn_combined.__name__ = "mock_mask_fn_combined"
 
     # Patch _execute_mask_step into a dummy class instance
-    from playNano.afm_stack import AFMImageStack
+    from playnano.afm_stack import AFMImageStack
 
     class Dummy:
         _execute_mask_step = AFMImageStack._execute_mask_step

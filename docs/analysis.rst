@@ -126,8 +126,8 @@ Construct and run a pipeline from Python:
 
 .. code-block:: python
 
-   from playNano.afm_stack import AFMImageStack
-   from playNano.analysis.pipeline import AnalysisPipeline
+   from playnano.afm_stack import AFMImageStack
+   from playnano.analysis.pipeline import AnalysisPipeline
    import yaml
 
    stack = AFMImageStack.load_afm_stack("data/processed_sample.h5", channel="height_trace")

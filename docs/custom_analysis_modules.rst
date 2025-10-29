@@ -24,8 +24,8 @@ Minimal Example
 
 .. code-block:: python
 
-   from playNano.analysis.base import AnalysisModule
-   from playNano.afm_stack import AFMImageStack
+   from playnano.analysis.base import AnalysisModule
+   from playnano.afm_stack import AFMImageStack
 
    class MyModule(AnalysisModule):
        version = "0.1.0"
@@ -105,7 +105,7 @@ or programmatically:
 
 .. code-block:: python
 
-   from playNano.analysis.pipeline import AnalysisPipeline
+   from playnano.analysis.pipeline import AnalysisPipeline
 
    pipeline = AnalysisPipeline()
    pipeline.add("my_module", param1=42)

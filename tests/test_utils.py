@@ -11,15 +11,15 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from playNano.utils.io_utils import (
+from playnano.utils.io_utils import (
     compute_zscale_range,
     convert_height_units_to_nm,
     guess_height_data_units,
     normalize_to_uint8,
     pad_to_square,
 )
-from playNano.utils.system_info import gather_environment_info
-from playNano.utils.time_utils import utc_now_iso
+from playnano.utils.system_info import gather_environment_info
+from playnano.utils.time_utils import utc_now_iso
 
 
 def test_pad_to_square():

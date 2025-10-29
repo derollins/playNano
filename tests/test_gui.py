@@ -8,9 +8,9 @@ import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
-from playNano.gui import main
-from playNano.gui.widgets.viewer import ViewerWidget
-from playNano.gui.window import MainWindow
+from playnano.gui import main
+from playnano.gui.widgets.viewer import ViewerWidget
+from playnano.gui.window import MainWindow
 
 log = logging.getLogger(__name__)
 
@@ -319,7 +319,7 @@ def test_update_background_color_flat_branch():
     wnd._update_background_color()
 
     # Calculate expected RGB value the same way as in code:
-    from playNano.gui.window import z_to_rgb
+    from playnano.gui.window import z_to_rgb
 
     expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afmhot")
 
@@ -486,7 +486,7 @@ def test_keypress_calls_super_for_other_keys(qtbot, monkeypatch):
 def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
     """Test _export_gif branches on raw/processed data and z-range values."""
     # 1) Build a bare MainWindow without running its __init__
-    from playNano.gui.window import MainWindow
+    from playnano.gui.window import MainWindow
 
     wnd = MainWindow.__new__(MainWindow)
 
@@ -526,7 +526,7 @@ def test_export_checked_calls_export(mock_prepare, mock_export_bundles):
 def test_export_checked_calls_export_all(mock_prepare, mock_export_bundles):
     """Test that _export_checked exports all formats when all checkboxes are set."""
     # 1) Build a bare MainWindow without running its __init__
-    from playNano.gui.window import MainWindow
+    from playnano.gui.window import MainWindow
 
     wnd = MainWindow.__new__(MainWindow)
 

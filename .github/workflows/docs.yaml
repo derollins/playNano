@@ -71,7 +71,7 @@ jobs:
           print("site-packages:", site.getsitepackages())
           print("sys.path head:", sys.path[:5])
           try:
-              import playNano
+              import playnano
               print("playNano loaded from:", getattr(playNano, "__file__", "<namespace>"))
           except Exception as e:
               print("Import failed:", e)
@@ -80,7 +80,7 @@ jobs:
       - name: Verify import path
         run: |
           python - <<'PY'
-          import playNano, sys
+          import playnano, sys
           print("playNano file:", getattr(playNano, "__file__", "<namespace>"))
           print("sys.path[0:5]:", sys.path[:5])
           PY

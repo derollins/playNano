@@ -5,9 +5,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from playNano.cli import actions
-from playNano.errors import LoadError
-from playNano.processing import core
+from playnano.cli import actions
+from playnano.errors import LoadError
+from playnano.processing import core
 
 
 @patch("playNano.processing.core.AFMImageStack.load_data")

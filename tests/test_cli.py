@@ -17,13 +17,13 @@ import numpy as np
 import pytest
 import yaml
 
-import playNano.cli.actions as actions
-from playNano.afm_stack import AFMImageStack
-from playNano.cli import utils as cli_utils
-from playNano.cli.actions import IO, Wizard, analyze_pipeline_mode
-from playNano.cli.entrypoint import setup_logging
-from playNano.cli.handlers import handle_analyze, handle_play, handle_wizard
-from playNano.cli.utils import (
+import playnano.cli.actions as actions
+from playnano.afm_stack import AFMImageStack
+from playnano.cli import utils as cli_utils
+from playnano.cli.actions import IO, Wizard, analyze_pipeline_mode
+from playnano.cli.entrypoint import setup_logging
+from playnano.cli.handlers import handle_analyze, handle_play, handle_wizard
+from playnano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
     _ask_with_spec,
@@ -41,10 +41,10 @@ from playNano.cli.utils import (
     parse_processing_file,
     parse_processing_string,
 )
-from playNano.errors import LoadError
-from playNano.processing.filters import register_filters
-from playNano.processing.mask_generators import register_masking
-from playNano.processing.masked_filters import register_mask_filters
+from playnano.errors import LoadError
+from playnano.processing.filters import register_filters
+from playnano.processing.mask_generators import register_masking
+from playnano.processing.masked_filters import register_mask_filters
 
 register_filters()
 register_masking()
@@ -664,7 +664,7 @@ def mock_filters(monkeypatch):
 
 def test_parse_processing_string_with_mock(mock_filters):
     """Test the parseing of the processing steps string input."""
-    from playNano.cli.utils import parse_processing_string
+    from playnano.cli.utils import parse_processing_string
 
     s = "mock_mask:param1=1; mock_filter:param2=2"
     steps = parse_processing_string(s)
@@ -853,7 +853,7 @@ def test_parse_analysis_string_skips_empty_param_pairs():
 def test_parse_analysis_string_invalid_step_name():
     """Test that unknown analysis step raises ValueError."""
     with patch("playNano.cli.utils.is_valid_analysis_step", return_value=False):
-        from playNano.cli.utils import parse_analysis_string
+        from playnano.cli.utils import parse_analysis_string
 
         with pytest.raises(ValueError, match="Unknown analysis step: 'bad_step'"):
             parse_analysis_string("bad_step:param=1")
@@ -1519,7 +1519,7 @@ def test_handle_analyze_success(monkeypatch):
     monkeypatch.setattr(actions, "export_to_hdf5", lambda record, out_path: None)
 
     # Use real parse_analysis_string to allow valid step
-    from playNano.cli.utils import parse_analysis_string
+    from playnano.cli.utils import parse_analysis_string
 
     monkeypatch.setattr(actions, "parse_analysis_string", parse_analysis_string)
 
@@ -1789,7 +1789,7 @@ def test_wizard_run_with_export_and_gif(monkeypatch, tmp_path):
 
 def test_ask_for_processing_params_no_conditions(monkeypatch):
     """Test asking for parameters with no conditions."""
-    from playNano.cli.utils import ask_for_processing_params
+    from playnano.cli.utils import ask_for_processing_params
 
     def dummy_func(data, param1: int = 5, param2: str = "default"):
         pass
@@ -1924,7 +1924,7 @@ def test_prompt_remaining_skips_on_false_condition():
     kwargs = {}
 
     with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
-        from playNano.cli.utils import _prompt_remaining
+        from playnano.cli.utils import _prompt_remaining
 
         _prompt_remaining([entry], kwargs)
         mock_cast.assert_not_called()
@@ -1937,7 +1937,7 @@ def test_prompt_remaining_adds_value():
     kwargs = {}
 
     with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
-        from playNano.cli.utils import _prompt_remaining
+        from playnano.cli.utils import _prompt_remaining
 
         _prompt_remaining([entry], kwargs)
         assert kwargs == {"param1": 42}
@@ -1952,7 +1952,7 @@ def test_prompt_signature_remaining_skips_on_false_condition():
     kwargs = {}
 
     with patch("playNano.cli.utils._prompt_and_cast") as mock_cast:
-        from playNano.cli.utils import _prompt_signature_remaining
+        from playnano.cli.utils import _prompt_signature_remaining
 
         _prompt_signature_remaining([("param1", param)], kwargs, conds)
         mock_cast.assert_not_called()
@@ -1968,7 +1968,7 @@ def test_prompt_signature_remaining_adds_value():
     kwargs = {}
 
     with patch("playNano.cli.utils._prompt_and_cast", return_value=42):
-        from playNano.cli.utils import _prompt_signature_remaining
+        from playnano.cli.utils import _prompt_signature_remaining
 
         _prompt_signature_remaining([("param1", param)], kwargs, conds)
         assert kwargs == {"param1": 42}

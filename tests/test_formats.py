@@ -9,18 +9,18 @@ import h5py
 import numpy as np
 import pytest
 
-from playNano.afm_stack import AFMImageStack
-from playNano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
-from playNano.io.formats.read_h5jpk import (
+from playnano.afm_stack import AFMImageStack
+from playnano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
+from playnano.io.formats.read_h5jpk import (
     _get_z_scaling_h5,
     _get_z_unit_h5,
     _guess_and_standardize_units_to_nm,
     apply_z_unit_conversion,
     load_h5jpk,
 )
-from playNano.io.formats.read_jpk_folder import load_jpk_folder
-from playNano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
-from playNano.io.loader import get_loader_for_folder
+from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
+from playnano.io.loader import get_loader_for_folder
 
 
 def test_load_afm_stack_file_calls_correct_loader(tmp_path):

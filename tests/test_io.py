@@ -15,40 +15,40 @@ import tifffile
 from PIL import Image, ImageSequence
 from tifffile import TiffWriter
 
-from playNano.afm_stack import AFMImageStack
-from playNano.analysis.pipeline import AnalysisPipeline
-from playNano.analysis.utils.common import (
+from playnano.afm_stack import AFMImageStack
+from playnano.analysis.pipeline import AnalysisPipeline
+from playnano.analysis.utils.common import (
     export_to_hdf5,
     make_json_safe,
     sanitize_analysis_for_logging,
 )
-from playNano.io.data_loaders import (
+from playnano.io.data_loaders import (
     load_h5_bundle,
     load_npz_bundle,
     load_ome_tiff_stack,
 )
-from playNano.io.export_data import (
+from playnano.io.export_data import (
     check_path_is_path,
     export_bundles,
     save_h5_bundle,
     save_npz_bundle,
     save_ome_tiff_stack,
 )
-from playNano.io.formats.read_asd import load_asd_file
-from playNano.io.formats.read_h5jpk import load_h5jpk
-from playNano.io.formats.read_jpk_folder import load_jpk_folder
-from playNano.io.formats.read_spm_folder import load_spm_folder
-from playNano.io.gif_export import (
+from playnano.io.formats.read_asd import load_asd_file
+from playnano.io.formats.read_h5jpk import load_h5jpk
+from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_spm_folder import load_spm_folder
+from playnano.io.gif_export import (
     create_gif_with_scale_and_timestamp,
     export_gif,
     normalize_to_uint8,
 )
-from playNano.io.loader import (
+from playnano.io.loader import (
     get_loader_for_file,
     get_loader_for_folder,
     load_afm_stack,
 )
-from playNano.processing.pipeline import ProcessingPipeline
+from playnano.processing.pipeline import ProcessingPipeline
 
 
 class DummyAFM:
@@ -150,7 +150,7 @@ def test_load_spm_folder_handles_numeric_extensions(tmp_path):
     dummy_img = np.ones((5, 5), dtype=np.float32)
     dummy_pixel_size = 1.0
 
-    from playNano.io.formats import read_spm_folder
+    from playnano.io.formats import read_spm_folder
 
     read_spm_folder.spm.load_spm = lambda f, channel: (dummy_img, dummy_pixel_size)
 

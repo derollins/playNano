@@ -123,7 +123,7 @@ Programmatic TIFF Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_ome_tiff_stack
+   from playnano.io.export_data import save_ome_tiff_stack
 
    save_ome_tiff_stack(Path("exports/stack_filtered.ome.tif"), stack)
    save_ome_tiff_stack(Path("exports/stack_raw.ome.tif"), stack, raw=True)
@@ -173,7 +173,7 @@ Programmatic NPZ Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_npz_bundle
+   from playnano.io.export_data import save_npz_bundle
 
    save_npz_bundle(Path("exports/stack_filtered.npz"), stack)
    save_npz_bundle(Path("exports/stack_raw.npz"), stack, raw=True)
@@ -182,7 +182,7 @@ Programmatic NPZ Export
 
 .. code-block:: python
 
-   from playNano.io.loaders import load_npz_bundle
+   from playnano.io.loaders import load_npz_bundle
    stack = load_npz_bundle("exports/stack_filtered.npz")
 
 ---
@@ -228,7 +228,7 @@ Programmatic HDF5 Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_h5_bundle
+   from playnano.io.export_data import save_h5_bundle
 
    save_h5_bundle(Path("exports/stack_filtered.h5"), stack)
    save_h5_bundle(Path("exports/stack_raw.h5"), stack, raw=True)
@@ -237,7 +237,7 @@ Programmatic HDF5 Export
 
 .. code-block:: python
 
-   from playNano.io.loaders import load_h5_bundle
+   from playnano.io.loaders import load_h5_bundle
    stack = load_h5_bundle("exports/stack_filtered.h5")
 
 ---
@@ -296,7 +296,7 @@ Programmatic GIF Export
 
 .. code-block:: python
 
-   from playNano.io.gif_export import export_gif
+   from playnano.io.gif_export import export_gif
    export_gif(
        stack,
        make_gif=True,
@@ -321,7 +321,7 @@ Use :func:`~playNano.io.export_bundles` to export multiple formats in one call.
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import export_bundles
+   from playnano.io.export_data import export_bundles
 
    export_bundles(
        afm_stack=stack,
