@@ -8,10 +8,10 @@ import tempfile
 import numpy as np
 import pytest
 
-from playNano.afm_stack import AFMImageStack
-from playNano.analysis import export
-from playNano.analysis.base import AnalysisModule
-from playNano.utils import system_info
+from playnano.afm_stack import AFMImageStack
+from playnano.analysis import export
+from playnano.analysis.base import AnalysisModule
+from playnano.utils import system_info
 
 
 class DummyModule(AnalysisModule):
@@ -76,7 +76,7 @@ def test_gather_environment_info_contains_expected_keys():
 
     assert "python_version" in info
     assert "platform" in info
-    assert "playNano_version" in info
+    assert "playnano_version" in info
 
     # Versions for key packages may or may not exist
     for pkg in ("numpy_version", "h5py_version", "scipy_version"):

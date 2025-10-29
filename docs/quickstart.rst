@@ -31,7 +31,7 @@ Install the latest release of **playNano** from PyPi using pip.
 .. code-block:: bash
 
    playnano --help
-   python -c "import playNano; print(playNano.__version__)"
+   python -c "import playnano; print(playnano.__version__)"
 
 4. Most common actions (one-liners)
 -----------------------------------

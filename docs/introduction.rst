@@ -33,7 +33,7 @@ Core Components
 **playNano** is organised around four main stages:
 
 1. **Loading** - Imports a sequence of AFM frames into an
-   :class:`~playNano.afm_stack.AFMImageStack`, preserving timestamps and metadata.
+   :class:`~playnano.afm_stack.AFMImageStack`, preserving timestamps and metadata.
    The following AFM file formats are supported:
    ``.jpk``, ``.asd``, ``.h5-jpk``, and ``.spm``.
 2. **Processing** - Applies flattening, filtering, and frame-alignment operations

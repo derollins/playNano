@@ -9,10 +9,10 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-import playNano.analysis.pipeline as apipeline_mod
-from playNano.afm_stack import AFMImageStack
-from playNano.analysis.base import AnalysisModule
-from playNano.analysis.pipeline import AnalysisPipeline
+import playnano.analysis.pipeline as apipeline_mod
+from playnano.afm_stack import AFMImageStack
+from playnano.analysis.base import AnalysisModule
+from playnano.analysis.pipeline import AnalysisPipeline
 
 
 @pytest.fixture

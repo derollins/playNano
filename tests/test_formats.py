@@ -9,18 +9,18 @@ import h5py
 import numpy as np
 import pytest
 
-from playNano.afm_stack import AFMImageStack
-from playNano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
-from playNano.io.formats.read_h5jpk import (
+from playnano.afm_stack import AFMImageStack
+from playnano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
+from playnano.io.formats.read_h5jpk import (
     _get_z_scaling_h5,
     _get_z_unit_h5,
     _guess_and_standardize_units_to_nm,
     apply_z_unit_conversion,
     load_h5jpk,
 )
-from playNano.io.formats.read_jpk_folder import load_jpk_folder
-from playNano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
-from playNano.io.loader import get_loader_for_folder
+from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
+from playnano.io.loader import get_loader_for_folder
 
 
 def test_load_afm_stack_file_calls_correct_loader(tmp_path):
@@ -44,7 +44,7 @@ def test_load_afm_stack_file_calls_correct_loader(tmp_path):
     )
 
     with patch(
-        "playNano.io.loader.load_h5jpk",
+        "playnano.io.loader.load_h5jpk",
         return_value=dummy_stack,
     ) as mock_loader:
         mock_loader.__name__ = "load_h5jpk_file"
@@ -86,7 +86,7 @@ def test_load_afm_stack_file_calls_correct_folder_loader(
         frame_metadata=[{}],
     )
 
-    patch_path = f"playNano.io.loader.{loader_func_name}"
+    patch_path = f"playnano.io.loader.{loader_func_name}"
 
     with patch(patch_path, return_value=dummy_stack) as mock_loader:
         mock_loader.__name__ = loader_func_name
@@ -122,7 +122,7 @@ def test_load_data_with_multiple_files(tmp_path):
     )
 
     with patch(
-        "playNano.io.loader.load_jpk_folder", return_value=dummy_stack
+        "playnano.io.loader.load_jpk_folder", return_value=dummy_stack
     ) as mock_loader:
         mock_loader.__name__ = "load_jpk_folder"
         result = AFMImageStack.load_data(tmp_path)
@@ -475,9 +475,9 @@ class TestGuessAndStandardizeUnitsToNM(unittest.TestCase):
 class TestZUnitBlock:
     """Tests for apply_z_unit_conversion."""
 
-    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value="um")
+    @patch("playnano.io.formats.read_h5jpk._get_z_unit_h5", return_value="um")
     @patch(
-        "playNano.io.formats.read_h5jpk.convert_height_units_to_nm",
+        "playnano.io.formats.read_h5jpk.convert_height_units_to_nm",
         side_effect=lambda img, unit: img * 1000,
     )
     def test_known_unit_conversion(self, mock_convert, mock_get_unit):
@@ -494,7 +494,7 @@ class TestZUnitBlock:
         np.testing.assert_allclose(called_args[0], np.array([[1e-3, 2e-3]]))
         assert called_args[1] == "um"
 
-    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value="deg")
+    @patch("playnano.io.formats.read_h5jpk._get_z_unit_h5", return_value="deg")
     def test_passthrough_for_non_scaled_units(self, mock_get_unit):
         """Should not modify images if unit is in ['V', 'v', 'deg']."""
         images = np.array([[0.3, 0.7]])
@@ -504,9 +504,9 @@ class TestZUnitBlock:
 
         np.testing.assert_array_equal(result, images)
 
-    @patch("playNano.io.formats.read_h5jpk._get_z_unit_h5", return_value=None)
+    @patch("playnano.io.formats.read_h5jpk._get_z_unit_h5", return_value=None)
     @patch(
-        "playNano.io.formats.read_h5jpk._guess_and_standardize_units_to_nm",
+        "playnano.io.formats.read_h5jpk._guess_and_standardize_units_to_nm",
         side_effect=lambda img: img * 1e9,
     )
     def test_fallback_to_guessing(self, mock_guess, mock_get_unit):
@@ -565,8 +565,8 @@ def test_load_spm_folder_raises_if_no_spm_files(tmp_path):
         load_spm_folder(tmp_path, channel="height")
 
 
-@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
-@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+@patch("playnano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playnano.io.formats.read_spm_folder.parse_spm_header")
 def test_load_spm_folder_missing_line_rate_raises(
     mock_parse_header, mock_load_spm, tmp_path
 ):
@@ -584,8 +584,8 @@ def test_load_spm_folder_missing_line_rate_raises(
         load_spm_folder(tmp_path, channel="height")
 
 
-@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
-@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+@patch("playnano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playnano.io.formats.read_spm_folder.parse_spm_header")
 def test_load_spm_folder_inconsistent_shape_raises(
     mock_parse_header, mock_load_spm, tmp_path
 ):
@@ -607,8 +607,8 @@ def test_load_spm_folder_inconsistent_shape_raises(
         load_spm_folder(tmp_path, channel="height")
 
 
-@patch("playNano.io.formats.read_spm_folder.spm.load_spm")
-@patch("playNano.io.formats.read_spm_folder.parse_spm_header")
+@patch("playnano.io.formats.read_spm_folder.spm.load_spm")
+@patch("playnano.io.formats.read_spm_folder.parse_spm_header")
 def test_load_spm_folder_inconsistent_pixel_size_raises(
     mock_parse_header, mock_load_spm, tmp_path
 ):

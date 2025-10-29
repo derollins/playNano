@@ -229,5 +229,5 @@ This project bundles the following fonts:
 
 Full license texts and attribution are provided in:
 
-- `src/playNano/fonts/Steps-Mono/LICENCE.txt`
-- `src/playNano/fonts/Basic/LICENCE.txt`
+- `src/playnano/fonts/Steps-Mono/LICENCE.txt`
+- `src/playnano/fonts/Basic/LICENCE.txt`

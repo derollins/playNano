@@ -1,4 +1,4 @@
-playNano.io package
+playnano.io package
 ===================
 
 Subpackages
@@ -7,39 +7,39 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   playNano.io.formats
+   playnano.io.formats
 
 Submodules
 ----------
 
-playNano.io.data\_loaders module
+playnano.io.data\_loaders module
 --------------------------------
 
-.. automodule:: playNano.io.data_loaders
+.. automodule:: playnano.io.data_loaders
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.io.export\_data module
+playnano.io.export\_data module
 -------------------------------
 
-.. automodule:: playNano.io.export_data
+.. automodule:: playnano.io.export_data
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.io.gif\_export module
+playnano.io.gif\_export module
 ------------------------------
 
-.. automodule:: playNano.io.gif_export
+.. automodule:: playnano.io.gif_export
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.io.loader module
+playnano.io.loader module
 -------------------------
 
-.. automodule:: playNano.io.loader
+.. automodule:: playnano.io.loader
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,7 +47,7 @@ playNano.io.loader module
 Module contents
 ---------------
 
-.. automodule:: playNano.io
+.. automodule:: playnano.io
    :members:
    :undoc-members:
    :show-inheritance:

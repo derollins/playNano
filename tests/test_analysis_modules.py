@@ -7,16 +7,16 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
-from playNano.afm_stack import AFMImageStack
-from playNano.analysis.base import AnalysisModule
-from playNano.analysis.modules import feature_detection, x_means_clustering
-from playNano.analysis.modules.count_nonzero import CountNonzeroModule
-from playNano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
-from playNano.analysis.modules.feature_detection import MASK_MAP, FeatureDetectionModule
-from playNano.analysis.modules.k_means_clustering import KMeansClusteringModule
-from playNano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
-from playNano.analysis.modules.particle_tracking import ParticleTrackingModule
-from playNano.analysis.modules.x_means_clustering import XMeansClusteringModule
+from playnano.afm_stack import AFMImageStack
+from playnano.analysis.base import AnalysisModule
+from playnano.analysis.modules import feature_detection, x_means_clustering
+from playnano.analysis.modules.count_nonzero import CountNonzeroModule
+from playnano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
+from playnano.analysis.modules.feature_detection import MASK_MAP, FeatureDetectionModule
+from playnano.analysis.modules.k_means_clustering import KMeansClusteringModule
+from playnano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
+from playnano.analysis.modules.particle_tracking import ParticleTrackingModule
+from playnano.analysis.modules.x_means_clustering import XMeansClusteringModule
 
 # --- Test for abstract base class ---
 
@@ -1327,7 +1327,7 @@ def test_xmeans_skips_negative_cluster_labels():
     prev = make_prev(pf)
 
     # Temporarily monkeypatch core_xmeans to produce a -1 label
-    from playNano.analysis.modules import x_means_clustering
+    from playnano.analysis.modules import x_means_clustering
 
     def fake_core_xmeans(data, **kwargs):
         return np.array([0, -1])  # One normal cluster, one invalid
@@ -1437,7 +1437,7 @@ def test_run_skips_negative_cluster_ids(monkeypatch):
         return labels, centers
 
     monkeypatch.setattr(
-        "playNano.analysis.modules.x_means_clustering.core_xmeans", fake_core_xmeans
+        "playnano.analysis.modules.x_means_clustering.core_xmeans", fake_core_xmeans
     )
 
     result = module.run(stack, previous_results)

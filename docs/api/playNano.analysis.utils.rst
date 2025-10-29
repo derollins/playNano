@@ -1,37 +1,37 @@
-playNano.analysis.utils package
+playnano.analysis.utils package
 ===============================
 
 Submodules
 ----------
 
-playNano.analysis.utils.common module
+playnano.analysis.utils.common module
 -------------------------------------
 
-.. automodule:: playNano.analysis.utils.common
+.. automodule:: playnano.analysis.utils.common
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.analysis.utils.frames module
+playnano.analysis.utils.frames module
 -------------------------------------
 
-.. automodule:: playNano.analysis.utils.frames
+.. automodule:: playnano.analysis.utils.frames
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.analysis.utils.loader module
+playnano.analysis.utils.loader module
 -------------------------------------
 
-.. automodule:: playNano.analysis.utils.loader
+.. automodule:: playnano.analysis.utils.loader
    :members:
    :undoc-members:
    :show-inheritance:
 
-playNano.analysis.utils.particles module
+playnano.analysis.utils.particles module
 ----------------------------------------
 
-.. automodule:: playNano.analysis.utils.particles
+.. automodule:: playnano.analysis.utils.particles
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ playNano.analysis.utils.particles module
 Module contents
 ---------------
 
-.. automodule:: playNano.analysis.utils
+.. automodule:: playnano.analysis.utils
    :members:
    :undoc-members:
    :show-inheritance:

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from playNano.afm_stack import AFMImageStack
-from playNano.processing.pipeline import ProcessingPipeline, _get_plugin_version
+from playnano.afm_stack import AFMImageStack
+from playnano.processing.pipeline import ProcessingPipeline, _get_plugin_version
 
 
 def test_get_plugin_version_missing_module(monkeypatch):

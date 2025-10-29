@@ -1,4 +1,4 @@
-"""Tests for filters and masking functions in playNano.processing."""
+"""Tests for filters and masking functions in playnano.processing."""
 
 import numpy as np
 import pytest
@@ -6,9 +6,9 @@ from scipy.ndimage import generate_binary_structure
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-import playNano.processing.filters as filters
-import playNano.processing.mask_generators as mask_gen
-from playNano.processing.masked_filters import (
+import playnano.processing.filters as filters
+import playnano.processing.mask_generators as mask_gen
+from playnano.processing.masked_filters import (
     polynomial_flatten_masked,
     remove_plane_masked,
     row_median_align_masked,
@@ -17,7 +17,7 @@ from playNano.processing.masked_filters import (
 
 structure = generate_binary_structure(rank=2, connectivity=2)  # 8-connectivity
 
-# Tests for playNano.processing.filters module
+# Tests for playnano.processing.filters module
 
 
 def test_row_median_align_basic():
@@ -181,7 +181,7 @@ def test_register_filters_keys():
     assert set(keys) == expected
 
 
-# Tests for playNano.processing.mask_generators module
+# Tests for playnano.processing.mask_generators module
 
 
 def test_mask_threshold_basic():

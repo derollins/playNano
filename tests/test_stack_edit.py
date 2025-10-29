@@ -1,9 +1,9 @@
-"""Tests for playNano.processing.stack_edit module."""
+"""Tests for playnano.processing.stack_edit module."""
 
 import numpy as np
 import pytest
 
-from playNano.processing.stack_edit import (
+from playnano.processing.stack_edit import (
     drop_frame_range,
     drop_frames,
     register_stack_edit_processing,

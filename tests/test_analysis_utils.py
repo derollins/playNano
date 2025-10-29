@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from playNano.analysis.utils import common, frames, particles
-from playNano.analysis.utils.common import (
+from playnano.analysis.utils import common, frames, particles
+from playnano.analysis.utils.common import (
     NumpyEncoder,
     load_analysis_from_hdf5,
     safe_json_dumps,

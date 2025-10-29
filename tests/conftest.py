@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from playNano.processing.filters import register_filters
-from playNano.processing.mask_generators import register_masking
+from playnano.processing.filters import register_filters
+from playnano.processing.mask_generators import register_masking
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
