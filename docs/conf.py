@@ -53,7 +53,8 @@ exclude_patterns = []
 # ------------------------------------------------------------------------------
 smv_tag_whitelist = r"^v\d+\.\d+.*$"
 smv_branch_whitelist = r"^(main|dev)$"
-smv_remote_whitelist = r"^origin$"
+smv_remote_whitelist = r"^$"  # match no remotes
+
 
 # ------------------------------------------------------------------------------
 # HTML theme and static files

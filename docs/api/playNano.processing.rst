@@ -1,69 +1,24 @@
-playnano.processing package
+playNano.processing package
 ===========================
 
 Submodules
 ----------
 
-playnano.processing.core module
--------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.processing.core
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.filters module
-----------------------------------
-
-.. automodule:: playnano.processing.filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.mask\_generators module
--------------------------------------------
-
-.. automodule:: playnano.processing.mask_generators
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.masked\_filters module
-------------------------------------------
-
-.. automodule:: playnano.processing.masked_filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.pipeline module
------------------------------------
-
-.. automodule:: playnano.processing.pipeline
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.stack\_edit module
---------------------------------------
-
-.. automodule:: playnano.processing.stack_edit
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.processing.video\_processing module
---------------------------------------------
-
-.. automodule:: playnano.processing.video_processing
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playNano.processing.core
+   playNano.processing.filters
+   playNano.processing.mask_generators
+   playNano.processing.masked_filters
+   playNano.processing.pipeline
+   playNano.processing.stack_edit
+   playNano.processing.video_processing
 
 Module contents
 ---------------
 
-.. automodule:: playnano.processing
+.. automodule:: playNano.processing
    :members:
    :undoc-members:
    :show-inheritance:
