@@ -8,6 +8,10 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
+# Uncomment if your repo/org has restrictive default permissions for GITHUB_TOKEN
+# permissions:
+#   contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,7 +45,7 @@ jobs:
             echo "VERSION=dev" >> $GITHUB_ENV
           fi
 
-      # --- Build step varies by event ---
+      # Build single-version on PRs, multiversion on main/tags
       - name: Build docs (PR: single-version; Main/Tag: multiversion)
         run: |
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
@@ -51,7 +55,6 @@ jobs:
             echo "Main/Tag build -> sphinx-multiversion"
             sphinx-multiversion docs/ docs/_build/html
           fi
-
       - name: Create "stable" alias (latest v* tag)
         if: github.event_name != 'pull_request'
         run: |
@@ -79,7 +82,7 @@ jobs:
           <meta http-equiv="refresh" content="0; url=./main/">
           <script>window.location.replace("./main/");</script>
           <p>If you are not redirected, ./main/click here</a>.</p>
-          <<'HTML'
+HTML
 
       - name: Generate versions.json (project page /playNano base)
         if: github.event_name != 'pull_request'
@@ -87,7 +90,7 @@ jobs:
           set -euo pipefail
           SITE_DIR="docs/_build/html"
           cd "$SITE_DIR"
-          BASE="/playNano"   # repo path on GitHub Pages
+          BASE="/playNano"   # GitHub Pages repo path (case matches repo name)
 
           versions=$(ls -d */ | sed 's#/##' | grep -E '^(main|stable|v[0-9]+\.[0-9]+(\.[0-9]+)?)$' || true)
 
@@ -104,29 +107,3 @@ jobs:
           fi
           for v in $(echo "$versions" | grep -E '^v[0-9]+' | sort -Vr); do
             entry="{\"name\":\"$v\",\"title\":\"$v\",\"url\":\"${BASE}/$v/\"}"
-            if [ "$first" = true ]; then json="$json$entry"; first=false; else json="$json,$entry"; fi
-          done
-          json="$json]"
-          echo "$json" > versions.json
-          echo "Generated versions.json:"
-          cat versions.json
-
-      - name: Configure Git (for gh-pages push)
-        if: github.event_name != 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Upload built site artifact (PR preview)
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: docs/_build/html
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_build/html
