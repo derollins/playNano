@@ -1,95 +1,268 @@
 import importlib
 import os
-import pkgutil
 import sys
+from pathlib import Path
 
-import playNano.analysis.modules as modules
+# ------------------------------------------------------------------------------
+# Make repo importable in all scenarios (SMV temp checkouts, local, CI)
+# ------------------------------------------------------------------------------
+conf_dir = os.path.abspath(os.path.dirname(__file__))
+repo_root = os.path.abspath(os.path.join(conf_dir, ".."))
+src_path = os.path.join(repo_root, "src")
 
-sys.path.insert(0, os.path.abspath("../../src"))
+for p in (src_path, repo_root):
+    if os.path.isdir(p) and p not in sys.path:
+        sys.path.insert(0, p)
 
-# -- Project information -----------------------------------------------------
-project = "playNano"
-copyright = "2025, Daniel E. Rollins"
+print("DEBUG: sys.path head:", sys.path[:5])
+
+# ------------------------------------------------------------------------------
+# Project info
+# ------------------------------------------------------------------------------
+project = "playnano"
 author = "Daniel E. Rollins"
-release = "0.1.0"
+copyright = "2025, Daniel E. Rollins"
 
-# -- General configuration ---------------------------------------------------
+# ------------------------------------------------------------------------------
+# Versioning- now delayed
+# ------------------------------------------------------------------------------
+# version_env = os.environ.get("VERSION", "latest")
+version = ""
+release = ""
+
+# ------------------------------------------------------------------------------
+# Extensions
+# ------------------------------------------------------------------------------
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
     "sphinxcontrib.programoutput",
     "nbsphinx",
     "myst_parser",
+    "sphinx_multiversion",
 ]
-
-templates_path = ["_templates"]
-exclude_patterns = []
 
 autosummary_generate = True
+exclude_patterns = []
 
-# Mock imports for modules that may not be installed
-autodoc_mock_imports = [
-    "PySide2",
-    "PySide6",
-    "PyQt5",
-    "PyQt6",
-    "playNano.gui.main",
-    "playNano.gui.window",
-    "playNano.cli.actions",
-    "playNano.cli.entrypoint",
-    "playNano.cli.handlers",
-    "shiboken6",
+# ------------------------------------------------------------------------------
+# Sphinx-Multiversion selection
+# ------------------------------------------------------------------------------
+smv_tag_whitelist = r"^v\d+\.\d+.*$"
+smv_branch_whitelist = r"^(main|dev)$"
+smv_remote_whitelist = r"^$"  # match no remotes
+
+# ------------------------------------------------------------------------------
+# HTML theme and static files
+# ------------------------------------------------------------------------------
+html_theme = "furo"
+templates_path = ["_templates"]
+html_static_path = ["_static"]
+html_js_files = ["version-switcher.js"]
+html_css_files = ["version-switcher.css"]
+
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/scroll-start.html",
+        "sidebar/versions.html",
+        "sidebar/scroll-end.html",
+    ]
+}
+
+# ------------------------------------------------------------------------------
+# Nitpick and intersphinx
+# ------------------------------------------------------------------------------
+nitpick_ignore = [
+    ("py:class", "np.ndarray"),
+    ("py:class", "numpy.ndarray"),
+    ("py:class", "json.encoder.JSONEncoder"),
+    ("py:class", "pd.DataFrame"),
+    ("py:class", "lists"),
+    ("py:class", "Axes"),
+    ("py:class", "matplotlib Axes"),
+    ("py:class", "matplotlib.axes._axes.Axes"),
+    ("py:class", "QWidget"),
+    ("py:class", "PySide6.QtWidgets.QWidget"),
+    ("py:class", "QResizeEvent"),
+    ("py:class", "PySide6.QtGui.QResizeEvent"),
+    ("py:class", "QFont"),
+    ("py:class", "PySide6.QtGui.QFont"),
+    ("py:class", "QPaintEvent"),
+    ("py:class", "h5py._hl.group.Group"),
+    ("py:class", "Path"),
+    ("py:class", "pathlib.Path"),
+    ("py:class", "optional"),
+    ("py:class", "callable"),
+    ("py:class", "AnalysisOutputs"),
+    ("py:class", "analysis_record"),
 ]
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-html_theme = "furo"
-# html_static_path = ["_static"]
-
-# ---------------------------------------------------------------------------
-# Automatically generate the module list and autosummary stubs
-# ---------------------------------------------------------------------------
-
-# List all modules in playNano.analysis.modules
-module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
-autosummary_list = "\n   ".join(
-    f"playNano.analysis.modules.{name}" for name in module_names
-)
-
-# Paths for the generated RST files
-generated_list_path = "_generated/generated_module_list.rst"
-os.makedirs(os.path.dirname(generated_list_path), exist_ok=True)
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "qt": ("https://doc.qt.io/qtforpython-6/", None),
+}
 
 
-# Path to the html api folder
-api_folder = os.path.abspath("html/api")
+# ------------------------------------------------------------------------------
+# Defer package-dependent work to build time (no top-level imports!)
+# ------------------------------------------------------------------------------
+def _discover_analysis_module_names():
+    """
+    Discover playnano.analysis.modules.* by scanning the source tree.
+    Works even if the package cannot be imported.
+    """
+    candidates = []
 
-# Compute the relative path from the RST file to the API folder
-rel_api_folder = os.path.relpath(api_folder, os.path.dirname(generated_list_path))
+    # Prefer src/ layout
+    for pkg_dirname in ("playnano", "playNano"):  # support both cases
+        base = Path(src_path) / pkg_dirname / "analysis" / "modules"
+        if base.is_dir():
+            for p in base.glob("*.py"):
+                if p.name != "__init__.py":
+                    candidates.append(p.stem)
 
-# Create bulleted list instead of autosummary table
-module_names = [name for _, name, _ in pkgutil.iter_modules(modules.__path__)]
+    # Fallback to non-src layout (older tags)
+    for pkg_dirname in ("playnano", "playNano"):  # FIXED: include both casings
+        base = Path(repo_root) / pkg_dirname / "analysis" / "modules"
+        if base.is_dir():
+            for p in base.glob("*.py"):
+                if p.name != "__init__.py":
+                    candidates.append(p.stem)
 
-with open(generated_list_path, "w", encoding="utf-8") as f:
-    for name in module_names:
-        full_name = f"playNano.analysis.modules.{name}"
-        module_html = "playNano.analysis.modules.html"
-        anchor = f"#module-playNano.analysis.modules.{name}"
-        link = os.path.join(rel_api_folder, module_html) + anchor
-        # Normalize to forward slashes for Sphinx links
-        link = link.replace(os.sep, "/")
+    if not candidates:
+        print("DEBUG: modules directory not found in expected locations.")
+    return sorted(set(candidates))
+
+
+def _try_import_pkg():
+    """
+    Try importing either 'playnano' or 'playNano', return (module, import_name) or (None, None).
+    """
+    for name in ("playnano", "playNano"):
         try:
-            mod = importlib.import_module(full_name)
-            # Get first line of module docstring
-            summary = (mod.__doc__ or "").strip().splitlines()[0]
+            mod = importlib.import_module(name)
+            return mod, name
         except Exception:
+            continue
+    return None, None
+
+
+def _write_generated_module_list(module_names, import_name):
+    """
+    Write _generated/generated_module_list.rst linking to the API page anchors.
+    Use lowercase 'playnano' in links/anchors to match Sphinx output.
+    """
+    if not module_names:
+        print("DEBUG: No analysis modules discovered; skipping generated list.")
+        return
+
+    generated_list_path = Path("_generated") / "generated_module_list.rst"
+    generated_list_path.parent.mkdir(parents=True, exist_ok=True)
+
+    api_folder = Path("html") / "api"
+    rel_api_folder = os.path.relpath(api_folder, generated_list_path.parent)
+
+    PACKAGE_PREFIX_FOR_LINKS = "playnano"  # always lowercase for URLs/anchors
+
+    with generated_list_path.open("w", encoding="utf-8") as f:
+        for name in module_names:
+            module_html = f"{PACKAGE_PREFIX_FOR_LINKS}.analysis.modules.html"
+            anchor = f"#module-{PACKAGE_PREFIX_FOR_LINKS}.analysis.modules.{name}"
+            link = os.path.join(rel_api_folder, module_html) + anchor
+            link = link.replace(os.sep, "/")
             summary = "No description available."
 
-        # Write as bullet with link and optional description
-        f.write(f"- `{name} <{link}>`_")
+            # Try to import for a 1-line summary; failures are non-fatal
+            if import_name:
+                try:
+                    mod = importlib.import_module(
+                        f"{import_name}.analysis.modules.{name}"
+                    )
+                    doc = (mod.__doc__ or "").strip().splitlines()
+                    if doc:
+                        summary = doc[0]
+                except Exception as e:
+                    print(f"DEBUG: Could not import {name} for summary: {e}")
 
-        if summary:
-            f.write(f"  - {summary}\n")
+            f.write(f"- `{name} <{link}>`_\n")
+            if summary:
+                f.write(f"  - {summary}\n")
+
+
+def setup(app):
+    # Generate the list late, when the builder is set up. This avoids conf.py
+    # import-time failures and lets SMV import the config safely.
+    def _on_builder_inited(_app):
+        names = _discover_analysis_module_names()
+        mod, import_name = _try_import_pkg()
+        if mod:
+            print(
+                "DEBUG: Imported package",
+                repr(import_name),
+                "from:",
+                getattr(mod, "__file__", "<namespace>"),
+            )
+        else:
+            print("DEBUG: Could not import package; proceeding without summaries.")
+        _write_generated_module_list(names, import_name)
+
+    app.connect("builder-inited", _on_builder_inited)
+
+    def _set_title_and_version(app, config):
+        ctx = config.html_context or {}
+        v = None
+
+        # 1) Try SMV context keys (support both names and dict/object)
+        for key in ("current_version", "smv_current_version"):
+            cur = ctx.get(key)
+            if cur:
+                v = getattr(cur, "name", None) or (
+                    cur.get("name") if isinstance(cur, dict) else None
+                )
+                if v:
+                    break
+
+        # 2) Fallback: use output directory name (SMV builds into .../html/<refname>)
+        if not v:
+            try:
+                out_name = Path(
+                    app.outdir
+                ).name  # e.g., 'main', 'v0.2.0.post1', 'stable'
+                if out_name and out_name not in ("html",):
+                    v = out_name
+            except Exception:
+                pass
+
+        # 3) Fallback: CI env for PR builds
+        if not v:
+            v = os.environ.get("VERSION", "")
+
+        # Normalize
+        v_norm = "latest" if v in ("", None, "main", "latest") else v
+
+        # Set version/release for Furo defaults
+        config.version = v_norm
+        config.release = v_norm
+
+        # Explicitly set html_title so nothing overrides it
+        proj = config.project or "playnano"
+        config.html_title = f"{proj} {v_norm} documentation"
+        config.html_short_title = config.html_title
+
+        # Optional: expose version_label for templates
+        config.html_context = ctx
+        ctx["version_label"] = v_norm
+
+        print(
+            f"[conf.py] html_title set to: {config.html_title!r}, outdir={app.outdir}"
+        )
+
+    app.connect("config-inited", _set_title_and_version, priority=900)
