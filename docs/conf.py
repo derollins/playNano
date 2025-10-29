@@ -49,12 +49,11 @@ autosummary_generate = True
 exclude_patterns = []
 
 # ------------------------------------------------------------------------------
-# Sphinx-Multiversion selection (tight for now)
-#   Build only main until old tags are backported with a safe conf.py.
+# Sphinx-Multiversion selection
 # ------------------------------------------------------------------------------
-smv_tag_whitelist = r"^$"  # no tags yet
-smv_branch_whitelist = r"^(main)$"  # only main
-smv_remote_whitelist = r"^(origin)$"
+smv_tag_whitelist = r"^v\d+\.\d+.*$"
+smv_branch_whitelist = r"^(main|dev)$"
+smv_remote_whitelist = r"^$"  # match no remotes
 
 # ------------------------------------------------------------------------------
 # HTML theme and static files
