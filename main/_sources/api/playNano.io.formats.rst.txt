@@ -1,45 +1,21 @@
-playnano.io.formats package
+playNano.io.formats package
 ===========================
 
 Submodules
 ----------
 
-playnano.io.formats.read\_asd module
-------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.io.formats.read_asd
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.io.formats.read\_h5jpk module
---------------------------------------
-
-.. automodule:: playnano.io.formats.read_h5jpk
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.io.formats.read\_jpk\_folder module
---------------------------------------------
-
-.. automodule:: playnano.io.formats.read_jpk_folder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.io.formats.read\_spm\_folder module
---------------------------------------------
-
-.. automodule:: playnano.io.formats.read_spm_folder
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playNano.io.formats.read_asd
+   playNano.io.formats.read_h5jpk
+   playNano.io.formats.read_jpk_folder
+   playNano.io.formats.read_spm_folder
 
 Module contents
 ---------------
 
-.. automodule:: playnano.io.formats
+.. automodule:: playNano.io.formats
    :members:
    :undoc-members:
    :show-inheritance:
