@@ -1,0 +1,1393 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="playNano.analysis.utils package" href="playNano.analysis.utils.html"><link rel="prev" title="playNano.analysis package" href="playNano.analysis.html">
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2025.09.25 -->
+        <title>playNano.analysis.modules package - playnano 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/version-switcher.css?v=df465953" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">playnano 0.1.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">playnano 0.1.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui.html">GUI: Interactive Playback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="modules.html">playNano</a><input aria-label="Toggle navigation of playNano" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="playNano.html">playNano package</a><input aria-label="Toggle navigation of playNano package" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 current has-children"><a class="reference internal" href="playNano.analysis.html">playNano.analysis package</a><input aria-label="Toggle navigation of playNano.analysis package" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">playNano.analysis.modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="playNano.analysis.utils.html">playNano.analysis.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.cli.html">playNano.cli package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.gui.html">playNano.gui package</a><input aria-label="Toggle navigation of playNano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="playNano.gui.widgets.html">playNano.gui.widgets package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="playNano.io.html">playNano.io package</a><input aria-label="Toggle navigation of playNano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="playNano.io.formats.html">playNano.io.formats package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="playNano.processing.html">playNano.processing package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">What's New</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
+</ul>
+</li>
+</ul>
+
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div></div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/api/playNano.analysis.modules.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="playnano-analysis-modules-package">
+<h1>playNano.analysis.modules package<a class="headerlink" href="#playnano-analysis-modules-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-playNano.analysis.modules.count_nonzero">
+<span id="playnano-analysis-modules-count-nonzero-module"></span><h2>playNano.analysis.modules.count_nonzero module<a class="headerlink" href="#module-playNano.analysis.modules.count_nonzero" title="Link to this heading">¶</a></h2>
+<p>Analysis module for counting non-zero data points in an array.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.count_nonzero.CountNonzeroModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.count_nonzero.</span></span><span class="sig-name descname"><span class="pre">CountNonzeroModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/count_nonzero.html#CountNonzeroModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Count non-zero pixels in each frame of an AFMImageStack.</p>
+<p>This simple analysis module computes the number of non-zero pixels
+per frame and returns the result as a 1D array.</p>
+<section id="version">
+<h3>Version<a class="headerlink" href="#version" title="Link to this heading">¶</a></h3>
+<p>0.1.0</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">module</span> <span class="o">=</span> <span class="n">CountNonzeroModule</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;counts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(n_frames,)</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.count_nonzero.CountNonzeroModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.count_nonzero.CountNonzeroModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/count_nonzero.html#CountNonzeroModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Count non-zero pixels per frame in the AFMImageStack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Stack of AFM frames with <cite>.data</cite> of shape (n_frames, H, W).</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Ignored by this module. Included for API compatibility.</p></li>
+<li><p><strong>**params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional parameters (unused).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Dictionary with key:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>”counts”: np.ndarray of shape (n_frames,), number of non-zero
+pixels per frame.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.count_nonzero.CountNonzeroModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.dbscan_clustering">
+<span id="playnano-analysis-modules-dbscan-clustering-module"></span><h2>playNano.analysis.modules.dbscan_clustering module<a class="headerlink" href="#module-playNano.analysis.modules.dbscan_clustering" title="Link to this heading">¶</a></h2>
+<p>DBSCAN clustering on features over the entire stack in 3D (x, y, time).</p>
+<p>This module extracts feature points from a previous analysis step, optionally
+normalizes them, applies DBSCAN, and returns clusters (with noise as label -1
+omitted or optionally retained), cluster cores, and a summary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param coord_key<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Key in previous_results containing <cite>features_per_frame</cite>.</p>
+</dd>
+<dt class="field-even">type coord_key<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param coord_columns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Which keys in each feature-dict to use (e.g. (“x”,”y”)).</p>
+</dd>
+<dt class="field-even">type coord_columns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sequence[str]</p>
+</dd>
+<dt class="field-odd">param use_time<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True and coord_columns length is 2, append frame time as the third dimension.</p>
+</dd>
+<dt class="field-even">type use_time<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param eps<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The maximum distance between two samples for them to be considered as in the
+same neighborhood (in normalized units if <cite>normalise=True</cite>).</p>
+</dd>
+<dt class="field-even">type eps<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">param min_samples<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of samples in a neighborhood for a point to be considered as a core
+point.</p>
+</dd>
+<dt class="field-even">type min_samples<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">param normalise<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, min-max normalize each axis before clustering.</p>
+</dd>
+<dt class="field-even">type normalise<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param time_weight<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If given, multiply the time axis by this weight.</p>
+</dd>
+<dt class="field-even">type time_weight<span class="colon">:</span></dt>
+<dd class="field-even"><p>float | None</p>
+</dd>
+<dt class="field-odd">param **dbscan_kwargs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Forwarded to sklearn.cluster.DBSCAN.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.dbscan_clustering.</span></span><span class="sig-name descname"><span class="pre">DBSCANClusteringModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/dbscan_clustering.html#DBSCANClusteringModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>DBSCAN clustering of features across an AFMImageStack in (x, y, time) space.</p>
+<p>This module extracts coordinates from per-frame features, optionally adds time
+as a third dimension, normalizes the space, and applies DBSCAN clustering.
+It returns clusters with point metadata, core point means as cluster centers,
+and a summary of cluster sizes.</p>
+<section id="id1">
+<h3>Version<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>0.1.0</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module: “dbscan_clustering”.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.requires">
+<span class="sig-name descname"><span class="pre">requires</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['feature_detection',</span> <span class="pre">'log_blob_detection']</span></em><a class="headerlink" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.requires" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dbscan_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/dbscan_clustering.html#DBSCANClusteringModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Perform DBSCAN clustering on detected features in (x, y[, t]) space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input stack with <cite>.data</cite> and <cite>.time_for_frame()</cite> method.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Output from previous analysis steps. Must contain features under
+the given <cite>detection_module</cite> and <cite>coord_key</cite>.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Which module’s output to use from <cite>previous_results</cite>. Default
+is “feature_detection”.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key in <cite>previous_results[detection_module]</cite> containing the list
+of per-frame features. Default is “features_per_frame”.</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Keys to extract coordinates from each feature. If missing, will fall back
+to <cite>centroid</cite> tuple. Default is (“centroid_x”, “centroid_y”).</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to append frame timestamp as a third coordinate. Dafaulr is True.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum distance for neighborhood inclusion (in normalized units if
+<cite>normalise=True</cite>). Default is 0.3.</p></li>
+<li><p><strong>min_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Minimum number of points in a neighborhood to form a core point.
+Default is 5.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, normalize coordinate axes to [0, 1] range before clustering.
+Default is True.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Scaling factor for the time axis (after normalization). If None,
+no weighting is applied.</p></li>
+<li><p><strong>**dbscan_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional keyword arguments forwarded to <cite>sklearn.cluster.DBSCAN</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Output dictionary with the following keys:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>”clusters”: list of dicts, one per cluster, containing:</dt><dd><ul>
+<li><p>”id”: cluster ID (int)</p></li>
+<li><p>”frames”: list of frame indices</p></li>
+<li><p>”point_indices”: list of feature indices within frames</p></li>
+<li><p>”coords”: list of 2D or 3D coordinates (post-normalization)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”cluster_centers”: np.ndarray of shape (n_clusters, D)</dt><dd><p>Mean location of each cluster in original coordinate units.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”summary”: dict with:</dt><dd><ul>
+<li><p>”n_clusters”: total number of clusters found</p></li>
+<li><p>”members_per_cluster”: dict of cluster ID to count</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.feature_detection">
+<span id="playnano-analysis-modules-feature-detection-module"></span><h2>playNano.analysis.modules.feature_detection module<a class="headerlink" href="#module-playNano.analysis.modules.feature_detection" title="Link to this heading">¶</a></h2>
+<p>Threshold-based feature detection for AFM image stacks.</p>
+<p>Detect features in each frame of an AFM image stack through thresholding methods.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.feature_detection.FeatureDetectionModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.feature_detection.</span></span><span class="sig-name descname"><span class="pre">FeatureDetectionModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/feature_detection.html#FeatureDetectionModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Detect contiguous features in each frame of an AFM image stack.</p>
+<p>This module takes either a user-supplied mask function or a pre-computed boolean
+mask array, labels connected regions in each frame, filters them by size and edge
+contact, optionally fills holes, and returns per-frame feature statistics and
+labeled masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_fn</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function <cite>frame -&gt; bool_2D_array</cite> used to generate a mask for each frame.
+Required if <cite>mask_key</cite> is not provided.</p></li>
+<li><p><strong>mask_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of a boolean mask array from a previous analysis (e.g.
+<cite>previous_results[“your_mask_key”]</cite>). Required if <cite>mask_fn</cite> is not provided.</p></li>
+<li><p><strong>min_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Minimum area (in pixels) for a region to be kept. Default is 10.</p></li>
+<li><p><strong>remove_edge</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, discard any region that touches the frame boundary. Default is True.</p></li>
+<li><p><strong>fill_holes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, fill holes in each mask before labeling. Default is False.</p></li>
+<li><p><strong>hole_area</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>None</em>) – If set, fills only holes smaller than this area. Default is None (all
+holes filled).</p></li>
+<li><p><strong>**mask_kwargs</strong> (<em>Any</em>) – Additional keyword arguments forwarded to <cite>mask_fn(frame, **mask_kwargs)</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If neither <cite>mask_fn</cite> nor <cite>mask_key</cite> is provided, or if the mask array
+    has the wrong shape/dtype.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If <cite>mask_key</cite> is not found in <cite>previous_results</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul>
+<li><p><em>dict[str, Any]</em> – Dictionary with the following keys:</p>
+<ul>
+<li><p>features_per_frame : list of list of dict
+Per-frame list of feature stats dicts, each with:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>”frame_timestamp”</cite> : float</p></li>
+<li><p><cite>”label”</cite>           : int</p></li>
+<li><p><cite>”area”</cite>            : int</p></li>
+<li><p><cite>”min”</cite>, <cite>“max”</cite>, <cite>“mean”</cite> : float</p></li>
+<li><p><cite>”bbox”</cite>            : (min_row, min_col, max_row, max_col)</p></li>
+<li><p><cite>”centroid”</cite>        : (row, col)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>labeled_masks : list of np.ndarray
+The final labeled mask (integer labels) for each frame.</p></li>
+<li><p>summary : dict
+Aggregate metrics:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>”total_frames”</cite> : int</p></li>
+<li><p><cite>”total_features”</cite> : int</p></li>
+<li><p><cite>”avg_features_per_frame”</cite> : float</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</li>
+<li><p><em>Version</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>0.1.0</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="n">mask_mean_offset</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">fill_holes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hole_area</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">][</span><span class="s2">&quot;total_features&quot;</span><span class="p">]</span>
+<span class="go">123</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.feature_detection.FeatureDetectionModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module: “feature_detection”.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.feature_detection.FeatureDetectionModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_holes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">mask_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/feature_detection.html#FeatureDetectionModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Detect contiguous features on each frame of stack.data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFM stack whose <cite>.data</cite> (3D array) and <cite>.time_for_frame()</cite> are used.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Mapping of earlier analysis outputs. If <cite>mask_key</cite> is given,
+must contain a boolean mask array under that key.</p></li>
+<li><p><strong>mask_fn</strong> (<em>callable</em><em>, </em><em>optional</em>) – Function frame-&gt;bool array for masking.
+Required if <cite>mask_key</cite> is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Dictionary containing:</p>
+<ul class="simple">
+<li><p>features_per_frame : list of lists of dict</p></li>
+<li><p>labeled_masks : list of np.ndarray</p></li>
+<li><p>summary : dict with total_features, total_frames, avg_features_per_frame</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <cite>stack.data</cite> is None or not 3D, or mask array invalid,
+    or neither <cite>mask_fn</cite> nor <cite>mask_key</cite> provided.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If <cite>mask_key</cite> not found in <cite>previous_results</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="n">mask_mean_offset</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.feature_detection.FeatureDetectionModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.k_means_clustering">
+<span id="playnano-analysis-modules-k-means-clustering-module"></span><h2>playNano.analysis.modules.k_means_clustering module<a class="headerlink" href="#module-playNano.analysis.modules.k_means_clustering" title="Link to this heading">¶</a></h2>
+<p>K-Means clustering on features over the entire stack in 3D (x, y, time).</p>
+<p>This module extracts a point-cloud from per-frame feature dictionaries
+(e.g. coordinates + timestamps), optionally normalizes each axis to [0,1],
+applies K-Means with a user-supplied k, then returns cluster assignments,
+cluster centers (in original coordinate units), and a summary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param coord_key<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Key in previous_results whose value is <cite>features_per_frame</cite>
+(list of lists of dicts).</p>
+</dd>
+<dt class="field-even">type coord_key<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param coord_columns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Which keys in each feature-dict to use (e.g. (“x”,”y”)).</p>
+</dd>
+<dt class="field-even">type coord_columns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sequence[str]</p>
+</dd>
+<dt class="field-odd">param use_time<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True and coord_columns length is 2, append frame time as the third dimension.</p>
+</dd>
+<dt class="field-even">type use_time<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param k<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of clusters.</p>
+</dd>
+<dt class="field-even">type k<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">param normalise<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If True, min-max normalize each axis before clustering.</p>
+</dd>
+<dt class="field-even">type normalise<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param time_weight<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If given, multiply the time axis by this weight.</p>
+</dd>
+<dt class="field-even">type time_weight<span class="colon">:</span></dt>
+<dd class="field-even"><p>float | None</p>
+</dd>
+<dt class="field-odd">param **kmeans_kwargs<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Forwarded to sklearn.cluster.KMeans.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.k_means_clustering.KMeansClusteringModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.k_means_clustering.</span></span><span class="sig-name descname"><span class="pre">KMeansClusteringModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/k_means_clustering.html#KMeansClusteringModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Cluster features across all frames using K-Means in 2D or 3D (x, y, [time]).</p>
+<p>Extracts point coordinates from per-frame features, applies optional normalization
+and time weighting, then performs K-Means clustering. Returns cluster assignments,
+centers in original scale, and a summary report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key in previous_results pointing to ‘features_per_frame’ structure.</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Keys to extract coordinates from each feature (e.g. (“x”, “y”)).</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, appends frame timestamp as a third clustering dimension.</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of clusters to fit.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, normalize each axis to [0, 1] before clustering.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em>) – Optional multiplier for time axis after normalization.</p></li>
+<li><p><strong>**kmeans_kwargs</strong> – Additional keyword arguments passed to sklearn.cluster.KMeans.</p></li>
+<li><p><strong>Version</strong></p></li>
+<li><p><strong>-------</strong></p></li>
+<li><p><strong>0.1.0</strong></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.requires">
+<span class="sig-name descname"><span class="pre">requires</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['feature_detection',</span> <span class="pre">'log_blob_detection']</span></em><a class="headerlink" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.requires" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kmeans_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/k_means_clustering.html#KMeansClusteringModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Perform K-Means clustering on features extracted from a stack.</p>
+<p>Constructs a coordinate array from features (x, y[, t]), optionally applies
+normalization and time weighting, and fits k-means to assign clusters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input image stack providing frame times and data context.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing outputs from previous analysis steps.
+Must contain the selected detection_module and coord_key.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key identifying which previous module’s output to use.
+Default is “feature_detection”.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key under the detection module that holds per-frame feature dicts.
+Default is “features_per_frame”.</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Keys to extract from each feature for clustering coordinates.
+If missing, fallback to the “centroid” tuple is attempted.
+Default is (“centroid_x”, “centroid_y”)</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True and <cite>coord_columns</cite> is 2D, append frame timestamp as third
+dimension. Default is True.</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of clusters to compute.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to min-max normalize each axis of the feature points before
+clustering. Default is True.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Weighting factor for time axis (applied after normalization).
+Only used if time is included as a third dimension.</p></li>
+<li><p><strong>**kmeans_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional arguments forwarded to <cite>sklearn.cluster.KMeans</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary with the following keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>”clusters”<span class="classifier">list of dicts, each with:</span></dt><dd><ul>
+<li><p>id : int</p></li>
+<li><p>frames : list of int</p></li>
+<li><p>point_indices : list of int</p></li>
+<li><dl class="simple">
+<dt>coords<span class="classifier">list of tuple</span></dt><dd><p>The normalized coordinates used in clustering for each point
+in the cluster (e.g., (x, y[, t])).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”cluster_centers”<span class="classifier">ndarray of shape (k, D)</span></dt><dd><p>Cluster centers in original coordinate units.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”summary”<span class="classifier">dict</span></dt><dd><ul>
+<li><p>”n_clusters” : int</p></li>
+<li><p>”members_per_cluster” : dict mapping cluster id to point count</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the required <cite>detection_module</cite> output is not found in previous_results.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If the required coordinate keys are missing in any feature dictionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.log_blob_detection">
+<span id="playnano-analysis-modules-log-blob-detection-module"></span><h2>playNano.analysis.modules.log_blob_detection module<a class="headerlink" href="#module-playNano.analysis.modules.log_blob_detection" title="Link to this heading">¶</a></h2>
+<p>Module for LoG blob detection.</p>
+<p>Detect “blobs” in each frame of an AFM image stack using the Laplacian-of-Gaussian
+method. Provides automatic multi-scale blob detection and optional radius estimation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.log_blob_detection.</span></span><span class="sig-name descname"><span class="pre">LoGBlobDetectionModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/log_blob_detection.html#LoGBlobDetectionModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Detect blobs in AFM image stacks using the Laplacian-of-Gaussian (LoG) method.</p>
+<p>This module applies multi-scale blob detection to each frame in an AFM image stack
+using the Laplacian-of-Gaussian algorithm from <cite>skimage.feature.blob_log</cite>. It
+supports automatic scale selection and optional estimation of blob radii.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">run(stack,</span> <span class="pre">previous_results=None,</span> <span class="pre">\*,</span> <span class="pre">min_sigma=1.0,</span> <span class="pre">max_sigma=5.0,</span> <span class="pre">num_sigma=10,</span></span></dt>
+<dd><p>threshold=0.1, overlap=0.5, include_radius=True)
+Detects blobs in each frame of the AFM image stack and returns per-frame
+features and a summary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version">
+<span class="sig-name descname"><span class="pre">Version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">-------</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0">
+<span class="sig-prename descclassname"><span class="pre">0.1.</span></span><span class="sig-name descname"><span class="pre">0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">module</span> <span class="o">=</span> <span class="n">LoGBlobDetectionModule</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">max_sigma</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;total_blobs&#39;</span><span class="p">]</span>
+<span class="go">42</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module: “log_blob_detection”.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/log_blob_detection.html#LoGBlobDetectionModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Detect “blobs” in each frame via a Laplacian-of-Gaussian filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Must have stack.data of shape (n_frames, H, W).</p></li>
+<li><p><strong>min_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Parameters passed to skimage.feature.blob_log.</p></li>
+<li><p><strong>max_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Parameters passed to skimage.feature.blob_log.</p></li>
+<li><p><strong>num_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Parameter passed to skimage.feature.blob_log.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Absolute intensity threshold for LoG response.</p></li>
+<li><p><strong>overlap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – If two detected blobs overlap more than this fraction,
+only the larger is kept.</p></li>
+<li><p><strong>include_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, append the estimated blob radius in each feature-dict.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Dictionary with keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>features_per_frame<span class="classifier">list of list of dict</span></dt><dd><p>Per-frame list of detected blobs. Each dict contains:
+- frame_timestamp : float
+- y, x : float
+- sigma : float
+- radius : float, optional (if include_radius=True)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>summary<span class="classifier">dict</span></dt><dd><p>Aggregate metrics:
+- total_frames : int
+- total_blobs : int
+- avg_blobs_per_frame : float</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.particle_tracking">
+<span id="playnano-analysis-modules-particle-tracking-module"></span><h2>playNano.analysis.modules.particle_tracking module<a class="headerlink" href="#module-playNano.analysis.modules.particle_tracking" title="Link to this heading">¶</a></h2>
+<p>Module for linking particle features across frames to build trajectories.</p>
+<p>This module defines the ParticleTrackingModule, which links features
+detected in sequential frames of an AFM image stack using nearest-neighbor
+matching based on feature centroids.</p>
+<p>Features are matched across frames if they lie within a specified maximum
+distance. Tracks are formed by chaining these matches over time.</p>
+<dl class="simple">
+<dt>Each resulting track includes:</dt><dd><ul class="simple">
+<li><p>A unique track ID</p></li>
+<li><p>A list of frames where the particle appears</p></li>
+<li><p>A list of point indices referencing the original features</p></li>
+<li><p>A list of centroids describing the particle’s positions</p></li>
+</ul>
+</dd>
+</dl>
+<p>Optionally, per-track masks are extracted from the labeled feature masks.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.particle_tracking.ParticleTrackingModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.particle_tracking.</span></span><span class="sig-name descname"><span class="pre">ParticleTrackingModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/particle_tracking.html#ParticleTrackingModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Link detected features frame-to-frame to produce particle trajectories.</p>
+<p>This module links features detected by a prior featuredetection module
+using nearest-neighbor centroid matching across adjacent frames. A new
+track is created for each unmatched feature.</p>
+<section id="id2">
+<h3>Version<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>0.1.0</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.particle_tracking.ParticleTrackingModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Unique identifier: “particle_tracking”.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.particle_tracking.ParticleTrackingModule.requires">
+<span class="sig-name descname"><span class="pre">requires</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['feature_detection',</span> <span class="pre">'log_blob_detection']</span></em><a class="headerlink" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.requires" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.particle_tracking.ParticleTrackingModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/particle_tracking.html#ParticleTrackingModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Track particles across frames using nearest-neighbor association.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input AFM image stack.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – <p>Must contain results from a detection module, including:</p>
+<ul>
+<li><p>coord_key (e.g., “features_per_frame”): list of dicts with per-frame
+features</p></li>
+<li><p>”labeled_masks”: per-frame mask of label regions</p></li>
+</ul>
+</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Which module to read features from (default: “feature_detection”).</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Key in previous_results[detection_module] containing per-frame feature dicts
+(default: “features_per_frame”).</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Keys to extract coordinates from each feature; falls back to “centroid” if
+needed. Default is (“centroid_x”, “centroid_y”)).</p></li>
+<li><p><strong>max_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum allowed movement per frame in coordinate units (default: 5.0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>Dictionary with keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>tracks<span class="classifier">list of dict</span></dt><dd><p>Per-track dictionaries containing:</p>
+<ul>
+<li><p>id : int
+Track ID</p></li>
+<li><p>frames : list of int
+Frame indices</p></li>
+<li><p>point_indices : list of int
+Indices into features_per_frame</p></li>
+<li><p>centroids : list of tuple[float, float]
+(x, y) positions of the tracked points</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>track_masks : dict[int, np.ndarray]
+Last mask per track</p></li>
+<li><p>n_tracks : int
+Total number of tracks</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.particle_tracking.ParticleTrackingModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules.x_means_clustering">
+<span id="playnano-analysis-modules-x-means-clustering-module"></span><h2>playNano.analysis.modules.x_means_clustering module<a class="headerlink" href="#module-playNano.analysis.modules.x_means_clustering" title="Link to this heading">¶</a></h2>
+<p>Module for X-Means clustering as part of the playNano analysis pipeline.</p>
+<p>This module implements a version of the X-Means clustering algorithm,
+an extension of K-Means that estimates the optimal number of clusters using the
+Bayesian Information Criterion (BIC).</p>
+<p>Based on:
+Pelleg, D., &amp; Moore, A. W. (2000). X-means: Extending K-means with Efficient
+Estimation of the Number of Clusters. Carnegie Mellon University.
+<a class="reference external" href="http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf">http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.XMeansClusteringModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">XMeansClusteringModule</span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/x_means_clustering.html#XMeansClusteringModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="playNano.analysis.html#playNano.analysis.base.AnalysisModule" title="playNano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
+<p>Cluster features using the X-Means algorithm over (x, y[, t]) coordinates.</p>
+<p>This module clusters spatial (and optionally temporal) feature coordinates extracted
+from an AFM stack using an X-Means algorithm implemented in pure Python.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key in previous_results[detection_module] to find feature list.</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Names of feature dictionary keys to use for coordinates
+(e.g. centroid_x, centroid_y).</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to append frame timestamps as the third coordinate.</p></li>
+<li><p><strong>min_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Initial number of clusters (minimum).</p></li>
+<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of clusters to allow.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to min-max normalize coordinate space before clustering.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Multiplier for time dimension (after normalization).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>dict</em> – Dictionary with clustering results:
+- clusters: list of {id, frames, point_indices, coords}
+- cluster_centers: (K, D) ndarray in original units
+- summary: {n_clusters: int, members_per_cluster: dict}</p></li>
+<li><p><em>Version</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>0.1.0</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the analysis module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The string identifier for this module.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.requires">
+<span class="sig-name descname"><span class="pre">requires</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['feature_detection',</span> <span class="pre">'log_blob_detection']</span></em><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.requires" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bic_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/x_means_clustering.html#XMeansClusteringModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.run" title="Link to this definition">¶</a></dt>
+<dd><p>Perform X-Means clustering on features extracted from an AFM stack.</p>
+<p>This method extracts (x, y[, t]) coordinates from detected features,
+optionally normalizes and time-weights them, and applies the X-Means algorithm
+to automatically select the number of clusters based on the BIC score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="playNano.html#playNano.afm_stack.AFMImageStack" title="playNano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input image stack providing frame timing and metadata context.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing outputs from previous analysis steps.
+Must contain the selected detection_module and coord_key.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key identifying which previous modules output to use.
+Default is “feature_detection”.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key under the detection module that holds per-frame feature dicts.
+Default is “features_per_frame”.</p></li>
+<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Keys to extract from each feature for clustering coordinates.
+If missing, will fall back to using the “centroid” tuple if available.
+Defaults is (“centroid_x”, “centroid_y”).</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True and <cite>coord_columns</cite> only gives 2D coordinates, appends the
+frame timestamp as a third dimension. Default is True.</p></li>
+<li><p><strong>min_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Initial number of clusters to start with. Default is 1.</p></li>
+<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of clusters allowed. Defalut is 10.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to normalize the feature coordinate axes to the [0, 1] range
+before clustering. Default is True.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Multiplicative factor applied to the time axis (after normalization).
+Used only if time is included as a third coordinate.</p></li>
+<li><p><strong>replicates</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of times to run k-means internally to choose the best split.
+Default is 3.</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of iterations for each k-means call.
+Default is 300.</p></li>
+<li><p><strong>bic_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Minimum improvement in BIC required to split a cluster.
+Default is 0.0 (any improvement allows a split).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary with the following keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>”clusters”<span class="classifier">list of dicts, each with:</span></dt><dd><ul>
+<li><p>id : int</p></li>
+<li><p>frames : list of int</p></li>
+<li><p>point_indices : list of int</p></li>
+<li><p>coords : list of tuple (normalized x, y, [t])</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”cluster_centers”<span class="classifier">ndarray of shape (k, D)</span></dt><dd><p>Final cluster centers in original (denormalized) coordinates.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”summary”<span class="classifier">dict</span></dt><dd><ul>
+<li><p>”n_clusters” : int</p></li>
+<li><p>”members_per_cluster” : dict mapping cluster ID to point count.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the required detection module output is missing from previous_results.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If the expected coordinate keys are missing from any feature dictionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.version" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.compute_bic">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">compute_bic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/x_means_clustering.html#compute_bic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.compute_bic" title="Link to this definition">¶</a></dt>
+<dd><p>Compute Bayesian Information Criterion for a cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>np.ndarray</em>) – Points in the cluster.</p></li>
+<li><p><strong>center</strong> (<em>np.ndarray</em>) – Cluster center (shape (1, D)).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>BIC value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.core_xmeans">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">core_xmeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cluster_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bic_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/x_means_clustering.html#core_xmeans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.core_xmeans" title="Link to this definition">¶</a></dt>
+<dd><p>Core X-Means loop.</p>
+<p>Parameters are equivalent to those in <cite>run</cite> above.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playNano.analysis.modules.x_means_clustering.initialize_centers">
+<span class="sig-prename descclassname"><span class="pre">playNano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">initialize_centers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playNano/analysis/modules/x_means_clustering.html#initialize_centers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playNano.analysis.modules.x_means_clustering.initialize_centers" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize k centers using a k-means++-like heuristic.</p>
+</dd></dl>
+
+</section>
+<section id="module-playNano.analysis.modules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playNano.analysis.modules" title="Link to this heading">¶</a></h2>
+<p>Public package initialization for analysis modules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">noindex<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="playNano.analysis.utils.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">playNano.analysis.utils package</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="playNano.analysis.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">playNano.analysis package</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Daniel E. Rollins
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playNano.analysis.modules package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.count_nonzero">playNano.analysis.modules.count_nonzero module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule"><code class="docutils literal notranslate"><span class="pre">CountNonzeroModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.name"><code class="docutils literal notranslate"><span class="pre">CountNonzeroModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.run"><code class="docutils literal notranslate"><span class="pre">CountNonzeroModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.count_nonzero.CountNonzeroModule.version"><code class="docutils literal notranslate"><span class="pre">CountNonzeroModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.dbscan_clustering">playNano.analysis.modules.dbscan_clustering module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule"><code class="docutils literal notranslate"><span class="pre">DBSCANClusteringModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.name"><code class="docutils literal notranslate"><span class="pre">DBSCANClusteringModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.requires"><code class="docutils literal notranslate"><span class="pre">DBSCANClusteringModule.requires</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run"><code class="docutils literal notranslate"><span class="pre">DBSCANClusteringModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.version"><code class="docutils literal notranslate"><span class="pre">DBSCANClusteringModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.feature_detection">playNano.analysis.modules.feature_detection module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule"><code class="docutils literal notranslate"><span class="pre">FeatureDetectionModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.name"><code class="docutils literal notranslate"><span class="pre">FeatureDetectionModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.run"><code class="docutils literal notranslate"><span class="pre">FeatureDetectionModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.feature_detection.FeatureDetectionModule.version"><code class="docutils literal notranslate"><span class="pre">FeatureDetectionModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.k_means_clustering">playNano.analysis.modules.k_means_clustering module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule"><code class="docutils literal notranslate"><span class="pre">KMeansClusteringModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.name"><code class="docutils literal notranslate"><span class="pre">KMeansClusteringModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.requires"><code class="docutils literal notranslate"><span class="pre">KMeansClusteringModule.requires</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.run"><code class="docutils literal notranslate"><span class="pre">KMeansClusteringModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.k_means_clustering.KMeansClusteringModule.version"><code class="docutils literal notranslate"><span class="pre">KMeansClusteringModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.log_blob_detection">playNano.analysis.modules.log_blob_detection module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.Version()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.0.1.0()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.version"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.particle_tracking">playNano.analysis.modules.particle_tracking module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule"><code class="docutils literal notranslate"><span class="pre">ParticleTrackingModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.name"><code class="docutils literal notranslate"><span class="pre">ParticleTrackingModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.requires"><code class="docutils literal notranslate"><span class="pre">ParticleTrackingModule.requires</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.run"><code class="docutils literal notranslate"><span class="pre">ParticleTrackingModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.particle_tracking.ParticleTrackingModule.version"><code class="docutils literal notranslate"><span class="pre">ParticleTrackingModule.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules.x_means_clustering">playNano.analysis.modules.x_means_clustering module</a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule"><code class="docutils literal notranslate"><span class="pre">XMeansClusteringModule</span></code></a><ul>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.name"><code class="docutils literal notranslate"><span class="pre">XMeansClusteringModule.name</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.requires"><code class="docutils literal notranslate"><span class="pre">XMeansClusteringModule.requires</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.run"><code class="docutils literal notranslate"><span class="pre">XMeansClusteringModule.run()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.XMeansClusteringModule.version"><code class="docutils literal notranslate"><span class="pre">XMeansClusteringModule.version</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.compute_bic"><code class="docutils literal notranslate"><span class="pre">compute_bic()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.core_xmeans"><code class="docutils literal notranslate"><span class="pre">core_xmeans()</span></code></a></li>
+<li><a class="reference internal" href="#playNano.analysis.modules.x_means_clustering.initialize_centers"><code class="docutils literal notranslate"><span class="pre">initialize_centers()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-playNano.analysis.modules">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/version-switcher.js?v=ab8343a9"></script>
+    </body>
+</html>

@@ -1,0 +1,33 @@
+/* Make the select look native in Furo's sidebar and fill the width */
+.version-switcher__select,
+#version-switcher-placeholder select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font: inherit;                /* match sidebar font */
+  color: inherit;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-foreground-muted);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+
+/* Ensure the block has the same spacing as other sidebar items */
+.sidebar-item__content #version-switcher-placeholder {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* When the sidebar narrows, keep the control usable */
+@media (max-width: 1200px) {
+  .version-switcher__select,
+  #version-switcher-placeholder select {
+    font-size: 0.95em;
+  }
+}
+
+/* Optional: consistent focus ring for accessibility */
+#version-switcher-placeholder select:focus {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
