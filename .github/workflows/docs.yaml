@@ -8,10 +8,6 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
-# Uncomment if your repo/org has restrictive default permissions for GITHUB_TOKEN
-# permissions:
-#   contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,7 +42,7 @@ jobs:
           fi
 
       # Build single-version on PRs, multiversion on main/tags
-      - name: Build docs (PR: single-version; Main/Tag: multiversion)
+      - name: "Build docs (PR: single-version; Main/Tag: multiversion)"
         run: |
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
             echo "PR build -> single-version sphinx-build"
@@ -55,6 +51,7 @@ jobs:
             echo "Main/Tag build -> sphinx-multiversion"
             sphinx-multiversion docs/ docs/_build/html
           fi
+
       - name: Create "stable" alias (latest v* tag)
         if: github.event_name != 'pull_request'
         run: |
@@ -75,14 +72,13 @@ jobs:
         run: |
           SITE_DIR="docs/_build/html"
           mkdir -p "$SITE_DIR"
-          cat > "$SITE_DIR/index.html" <<'HTML'
-          <!doctype html>
-          <meta charset="utf-8">
-          <title>Redirecting…</title>
-          <meta http-equiv="refresh" content="0; url=./main/">
-          <script>window.location.replace("./main/");</script>
-          <p>If you are not redirected, ./main/click here</a>.</p>
-HTML
+          cat > "$SITE_DIR/index.html" <<-'HTML'
+              <!doctype html>
+              <meta charset="utf-8">
+              <title>Redirecting…</title>
+              <meta http-equiv="refresh" content="0; url=./main/">
+              <script>window.location.replace("./main/");</script>
+              <p>If you are not redirected, click <a href="./main/">here</a>.</HTML
 
       - name: Generate versions.json (project page /playNano base)
         if: github.event_name != 'pull_request'
@@ -107,3 +103,29 @@ HTML
           fi
           for v in $(echo "$versions" | grep -E '^v[0-9]+' | sort -Vr); do
             entry="{\"name\":\"$v\",\"title\":\"$v\",\"url\":\"${BASE}/$v/\"}"
+            if [ "$first" = true ]; then json="$json$entry"; first=false; else json="$json,$entry"; fi
+          done
+          json="$json]"
+          echo "$json" > versions.json
+          echo "Generated versions.json:"
+          cat versions.json
+
+      - name: Configure Git (for gh-pages push)
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Upload built site artifact (PR preview)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
