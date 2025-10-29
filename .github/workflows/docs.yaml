@@ -88,7 +88,9 @@ jobs:
           cd "$SITE_DIR"
           BASE="/playNano"   # GitHub Pages repo path (case matches repo name)
 
-          versions=$(ls -d */ | sed 's#/##' | grep -E '^(main|stable|v[0-9]+\.[0-9]+(\.[0-9]+)?)$' || true)
+          # Include main, stable, vX.Y, vX.Y.Z, and vX.Y.Z.postN
+          versions=$(ls -d */ 2>/dev/null | sed 's#/##' | \
+            grep -E '^(main|stable|v[0-9]+\.[0-9]+(\.[0-9]+)?(\.post[0-9]+)?)$' || true)
 
           json="["
           first=true
@@ -107,6 +109,7 @@ jobs:
           done
           json="$json]"
           echo "$json" > versions.json
+
           echo "Generated versions.json:"
           cat versions.json
 
