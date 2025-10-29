@@ -1,4 +1,4 @@
-"""Tests for the compatability shim"""
+"""Tests for the compatability shim."""
 
 import warnings
 import sys
