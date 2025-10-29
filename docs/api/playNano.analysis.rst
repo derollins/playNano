@@ -23,7 +23,7 @@ Submodules
 Module contents
 ---------------
 
-.. automodule:: playnano.analysis
+.. automodule:: playNano.analysis
    :members:
    :undoc-members:
    :show-inheritance:
