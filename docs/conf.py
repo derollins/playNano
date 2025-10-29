@@ -24,11 +24,11 @@ author = "Daniel E. Rollins"
 copyright = "2025, Daniel E. Rollins"
 
 # ------------------------------------------------------------------------------
-# Versioning
+# Versioning- now delayed
 # ------------------------------------------------------------------------------
-version_env = os.environ.get("VERSION", "latest")
-version = version_env
-release = version_env
+# version_env = os.environ.get("VERSION", "latest")
+version = ""
+release = ""
 
 # ------------------------------------------------------------------------------
 # Extensions
@@ -215,3 +215,37 @@ def setup(app):
         _write_generated_module_list(names, import_name)
 
     app.connect("builder-inited", _on_builder_inited)
+
+    def _set_version_from_smv(app):
+        """
+        For each ref SMV builds, set Sphinx's version/release so themes like Furo
+        produce the correct <title>. For main: 'latest'; for tags: the tag name.
+        """
+        ctx = app.config.html_context or {}
+        v = None
+
+        # Prefer sphinx-multiversion's injected context
+        try:
+            smv_cur = ctx.get("smv_current_version")
+            if smv_cur:
+                # typically 'main', 'v0.2.0.post1', 'stable' (though 'stable' is a copy, see note)
+                v = getattr(smv_cur, "name", None) or smv_cur.get("name")
+        except Exception:
+            pass
+
+        # Fallback to env if SMV isn't in play (e.g., PR single build)
+        if not v:
+            v = os.environ.get(
+                "VERSION", ""
+            )  # your workflow sets this: 'latest' or a tag
+        # Normalize
+        if v in ("", None, "main", "latest"):
+            v = "latest"
+
+        app.config.version = v
+        app.config.release = v
+        # If you ever overrode html_title elsewhere, clear it to let Furo compute from project+version
+        # app.config.html_title = None
+        print(f"[conf.py] Sphinx version/release set to: {v!r}")
+
+    app.connect("builder-inited", _set_version_from_smv)
