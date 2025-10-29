@@ -1,4 +1,4 @@
-playNano package
+playnano package
 ================
 
 Subpackages
@@ -16,26 +16,16 @@ Subpackages
 Submodules
 ----------
 
-playNano.afm\_stack module
---------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.afm_stack
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.errors module
-----------------------
-
-.. automodule:: playnano.errors
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playnano.afm_stack
+   playnano.errors
 
 Module contents
 ---------------
 
-.. automodule:: playNano
+.. automodule:: playnano
    :members:
    :undoc-members:
    :show-inheritance:
