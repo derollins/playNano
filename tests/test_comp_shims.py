@@ -1,8 +1,8 @@
 """Tests for the compatability shim."""
 
-import warnings
-import sys
 import importlib
+import sys
+import warnings
 
 
 def test_uppercase_package_still_imports():
