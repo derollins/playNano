@@ -26,8 +26,8 @@ This release introduces video processing, stack editing, multi-version documenta
   - Moved the versioning module for funcitons from the processing subpakage to the utils subpackage.
 
 - **Docs Generation**
-  - Automatic inclusion of `playNano.analysis.utils.loader`, `playNano.processing.video_processing`, and
-    `playNano.processing.stack_edit` in the API reference.
+  - Automatic inclusion of `playnano.analysis.utils.loader`, `playnano.processing.video_processing`, and
+    `playnano.processing.stack_edit` in the API reference.
 
 - **GitHub**
   - Issue templates added for bug reports and feature requests.
