@@ -216,36 +216,53 @@ def setup(app):
 
     app.connect("builder-inited", _on_builder_inited)
 
-    def _set_version_from_smv(app):
-        """
-        For each ref SMV builds, set Sphinx's version/release so themes like Furo
-        produce the correct <title>. For main: 'latest'; for tags: the tag name.
-        """
-        ctx = app.config.html_context or {}
+    def _set_title_and_version(app, config):
+        ctx = config.html_context or {}
         v = None
 
-        # Prefer sphinx-multiversion's injected context
-        try:
-            smv_cur = ctx.get("smv_current_version")
-            if smv_cur:
-                # typically 'main', 'v0.2.0.post1', 'stable' (though 'stable' is a copy, see note)
-                v = getattr(smv_cur, "name", None) or smv_cur.get("name")
-        except Exception:
-            pass
+        # 1) Try SMV context keys (support both names and dict/object)
+        for key in ("current_version", "smv_current_version"):
+            cur = ctx.get(key)
+            if cur:
+                v = getattr(cur, "name", None) or (
+                    cur.get("name") if isinstance(cur, dict) else None
+                )
+                if v:
+                    break
 
-        # Fallback to env if SMV isn't in play (e.g., PR single build)
+        # 2) Fallback: use output directory name (SMV builds into .../html/<refname>)
         if not v:
-            v = os.environ.get(
-                "VERSION", ""
-            )  # your workflow sets this: 'latest' or a tag
+            try:
+                out_name = Path(
+                    app.outdir
+                ).name  # e.g., 'main', 'v0.2.0.post1', 'stable'
+                if out_name and out_name not in ("html",):
+                    v = out_name
+            except Exception:
+                pass
+
+        # 3) Fallback: CI env for PR builds
+        if not v:
+            v = os.environ.get("VERSION", "")
+
         # Normalize
-        if v in ("", None, "main", "latest"):
-            v = "latest"
+        v_norm = "latest" if v in ("", None, "main", "latest") else v
 
-        app.config.version = v
-        app.config.release = v
-        # If you ever overrode html_title elsewhere, clear it to let Furo compute from project+version
-        # app.config.html_title = None
-        print(f"[conf.py] Sphinx version/release set to: {v!r}")
+        # Set version/release for Furo defaults
+        config.version = v_norm
+        config.release = v_norm
 
-    app.connect("builder-inited", _set_version_from_smv)
+        # Explicitly set html_title so nothing overrides it
+        proj = config.project or "playnano"
+        config.html_title = f"{proj} {v_norm} documentation"
+        config.html_short_title = config.html_title
+
+        # Optional: expose version_label for templates
+        config.html_context = ctx
+        ctx["version_label"] = v_norm
+
+        print(
+            f"[conf.py] html_title set to: {config.html_title!r}, outdir={app.outdir}"
+        )
+
+    app.connect("config-inited", _set_title_and_version, priority=900)
