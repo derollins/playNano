@@ -23,7 +23,7 @@ Available subcommands
 - ``wizard``  - Interactive REPL for constructing processing/analysis pipelines.
 - ``env-info``- Print environment information useful for debugging.
 
-The CLI maps to the Python entry point ``playNano.cli.entrypoint:main``.
+The CLI maps to the Python entry point ``playnano.cli.entrypoint:main``.
 
 Batch mode operations
 ---------------------

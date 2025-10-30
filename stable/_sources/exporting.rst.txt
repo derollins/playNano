@@ -11,8 +11,8 @@ Overview
 --------
 
 Data can be exported using the **command-line interface (CLI)** or from Python
-using the functions in :mod:`playNano.io.export_data` and
-:mod:`playNano.io.gif_export`.
+using the functions in :mod:`playnano.io.export_data` and
+:mod:`playnano.io.gif_export`.
 
 Supported export formats include:
 
@@ -98,10 +98,10 @@ OME-TIFF Export
 
 **Format:** ``.ome.tif`` (single multi-frame image stack)
 
-:func:`playNano.io.export_data.save_ome_tiff_stack` exports OME-TIFF files.
+:func:`playnano.io.export_data.save_ome_tiff_stack` exports OME-TIFF files.
 
 The OME-TIFF export stores the processed AFM video from the
-:attr:`~playNano.afm_stack.AFMImageStack.data` attribute as a single stack
+:attr:`~playnano.afm_stack.AFMImageStack.data` attribute as a single stack
 of frames in a format compatible with ImageJ, Fiji, Bio-Formats, and general
 image analysis tools.
 
@@ -123,7 +123,7 @@ Programmatic TIFF Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_ome_tiff_stack
+   from playnano.io.export_data import save_ome_tiff_stack
 
    save_ome_tiff_stack(Path("exports/stack_filtered.ome.tif"), stack)
    save_ome_tiff_stack(Path("exports/stack_raw.ome.tif"), stack, raw=True)
@@ -143,7 +143,7 @@ NPZ Export
 
 **Format:** ``.npz`` (NumPy compressed archive)
 
-:func:`playNano.io.export_data.save_npz_bundle` exports NPZ bundles.
+:func:`playnano.io.export_data.save_npz_bundle` exports NPZ bundles.
 
 **Contents**
 
@@ -173,7 +173,7 @@ Programmatic NPZ Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_npz_bundle
+   from playnano.io.export_data import save_npz_bundle
 
    save_npz_bundle(Path("exports/stack_filtered.npz"), stack)
    save_npz_bundle(Path("exports/stack_raw.npz"), stack, raw=True)
@@ -182,7 +182,7 @@ Programmatic NPZ Export
 
 .. code-block:: python
 
-   from playNano.io.loaders import load_npz_bundle
+   from playnano.io.loaders import load_npz_bundle
    stack = load_npz_bundle("exports/stack_filtered.npz")
 
 ---
@@ -194,7 +194,7 @@ HDF5 Export
 
 **Format:** ``.h5`` (Hierarchical data container)
 
-:func:`playNano.io.export_data.save_h5_bundle` exports HDF5 bundles.
+:func:`playnano.io.export_data.save_h5_bundle` exports HDF5 bundles.
 
 **Contents**
 
@@ -228,7 +228,7 @@ Programmatic HDF5 Export
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import save_h5_bundle
+   from playnano.io.export_data import save_h5_bundle
 
    save_h5_bundle(Path("exports/stack_filtered.h5"), stack)
    save_h5_bundle(Path("exports/stack_raw.h5"), stack, raw=True)
@@ -237,7 +237,7 @@ Programmatic HDF5 Export
 
 .. code-block:: python
 
-   from playNano.io.loaders import load_h5_bundle
+   from playnano.io.loaders import load_h5_bundle
    stack = load_h5_bundle("exports/stack_filtered.h5")
 
 ---
@@ -249,7 +249,7 @@ GIF Export
 
 **Format:** ``.gif`` (annotated animation)
 
-:func:`playNano.io.gif_export.export_gif` creates annotated GIFs.
+:func:`playnano.io.gif_export.export_gif` creates annotated GIFs.
 
 GIF exports provide a compact visualisation of the AFM video or processed
 stack, with optional annotations.
@@ -296,7 +296,7 @@ Programmatic GIF Export
 
 .. code-block:: python
 
-   from playNano.io.gif_export import export_gif
+   from playnano.io.gif_export import export_gif
    export_gif(
        stack,
        make_gif=True,
@@ -316,12 +316,12 @@ Advanced / Programmatic Usage
 Unified Export
 ^^^^^^^^^^^^^^
 
-Use :func:`~playNano.io.export_bundles` to export multiple formats in one call.
+Use :func:`~playnano.io.export_bundles` to export multiple formats in one call.
 
 .. code-block:: python
 
    from pathlib import Path
-   from playNano.io.export_data import export_bundles
+   from playnano.io.export_data import export_bundles
 
    export_bundles(
        afm_stack=stack,

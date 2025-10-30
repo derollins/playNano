@@ -1,7 +1,7 @@
-playNano
+playnano
 ========
 
 .. toctree::
    :maxdepth: 4
 
-   playNano
+   playnano
