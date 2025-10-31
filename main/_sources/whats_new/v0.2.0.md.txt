@@ -1,0 +1,70 @@
+# What's New in *playNano* 0.2.0
+
+**Release date:** 2025-10-24
+
+This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.
+
+## Added
+
+- **Documentation**
+  - New **Exporting Data** page (`docs/exporting.rst`) covering OME-TIFF, NPZ, HDF5, and GIF export formats
+    with CLI and Python examples.
+  - New **Processing Operations Reference** page (`docs/processing-operations-reference.rst`) listing all
+    built-in filters, masks, and stack/video operations with parameters.
+  - Added version-switcher support for Sphinx with:
+    - `docs/_static/version-switcher.js` and `version-switcher.css`.
+    - Sidebar template `docs/_templates/sidebar/versions.html`.
+  - New `versions.json` generation and “stable” alias logic in docs build workflow.
+  - Support for multi-version documentation builds via `sphinx-multiversion`.
+  - Added project version/commit metadata injection to Sphinx `conf.py`.
+
+- **Codebase**
+  - `AFMImageStack` now registers and resolves new processing groups:
+    - `video_processing` and `stack_edit` modules added.
+  - Added internal state backup mechanism (`state_backups` attribute) for preserving
+    origonal metadata.
+  - Moved the versioning module for funcitons from the processing subpakage to the utils subpackage.
+
+- **Docs Generation**
+  - Automatic inclusion of `playnano.analysis.utils.loader`, `playnano.processing.video_processing`, and
+    `playnano.processing.stack_edit` in the API reference.
+
+- **GitHub**
+  - Issue templates added for bug reports and feature requests.
+
+## Changed
+
+- **Documentation**
+  - Documents and docstrings updated to correct typos address sphinx build warnings.
+  - Instructions for installation from PyPi to the user docs.
+  - Clearer instruction for the installation procedure to use notebooks added.
+  - Major re-write of `processing.rst`:
+    - Expanded explanation of pipeline structure, operation types, and provenance tracking.
+    - Improved CLI/GUI examples, programmatic usage, and plugin registration guidance.
+    - `index.rst`, `introduction.rst`, `gui.rst`, and `quickstart.rst` updated with links to new
+      **Exporting** and **Processing Operations Reference** pages.
+    - `analysis.rst` fixed Sphinx link formatting.
+    - Improved generated module list formatting for analysis modules.
+    - Updated Sphinx `conf.py` to:
+      - Support multi-version builds, version detection, and sidebar switcher.
+      - Move `src` path resolution to a relative form.
+      - Reorganize theme and HTML sidebar configuration.
+    - Added `sphinx-multiversion` to `pyproject.toml` under `[project.optional-dependencies.docs]`.
+
+- **GitHub Actions**
+  - Overhauled `docs.yaml` workflow:
+    - Builds and deploys versioned docs on `main` and release tags.
+    - Adds PR preview artifact upload.
+    - Generates `versions.json` and root redirect index.
+    - Creates “stable” alias for latest release.
+  - Renamed job to “Build and Deploy Docs”.
+
+  - **Notebooks**
+    - Added a root search function so hard coded paths to demo data from the tests folder
+      can be accessed whereever jupyter is launched from.
+
+## Fixed
+
+- **Documentation**
+  - Corrected malformed Sphinx links and build warnings across multiple pages.
+  - Improved auto-generated module list formatting and spacing.
