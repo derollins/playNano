@@ -361,7 +361,7 @@ class ProcessingPipeline:
         step_record["function_module"] = getattr(fn, "__module__", None)
 
         if step_type == "clear":
-            return self._handle_clear_step(step_record)
+            return self._handle_clear_step(step_record, arr)
         elif step_type == "mask":
             return self._handle_mask_step(
                 step_idx, step_name, fn, arr, mask, step_record
@@ -474,20 +474,29 @@ class ProcessingPipeline:
     # -------------------------------------------------------------------------
 
     def _handle_clear_step(
-        self, step_record: dict[str, Any]
+        self, step_record: dict[str, Any], arr: np.ndarray
     ) -> Tuple[np.ndarray, None]:
         """
-        Handle a 'clear' step by resetting the current mask.
+        Handle a 'clear' step in the processing pipeline safely.
+
+        This step clears the current mask but does not modify the working array.
+        Returns the array currently being processed (arr), not stack.data.
 
         Parameters
         ----------
         step_record : dict
             Provenance dictionary for this step.
+        arr : np.ndarray
+            Current working array in the pipeline.
 
         Returns
         -------
         tuple
-            (current array, None) since mask is cleared.
+            (arr, None)
+            - arr : np.ndarray
+                The array currently being processed (unchanged).
+            - None :
+                Indicates that the mask has been cleared.
 
         Side Effects
         ------------
@@ -495,7 +504,7 @@ class ProcessingPipeline:
         """
         step_record["mask_cleared"] = True
         self._record_step(step_record)
-        return self.stack.data, None
+        return arr, None
 
     def _handle_mask_step(
         self,

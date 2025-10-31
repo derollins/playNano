@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolved a bug where the `clear` processing step unintentionally replaced `stack.data`
+  with an invalid or uninitialised array, causing corrupted or excessively large
+  Z-values in processed frames. The `clear` step now correctly clears only the current
+  mask and returns the current working array (`arr`) without modifying image data.
+
 ## [0.2.1]
 
 ### Changed
