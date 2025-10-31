@@ -497,6 +497,10 @@ class ProcessingPipeline:
                 The array currently being processed (unchanged).
             - None :
                 Indicates that the mask has been cleared.
+
+        Side Effects
+        ------------
+        - Appends the step record to `stack.provenance["processing"]["steps"]`.
         """
         step_record["mask_cleared"] = True
         self._record_step(step_record)
