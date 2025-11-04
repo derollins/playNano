@@ -58,7 +58,7 @@ keywords = [
   "surface analysis",
 ]
 dependencies = [
-  "numpy>=1.23,<2.0",
+  "numpy>=1.23,<3.0",
   "pandas",
   "h5py",
   "Pillow",
