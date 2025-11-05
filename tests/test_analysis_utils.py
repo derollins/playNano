@@ -637,7 +637,7 @@ def test_explicit_object_key_and_custom_id_field():
 
 
 def test_raises_when_cannot_autodetect_object_key():
-    """Test that ValueError is raised when object key not detected"""
+    """Test that ValueError is raised when object key not detected."""
     detection_output = _make_detection_output([])
     grouping_output = {"unknown": []}  # neither tracks nor clusters
 
