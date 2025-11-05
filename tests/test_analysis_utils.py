@@ -367,6 +367,278 @@ def test_flatten_tracks_returns_dataframe():
     assert expected_cols.issubset(df.columns)
 
 
+def _make_detection_output(features_per_frame):
+    """
+    Helper to create a detection_output dict like FeatureDetectionModule.run() would return.
+    features_per_frame: list of list[dict] per frame
+    """
+    return {"features_per_frame": features_per_frame}
+
+
+def test_centroid_mapping_is_yx_to_xy():
+    """
+    The detection module stores centroid as (row, col) = (y, x).
+    The flattener must map centroid_x <- centroid[1], centroid_y <- centroid[0].
+    """
+    features_per_frame = [
+        [
+            {  # frame 0, feature 0
+                "frame_timestamp": 0.0,
+                "label": 1,
+                "centroid": (10.5, 20.25),  # (y, x)
+                "area": 100,
+                "mean": 1.2,
+                "min": 0.9,
+                "max": 1.8,
+            },
+            {  # frame 0, feature 1
+                "frame_timestamp": 0.0,
+                "label": 2,
+                "centroid": (30.0, 40.0),  # (y, x)
+                "area": 50,
+                "mean": 0.6,
+                "min": 0.4,
+                "max": 0.9,
+            },
+        ]
+    ]
+    detection_output = _make_detection_output(features_per_frame)
+
+    # grouping: one cluster that references frame 0, feature indices 0 and 1
+    grouping_output = {
+        "clusters": [
+            {
+                "id": 7,
+                "frames": [0, 0],
+                "point_indices": [0, 1],
+            }
+        ]
+    }
+
+    df = particles.flatten_particle_features(grouping_output, detection_output)
+
+    # Expected: two rows
+    assert len(df) == 2
+
+    # Check mapping for row 0
+    r0 = df.iloc[0]
+    assert r0["frame"] == 0
+    assert r0["label"] == 1
+    assert r0["centroid_y"] == pytest.approx(10.5)  # from centroid[0]
+    assert r0["centroid_x"] == pytest.approx(20.25)  # from centroid[1]
+    assert r0["area"] == 100
+    assert r0["mean"] == pytest.approx(1.2)
+    assert r0["min"] == pytest.approx(0.9)
+    assert r0["max"] == pytest.approx(1.8)
+
+    # And for row 1
+    r1 = df.iloc[1]
+    assert r1["centroid_y"] == pytest.approx(30.0)
+    assert r1["centroid_x"] == pytest.approx(40.0)
+
+
+def test_autodetect_tracks_vs_clusters_and_id_field_tracks():
+    """
+    If grouping_output contains 'tracks', use object_key='tracks' and object_id_field='track_id'.
+    """
+    features_per_frame = [
+        [
+            {
+                "frame_timestamp": 0.0,
+                "label": 1,
+                "centroid": (5.0, 15.0),
+                "area": 12,
+                "mean": 0.5,
+                "min": 0.2,
+                "max": 0.9,
+            }
+        ],
+        [],
+    ]
+    detection_output = _make_detection_output(features_per_frame)
+
+    grouping_output = {
+        "tracks": [
+            {
+                "id": 3,  # should map to 'track_id'
+                "frames": [0],
+                "point_indices": [0],
+            }
+        ]
+    }
+
+    df = particles.flatten_particle_features(grouping_output, detection_output)
+
+    assert "track_id" in df.columns
+    assert "cluster_id" not in df.columns
+    assert df.iloc[0]["track_id"] == 3
+    assert df.iloc[0]["centroid_x"] == pytest.approx(15.0)
+    assert df.iloc[0]["centroid_y"] == pytest.approx(5.0)
+
+
+def test_autodetect_clusters_and_id_field_clusters():
+    """
+    If grouping_output contains 'clusters', use object_key='clusters' and object_id_field='cluster_id'.
+    """
+    detection_output = _make_detection_output(
+        [
+            [
+                {
+                    "frame_timestamp": 0.0,
+                    "label": 1,
+                    "centroid": (1.0, 2.0),
+                    "area": 5,
+                    "mean": 0.3,
+                    "min": 0.1,
+                    "max": 0.5,
+                }
+            ]
+        ]
+    )
+    grouping_output = {"clusters": [{"id": 99, "frames": [0], "point_indices": [0]}]}
+
+    df = particles.flatten_particle_features(grouping_output, detection_output)
+    assert "cluster_id" in df.columns
+    assert df.iloc[0]["cluster_id"] == 99
+    assert df.iloc[0]["centroid_x"] == pytest.approx(2.0)
+    assert df.iloc[0]["centroid_y"] == pytest.approx(1.0)
+
+
+def test_skips_out_of_range_indices_cleanly():
+    """
+    If a (frame, index) points outside available features, row is skipped (no exception).
+    """
+    features_per_frame = [
+        [],  # frame 0 has no features
+        [
+            {
+                "frame_timestamp": 1.0,
+                "label": 1,
+                "centroid": (3.0, 4.0),
+                "area": 10,
+                "mean": 0.5,
+                "min": 0.4,
+                "max": 0.7,
+            }
+        ],
+    ]
+    detection_output = _make_detection_output(features_per_frame)
+
+    grouping_output = {
+        "clusters": [
+            {
+                "id": 1,
+                "frames": [0, 1, 2],  # frame 2 is out-of-range
+                "point_indices": [0, 0, 0],  # idx 0 at frame 0 is invalid (no features)
+            }
+        ]
+    }
+
+    df = particles.flatten_particle_features(grouping_output, detection_output)
+    # Only the valid (frame=1, idx=0) should be present
+    assert len(df) == 1
+    r = df.iloc[0]
+    assert r["frame"] == 1
+    assert r["centroid_x"] == pytest.approx(4.0)
+    assert r["centroid_y"] == pytest.approx(3.0)
+
+
+def test_required_columns_present_and_types_reasonable():
+    features_per_frame = [
+        [
+            {
+                "frame_timestamp": 0.0,
+                "label": 7,
+                "centroid": (12.3, 45.6),
+                "area": 111.0,
+                "mean": 2.3,
+                "min": 1.9,
+                "max": 3.1,
+            }
+        ]
+    ]
+    detection_output = _make_detection_output(features_per_frame)
+    grouping_output = {"clusters": [{"id": 1, "frames": [0], "point_indices": [0]}]}
+
+    df = particles.flatten_particle_features(grouping_output, detection_output)
+
+    expected_cols = {
+        "cluster_id",
+        "frame",
+        "timestamp",
+        "label",
+        "centroid_x",
+        "centroid_y",
+        "area",
+        "mean",
+        "min",
+        "max",
+    }
+
+    assert expected_cols.issubset(df.columns)
+
+    r = df.iloc[0]
+    assert isinstance(
+        r["cluster_id"], (int, np.integer, float)
+    )  # there is some weird upcastign to loats if no values found in pandas.
+    assert isinstance(
+        r["frame"], (int, np.integer, float)
+    )  # there is some weird upcastign to loats if no values found in pandas.
+    assert isinstance(r["timestamp"], float)
+    assert isinstance(
+        r["label"], (int, np.integer, float)
+    )  # there is some weird upcastign to loats if no values found in pandas.
+    assert isinstance(r["centroid_x"], float)
+    assert isinstance(r["centroid_y"], float)
+    assert isinstance(r["area"], (float))
+    assert isinstance(r["mean"], float)
+    assert isinstance(r["min"], float)
+    assert isinstance(r["max"], float)
+
+
+def test_explicit_object_key_and_custom_id_field():
+    """
+    You can override auto-detection and column name with object_key + object_id_field.
+    """
+    features_per_frame = [
+        [
+            {
+                "frame_timestamp": 0.0,
+                "label": 1,
+                "centroid": (9.0, 8.0),
+                "area": 12,
+                "mean": 0.1,
+                "min": 0.0,
+                "max": 0.2,
+            }
+        ]
+    ]
+    detection_output = _make_detection_output(features_per_frame)
+    grouping_output = {"clusters": [{"id": 5, "frames": [0], "point_indices": [0]}]}
+
+    df = particles.flatten_particle_features(
+        grouping_output,
+        detection_output,
+        object_key="clusters",
+        object_id_field="object_id",
+        frame_key="frames",
+        index_key="point_indices",
+    )
+
+    assert "object_id" in df.columns and "cluster_id" not in df.columns
+    assert df.iloc[0]["object_id"] == 5
+    assert df.iloc[0]["centroid_x"] == pytest.approx(8.0)
+    assert df.iloc[0]["centroid_y"] == pytest.approx(9.0)
+
+
+def test_raises_when_cannot_autodetect_object_key():
+    detection_output = _make_detection_output([])
+    grouping_output = {"unknown": []}  # neither tracks nor clusters
+
+    with pytest.raises(ValueError):
+        particles.flatten_particle_features(grouping_output, detection_output)
+
+
 def test_plot_tracks_3d_returns_axes():
     """Test plot_tracks_3d returns a matplotlib Axes object."""
     df = particles.flatten_particle_features(

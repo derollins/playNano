@@ -111,8 +111,8 @@ def flatten_particle_features(
                 "timestamp": feat.get("frame_timestamp", np.nan),
                 "label": feat.get("label", None),
                 # Follow scikit‑image’s convention for coordinatles, row, col i.e. y, x
-                "centroid_y": feat["centroid"][0],  # y
-                "centroid_x": feat["centroid"][1],  # x
+                "centroid_x": feat["centroid"][1],  # col (x)
+                "centroid_y": feat["centroid"][0],  # row (y)
                 "area": feat.get("area", np.nan),
                 "mean": feat.get("mean", np.nan),
                 "min": feat.get("min", np.nan),
