@@ -369,7 +369,8 @@ def test_flatten_tracks_returns_dataframe():
 
 def _make_detection_output(features_per_frame):
     """
-    Helper to create a detection_output dict like FeatureDetectionModule.run() would return.
+    Create a detection_output dict like FeatureDetectionModule.run() would return.
+
     features_per_frame: list of list[dict] per frame
     """
     return {"features_per_frame": features_per_frame}
@@ -378,6 +379,7 @@ def _make_detection_output(features_per_frame):
 def test_centroid_mapping_is_yx_to_xy():
     """
     The detection module stores centroid as (row, col) = (y, x).
+
     The flattener must map centroid_x <- centroid[1], centroid_y <- centroid[0].
     """
     features_per_frame = [
@@ -439,7 +441,10 @@ def test_centroid_mapping_is_yx_to_xy():
 
 def test_autodetect_tracks_vs_clusters_and_id_field_tracks():
     """
-    If grouping_output contains 'tracks', use object_key='tracks' and object_id_field='track_id'.
+    Test if grouping_output is correctly read and object_id_field set for tracks.
+
+    If grouping_output contains 'tracks', use object_key='tracks'
+    and object_id_field='track_id'.
     """
     features_per_frame = [
         [
@@ -478,7 +483,10 @@ def test_autodetect_tracks_vs_clusters_and_id_field_tracks():
 
 def test_autodetect_clusters_and_id_field_clusters():
     """
-    If grouping_output contains 'clusters', use object_key='clusters' and object_id_field='cluster_id'.
+    Test if grouping_output is correctly read and object_id_field set.
+
+    If grouping_output contains 'clusters', use object_key='clusters'
+    and object_id_field='cluster_id'.
     """
     detection_output = _make_detection_output(
         [
@@ -505,9 +513,7 @@ def test_autodetect_clusters_and_id_field_clusters():
 
 
 def test_skips_out_of_range_indices_cleanly():
-    """
-    If a (frame, index) points outside available features, row is skipped (no exception).
-    """
+    """If (frame, index) points outside available features, row is skipped."""
     features_per_frame = [
         [],  # frame 0 has no features
         [
@@ -544,6 +550,7 @@ def test_skips_out_of_range_indices_cleanly():
 
 
 def test_required_columns_present_and_types_reasonable():
+    """Test that the required column are present in output dataframe with types."""
     features_per_frame = [
         [
             {
@@ -597,9 +604,7 @@ def test_required_columns_present_and_types_reasonable():
 
 
 def test_explicit_object_key_and_custom_id_field():
-    """
-    You can override auto-detection and column name with object_key + object_id_field.
-    """
+    """Test override auto-detection & column name with object_key + object_id_field."""
     features_per_frame = [
         [
             {
@@ -632,6 +637,7 @@ def test_explicit_object_key_and_custom_id_field():
 
 
 def test_raises_when_cannot_autodetect_object_key():
+    """Test that ValueError is raised when object key not detected"""
     detection_output = _make_detection_output([])
     grouping_output = {"unknown": []}  # neither tracks nor clusters
 
