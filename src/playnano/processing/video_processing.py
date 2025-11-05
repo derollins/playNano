@@ -558,6 +558,7 @@ def rolling_frame_align(
 def _normalize_pad(pad):
     """
     Normalize pad argument to (top, bottom, left, right).
+
     Accepts:
       - int: uniform pad on all sides
       - tuple/list of length 2: (vertical, horizontal)
@@ -577,6 +578,7 @@ def _normalize_pad(pad):
 def _crop_with_pad(stack, y0, y1, x0, x1, pad_value=np.nan):
     """
     Crop stack[:, y0:y1, x0:x1] even if y0<0 or x1>W etc., padding with pad_value.
+
     y0, y1, x0, x1 are *exclusive-end* bounds in original coordinates.
     """
     n, H, W = stack.shape
@@ -679,8 +681,10 @@ def intersection_crop(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
 @versioned_filter("0.2.0")
 def crop_square(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
     """
-    Crop aligned stack to the largest centered square region (based on the finite-pixel
-    intersection across frames), with optional outward padding (np.nan).
+    Crop aligned stack to the largest centered square region.
+
+    This is based on the finite-pixel intersection across frames, with optional
+    outward padding (np.nan).
 
     Parameters
     ----------
