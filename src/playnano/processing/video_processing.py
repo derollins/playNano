@@ -734,7 +734,7 @@ def crop_square(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
     x0_i, x1_i = x_min, x_max + 1
     H_i, W_i = (y1_i - y0_i), (x1_i - x0_i)
 
-    # Largest centered square INSIDE the intersection (same as original intent)
+    # Largest centered square INSIDE the intersection
     size = min(H_i, W_i)
     r_start = (H_i - size) // 2  # offset within the intersection (for metadata compat)
     c_start = (W_i - size) // 2
@@ -761,9 +761,7 @@ def crop_square(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
         "intersection_shape": (H_i, W_i),
         "new_shape": cropped.shape[1:],
         "square_size": size,
-        # Keep 'offset' semantics compatible with your original: within the intersection crop
         "offset": (r_start, c_start),
-        # Provide extra, explicit bounds (exclusive-end) in original coordinates
         "intersection_bounds": (y0_i, y1_i, x0_i, x1_i),
         "square_bounds": (y0_sq, y1_sq, x0_sq, x1_sq),
         "requested_bounds": (y0_req, y1_req, x0_req, x1_req),
