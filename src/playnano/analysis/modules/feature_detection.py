@@ -215,7 +215,7 @@ class FeatureDetectionModule(AnalysisModule):
                 {
                     "frame_timestamp": frame_ts,
                     "label": int(prop.label),
-                    "area": int(prop.area),
+                    "area": float(prop.area),
                     "min": float(vals.min()),
                     "max": float(vals.max()),
                     "mean": float(vals.mean()),
