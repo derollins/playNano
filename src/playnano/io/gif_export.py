@@ -135,9 +135,12 @@ def create_gif_with_scale_and_timestamp(
                 frame_norm = np.zeros_like(frame, dtype=np.uint8)
             else:
                 clipped = np.clip(frame, zmin_val, zmax_val)
-                frame_norm = (
-                    (clipped - zmin_val) / (zmax_val - zmin_val) * 255
-                ).astype(np.uint8)
+                clipped = np.clip(frame, zmin_val, zmax_val)
+                normalized = (clipped - zmin_val) / (zmax_val - zmin_val) * 255
+                normalized = np.nan_to_num(
+                    normalized, nan=0.0, posinf=255.0, neginf=0.0
+                )
+                frame_norm = np.clip(normalized, 0, 255).astype(np.uint8)
         else:
             frame_norm = normalize_to_uint8(frame)
 
