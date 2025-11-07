@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2]
+
 ### Fixed
 
 - Resolved a bug where the `clear` processing step unintentionally replaced `stack.data`
@@ -195,3 +197,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
 [0.2.1]: https://github.com/derollins/playNano/releases/tag/v0.2.1
+[0.2.2]: https://github.com/derollins/playNano/releases/tag/v0.2.2
