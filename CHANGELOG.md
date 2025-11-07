@@ -14,6 +14,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with an invalid or uninitialised array, causing corrupted or excessively large
   Z-values in processed frames. The `clear` step now correctly clears only the current
   mask and returns the current working array (`arr`) without modifying image data.
+- Incorrect mapping of centroid_x and centroid_y in feature flattening logic. Centroids
+  returned by regionprops were interpreted as (row, col) but incorrectly assigned as (x, y).
+- RuntimeWarning caused by invalid value casting during Z-scaling normalization in GIF export.
+  Improved robustness of GIF frame generation when AFM data contains missing or extreme Z-values.
+
+### Changed
+
+- Normalization step now uses np.nan_to_num and np.clip to ensure all values are within the valid
+  range before casting.
+- Updated centroid assignment:
+  - `centroid_x = centroid[1] (column → x)`
+  - `centroid_y = centroid[0] (row → y)`
+
+### Added
+
+- Safe normalization logic for GIF export in create_gif_with_scale_and_timestamp to handle NaN, inf,
+  and out-of-range values before casting to np.uint8.
+- Pytest coverage for:
+  - Centroid coordinate mapping
+  - Autodetection of object key (tracks vs clusters)
+  - Handling of out-of-range indices
+  - Column presence
 
 ## [0.2.1]
 
