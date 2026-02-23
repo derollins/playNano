@@ -173,6 +173,15 @@ class AnalysisPipeline:
                 ) from e
 
         # 3) Instantiate and type-check
+
+        # First: check class/type without instantiating
+        if not callable(cls):
+            raise TypeError(
+                f"Loaded analysis module '{module_name}' is not instantiable "
+                f"(got {cls!r})"
+            )
+
+        # Create the instance
         try:
             instance = cls()
         except Exception as e:
@@ -180,9 +189,11 @@ class AnalysisPipeline:
                 f"Failed to instantiate analysis module '{module_name}' ({cls}): {e}"
             ) from e
 
+        # Now validate that instance is correct type
         if not isinstance(instance, AnalysisModule):
             raise TypeError(
-                f"Loaded module for '{module_name}' is not an AnalysisModule subclass; got {type(instance)!r}"  # noqa
+                f"Loaded module, '{module_name}', is not an AnalysisModule subclass;"
+                f"got {type(instance)!r}"
             )
 
         # Cache and return
