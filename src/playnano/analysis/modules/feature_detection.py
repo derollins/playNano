@@ -180,13 +180,20 @@ class FeatureDetectionModule(AnalysisModule):
         """Process a single frame: hole fill, labeling, filtering, stats."""
         H, W = frame.shape
 
+        # Ensure mask is boolean before any morphology operations
+        mask_frame = mask_frame.astype(bool, copy=False)
+
         # Optionally fill holes
         if fill_holes:
             if hole_area is not None:
-                mask_frame = remove_small_holes(mask_frame, area_threshold=hole_area)
+                # Fill only holes with area STRICTLY less than hole_area
+                # Explicit connectivity for cross-version determinism
+                mask_frame = remove_small_holes(
+                    mask_frame, area_threshold=hole_area, connectivity=1
+                )
             else:
-                mask_frame = binary_fill_holes(mask_frame)
-            mask_frame = mask_frame.astype(bool)
+                # Fill all holes (no area limit)
+                mask_frame = binary_fill_holes(mask_frame).astype(bool, copy=False)
 
         # Label connected regions
         initial_labeled = label(mask_frame)
@@ -219,7 +226,7 @@ class FeatureDetectionModule(AnalysisModule):
                     "min": float(vals.min()),
                     "max": float(vals.max()),
                     "mean": float(vals.mean()),
-                    "bbox": tuple(map(int, prop.bbox)),  # (minr, minc, maxr, maxc)
+                    "bbox": tuple(map(int, prop.bbox)),
                     "centroid": tuple(map(float, prop.centroid)),
                 }
             )
