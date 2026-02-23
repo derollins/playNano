@@ -86,7 +86,7 @@ dev = [
 ]
 
 docs = [
-    "sphinx",
+    "sphinx<9",
     "furo",
     "myst-parser",
     "sphinx-autoapi",
