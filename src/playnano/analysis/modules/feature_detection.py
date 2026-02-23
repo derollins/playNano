@@ -18,7 +18,7 @@ from typing import Any, Optional
 import numpy as np
 from scipy.ndimage import binary_fill_holes
 from skimage.measure import label, regionprops
-from skimage.morphology import remove_small_holes, opening, disk
+from skimage.morphology import disk, opening, remove_small_holes
 
 from playnano.analysis.base import AnalysisModule
 from playnano.processing.mask_generators import register_masking

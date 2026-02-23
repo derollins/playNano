@@ -51,7 +51,8 @@ def flatten_particle_features(
         e.g., "cluster_id" or "track_id". Default is "cluster_id".
 
     frame_key : str, optional
-        Key in each group object listing the frames the object appears in.
+        Key in each group object listing the frames spanned by the object; missing
+        detections may be represented by None indices.
         Default is "frames".
 
     index_key : str, optional
@@ -69,9 +70,9 @@ def flatten_particle_features(
         - label
         - centroid_x, centroid_y
         - area
-        - mean_intensity
-        - min_intensity
-        - max_intensity
+        - mean
+        - min
+        - max
     """
     if object_key is None:
         if "tracks" in grouping_output:
@@ -96,21 +97,25 @@ def flatten_particle_features(
             )
 
         for frame_idx, pt_idx in zip(frames, point_indices, strict=False):
+            # Dense tracks can include missing points
+            if pt_idx is None:
+                continue
+
             # Defensive: skip if index out of range
-            if frame_idx >= len(features_per_frame):
+            if frame_idx < 0 or frame_idx >= len(features_per_frame):
                 continue
             frame_features = features_per_frame[frame_idx]
-            if pt_idx >= len(frame_features):
+            if pt_idx < 0 or pt_idx >= len(frame_features):
                 continue
             feat = frame_features[pt_idx]
 
             # Build row dict
-            row = row = {
+            row = {
                 object_id_field: cid,
                 "frame": frame_idx,
                 "timestamp": feat.get("frame_timestamp", np.nan),
                 "label": feat.get("label", None),
-                # Follow scikit‑image’s convention for coordinatles, row, col i.e. y, x
+                # Follow scikit‑image’s convention for coordinates, row, col i.e. y, x
                 "centroid_x": feat["centroid"][1],  # col (x)
                 "centroid_y": feat["centroid"][0],  # row (y)
                 "area": feat.get("area", np.nan),
