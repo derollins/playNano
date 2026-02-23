@@ -4,8 +4,8 @@ Threshold-based feature detection for AFM image stacks.
 Detect features in each frame of an AFM image stack through thresholding methods.
 """
 
-from typing import Any, Optional
 import inspect
+from typing import Any, Optional
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes
@@ -187,8 +187,10 @@ class FeatureDetectionModule(AnalysisModule):
         # Optionally fill holes
         if fill_holes:
             if hole_area is not None:
-                # Normalize semantics to "fill holes with area < hole_area" across skimage versions.
-                # New API (0.26+): prefers `max_size` which fills holes with area <= max_size.
+                # Normalize semantics to "fill holes with area < hole_area"
+                # across skimage versions.
+                # New API (0.26+): prefers `max_size` which fills holes with
+                # area <= max_size.
                 # Old API: `area_threshold` fills holes with area < area_threshold.
                 sig = inspect.signature(remove_small_holes)
                 if "max_size" in sig.parameters:
