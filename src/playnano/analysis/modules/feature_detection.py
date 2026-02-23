@@ -5,6 +5,7 @@ Detect features in each frame of an AFM image stack through thresholding methods
 """
 
 from typing import Any, Optional
+import inspect
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes
@@ -180,19 +181,28 @@ class FeatureDetectionModule(AnalysisModule):
         """Process a single frame: hole fill, labeling, filtering, stats."""
         H, W = frame.shape
 
-        # Ensure mask is boolean before any morphology operations
+        # Ensure boolean mask before morphology calls
         mask_frame = mask_frame.astype(bool, copy=False)
 
         # Optionally fill holes
         if fill_holes:
             if hole_area is not None:
-                # Fill only holes with area STRICTLY less than hole_area
-                # Explicit connectivity for cross-version determinism
-                mask_frame = remove_small_holes(
-                    mask_frame, area_threshold=hole_area, connectivity=1
-                )
+                # Normalize semantics to "fill holes with area < hole_area" across skimage versions.
+                # New API (0.26+): prefers `max_size` which fills holes with area <= max_size.
+                # Old API: `area_threshold` fills holes with area < area_threshold.
+                sig = inspect.signature(remove_small_holes)
+                if "max_size" in sig.parameters:
+                    # Emulate strict "< hole_area" by using <= hole_area-1
+                    max_size = max(hole_area - 1, 0)  # guard against negatives
+                    mask_frame = remove_small_holes(
+                        mask_frame, max_size=max_size, connectivity=1
+                    )
+                else:
+                    mask_frame = remove_small_holes(
+                        mask_frame, area_threshold=hole_area, connectivity=1
+                    )
             else:
-                # Fill all holes (no area limit)
+                # Fill all holes when no area limit is provided
                 mask_frame = binary_fill_holes(mask_frame).astype(bool, copy=False)
 
         # Label connected regions
