@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3.11
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -43,7 +46,7 @@ repos:
         exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.18.1
+    rev: v0.10.0
     hooks:
       - id: markdownlint-cli2
         args: [--fix]

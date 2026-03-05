@@ -12,11 +12,21 @@ Subpackages
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+playnano.gui.main module
+------------------------
 
-   playnano.gui.main
-   playnano.gui.window
+.. automodule:: playnano.gui.main
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+playnano.gui.window module
+--------------------------
+
+.. automodule:: playnano.gui.window
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

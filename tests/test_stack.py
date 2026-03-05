@@ -4,7 +4,6 @@ import json
 import logging
 import types
 from datetime import datetime
-from importlib import metadata
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
@@ -240,14 +239,7 @@ def test_flatten_images_uses_apply(monkeypatch):
     # 2) What we expect after “flatten”: every pixel = 7.0
     fake_flat = np.full_like(data, 7.0)
 
-    # 3) Patch out any possibility of loading a real plugin:
-    #    Make AFMImageStack._load_plugin(...) return None so
-    # the code falls back to FILTER_MAP.
-    monkeypatch.setattr(
-        "playnano.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
-    )
-
-    # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
+    # 3) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
     # patch _reslve_step to directly return our fake function
     monkeypatch.setattr(
         stack,
@@ -266,65 +258,130 @@ def test_flatten_images_uses_apply(monkeypatch):
     np.testing.assert_array_equal(stack.processed["topostats_flatten"], fake_flat)
 
 
-def test_get_plugin_version_known_module():
-    """Test _get_plugin_version returns version for a standard library or package."""
-    # Use a known function from numpy
-    import numpy as np
+def test_apply_video_filter(monkeypatch):
+    """Test that apply() executes the VIDEO_FILTER / VIDEO_PLUGIN branch."""
+    data = np.ones((2, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
 
-    version = AFMImageStack._get_plugin_version(np.mean)
-    assert isinstance(version, str)
-    assert version == metadata.version("numpy")
+    # Fake video filter: multiply entire 3D array by 5
+    def fake_video_filter(arr, **kwargs):
+        return arr * 5
 
-
-def test_get_plugin_version_fake_module(monkeypatch):
-    """Test _get_plugin_version returns None for non-existent module."""
-    # Create a fake function with a fake module
-    fake_fn = lambda x: x  # noqa
-    fake_fn.__module__ = "nonexistent_fake_package.sub"
-
-    version = AFMImageStack._get_plugin_version(fake_fn)
-    assert version is None
-
-
-def test_get_plugin_version_error(monkeypatch):
-    """Test _get_plugin_version handles unexpected exceptions."""
-    # Create a function that pretends to be from a real module
-    fn = lambda x: x  # noqa
-    fn.__module__ = "numpy"
-
-    # Patch metadata.version to raise a generic error
+    # Force resolution: always return ("video_filter", fake_video_filter)
     monkeypatch.setattr(
-        metadata, "version", lambda _: (_ for _ in ()).throw(Exception("boom"))
+        stack, "_resolve_step", lambda step: ("video_filter", fake_video_filter)
     )
 
-    version = AFMImageStack._get_plugin_version(fn)
-    assert version is None
+    result = stack.apply(["my_video_filter"])
+
+    # Check correct application
+    np.testing.assert_array_equal(result, data * 5)
+    np.testing.assert_array_equal(stack.processed["my_video_filter"], data * 5)
 
 
-def test_load_plugin(monkeypatch):
-    """Test _load_plugin loads a valid plugin and raises error for unknown plugin."""
+def test_apply_video_plugin(monkeypatch):
+    """Test that apply() handles the video_plugin branch correctly."""
+    data = np.ones((2, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    def fake_plugin(arr, **kwargs):
+        return arr + 3
+
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda step: ("video_plugin", fake_plugin)
+    )
+
+    result = stack.apply(["plugin_step"])
+    np.testing.assert_array_equal(result, data + 3)
+
+
+def test_apply_stack_edit(monkeypatch):
+    """Test stack_edit branch drops frames and resets mask."""
+    data = np.ones((4, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 4)
+
+    # This edit removes last 2 frames
+    def fake_edit(arr, **kwargs):
+        # Simulate returning a new stack with frames [0,1] kept
+        return arr[:2]
+
+    # Force resolve to stack_edit
+    monkeypatch.setattr(stack, "_resolve_step", lambda step: ("stack_edit", fake_edit))
+
+    # IMPORTANT: tell the stack-edit layer which indices were dropped
+    out = stack.apply(["drop_custom"], indices_to_drop=[2, 3])
+
+    # Assertions
+    assert out.shape == (2, 3, 3)
+    assert stack.data.shape == (2, 3, 3)
+    assert len(stack.frame_metadata) == 2  # metadata kept in sync
+    assert "drop_custom" in stack.processed
+    assert (
+        stack.state_backups["frame_metadata_before_edit"] == [{"timestamp": None}] * 4
+    )
+
+
+def test_apply_method_branch(monkeypatch):
+    """Test that apply() correctly handles a method step."""
     data = np.ones((2, 2, 2))
-    stack = AFMImageStack(data.copy(), 1.0, "ch", ".", [{}] * 2)
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
 
-    # Patch metadata.entry_points to mock a plugin
-    fake_ep = Mock()
-    fake_ep.name = "dummy"
-    fake_ep.value = "some.module:dummy"
-    fake_ep.load = Mock(return_value=lambda x: x + 1)
+    # a method that returns arr * 10
+    def fake_method(arr, **kwargs):
+        return arr * 10
 
+    # Pretend the "zoom" step resolves to a bound method
     monkeypatch.setattr(
-        metadata,
-        "entry_points",
-        lambda group=None: [fake_ep] if group == "playnano.filters" else [],
+        stack,
+        "_resolve_step",
+        lambda step: ("method", fake_method),
     )
 
-    plugin_fn = stack._load_plugin("dummy")
-    assert callable(plugin_fn)
-    assert plugin_fn(1) == 2
+    # Run
+    out = stack.apply(["zoom"])
 
-    # Check error for unknown plugin
-    with pytest.raises(ValueError):
-        stack._load_plugin("not_exist")
+    # Assertions: output, final data, and per-step snapshot
+    np.testing.assert_array_equal(out, data * 10)
+    np.testing.assert_array_equal(stack.data, data * 10)
+    # 'raw' snapshot should exist (created once)
+    assert "raw" in stack.processed
+    np.testing.assert_array_equal(stack.processed["zoom"], data * 10)
+
+
+def test_apply_method_branch_inplace(monkeypatch):
+    """Method returning None should use mutated stack.data."""
+    data = np.ones((2, 2, 2))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    def inplace_method(arr, **kwargs):
+        # simulate in-place style API: mutate stack.data and return None
+        stack.data = arr * 4
+        return None
+
+    monkeypatch.setattr(
+        stack,
+        "_resolve_step",
+        lambda step: ("method", inplace_method),
+    )
+
+    out = stack.apply(["inplace"])
+    np.testing.assert_array_equal(out, data * 4)
+    np.testing.assert_array_equal(stack.data, data * 4)
+    assert "inplace" in stack.processed
+    np.testing.assert_array_equal(stack.processed["inplace"], data * 4)
+
+
+def test_apply_unrecognized_step_raises(monkeypatch):
+    """Test that apply() raises ValueError for unsupported step types."""
+    data = np.zeros((2, 2, 2))
+    stack = AFMImageStack(data, 1.0, "h", ".", [{}] * 2)
+
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda step: ("weird_step", lambda x: x)
+    )
+
+    with pytest.raises(ValueError, match="Unsupported step type 'weird_step'"):
+        stack.apply(["bad"])
 
 
 def test_frames_with_metadata_iterator():
@@ -1129,3 +1186,92 @@ def test_resolve_step_plugin(monkeypatch):
     assert step_type == "plugin"
     assert fn is mock_fn
     mock_ep.load.assert_called_once()
+
+
+def test_resolve_step_video_plugin(monkeypatch):
+    """Test that video plugin steps are resolved."""
+    # Create dummy stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Create mock entry point with .name and .load()
+    mock_fn = lambda x: x  # noqa
+    mock_ep = Mock()
+    mock_ep.name = "mock_video_filter"
+    mock_ep.load.return_value = mock_fn
+
+    # Patch importlib.metadata.entry_points to return our mock
+    mock_eps = Mock()
+    mock_eps.__iter__ = lambda self: iter([mock_ep])
+    monkeypatch.setattr(
+        "playnano.afm_stack.metadata.entry_points",
+        lambda group=None: [mock_ep] if group == "playnano.video_processing" else [],
+    )
+
+    # Call _resolve_step and assert behavior
+    step_type, fn = stack._resolve_step("mock_video_filter")
+    assert step_type == "video_plugin"
+    assert fn is mock_fn
+    mock_ep.load.assert_called_once()
+
+
+def test_resolve_step_video_filter(monkeypatch):
+    """Test that video filter steps are resolved from VIDEO_FILTER_MAP."""
+    # Create small dummy stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Create a fake filter function
+    def fake_filter(arr):
+        """Fake a video filter that just returns the input array."""
+        return arr
+
+    # Patch VIDEO_FILTER_MAP to contain a test filter
+    monkeypatch.setattr(
+        "playnano.afm_stack.VIDEO_FILTER_MAP",
+        {"fake_video_filter": fake_filter},
+        raising=True,
+    )
+
+    step_type, fn = stack._resolve_step("fake_video_filter")
+
+    assert step_type == "video_filter"
+    assert fn is fake_filter
+
+
+def test_resolve_step_stack_edit(monkeypatch):
+    """Test that stack edit steps are resolved from STACK_EDIT_MAP."""
+    # small dummy stack again
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Fake stack edit function
+    def fake_edit(arr, **kwargs):
+        return arr
+
+    # Patch STACK_EDIT_MAP
+    monkeypatch.setattr(
+        "playnano.afm_stack.STACK_EDIT_MAP",
+        {"fake_edit": fake_edit},
+        raising=True,
+    )
+
+    step_type, fn = stack._resolve_step("fake_edit")
+
+    assert step_type == "stack_edit"
+    assert fn is fake_edit
