@@ -191,7 +191,7 @@ class AFMImageStack:
         -------
         tuple[str, callable | None]
             - step type: one of "clear", "mask", "method", "plugin", "filter",
-              "video_filter", "stack_edit"
+              "video_filter", "video_plugin", "stack_edit"
             - callable implementing the step, or None if step_type == "clear".
 
         Raises
@@ -226,19 +226,32 @@ class AFMImageStack:
             fn = ep.load()
             return "plugin", fn
 
-        # 5) Unmasked filter in FILTER_MAP?
+        # 5) Plugin 3D filter 'video processing'entry point?
+        try:
+            ep = next(
+                ep
+                for ep in metadata.entry_points(group="playnano.video_processing")
+                if ep.name == step
+            )
+        except StopIteration:
+            ep = None
+        if ep is not None:
+            fn = ep.load()
+            return "video_plugin", fn
+
+        # 6) Unmasked filter in FILTER_MAP?
         if step in FILTER_MAP:
             return "filter", FILTER_MAP[step]
 
-        # 6) Video processing step in VIDEO_FILTER_MAP?
+        # 7) Video processing step in VIDEO_FILTER_MAP?
         if step in VIDEO_FILTER_MAP:
             return "video_filter", VIDEO_FILTER_MAP[step]
 
-        # 7) Stack edit step ie. drop_frames?
+        # 8) Stack edit step ie. drop_frames?
         if step in STACK_EDIT_MAP:
             return "stack_edit", STACK_EDIT_MAP[step]
 
-        # 8) No match
+        # 9) No match
         raise ValueError(
             f"Unrecognized step '{step}'. "
             f"Available masks: {list(MASK_MAP)}; "
@@ -246,6 +259,7 @@ class AFMImageStack:
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
             f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
+            f"video_plugins: {[ep.name for ep in metadata.entry_points(group='playnano.video_processing')]}."  # noqa
             f"stack_edit: {list(STACK_EDIT_MAP)}; "
         )
 
@@ -360,7 +374,6 @@ class AFMImageStack:
                 except Exception as e:
                     logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
                     new_arr[i] = arr[i]
-
         return new_arr
 
     def _execute_video_processing_step(
@@ -807,28 +820,6 @@ class AFMImageStack:
                 return ep.load()
 
         raise ValueError(f"Unknown filter plugin: {name}")
-
-    def _get_plugin_version(fn: callable) -> str | None:
-        """
-        Attempt to obtain a version string for the package/module defining fn.
-
-        Parameters
-        ----------
-        fn : callable
-            Function object whose module/package version to query.
-
-        Returns
-        -------
-        str or None
-            Version string if retrievable via importlib.metadata, else None.
-        """
-        module_name = fn.__module__.split(".")[0]
-        try:
-            return metadata.version(module_name)
-        except metadata.PackageNotFoundError:
-            return None
-        except Exception:
-            return None
 
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """

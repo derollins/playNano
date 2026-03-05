@@ -370,7 +370,7 @@ class ProcessingPipeline:
             return self._handle_filter_step(
                 step_idx, step_name, fn, arr, mask, step_record, kwargs
             )
-        elif step_type == "video_filter":
+        elif step_type in {"video_filter", "video_plugin"}:
             return self._handle_video_filter_step(
                 step_idx, step_name, fn, arr, step_record, kwargs
             )
@@ -431,7 +431,7 @@ class ProcessingPipeline:
         -------
         tuple[str, callable | None]
             - step type: one of "clear", "mask", "method", "plugin", "filter",
-            "video_filter", "stack_edit"
+            "video_plugin", "video_filter", "stack_edit"
             - callable implementing the step, or None if step_type == "clear"
 
         Raises
@@ -465,7 +465,7 @@ class ProcessingPipeline:
             Version string if available.
         """
         version = getattr(fn, "__version__", None)
-        if version is None and step_type == "plugin":
+        if version is None and step_type in {"plugin", "video_plugin"}:
             version = _get_plugin_version(fn)
         return version
 

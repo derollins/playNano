@@ -266,41 +266,6 @@ def test_flatten_images_uses_apply(monkeypatch):
     np.testing.assert_array_equal(stack.processed["topostats_flatten"], fake_flat)
 
 
-def test_get_plugin_version_known_module():
-    """Test _get_plugin_version returns version for a standard library or package."""
-    # Use a known function from numpy
-    import numpy as np
-
-    version = AFMImageStack._get_plugin_version(np.mean)
-    assert isinstance(version, str)
-    assert version == metadata.version("numpy")
-
-
-def test_get_plugin_version_fake_module(monkeypatch):
-    """Test _get_plugin_version returns None for non-existent module."""
-    # Create a fake function with a fake module
-    fake_fn = lambda x: x  # noqa
-    fake_fn.__module__ = "nonexistent_fake_package.sub"
-
-    version = AFMImageStack._get_plugin_version(fake_fn)
-    assert version is None
-
-
-def test_get_plugin_version_error(monkeypatch):
-    """Test _get_plugin_version handles unexpected exceptions."""
-    # Create a function that pretends to be from a real module
-    fn = lambda x: x  # noqa
-    fn.__module__ = "numpy"
-
-    # Patch metadata.version to raise a generic error
-    monkeypatch.setattr(
-        metadata, "version", lambda _: (_ for _ in ()).throw(Exception("boom"))
-    )
-
-    version = AFMImageStack._get_plugin_version(fn)
-    assert version is None
-
-
 def test_load_plugin(monkeypatch):
     """Test _load_plugin loads a valid plugin and raises error for unknown plugin."""
     data = np.ones((2, 2, 2))
@@ -1127,5 +1092,37 @@ def test_resolve_step_plugin(monkeypatch):
     # Call _resolve_step and assert behavior
     step_type, fn = stack._resolve_step("mock_filter")
     assert step_type == "plugin"
+    assert fn is mock_fn
+    mock_ep.load.assert_called_once()
+
+
+def test_resolve_step_video_plugin(monkeypatch):
+    """Test that video plugin steps are resolved."""
+    # Create dummy stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Create mock entry point with .name and .load()
+    mock_fn = lambda x: x  # noqa
+    mock_ep = Mock()
+    mock_ep.name = "mock_video_filter"
+    mock_ep.load.return_value = mock_fn
+
+    # Patch importlib.metadata.entry_points to return our mock
+    mock_eps = Mock()
+    mock_eps.__iter__ = lambda self: iter([mock_ep])
+    monkeypatch.setattr(
+        "playnano.afm_stack.metadata.entry_points",
+        lambda group=None: [mock_ep] if group == "playnano.video_processing" else [],
+    )
+
+    # Call _resolve_step and assert behavior
+    step_type, fn = stack._resolve_step("mock_video_filter")
+    assert step_type == "video_plugin"
     assert fn is mock_fn
     mock_ep.load.assert_called_once()
