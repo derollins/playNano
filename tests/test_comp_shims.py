@@ -1,4 +1,4 @@
-"""Tests for the compatability shim."""
+"""Tests for the compatibility shim."""
 
 import importlib
 import sys

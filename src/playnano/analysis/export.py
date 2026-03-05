@@ -1,4 +1,4 @@
-"""Functions for exporting ananlysis results."""
+"""Functions for exporting analysis results."""
 
 import json
 import os

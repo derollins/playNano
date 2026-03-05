@@ -32,7 +32,7 @@ def test_row_median_align_basic():
 
 
 def test_remove_plane_exact_plane():
-    """Test the remove plane fucntion with a perfect plane."""
+    """Test the remove plane function with a perfect plane."""
     h, w = 10, 10
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     data = 2 * X + 3 * Y + 5  # perfect plane
@@ -41,7 +41,7 @@ def test_remove_plane_exact_plane():
 
 
 def test_remove_plane_removes_tilt_with_noise():
-    """Test the remove plane funciton with noise."""
+    """Test the remove plane function with noise."""
     # create a tilted plane: z = 2x + 3y + 5
     h, w = 10, 10
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
@@ -150,7 +150,7 @@ def test_gaussian_filter_smooths():
 
 
 def test_remove_plane_removes_slope():
-    """Test the plane removal fucntion removes a slope."""
+    """Test the plane removal function removes a slope."""
     h, w = 10, 10
     X, Y = np.meshgrid(np.arange(w), np.arange(h))
     data = 2 * X + 3 * Y + 5 + np.random.normal(0, 0.1, size=(h, w))
@@ -281,7 +281,7 @@ def test_register_masking_returns_all():
     assert "mask_adaptive" in mask_funcs
 
 
-# Test masked filters fucntions
+# Test masked filters functions
 
 
 def make_simple_plane_data(h=5, w=5):

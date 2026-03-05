@@ -31,7 +31,7 @@ def test_drop_frames_removes_correct_frames(sample_stack):
 
 
 def test_drop_frames_with_unsorted_and_duplicate_indices(sample_stack):
-    """Test that unsorted and duplicate indicies drop the same frames."""
+    """Test that unsorted and duplicate indices drop the same frames."""
     result = drop_frames(sample_stack, [3, 1, 1])
     np.testing.assert_array_equal(result, sample_stack[[0, 2, 4]])
 

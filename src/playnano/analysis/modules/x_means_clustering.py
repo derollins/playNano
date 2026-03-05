@@ -139,7 +139,7 @@ class XMeansClusteringModule(AnalysisModule):
             Initial number of clusters to start with. Default is 1.
 
         max_k : int
-            Maximum number of clusters allowed. Defalut is 10.
+            Maximum number of clusters allowed. Default is 10.
 
         normalise : bool
             Whether to normalize the feature coordinate axes to the [0, 1] range

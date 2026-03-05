@@ -436,7 +436,7 @@ def test_mask_overlay_fallback_name_without_error():
     stack.masks = {}  # <- No previously saved masks
 
     def resolve_step_mock(name):
-        """Mock resove step."""
+        """Mock resolve step."""
         return ("mask", lambda d, **kwargs: mask1 if name == "mask1" else mask2)
 
     stack._resolve_step.side_effect = resolve_step_mock

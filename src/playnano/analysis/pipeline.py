@@ -391,7 +391,7 @@ class AnalysisPipeline:
             "provenance": stack.provenance["analysis"],
         }
         # write to file if requested
-        # Swapped from using NumpyEncoder becuase it could not handle the size
+        # Swapped from using NumpyEncoder because it could not handle the size
         # of the full analysis record.
         if log_to:
             import json

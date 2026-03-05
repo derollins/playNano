@@ -3,6 +3,7 @@
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 import numpy as np
 import pytest
@@ -82,7 +83,7 @@ def test_incomplete_subclass_instantiation_fails():
 
 
 class DummyModule(AnalysisModule):
-    """Dummy module for testing analysis module initilisation."""
+    """Dummy module for testing analysis module initialisation."""
 
     @property
     def name(self):
@@ -346,7 +347,7 @@ def hole_mask(frame: np.ndarray, **kwargs) -> np.ndarray:
 
 
 def test_requires_mask_fn_or_key(stack_1frame_with_timestamps):
-    """Test that module requires either a mask funciton or key."""
+    """Test that module requires either a mask function or key."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
     # Neither mask_fn nor mask_key provided => ValueError
@@ -371,7 +372,7 @@ def test_invalid_data_shape():
 
 
 def test_mask_fn_returns_invalid_shape(stack_1frame_with_timestamps):
-    """Test that mask_fn returns ivalid data shapes raise ValueError."""
+    """Test that mask_fn returns invalid data shapes raise ValueError."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
 
@@ -384,7 +385,7 @@ def test_mask_fn_returns_invalid_shape(stack_1frame_with_timestamps):
 
 
 def test_mask_key_not_in_previous_results(stack_1frame_with_timestamps):
-    """Test that if mask_key not in pervious result KeyError."""
+    """Test that if mask_key not in previous result KeyError."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
     # previous_results empty => KeyError
@@ -575,7 +576,7 @@ def test_skip_empty_vals(monkeypatch):
     monkeypatch.setattr(feature_detection, "label", fake_label)
 
     def mask_fn(frame, **kwargs):
-        """Imitate a masking funciton."""
+        """Imitate a masking function."""
         return np.ones_like(frame, dtype=bool)
 
     result = fd.run(stack, mask_fn=mask_fn, min_size=1)
@@ -649,6 +650,8 @@ def test_fill_holes_with_hole_area(stack_1frame_with_timestamps):
     out = module.run(
         stack,
         mask_fn=hole_mask,
+        morph_opening=False,
+        sep_radius=6,
         min_size=1,
         remove_edge=False,
         fill_holes=True,
@@ -827,6 +830,195 @@ def test_missing_coordinate_keys_raise_keyerror():
         )
 
 
+class _StubTracker:
+    """
+    Minimal stub exposing only what _get_detection_outputs needs.
+
+    Contains:
+    - self.name
+    - self.requires
+    - _get_detection_outputs method (copied from your implementation)
+    """
+
+    name = "ParticleTrackingModule"
+    requires = ["another_detection", "feature_detection"]
+
+    def _get_detection_outputs(
+        self,
+        previous_results: dict[str, Any],
+        *,
+        detection_module: str,
+        coord_key: str,
+    ):
+        if detection_module in previous_results:
+            chosen = detection_module
+        else:
+            available = [m for m in reversed(self.requires) if m in previous_results]
+            if not available:
+                raise RuntimeError(
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
+                )
+            chosen = available[0]
+
+        fd_out = previous_results[chosen]
+
+        if coord_key not in fd_out:
+            raise RuntimeError(
+                f"{self.name!r} expected detection output {chosen!r} to contain {coord_key!r}."  # noqa
+            )
+        if "labeled_masks" not in fd_out:
+            raise RuntimeError(
+                f"{self.name!r} expected detection output {chosen!r} to contain 'labeled_masks'."  # noqa
+            )
+
+        return fd_out[coord_key], fd_out["labeled_masks"]
+
+
+def _mk_feats_masks():
+    feats = [
+        [{"centroid": (0.0, 0.0), "label": 1}],
+        [{"centroid": (0.5, 0.5), "label": 2}],
+    ]
+    masks = [
+        np.array([[0, 1], [1, 0]], dtype=int),
+        np.array([[0, 2], [2, 0]], dtype=int),
+    ]
+    return feats, masks
+
+
+def test_no_suitable_detection_module_found_raises():
+    """Test that RuntimeError is triggered by no required detection module."""
+    tracker = _StubTracker()
+    previous_results = {
+        # Intentionally empty or containing unrelated modules
+        "unrelated": {}
+    }
+
+    with pytest.raises(RuntimeError) as ei:
+        tracker._get_detection_outputs(
+            previous_results,
+            detection_module="feature_detection",  # preferred not present
+            coord_key="features_per_frame",
+        )
+
+    msg = str(ei.value)
+    assert "requires one of" in msg
+    # Optional: ensure it mentions the requires list
+    for req in tracker.requires:
+        assert req in msg
+
+
+def test_missing_coord_key_raises():
+    """Test that a RuntimeError is raised when coord_key is missing."""
+    tracker = _StubTracker()
+    feats, masks = _mk_feats_masks()
+    previous_results = {
+        "feature_detection": {
+            # "features_per_frame": feats,  # intentionally missing
+            "labeled_masks": masks,
+        }
+    }
+
+    with pytest.raises(RuntimeError) as ei:
+        tracker._get_detection_outputs(
+            previous_results,
+            detection_module="feature_detection",
+            coord_key="features_per_frame",
+        )
+
+    msg = str(ei.value)
+    assert (
+        "expected detection output 'feature_detection' to contain 'features_per_frame'"  # noqa
+        in msg
+    )
+
+
+def test_missing_labeled_masks_raises():
+    """Test that missing labeled masks raise a Runtime error."""
+    tracker = _StubTracker()
+    feats, _ = _mk_feats_masks()
+    previous_results = {
+        "feature_detection": {
+            "features_per_frame": feats,
+            # "labeled_masks": ...  # intentionally missing
+        }
+    }
+
+    with pytest.raises(RuntimeError) as ei:
+        tracker._get_detection_outputs(
+            previous_results,
+            detection_module="feature_detection",
+            coord_key="features_per_frame",
+        )
+
+    msg = str(ei.value)
+    assert (
+        "expected detection output 'feature_detection' to contain 'labeled_masks'"  # noqa
+        in msg
+    )
+
+
+def test_fallback_to_requires_latest_available_and_returns_data():
+    """
+    Test if the preferred detection_module is missing.
+
+    Select the most recent available from self.requires in reverse order.
+    requires = ["another_detection", "feature_detection"] → reversed is
+    ["feature_detection", "another_detection"] If "feature_detection" exists
+    in previous_results, it should be chosen.
+    """
+    tracker = _StubTracker()
+    feats, masks = _mk_feats_masks()
+
+    previous_results = {
+        # preferred "another_detection" is NOT present
+        "feature_detection": {
+            "features_per_frame": feats,
+            "labeled_masks": masks,
+        }
+    }
+
+    out_feats, out_masks = tracker._get_detection_outputs(
+        previous_results,
+        detection_module="another_detection",  # preferred missing
+        coord_key="features_per_frame",
+    )
+
+    # Should have selected "feature_detection" as it is
+    # the first in reversed(self.requires) that exists
+    assert out_feats == feats
+    assert isinstance(out_masks, list)
+    assert len(out_masks) == len(masks)
+
+
+def test_preferred_present_is_used_even_if_others_exist():
+    """Test that the preferred detection_module is present."""
+    tracker = _StubTracker()
+    feats1, masks1 = _mk_feats_masks()
+    feats2, masks2 = _mk_feats_masks()
+
+    previous_results = {
+        "feature_detection": {
+            "features_per_frame": feats1,
+            "labeled_masks": masks1,
+        },
+        "another_detection": {
+            "features_per_frame": feats2,
+            "labeled_masks": masks2,
+        },
+    }
+
+    # Preferred is "another_detection" and it exists; it must be chosen
+    out_feats, out_masks = tracker._get_detection_outputs(
+        previous_results,
+        detection_module="another_detection",
+        coord_key="features_per_frame",
+    )
+
+    assert out_feats == feats2
+    assert out_masks == masks2
+
+
 def test_tracking_module_name():
     """Return correct module name."""
     mod = ParticleTrackingModule()
@@ -874,18 +1066,33 @@ def test_tracking_output_structure(mock_stack, mock_feature_detection_outputs):
         assert all(isinstance(coord, tuple) for coord in trk["coords"])
 
 
-def test_tracking_links_features():
-    """Test that ParticleTrackingModule links features by nearest neighbor."""
-    features_per_frame = [
-        [{"centroid": (0.0, 0.0), "label": 1}],  # Frame 0
-        [{"centroid": (0.5, 0.5), "label": 2}],  # Frame 1
-        [{"centroid": (1.0, 1.0), "label": 3}],  # Frame 2
-    ]
+@pytest.mark.parametrize(
+    "distance_scale,max_distance,expected_n_tracks",
+    [
+        ("constant", 0.6, 3),  # 0.707 > 0.6 → no links → 3 singleton tracks
+        ("constant", 0.8, 1),  # 0.707 < 0.8 → link 0→1→2 → 1 track
+        ("sqrt", 0.8, 1),  # for dt=1 these behave the same threshold-wise
+        ("linear", 0.8, 1),
+        ("constant", 0.6, 3),
+    ],
+    ids=lambda p: str(p),
+)
+def test_tracking_links_features(distance_scale, max_distance, expected_n_tracks):
+    """
+    Test that ParticleTrackingModule links features by nearest neighbor.
 
+    Checks that that distance thresholds/scale modes gate linking as expected.
+    """
+    # 3 frames with a point moving along the diagonal by sqrt(0.5^2 + 0.5^2) ≈ 0.707
+    features_per_frame = [
+        [{"centroid": (0.0, 0.0), "label": 1}],  # frame 0
+        [{"centroid": (0.5, 0.5), "label": 2}],  # frame 1
+        [{"centroid": (1.0, 1.0), "label": 3}],  # frame 2
+    ]
     labeled_masks = [
-        np.array([[0, 1], [1, 0]]),
-        np.array([[0, 2], [2, 0]]),
-        np.array([[0, 3], [3, 0]]),
+        np.array([[0, 1], [1, 0]], dtype=int),
+        np.array([[0, 2], [2, 0]], dtype=int),
+        np.array([[0, 3], [3, 0]], dtype=int),
     ]
 
     mod = ParticleTrackingModule()
@@ -897,24 +1104,33 @@ def test_tracking_links_features():
                 "labeled_masks": labeled_masks,
             }
         },
-        max_distance=2.0,
+        max_distance=max_distance,
+        distance_scale=distance_scale,
     )
 
-    assert result["n_tracks"] == 1
-    track = result["tracks"][0]
+    # 1) Track count is as expected
+    assert result["n_tracks"] == expected_n_tracks
 
-    # Frame order
-    assert track["frames"] == [0, 1, 2]
+    # Sort tracks by their first frame for stable assertions
+    tracks = sorted(result["tracks"], key=lambda t: t["frames"][0])
 
-    # Check coordinates
-    assert track["coords"] == [
-        (0.0, 0.0),
-        (0.5, 0.5),
-        (1.0, 1.0),
-    ]
-
-    # Check point indices
-    assert track["point_indices"] == [0, 0, 0]
+    if expected_n_tracks == 1:
+        # One long track across frames 0→1→2
+        t = tracks[0]
+        assert t["frames"] == [0, 1, 2]
+        assert t["coords"] == [(0.0, 0.0), (0.5, 0.5), (1.0, 1.0)]
+        # The detected point is index 0 in each frame (there's only one point per frame)
+        assert t["point_indices"] == [0, 0, 0]
+    else:
+        # Three singleton tracks (no links): frames [[0],[1],[2]]
+        assert all(len(t["frames"]) == 1 for t in tracks)
+        assert [t["frames"] for t in tracks] == [[0], [1], [2]]
+        assert [t["coords"] for t in tracks] == [
+            [(0.0, 0.0)],
+            [(0.5, 0.5)],
+            [(1.0, 1.0)],
+        ]
+        assert [t["point_indices"] for t in tracks] == [[0], [0], [0]]
 
 
 def test_tracking_handles_empty_frames(mock_stack):
@@ -957,6 +1173,9 @@ def test_tracking_overlapping_centroids(mock_stack):
     for trk in result["tracks"]:
         assert isinstance(trk["coords"], list)
         assert isinstance(trk["point_indices"], list)
+
+
+# Log Blob Detection Tests
 
 
 class DummyStack2:

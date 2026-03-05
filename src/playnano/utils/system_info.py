@@ -1,4 +1,4 @@
-"""Module contianing helper funcitons for collecting system info."""
+"""Module containing helper functions for collecting system info."""
 
 import importlib.metadata
 import platform
