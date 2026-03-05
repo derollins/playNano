@@ -175,9 +175,10 @@ class AFMImageStack:
           2. Mask from MASK_MAP
           3. Bound method on this AFMImageStack instance
           4. Plugin from entry points "playnano.filters"
-          5. Filter from FILTER_MAP
-          6. Video filter from VIDEO_FILTER_MAP
-          7. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
+          5. Plugin from entry points "playnano.video_processing"
+          6. Filter from FILTER_MAP
+          7. Video filter from VIDEO_FILTER_MAP
+          8. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
              the stack, the other funcitons return lists of indices to be passed to
              ``drop_frames`` - this is done within the ProcesssingPipeline)
 
@@ -804,7 +805,8 @@ class AFMImageStack:
           - "clear"       : reset any existing mask
           - mask names    : keys in MASK_MAP
           - filter names  : keys in FILTER_MAP
-          - plugin names  : entry points in 'playnano.filters'
+          - plugin names  : entry points in 'playnano.filters' or
+            'playnano.video_processing'
           - method names  : bound methods on this class
 
         ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.
@@ -831,7 +833,7 @@ class AFMImageStack:
         For tracked, reproducible processing,
         use ProcessingPipeline.
         """
-        # 1) Snapshot raw data if not already done
+        # 1) Snapshot raw data once
         if "raw" not in self.processed:
             self.processed["raw"] = self.data.copy()
 
@@ -841,36 +843,51 @@ class AFMImageStack:
         for step in steps:
             step_type, fn = self._resolve_step(step)
 
-            # (A) CLEAR: drop any existing mask
+            # (A) CLEAR
             if step_type == "clear":
                 logger.info("Step 'clear' → dropping existing mask.")
                 mask = None
                 continue
 
             # (B) MASK GENERATOR
-            if step_type == "mask":
-                logger.info(
-                    f"Step '{step}' → computing new mask based on current data."
-                )
-                # Compute mask over all frames
-                new_mask = self._execute_mask_step(fn, arr, **kwargs)
-                mask = new_mask
-                # Do not modify arr itself
-                continue
+            elif step_type == "mask":
+                logger.info(f"Step '{step}' → computing new mask.")
+                mask = self._execute_mask_step(fn, arr, **kwargs)
+                continue  # masks don't modify arr
 
-            # (C) FILTER OR PLUGIN
-            # fn is now a callable that processes a 2D frame → 2D frame
-            logger.info(f"Step '{step}' (filter) → applying to all frames.")
-            new_arr = self._execute_filter_step(fn, arr, mask, step, **kwargs)
+            # (C) FILTER OR PLUGIN (2D/frame)
+            elif step_type in ("filter", "plugin"):
+                logger.info(f"Step '{step}' (filter) → applying per-frame.")
+                arr = self._execute_filter_step(fn, arr, mask, step, **kwargs)
 
-            # Store a snapshot in processed dict
-            self.processed[step] = new_arr.copy()
+            # (D) VIDEO FILTER / VIDEO PLUGIN (3D)
+            elif step_type in ("video_filter", "video_plugin"):
+                logger.info(f"Step '{step}' (video filter) → applying to full stack.")
+                arr = self._execute_video_processing_step(fn, arr, **kwargs)
 
-            # Update arr for next iteration
-            arr = new_arr
+            # (E) STACK EDIT
+            elif step_type == "stack_edit":
+                logger.info(f"Step '{step}' (stack edit) → applying to full stack.")
+                arr = self._execute_stack_edit_step(fn, arr, **kwargs)
+                mask = None  # masks invalid after structural change
 
-        # 5) After all steps, overwrite self.data
+            # (F) METHOD
+            elif step_type == "method":
+                logger.info(f"Step '{step}' (method) → applying.")
+                try:
+                    new_arr = fn(arr, **kwargs)
+                except TypeError:
+                    new_arr = fn(**kwargs)
+                if new_arr is None:
+                    new_arr = getattr(self, "data", arr)
+                arr = new_arr
+
+            else:
+                raise ValueError(f"Unsupported step type '{step_type}'.")
+
+        # 5) Save final output
         self.data = arr
+        self.processed["final"] = arr.copy()
         return arr
 
     def time_for_frame(self, idx: int) -> float:
