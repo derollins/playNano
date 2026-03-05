@@ -29,6 +29,9 @@ STACK_EDIT_MAP = register_stack_edit_processing()
 _PLUGIN_ENTRYPOINTS = {
     ep.name: ep for ep in metadata.entry_points(group="playnano.filters")
 }
+_VIDEO_PLUGIN_ENTRYPOINTS = {
+    ep.name: ep for ep in metadata.entry_points(group="playnano.video_processing")
+}
 
 # Names of all entry-point plugins (if any third-party filters are installed)
 _ANALYSIS_PLUGIN_ENTRYPOINTS = {
@@ -49,6 +52,7 @@ def is_valid_step(name: str) -> bool:
         or name in FILTER_MAP
         or name in MASK_MAP
         or name in _PLUGIN_ENTRYPOINTS
+        or name in _VIDEO_PLUGIN_ENTRYPOINTS
         or name in VIDEO_FILTER_MAP
         or name in STACK_EDIT_MAP
     )
@@ -682,6 +686,8 @@ def _get_processing_callable(step_name: str):
             return STACK_EDIT_MAP[step_name]
         if step_name in _PLUGIN_ENTRYPOINTS:
             return _PLUGIN_ENTRYPOINTS[step_name].load()
+        if step_name in _VIDEO_PLUGIN_ENTRYPOINTS:
+            return _VIDEO_PLUGIN_ENTRYPOINTS[step_name].load()
         raise ValueError(f"Processing step '{step_name}' not found")
     except Exception as e:
         logger.exception(f"Failed to load processing step '{step_name}': {e}")
@@ -698,6 +704,8 @@ def get_processing_step_type(step_name: str) -> str:
         return "mask filter"
     if step_name in _PLUGIN_ENTRYPOINTS:
         return "plugin filter"
+    if step_name in _VIDEO_PLUGIN_ENTRYPOINTS:
+        return "video plugin"
     if step_name in VIDEO_FILTER_MAP:
         return "video filter"
     if step_name in STACK_EDIT_MAP:
