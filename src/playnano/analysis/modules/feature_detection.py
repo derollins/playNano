@@ -13,6 +13,7 @@ statistics for each frame.
 Author: Daniel E. Rollins (d.e.rollins@leed.ac.uk) / Github: derollins
 """
 
+import inspect
 from typing import Any, Optional
 
 import numpy as np
@@ -218,6 +219,7 @@ class FeatureDetectionModule(AnalysisModule):
     ) -> np.ndarray:
         """
         Apply morphological opening to each labeled object separately, then relabel.
+
         If opening removes too much of an object (area loss > max_area_loss), keep
         the original object to avoid over-erosion of thin rectangles.
 
@@ -288,7 +290,22 @@ class FeatureDetectionModule(AnalysisModule):
         # Optionally fill holes
         if fill_holes:
             if hole_area is not None:
-                mask_frame = remove_small_holes(mask_frame, area_threshold=hole_area)
+                # Normalize semantics to "fill holes with area < hole_area"
+                # across skimage versions.
+                # New API (0.26+): prefers `max_size` which fills holes with
+                # area <= max_size.
+                # Old API: `area_threshold` fills holes with area < area_threshold.
+                sig = inspect.signature(remove_small_holes)
+                if "max_size" in sig.parameters:
+                    # Emulate strict "< hole_area" by using <= hole_area-1
+                    max_size = max(hole_area - 1, 0)  # guard against negatives
+                    mask_frame = remove_small_holes(
+                        mask_frame, max_size=max_size, connectivity=1
+                    )
+                else:
+                    mask_frame = remove_small_holes(
+                        mask_frame, area_threshold=hole_area, connectivity=1
+                    )
             else:
                 mask_frame = binary_fill_holes(mask_frame)
             mask_frame = mask_frame.astype(bool)

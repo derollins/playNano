@@ -618,6 +618,8 @@ def test_wizard_asave_generates_yaml(tmp_path):
             "aadd feature_detection",
             "mask_threshold",  # mask_fn
             "",  # mask_key
+            "",  # morph_opening default
+            "",  # sep_radius default
             "",  # min_size default
             "",  # remove_edge default
             "",  # fill_holes default
@@ -639,6 +641,8 @@ def test_wizard_asave_generates_yaml(tmp_path):
             {
                 "name": "feature_detection",
                 "mask_fn": "mask_threshold",
+                "morph_opening": False,
+                "sep_radius": 6,
                 "min_size": 10,
                 "remove_edge": True,
                 "fill_holes": False,

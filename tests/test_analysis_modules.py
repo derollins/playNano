@@ -649,6 +649,8 @@ def test_fill_holes_with_hole_area(stack_1frame_with_timestamps):
     out = module.run(
         stack,
         mask_fn=hole_mask,
+        morph_opening=False,
+        sep_radius=6,
         min_size=1,
         remove_edge=False,
         fill_holes=True,
