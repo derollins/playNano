@@ -1,8 +1,9 @@
 """Tests for the ProcessingPipeline class."""
 
+import logging
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pytest
@@ -119,6 +120,146 @@ def test_run_applies_mask_and_filter(toy_stack):
     assert (result == 11).all()
 
     np.testing.assert_array_equal(result, np.ones((3, 4, 4)) + 10)
+
+
+def test_run_applies_3D_filter_and_plugin(toy_stack, monkeypatch):
+    """Test that run() applies 3D video_filter and video_plugin steps."""
+    # Arrange: resolve first as video_filter, then as video_plugin
+    toy_stack._resolve_step.side_effect = [
+        ("video_filter", "video_filter_fn"),
+        ("video_plugin", "video_plugin_fn"),
+    ]
+
+    # Each 3D step will add +10 to the whole stack → total +20
+    def fake_exec(video_fn, arr, **kwargs):
+        # sanity check: the function identifier we get matches our side_effect list
+        assert video_fn in ("video_filter_fn", "video_plugin_fn")
+        return arr + 10
+
+    monkeypatch.setattr(
+        toy_stack,
+        "_execute_video_processing_step",
+        Mock(side_effect=fake_exec),
+    )
+
+    # Keep a copy of the original data for expectations
+    original = toy_stack.data.copy()
+
+    # Act
+    pipe = ProcessingPipeline(toy_stack)
+    pipe.add_filter("video_filter_step")  # name is arbitrary; _resolve_step is mocked
+    pipe.add_filter("video_plugin_step")
+    result = pipe.run()
+
+    # Assert: two applications of +10
+    np.testing.assert_array_equal(result, original + 20)
+    np.testing.assert_array_equal(toy_stack.data, original + 20)
+
+    # Ensure we called the 3D executor twice and the first call used the original array
+    assert toy_stack._execute_video_processing_step.call_count == 2
+    (vf_fn_arg, vf_arr_arg), vf_kwargs = (
+        toy_stack._execute_video_processing_step.call_args_list[0]
+    )
+    assert vf_fn_arg == "video_filter_fn"
+    np.testing.assert_array_equal(vf_arr_arg, original)
+    assert vf_kwargs == {}
+
+    # And the second call receives the once-processed array (original + 10)
+    (vp_fn_arg, vp_arr_arg), vp_kwargs = (
+        toy_stack._execute_video_processing_step.call_args_list[1]
+    )
+    assert vp_fn_arg == "video_plugin_fn"
+    np.testing.assert_array_equal(vp_arr_arg, original + 10)
+    assert vp_kwargs == {}
+
+
+def test_run_single_step_stack_edit(monkeypatch, tmp_path):
+    """Test _run_single_step correctly delegates stack_edit step to its handler."""
+    # Minimal stack + pipeline
+    data = np.ones((3, 4, 4))
+    stack = AFMImageStack(data.copy(), 1.0, "h", tmp_path, [{}] * 3)
+    pipe = ProcessingPipeline(stack)
+
+    # Step inputs to _run_single_step(...)
+    step_idx = 1
+    step_name = "drop_custom"
+    arr = data.copy()
+    mask = np.zeros_like(arr, dtype=bool)
+
+    # Force resolution to a stack_edit step with a dummy callable
+    dummy_edit_fn = object()  # we only pass it through; not called here
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda name: ("stack_edit", dummy_edit_fn)
+    )
+
+    # Prepare a fake handler return (what the handler would produce)
+    new_arr = arr[:2]  # simulate dropping frames
+    new_mask = None  # typical after structural edit
+
+    # Spy/Mock _handle_stack_edit_step to ensure it’s invoked correctly
+    with patch.object(
+        pipe, "_handle_stack_edit_step", return_value=(new_arr, new_mask)
+    ) as mock_handle:
+
+        out_arr, out_mask = pipe._run_single_step(
+            step_idx=step_idx,
+            step_name=step_name,
+            arr=arr,
+            kwargs={},
+            mask=mask,
+        )
+
+        # Assert delegation occurred with the exact arguments
+        mock_handle.assert_called_once()
+        call_args, call_kwargs = mock_handle.call_args
+        # Positional args in order:
+        assert call_args[0] == step_idx
+        assert call_args[1] == step_name
+        assert call_args[2] is dummy_edit_fn
+        np.testing.assert_array_equal(call_args[3], arr)
+        # The last arg is kwargs (a dict the pipeline passes along)
+        assert isinstance(call_args[5], dict)
+
+        # The outputs from the handler are returned unchanged
+        np.testing.assert_array_equal(out_arr, new_arr)
+        assert out_mask is new_mask
+
+
+def test_run_single_step_unrecognized_logs_warning_and_returns_input(
+    monkeypatch, caplog, tmp_path
+):
+    data = np.zeros((2, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", tmp_path, [{}] * 2)
+    pipe = ProcessingPipeline(stack)
+
+    step_idx = 2
+    step_name = "unknown_step"
+    arr = data.copy()
+    mask = np.ones_like(arr, dtype=bool)  # any mask
+
+    # Force unrecognized step_type
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda name: ("weird_step_type", lambda *a, **k: None)
+    )
+
+    caplog.set_level(logging.WARNING, logger="playnano.processing.pipeline")
+    out_arr, out_mask = pipe._run_single_step(
+        step_idx=step_idx,
+        step_name=step_name,
+        arr=arr,
+        kwargs={},
+        mask=mask,
+    )
+
+    # 1) Warning logged
+    assert any(
+        "Unrecognized step_type 'weird_step_type' for unknown_step" in rec.message
+        for rec in caplog.records
+    )
+
+    # 2) Returns original arr/mask unchanged
+    np.testing.assert_array_equal(out_arr, arr)
+    np.testing.assert_array_equal(out_mask, mask)
 
 
 def test_clear_mask_resets_mask(toy_stack):

@@ -258,6 +258,132 @@ def test_flatten_images_uses_apply(monkeypatch):
     np.testing.assert_array_equal(stack.processed["topostats_flatten"], fake_flat)
 
 
+def test_apply_video_filter(monkeypatch):
+    """Test that apply() executes the VIDEO_FILTER / VIDEO_PLUGIN branch."""
+    data = np.ones((2, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    # Fake video filter: multiply entire 3D array by 5
+    def fake_video_filter(arr, **kwargs):
+        return arr * 5
+
+    # Force resolution: always return ("video_filter", fake_video_filter)
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda step: ("video_filter", fake_video_filter)
+    )
+
+    result = stack.apply(["my_video_filter"])
+
+    # Check correct application
+    np.testing.assert_array_equal(result, data * 5)
+    np.testing.assert_array_equal(stack.processed["my_video_filter"], data * 5)
+
+
+def test_apply_video_plugin(monkeypatch):
+    """Test that apply() handles the video_plugin branch correctly."""
+    data = np.ones((2, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    def fake_plugin(arr, **kwargs):
+        return arr + 3
+
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda step: ("video_plugin", fake_plugin)
+    )
+
+    result = stack.apply(["plugin_step"])
+    np.testing.assert_array_equal(result, data + 3)
+
+
+def test_apply_stack_edit(monkeypatch):
+    """Test stack_edit branch drops frames and resets mask."""
+    data = np.ones((4, 3, 3))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 4)
+
+    # This edit removes last 2 frames
+    def fake_edit(arr, **kwargs):
+        # Simulate returning a new stack with frames [0,1] kept
+        return arr[:2]
+
+    # Force resolve to stack_edit
+    monkeypatch.setattr(stack, "_resolve_step", lambda step: ("stack_edit", fake_edit))
+
+    # IMPORTANT: tell the stack-edit layer which indices were dropped
+    out = stack.apply(["drop_custom"], indices_to_drop=[2, 3])
+
+    # Assertions
+    assert out.shape == (2, 3, 3)
+    assert stack.data.shape == (2, 3, 3)
+    assert len(stack.frame_metadata) == 2  # metadata kept in sync
+    assert "drop_custom" in stack.processed
+    assert (
+        stack.state_backups["frame_metadata_before_edit"] == [{"timestamp": None}] * 4
+    )
+
+
+def test_apply_method_branch(monkeypatch):
+    """Test that apply() correctly handles a method step."""
+    data = np.ones((2, 2, 2))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    # a method that returns arr * 10
+    def fake_method(arr, **kwargs):
+        return arr * 10
+
+    # Pretend the "zoom" step resolves to a bound method
+    monkeypatch.setattr(
+        stack,
+        "_resolve_step",
+        lambda step: ("method", fake_method),
+    )
+
+    # Run
+    out = stack.apply(["zoom"])
+
+    # Assertions: output, final data, and per-step snapshot
+    np.testing.assert_array_equal(out, data * 10)
+    np.testing.assert_array_equal(stack.data, data * 10)
+    # 'raw' snapshot should exist (created once)
+    assert "raw" in stack.processed
+    np.testing.assert_array_equal(stack.processed["zoom"], data * 10)
+
+
+def test_apply_method_branch_inplace(monkeypatch):
+    """Method returning None should use mutated stack.data."""
+    data = np.ones((2, 2, 2))
+    stack = AFMImageStack(data.copy(), 1.0, "h", ".", [{}] * 2)
+
+    def inplace_method(arr, **kwargs):
+        # simulate in-place style API: mutate stack.data and return None
+        stack.data = arr * 4
+        return None
+
+    monkeypatch.setattr(
+        stack,
+        "_resolve_step",
+        lambda step: ("method", inplace_method),
+    )
+
+    out = stack.apply(["inplace"])
+    np.testing.assert_array_equal(out, data * 4)
+    np.testing.assert_array_equal(stack.data, data * 4)
+    assert "inplace" in stack.processed
+    np.testing.assert_array_equal(stack.processed["inplace"], data * 4)
+
+
+def test_apply_unrecognized_step_raises(monkeypatch):
+    """Test that apply() raises ValueError for unsupported step types."""
+    data = np.zeros((2, 2, 2))
+    stack = AFMImageStack(data, 1.0, "h", ".", [{}] * 2)
+
+    monkeypatch.setattr(
+        stack, "_resolve_step", lambda step: ("weird_step", lambda x: x)
+    )
+
+    with pytest.raises(ValueError, match="Unsupported step type 'weird_step'"):
+        stack.apply(["bad"])
+
+
 def test_frames_with_metadata_iterator():
     """Yield correct (index, frame, metadata) tuples in sequence."""
     arr = np.array([[[1]], [[2]]])
@@ -1092,3 +1218,59 @@ def test_resolve_step_video_plugin(monkeypatch):
     assert step_type == "video_plugin"
     assert fn is mock_fn
     mock_ep.load.assert_called_once()
+
+
+def test_resolve_step_video_filter(monkeypatch):
+    """Test that video filter steps are resolved from VIDEO_FILTER_MAP."""
+    # Create small dummy stack
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Create a fake filter function
+    def fake_filter(arr):
+        """A fake video filter that just returns the input array."""
+        return arr
+
+    # Patch VIDEO_FILTER_MAP to contain a test filter
+    monkeypatch.setattr(
+        "playnano.afm_stack.VIDEO_FILTER_MAP",
+        {"fake_video_filter": fake_filter},
+        raising=True,
+    )
+
+    step_type, fn = stack._resolve_step("fake_video_filter")
+
+    assert step_type == "video_filter"
+    assert fn is fake_filter
+
+
+def test_resolve_step_stack_edit(monkeypatch):
+    # small dummy stack again
+    stack = AFMImageStack(
+        data=np.ones((2, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height",
+        file_path="dummy",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 1.0}],
+    )
+
+    # Fake stack edit function
+    def fake_edit(arr, **kwargs):
+        return arr
+
+    # Patch STACK_EDIT_MAP
+    monkeypatch.setattr(
+        "playnano.afm_stack.STACK_EDIT_MAP",
+        {"fake_edit": fake_edit},
+        raising=True,
+    )
+
+    step_type, fn = stack._resolve_step("fake_edit")
+
+    assert step_type == "stack_edit"
+    assert fn is fake_edit
