@@ -4,13 +4,37 @@ playnano.cli package
 Submodules
 ----------
 
-.. toctree::
-   :maxdepth: 4
+playnano.cli.actions module
+---------------------------
 
-   playnano.cli.actions
-   playnano.cli.entrypoint
-   playnano.cli.handlers
-   playnano.cli.utils
+.. automodule:: playnano.cli.actions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+playnano.cli.entrypoint module
+------------------------------
+
+.. automodule:: playnano.cli.entrypoint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+playnano.cli.handlers module
+----------------------------
+
+.. automodule:: playnano.cli.handlers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+playnano.cli.utils module
+-------------------------
+
+.. automodule:: playnano.cli.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
