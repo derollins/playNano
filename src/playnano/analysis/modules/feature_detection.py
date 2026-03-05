@@ -1,18 +1,10 @@
 """
 Threshold-based feature detection for AFM image stacks.
 
-This is a playNano analysis module for analyzing processed high- speed AFM
-data. This implements a concrete subclass of the abstract `AnalysisModule`
-base class.
-
-This module detects contiguous features in each frame of an AFM image stack
-using user-provided or precomputed masks. It performs optional hole filling,
-morphological separation, size and edge filtering, and extracts per-feature
-statistics for each frame.
-
-Author: Daniel E. Rollins (d.e.rollins@leed.ac.uk) / Github: derollins
+Detect features in each frame of an AFM image stack through thresholding methods.
 """
 
+import inspect
 from typing import Any, Optional
 
 import numpy as np
@@ -31,47 +23,53 @@ class FeatureDetectionModule(AnalysisModule):
     """
     Detect contiguous features in each frame of an AFM image stack.
 
-    This module accepts either a callable mask-generating function or a reference
-    to a boolean mask array stored in `previous_results`. Connected components are
-    identified per frame, optionally morphologically separated, filtered by size
-    and edge contact, and returned along with feature statistics and labeled masks.
+    This module takes either a user-supplied mask function or a pre-computed boolean
+    mask array, labels connected regions in each frame, filters them by size and edge
+    contact, optionally fills holes, and returns per-frame feature statistics and
+    labeled masks.
 
     Parameters
     ----------
     mask_fn : callable, optional
-        Function of the form `frame -> bool_2D_array` used to generate a mask
-        for each frame. Required if `mask_key` is not provided.
+        A function `frame -> bool_2D_array` used to generate a mask for each frame.
+        Required if `mask_key` is not provided.
 
     mask_key : str, optional
-        Key referencing a boolean mask array stored in `previous_results`.
-        Required if `mask_fn` is not provided.
+        Name of a boolean mask array from a previous analysis (e.g.
+        `previous_results["your_mask_key"]`). Required if `mask_fn` is not provided.
 
-    morph_opening : bool, default False
-        If True, apply morphological opening to each labeled object to separate
-        touching features.
+    min_size : int
+        Minimum area (in pixels) for a region to be kept. Default is 10.
 
-    sep_radius : int, default 6
-        Radius of the disk structuring element used for morphological opening.
+    remove_edge : bool
+        If True, discard any region that touches the frame boundary. Default is True.
 
-    min_size : int, default 10
-        Minimum pixel area for a region to be retained.
+    fill_holes : bool
+        If True, fill holes in each mask before labeling. Default is False.
 
-    remove_edge : bool, default True
-        If True, discard any region touching the frame boundary.
-
-    fill_holes : bool, default False
-        If True, fill holes within each mask before labeling.
-
-    hole_area : int or None, optional
-        Maximum size of holes to fill. If None, fill all holes.
+    hole_area : int or None
+        If set, fills only holes smaller than this area. Default is None (all
+        holes filled).
 
     **mask_kwargs : Any
-        Additional keyword arguments passed to `mask_fn(frame, **mask_kwargs)`.
+        Additional keyword arguments forwarded to `mask_fn(frame, **mask_kwargs)`.
+
+
+    Raises
+    ------
+    ValueError
+        If neither `mask_fn` nor `mask_key` is provided, or if the mask array
+        has the wrong shape/dtype.
+
+    KeyError
+        If `mask_key` is not found in `previous_results`.
 
     Returns
     -------
     dict[str, Any]
-        - **features_per_frame** : list[list[dict]]
+        Dictionary with the following keys:
+
+        - features_per_frame : list of list of dict
           Per-frame list of feature stats dicts, each with:
 
             - `"frame_timestamp"` : float
@@ -81,46 +79,40 @@ class FeatureDetectionModule(AnalysisModule):
             - `"bbox"`            : (min_row, min_col, max_row, max_col)
             - `"centroid"`        : (row, col)
 
-        - **labeled_masks** : list[np.ndarray]
-              Integer-labeled masks for each frame.
-        - **summary** : dict
-              Aggregate values: total frames, total features, average features
-              per frame.
+        - labeled_masks : list of np.ndarray
+          The final labeled mask (integer labels) for each frame.
 
-    Raises
-    ------
-    ValueError
-        If mask configuration is invalid or mask has incorrect shape/dtype.
+        - summary : dict
+          Aggregate metrics:
 
-    KeyError
-        If `mask_key` is supplied but missing from `previous_results`.
+            - `"total_frames"` : int
+            - `"total_features"` : int
+            - `"avg_features_per_frame"` : float
 
     Version
     -------
-    0.2.0
-
-    Version 0.2.0 adds morphological opening for seperating close or touching particles.
+    0.1.0
 
     Examples
     --------
-    >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset,
-    ...              min_size=20, fill_holes=True, hole_area=50)
+    >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20,
+    ...              fill_holes=True, hole_area=50)
     >>> result = pipeline.run(stack)
     >>> result["summary"]["total_features"]
     123
     """
 
-    version = "0.2.0"
+    version = "0.1.0"
 
     @property
     def name(self) -> str:
         """
-        Return the name of the analysis module.
+        Name of the analysis module.
 
         Returns
         -------
         str
-            The identifier for this module: ``"feature_detection"``.
+            The string identifier for this module: "feature_detection".
         """
         return "feature_detection"
 
@@ -132,42 +124,7 @@ class FeatureDetectionModule(AnalysisModule):
         mask_key: Optional[str],
         **mask_kwargs,
     ) -> np.ndarray:
-        """
-        Resolve the boolean mask array for the stack.
-
-        Either retrieves a precomputed mask from `previous_results` using
-        `mask_key` or computes a mask for each frame using `mask_fn`.
-
-        Parameters
-        ----------
-        data : np.ndarray
-            3D array of shape (n_frames, H, W) representing the stack data.
-
-        previous_results : dict[str, Any] or None
-            Mapping of previously computed analysis outputs.
-
-        mask_fn : callable or None
-            Function that produces a mask for a single frame.
-
-        mask_key : str or None
-            Key referencing a boolean array in `previous_results`.
-
-        **mask_kwargs : Any
-            Passed directly to `mask_fn`.
-
-        Returns
-        -------
-        np.ndarray
-            Boolean array of shape matching `data`.
-
-        Raises
-        ------
-        ValueError
-            If mask configuration is invalid.
-
-        KeyError
-            If `mask_key` is provided but missing in `previous_results`.
-        """
+        """Resolve mask array from previous results or by computing frame-by-frame."""
         n_frames, H, W = data.shape
 
         if mask_key is not None:
@@ -210,73 +167,12 @@ class FeatureDetectionModule(AnalysisModule):
             mask_arr[i] = mf
         return mask_arr
 
-    def _separate_touching_by_opening(
-        self,
-        labeled_mask: np.ndarray,
-        selem_radius: int = 6,
-        max_area_loss: float = 0.6,
-    ) -> np.ndarray:
-        """
-        Apply morphological opening to each labeled object separately, then relabel.
-        If opening removes too much of an object (area loss > max_area_loss), keep
-        the original object to avoid over-erosion of thin rectangles.
-
-        Parameters
-        ----------
-        labeled_mask : np.ndarray
-            Integer-labeled mask (0 = background)
-        selem_radius : int
-            Radius for disk structuring element used in opening
-        max_area_loss : float
-            If opened area < (1 - max_area_loss) * original area, fallback to original
-
-        Returns
-        -------
-        np.ndarray
-            New labeled mask with objects possibly split into multiple labels.
-        """
-        if selem_radius <= 0:
-            return labeled_mask
-
-        selem = disk(selem_radius)
-        out = np.zeros_like(labeled_mask, dtype=np.int32)
-        next_label = 1
-
-        # Iterate each object independently
-        for obj_id in np.unique(labeled_mask):
-            if obj_id == 0:
-                continue
-            binary = labeled_mask == obj_id
-
-            orig_area = int(binary.sum())
-            if orig_area == 0:
-                continue
-
-            opened = opening(binary, selem)
-            opened_area = int(opened.sum())
-
-            # Safety: if opening removed too much, retain original shape
-            if opened_area == 0 or opened_area < (1.0 - max_area_loss) * orig_area:
-                opened = binary
-
-            relabeled = label(opened)
-            if relabeled.max() == 0:
-                continue
-
-            for sub_id in range(1, relabeled.max() + 1):
-                out[relabeled == sub_id] = next_label
-                next_label += 1
-
-        return out
-
     def _process_frame(
         self,
         frame: np.ndarray,
         mask_frame: np.ndarray,
         frame_ts: float,
         *,
-        morph_opening: bool,
-        sep_radius: int,
         min_size: int,
         remove_edge: bool,
         fill_holes: bool,
@@ -285,23 +181,34 @@ class FeatureDetectionModule(AnalysisModule):
         """Process a single frame: hole fill, labeling, filtering, stats."""
         H, W = frame.shape
 
+        # Ensure boolean mask before morphology calls
+        mask_frame = mask_frame.astype(bool, copy=False)
+
         # Optionally fill holes
         if fill_holes:
             if hole_area is not None:
-                mask_frame = remove_small_holes(mask_frame, area_threshold=hole_area)
+                # Normalize semantics to "fill holes with area < hole_area"
+                # across skimage versions.
+                # New API (0.26+): prefers `max_size` which fills holes with
+                # area <= max_size.
+                # Old API: `area_threshold` fills holes with area < area_threshold.
+                sig = inspect.signature(remove_small_holes)
+                if "max_size" in sig.parameters:
+                    # Emulate strict "< hole_area" by using <= hole_area-1
+                    max_size = max(hole_area - 1, 0)  # guard against negatives
+                    mask_frame = remove_small_holes(
+                        mask_frame, max_size=max_size, connectivity=1
+                    )
+                else:
+                    mask_frame = remove_small_holes(
+                        mask_frame, area_threshold=hole_area, connectivity=1
+                    )
             else:
-                mask_frame = binary_fill_holes(mask_frame)
-            mask_frame = mask_frame.astype(bool)
+                # Fill all holes when no area limit is provided
+                mask_frame = binary_fill_holes(mask_frame).astype(bool, copy=False)
 
         # Label connected regions
         initial_labeled = label(mask_frame)
-
-        # Morphological separation (per object), before filtering
-        if morph_opening and sep_radius > 0:
-            initial_labeled = self._separate_touching_by_opening(
-                initial_labeled, selem_radius=sep_radius
-            )
-
         filtered_mask = np.zeros_like(mask_frame, dtype=bool)
 
         for prop in regionprops(initial_labeled):
@@ -331,7 +238,7 @@ class FeatureDetectionModule(AnalysisModule):
                     "min": float(vals.min()),
                     "max": float(vals.max()),
                     "mean": float(vals.mean()),
-                    "bbox": tuple(map(int, prop.bbox)),  # (minr, minc, maxr, maxc)
+                    "bbox": tuple(map(int, prop.bbox)),
                     "centroid": tuple(map(float, prop.centroid)),
                 }
             )
@@ -361,9 +268,6 @@ class FeatureDetectionModule(AnalysisModule):
         # existing mask in previous_results
         mask_fn: Optional[callable] = None,
         mask_key: Optional[str] = None,
-        # Morphological opening
-        morph_opening: bool = False,
-        sep_radius: int = 6,
         # Filtering criteria:
         min_size: int = 10,
         remove_edge: bool = True,
@@ -436,8 +340,6 @@ class FeatureDetectionModule(AnalysisModule):
                 data[i],
                 mask_arr[i].copy(),
                 frame_ts,
-                morph_opening=morph_opening,
-                sep_radius=sep_radius,
                 min_size=min_size,
                 remove_edge=remove_edge,
                 fill_holes=fill_holes,

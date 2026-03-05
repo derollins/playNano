@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 from playnano.processing.video_processing import (
+    _crop_with_pad,
+    _normalize_pad,
     align_frames,
     crop_square,
     intersection_crop,
@@ -229,6 +231,151 @@ def test_align_frames_prefilter(synthetic_stack, sigma):
         # Run again without filter to check numeric difference
         aligned_no_filter, _ = align_frames(synthetic_stack, pre_filter_sigma=None)
         assert not np.allclose(aligned, aligned_no_filter)
+
+
+# --- Tests for crop padding ---
+
+
+@pytest.mark.parametrize(
+    "pad, expected",
+    [
+        (0, (0, 0, 0, 0)),
+        (2, (2, 2, 2, 2)),
+        ((3, 5), (3, 3, 5, 5)),  # (v, h)
+        ([3, 5], (3, 3, 5, 5)),  # list form
+        ((1, 2, 3, 4), (1, 2, 3, 4)),  # per-side
+        ([1, 2, 3, 4], (1, 2, 3, 4)),
+    ],
+)
+def test_normalize_pad_valid(pad, expected):
+    """Normalize integer/tuple/list pad specs into (top, bottom, left, right)."""
+    assert _normalize_pad(pad) == expected
+
+
+@pytest.mark.parametrize("pad", [(1, 2, 3), (1, 2, 3, 4, 5), (1.5,), "x", None])
+def test_normalize_pad_invalid(pad):
+    """Reject invalid pad specifications with a ValueError."""
+    with pytest.raises(ValueError):
+        _normalize_pad(pad)
+
+
+def test_crop_with_pad_no_padding_needed(dummy_stack):
+    """Return exact slice without padding when requested bounds are in-range."""
+    # dummy_stack: shape (5, 2, 2) with 0..19
+    out, applied = _crop_with_pad(dummy_stack, y0=0, y1=2, x0=0, x1=2)
+    assert applied == (0, 0, 0, 0)
+    np.testing.assert_array_equal(out, dummy_stack[:, 0:2, 0:2])
+
+
+def test_crop_with_pad_extends_beyond_edges_and_fills_nan():
+    """Pad out-of-bounds crop requests with NaNs & place content at correct offsets."""
+    base = np.arange(4 * 5, dtype=float).reshape(4, 5)
+    stack = base[None, :, :]
+    # Request a region larger than the image and offset negatively
+    out, applied = _crop_with_pad(stack, y0=-1, y1=6, x0=-2, x1=8)
+    # Padding needed (top=1, bottom=6-4=2; left=2, right=8-5=3)
+    assert applied == (1, 2, 2, 3)
+    assert out.shape == (1, (6 - (-1)), (8 - (-2)))  # (7, 10)
+    # Check NaNs at padded edges
+    assert np.all(np.isnan(out[:, :1, :]))  # top padded
+    assert np.all(np.isnan(out[:, -2:, :]))  # bottom padded
+    assert np.all(np.isnan(out[:, :, :2]))  # left padded
+    assert np.all(np.isnan(out[:, :, -3:]))  # right padded
+    # Check placed content at offset (top=1,left=2)
+    placed = out[0, 1 : 1 + 4, 2 : 2 + 5]
+    np.testing.assert_array_equal(placed, base)
+
+
+def test_intersection_crop_no_pad(stack_with_nans):
+    """Crop to the tight finite-pixel intersection with no additional padding."""
+    cropped, meta = intersection_crop(stack_with_nans, pad=0)
+    # Compute expected intersection directly
+    valid = np.all(np.isfinite(stack_with_nans), axis=0)
+    rows = np.where(np.any(valid, axis=1))[0]
+    cols = np.where(np.any(valid, axis=0))[0]
+    y0, y1 = rows[0], rows[-1] + 1
+    x0, x1 = cols[0], cols[-1] + 1
+    assert meta["intersection_bounds"] == (y0, y1, x0, x1)
+    assert meta["pad_param"] == (0, 0, 0, 0)
+    assert meta["applied_pad"] == (0, 0, 0, 0)
+    assert cropped.shape == (stack_with_nans.shape[0], y1 - y0, x1 - x0)
+
+
+@pytest.mark.parametrize(
+    "pad, expected_norm",
+    [(2, (2, 2, 2, 2)), ((1, 3), (1, 1, 3, 3)), ((1, 2, 3, 4), (1, 2, 3, 4))],
+)
+def test_intersection_crop_with_padding(stack_with_nans, pad, expected_norm):
+    """Expand the intersection by the requested padding & verify borders & metadata."""
+    cropped, meta = intersection_crop(stack_with_nans, pad=pad)
+    assert meta["pad_param"] == expected_norm
+    t, b, left, right = meta["applied_pad"]
+    # Any applied pad should result in NaNs at those edges
+    if t > 0:
+        assert np.all(np.isnan(cropped[:, :t, :]))
+    if b > 0:
+        assert np.all(np.isnan(cropped[:, -b:, :]))
+    if left > 0:
+        assert np.all(np.isnan(cropped[:, :, :left]))
+    if right > 0:
+        assert np.all(np.isnan(cropped[:, :, -right:]))
+
+
+def test_intersection_crop_all_nan_returns_original(padded_stack):
+    """Return original stack when no finite pixels exist & record early-exit note."""
+    # padded_stack has NaN borders but also finite interior; make it fully NaN
+    stack = np.full_like(padded_stack, np.nan)
+    cropped, meta = intersection_crop(stack, pad=5)
+    # Early return path: no finite pixels
+    assert cropped.shape == stack.shape
+    assert meta["intersection_bounds"] is None
+    assert meta["applied_pad"] == (0, 0, 0, 0)
+
+
+def test_crop_square_no_pad_shape_and_meta(padded_stack):
+    """Produce the largest centered square in the intersection & validate metadata."""
+    # padded_stack has NaN borders, so intersection is interior;
+    # crop square inside that
+    cropped, meta = crop_square(padded_stack, pad=0)
+    Hi, Wi = meta["intersection_shape"]
+    size = meta["square_size"]
+    assert size == min(Hi, Wi)
+    h, w = cropped.shape[1:]
+    assert h == w == size
+    assert meta["pad_param"] == (0, 0, 0, 0)
+    assert meta["applied_pad"] == (0, 0, 0, 0)
+
+
+@pytest.mark.parametrize("pad", [1, 3, (2, 4), (1, 2, 3, 4)])
+def test_crop_square_with_pad_adds_margins_and_nan_edges(padded_stack, pad):
+    """Apply outward padding around the centered square."""
+    cropped, meta = crop_square(padded_stack, pad=pad)
+    # Size must grow by pad
+    pt, pb, pl, pr = _normalize_pad(pad)
+    size = meta["square_size"]
+    h, w = cropped.shape[1:]
+    assert h == size + pt + pb
+    assert w == size + pl + pr
+    # NaN stripes at edges where applied_pad > 0
+    t, b, left, right = meta["applied_pad"]
+    if t > 0:
+        assert np.all(np.isnan(cropped[:, :t, :]))
+    if b > 0:
+        assert np.all(np.isnan(cropped[:, -b:, :]))
+    if left > 0:
+        assert np.all(np.isnan(cropped[:, :, :left]))
+    if right > 0:
+        assert np.all(np.isnan(cropped[:, :, -right:]))
+
+
+def test_crop_square_all_nan_returns_original():
+    """Return the original stack and note when all frames are fully NaN."""
+    stack = np.full((3, 6, 7), np.nan, dtype=float)
+    cropped, meta = crop_square(stack, pad=4)
+    assert cropped.shape == stack.shape
+    assert meta["intersection_bounds"] is None
+    assert meta["offset"] == (0, 0)
+    assert "No finite pixels" in meta.get("note", "")
 
 
 # --- Tests for rolling_frame_align --- #
