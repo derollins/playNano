@@ -99,7 +99,7 @@ class FeatureDetectionModule(AnalysisModule):
     -------
     0.2.0
 
-    Version 0.2.0 adds morphological opening for separating close or touching particles.
+    Version 0.2.0 adds morphological opening for seperating close or touching particles.
 
     Examples
     --------

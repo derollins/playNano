@@ -175,10 +175,11 @@ class AFMImageStack:
           2. Mask from MASK_MAP
           3. Bound method on this AFMImageStack instance
           4. Plugin from entry points "playnano.filters"
-          5. Filter from FILTER_MAP
-          6. Video filter from VIDEO_FILTER_MAP
-          7. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
-             the stack, the other functions return lists of indices to be passed to
+          5. Plugin from entry points "playnano.video_processing"
+          6. Filter from FILTER_MAP
+          7. Video filter from VIDEO_FILTER_MAP
+          8. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
+             the stack, the other funcitons return lists of indices to be passed to
              ``drop_frames`` - this is done within the ProcesssingPipeline)
 
         Parameters
@@ -191,7 +192,7 @@ class AFMImageStack:
         -------
         tuple[str, callable | None]
             - step type: one of "clear", "mask", "method", "plugin", "filter",
-              "video_filter", "stack_edit"
+              "video_filter", "video_plugin", "stack_edit"
             - callable implementing the step, or None if step_type == "clear".
 
         Raises
@@ -226,19 +227,32 @@ class AFMImageStack:
             fn = ep.load()
             return "plugin", fn
 
-        # 5) Unmasked filter in FILTER_MAP?
+        # 5) Plugin 3D filter 'video processing'entry point?
+        try:
+            ep = next(
+                ep
+                for ep in metadata.entry_points(group="playnano.video_processing")
+                if ep.name == step
+            )
+        except StopIteration:
+            ep = None
+        if ep is not None:
+            fn = ep.load()
+            return "video_plugin", fn
+
+        # 6) Unmasked filter in FILTER_MAP?
         if step in FILTER_MAP:
             return "filter", FILTER_MAP[step]
 
-        # 6) Video processing step in VIDEO_FILTER_MAP?
+        # 7) Video processing step in VIDEO_FILTER_MAP?
         if step in VIDEO_FILTER_MAP:
             return "video_filter", VIDEO_FILTER_MAP[step]
 
-        # 7) Stack edit step ie. drop_frames?
+        # 8) Stack edit step ie. drop_frames?
         if step in STACK_EDIT_MAP:
             return "stack_edit", STACK_EDIT_MAP[step]
 
-        # 8) No match
+        # 9) No match
         raise ValueError(
             f"Unrecognized step '{step}'. "
             f"Available masks: {list(MASK_MAP)}; "
@@ -246,6 +260,7 @@ class AFMImageStack:
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
             f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
+            f"video_plugins: {[ep.name for ep in metadata.entry_points(group='playnano.video_processing')]}."  # noqa
             f"stack_edit: {list(STACK_EDIT_MAP)}; "
         )
 
@@ -360,7 +375,6 @@ class AFMImageStack:
                 except Exception as e:
                     logger.warning(f"Filter '{step_name}' failed on frame {i}: {e}")
                     new_arr[i] = arr[i]
-
         return new_arr
 
     def _execute_video_processing_step(
@@ -782,54 +796,6 @@ class AFMImageStack:
         with open(path, "w") as f:
             json.dump(self.analysis_results, f, indent=2, cls=NumpyEncoder)
 
-    def _load_plugin(self, name: str):
-        """
-        Load a filter plugin dynamically from entry points under "playnano.filters".
-
-        Parameters
-        ----------
-        name : str
-            Name of the plugin filter to load.
-
-        Returns
-        -------
-        Callable
-            Loaded filter function.
-
-        Raises
-        ------
-        ValueError
-            If the plugin name is not found among entry points.
-        """
-        for ep in metadata.entry_points(group="playnano.filters"):
-            if ep.name == name:
-                logger.debug(f"Loaded plugin '{name}' from {ep.value}")
-                return ep.load()
-
-        raise ValueError(f"Unknown filter plugin: {name}")
-
-    def _get_plugin_version(fn: callable) -> str | None:
-        """
-        Attempt to obtain a version string for the package/module defining fn.
-
-        Parameters
-        ----------
-        fn : callable
-            Function object whose module/package version to query.
-
-        Returns
-        -------
-        str or None
-            Version string if retrievable via importlib.metadata, else None.
-        """
-        module_name = fn.__module__.split(".")[0]
-        try:
-            return metadata.version(module_name)
-        except metadata.PackageNotFoundError:
-            return None
-        except Exception:
-            return None
-
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """
         Apply a sequence of processing steps to each frame in the AFM image stack.
@@ -839,14 +805,15 @@ class AFMImageStack:
           - "clear"       : reset any existing mask
           - mask names    : keys in MASK_MAP
           - filter names  : keys in FILTER_MAP
-          - plugin names  : entry points in 'playnano.filters'
+          - plugin names  : entry points in 'playnano.filters' or
+            'playnano.video_processing'
           - method names  : bound methods on this class
 
         ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.
 
         This is a stateless convenience: applies clear/mask/filter steps in order,
-        snapshots only 'raw' and final data in self.processed, but does not assign
-        unique keys per step or update provenance.
+        snapshots 'raw' and the data after each filter step in self.processed, but does
+        not assign unique keys per step or update provenance.
 
         Parameters
         ----------
@@ -866,7 +833,7 @@ class AFMImageStack:
         For tracked, reproducible processing,
         use ProcessingPipeline.
         """
-        # 1) Snapshot raw data if not already done
+        # 1) Snapshot raw data once
         if "raw" not in self.processed:
             self.processed["raw"] = self.data.copy()
 
@@ -876,35 +843,53 @@ class AFMImageStack:
         for step in steps:
             step_type, fn = self._resolve_step(step)
 
-            # (A) CLEAR: drop any existing mask
+            # (A) CLEAR
             if step_type == "clear":
                 logger.info("Step 'clear' → dropping existing mask.")
                 mask = None
                 continue
 
             # (B) MASK GENERATOR
-            if step_type == "mask":
-                logger.info(
-                    f"Step '{step}' → computing new mask based on current data."
-                )
-                # Compute mask over all frames
-                new_mask = self._execute_mask_step(fn, arr, **kwargs)
-                mask = new_mask
-                # Do not modify arr itself
-                continue
+            elif step_type == "mask":
+                logger.info(f"Step '{step}' → computing new mask.")
+                mask = self._execute_mask_step(fn, arr, **kwargs)
+                continue  # masks don't modify arr
 
-            # (C) FILTER OR PLUGIN
-            # fn is now a callable that processes a 2D frame → 2D frame
-            logger.info(f"Step '{step}' (filter) → applying to all frames.")
-            new_arr = self._execute_filter_step(fn, arr, mask, step, **kwargs)
+            # (C) FILTER OR PLUGIN (2D/frame)
+            elif step_type in ("filter", "plugin"):
+                logger.info(f"Step '{step}' (filter) → applying per-frame.")
+                arr = self._execute_filter_step(fn, arr, mask, step, **kwargs)
+
+            # (D) VIDEO FILTER / VIDEO PLUGIN (3D)
+            elif step_type in ("video_filter", "video_plugin"):
+                logger.info(f"Step '{step}' (video filter) → applying to full stack.")
+                arr = self._execute_video_processing_step(fn, arr, **kwargs)
+
+            # (E) STACK EDIT
+            elif step_type == "stack_edit":
+                logger.info(f"Step '{step}' (stack edit) → applying to full stack.")
+                arr = self._execute_stack_edit_step(fn, arr, **kwargs)
+                mask = None  # masks invalid after structural change
+
+            # (F) METHOD
+            elif step_type == "method":
+                logger.info(f"Step '{step}' (method) → applying.")
+                try:
+                    new_arr = fn(arr, **kwargs)
+                except TypeError:
+                    new_arr = fn(**kwargs)
+                if new_arr is None:
+                    new_arr = getattr(self, "data", arr)
+                arr = new_arr
+
+            # (G) UNRECOGNIZED - should not happen due to _resolve_step
+            else:
+                raise ValueError(f"Unsupported step type '{step_type}'.")
 
             # Store a snapshot in processed dict
-            self.processed[step] = new_arr.copy()
+            self.processed[step] = arr.copy()
 
-            # Update arr for next iteration
-            arr = new_arr
-
-        # 5) After all steps, overwrite self.data
+        # 5) Save final output
         self.data = arr
         return arr
 

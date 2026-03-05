@@ -2226,6 +2226,18 @@ def test_get_processing_callable_plugin():
         assert result == "plugin_callable"
 
 
+def test_get_processing_callable_video_plugin():
+    """Test that a video plugin entry point is loaded correctly."""
+    mock_entry_point = MagicMock()
+    mock_entry_point.load.return_value = "video_plugin_callable"
+    with patch(
+        "playnano.cli.utils._VIDEO_PLUGIN_ENTRYPOINTS",
+        {"video_plugin_step": mock_entry_point},
+    ):
+        result = _get_processing_callable("video_plugin_step")
+        assert result == "video_plugin_callable"
+
+
 def test_get_processing_callable_not_found():
     """Test that an unknown step raises ValueError."""
     with (
@@ -2235,6 +2247,7 @@ def test_get_processing_callable_not_found():
         patch("playnano.cli.utils.VIDEO_FILTER_MAP", {}),
         patch("playnano.cli.utils.STACK_EDIT_MAP", {}),
         patch("playnano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+        patch("playnano.cli.utils._VIDEO_PLUGIN_ENTRYPOINTS", {}),
     ):
         with pytest.raises(
             ValueError, match="Processing step 'unknown_step' not found"
@@ -2254,6 +2267,15 @@ def test_get_processing_step_type_plugin():
         assert get_processing_step_type("plugin_step") == "plugin filter"
 
 
+def test_get_processing_step_type_video_plugin():
+    """Test that _get_processing_step_type identifies video plugins."""
+    with patch(
+        "playnano.cli.utils._VIDEO_PLUGIN_ENTRYPOINTS",
+        {"video_plugin_step": MagicMock()},
+    ):
+        assert get_processing_step_type("video_plugin_step") == "video plugin"
+
+
 @pytest.mark.parametrize(
     "map_name,step_name,expected_type",
     [
@@ -2261,6 +2283,7 @@ def test_get_processing_step_type_plugin():
         ("MASK_MAP", "mask_step", "mask generator"),
         ("MASK_FILTERS_MAP", "mask_filter_step", "mask filter"),
         ("_PLUGIN_ENTRYPOINTS", "plugin_step", "plugin filter"),
+        ("_VIDEO_PLUGIN_ENTRYPOINTS", "video_plugin_step", "video plugin"),
         ("VIDEO_FILTER_MAP", "video_filter_step", "video filter"),
         ("STACK_EDIT_MAP", "stack_edit_step", "stack edit"),
     ],
@@ -2280,6 +2303,7 @@ def test_get_processing_step_type_unknown():
         patch("playnano.cli.utils.MASK_MAP", {}),
         patch("playnano.cli.utils.MASK_FILTERS_MAP", {}),
         patch("playnano.cli.utils._PLUGIN_ENTRYPOINTS", {}),
+        patch("playnano.cli.utils._VIDEO_PLUGIN_ENTRYPOINTS", {}),
         patch("playnano.cli.utils.VIDEO_FILTER_MAP", {}),
         patch("playnano.cli.utils.STACK_EDIT_MAP", {}),
     ):

@@ -1,0 +1,20 @@
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+  after_n_builds: 1  # you upload once (Ubuntu+3.11)
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+        informational: false
+        only_pulls: false
+    patch:
+      default:
+        target: auto
+        threshold: 0.1%
+        informational: false
+        only_pulls: false

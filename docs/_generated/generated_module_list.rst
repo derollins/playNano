@@ -1,14 +1,14 @@
-- `count_nonzero <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.count_nonzero>`_  
+- `count_nonzero <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.count_nonzero>`_
   - Analysis module for counting non-zero data points in an array.
-- `dbscan_clustering <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.dbscan_clustering>`_  
+- `dbscan_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.dbscan_clustering>`_
   - DBSCAN clustering on features over the entire stack in 3D (x, y, time).
-- `feature_detection <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.feature_detection>`_  
+- `feature_detection <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.feature_detection>`_
   - Threshold-based feature detection for AFM image stacks.
-- `k_means_clustering <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.k_means_clustering>`_  
+- `k_means_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.k_means_clustering>`_
   - K-Means clustering on features over the entire stack in 3D (x, y, time).
-- `log_blob_detection <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.log_blob_detection>`_  
+- `log_blob_detection <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.log_blob_detection>`_
   - Module for LoG blob detection.
-- `particle_tracking <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.particle_tracking>`_  
+- `particle_tracking <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.particle_tracking>`_
   - Module for linking particle features across frames to build trajectories.
-- `x_means_clustering <../html/api/playNano.analysis.modules.html#module-playNano.analysis.modules.x_means_clustering>`_  
+- `x_means_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.x_means_clustering>`_
   - Module for X-Means clustering as part of the playNano analysis pipeline.

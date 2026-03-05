@@ -555,35 +555,98 @@ def rolling_frame_align(
 # -----------------------------------------------------------------------------#
 
 
-@versioned_filter("0.1.0")
-def intersection_crop(stack: np.ndarray) -> tuple[np.ndarray, dict]:
+def _normalize_pad(pad):
     """
-    Crop aligned stack to the largest common intersection region.
+    Normalize pad argument to (top, bottom, left, right).
+
+    Accepts:
+      - int: uniform pad on all sides
+      - tuple/list of length 2: (vertical, horizontal)
+      - tuple/list of length 4: (top, bottom, left, right)
+    """
+    if isinstance(pad, (int, np.integer)):
+        return (pad, pad, pad, pad)
+    if isinstance(pad, (tuple, list)):
+        if len(pad) == 2:
+            v, h = pad
+            return (v, v, h, h)
+        if len(pad) == 4:
+            return tuple(pad)
+    raise ValueError("pad must be int, (v, h), or (top, bottom, left, right)")
+
+
+def _crop_with_pad(stack, y0, y1, x0, x1, pad_value=np.nan):
+    """
+    Crop stack[:, y0:y1, x0:x1] even if y0<0 or x1>W etc., padding with pad_value.
+
+    y0, y1, x0, x1 are *exclusive-end* bounds in original coordinates.
+    """
+    n, H, W = stack.shape
+    # Compute required padding
+    pad_top = max(0, -y0)
+    pad_left = max(0, -x0)
+    pad_bottom = max(0, y1 - H)
+    pad_right = max(0, x1 - W)
+
+    if pad_top or pad_bottom or pad_left or pad_right:
+        stack_p = np.pad(
+            stack,
+            pad_width=((0, 0), (pad_top, pad_bottom), (pad_left, pad_right)),
+            mode="constant",
+            constant_values=pad_value,
+        )
+        # Shift requested box into padded coordinate system
+        y0_p = y0 + pad_top
+        y1_p = y1 + pad_top
+        x0_p = x0 + pad_left
+        x1_p = x1 + pad_left
+        out = stack_p[:, y0_p:y1_p, x0_p:x1_p]
+    else:
+        out = stack[:, y0:y1, x0:x1]
+
+    return out, (pad_top, pad_bottom, pad_left, pad_right)
+
+
+@versioned_filter("0.2.0")
+def intersection_crop(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
+    """
+    Crop aligned stack to the largest common intersection region (finite across frames).
+
+    Option to add padding to expand the crop beyond the intersection, filling with NaN
+    when beyond the data.
 
     Parameters
     ----------
     stack : ndarray of shape (n_frames, height, width)
         Input aligned stack with NaN padding.
+    pad : int or tuple, optional (default=0)
+        Extra pixels to add around the intersection bounds.
+        - int: uniform pad
+        - (v, h): vertical and horizontal pad
+        - (top, bottom, left, right): per-side pad
 
     Returns
     -------
     cropped : ndarray
-        Cropped stack containing only valid (non-NaN) pixels, or original stack if
-        no valid pixels exist.
+        Cropped (and possibly padded) stack.
     meta : dict
-        Metadata about cropping parameters.
+        Metadata including original shape, intersection bounds, requested bounds,
+        actual padding applied, and new shape.
     """
     valid_mask = np.all(np.isfinite(stack), axis=0)
     rows = np.any(valid_mask, axis=1)
     cols = np.any(valid_mask, axis=0)
 
+    H, W = stack.shape[1:]
     if not np.any(rows) or not np.any(cols):
-        # No valid pixels, return original stack
         meta = {
             "operation": "crop_intersection",
-            "original_shape": stack.shape[1:],
-            "new_shape": stack.shape[1:],
-            "bounds": None,
+            "original_shape": (H, W),
+            "intersection_shape": (H, W),
+            "new_shape": (H, W),
+            "intersection_bounds": None,
+            "requested_bounds": None,
+            "applied_pad": (0, 0, 0, 0),
             "note": "No finite pixels found, returned original stack",
         }
         return stack.copy(), meta
@@ -591,51 +654,126 @@ def intersection_crop(stack: np.ndarray) -> tuple[np.ndarray, dict]:
     y_min, y_max = np.where(rows)[0][[0, -1]]
     x_min, x_max = np.where(cols)[0][[0, -1]]
 
-    cropped = stack[:, y_min : y_max + 1, x_min : x_max + 1]
+    y0, y1 = y_min, y_max + 1
+    x0, x1 = x_min, x_max + 1
+
+    pt, pb, pl, pr = _normalize_pad(pad)
+    y0_req = y0 - pt
+    y1_req = y1 + pb
+    x0_req = x0 - pl
+    x1_req = x1 + pr
+
+    cropped, applied_pad = _crop_with_pad(stack, y0_req, y1_req, x0_req, x1_req)
 
     meta = {
         "operation": "crop_intersection",
-        "original_shape": stack.shape[1:],
+        "original_shape": (H, W),
+        "intersection_shape": (y1 - y0, x1 - x0),
         "new_shape": cropped.shape[1:],
-        "bounds": (y_min, y_max, x_min, x_max),
+        "intersection_bounds": (y0, y1, x0, x1),
+        "requested_bounds": (y0_req, y1_req, x0_req, x1_req),
+        "applied_pad": applied_pad,
+        "pad_param": (pt, pb, pl, pr),
     }
     return cropped, meta
 
 
-@versioned_filter("0.1.0")
-def crop_square(stack: np.ndarray) -> tuple[np.ndarray, dict]:
+@versioned_filter("0.2.0")
+def crop_square(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
     """
     Crop aligned stack to the largest centered square region.
+
+    This is based on the finite-pixel intersection across frames, with optional
+    outward padding (np.nan).
 
     Parameters
     ----------
     stack : ndarray of shape (n_frames, height, width)
-        Input aligned stack.
+        Input aligned stack with possible NaN padding.
+    pad : int or tuple, optional (default=0)
+        Extra pixels to add around the square bounds.
+        Accepts:
+          - int: uniform pad
+          - (v, h): vertical and horizontal pad
+          - (top, bottom, left, right): per-side pad
 
     Returns
     -------
     cropped : ndarray
-        Cropped stack with square height and width.
+        Cropped (and possibly padded) square stack.
     meta : dict
-        Metadata about cropping parameters.
+        Metadata including original shape, intersection shape, square size, bounds,
+        padding details, and offset compatible with the original function
+        (offset within the intersection crop).
     """
-    cropped, inter_meta = intersection_crop(stack)
-    H, W = cropped.shape[1:]
-    size = min(H, W)
-    # Center crop
-    r_start = (H - size) // 2
-    c_start = (W - size) // 2
-    cropped_sq = cropped[:, r_start : r_start + size, c_start : c_start + size]
+    H, W = stack.shape[1:]
+    # Compute finite-pixel intersection mask (across frames)
+    valid_mask = np.all(np.isfinite(stack), axis=0)
+    rows = np.any(valid_mask, axis=1)
+    cols = np.any(valid_mask, axis=0)
+
+    if not np.any(rows) or not np.any(cols):
+        # No finite pixels: return original stack unchanged (original behavior)
+        # offset is 0,0 (undefined in this case, but keep compatible keys)
+        meta = {
+            "operation": "crop_square",
+            "original_shape": (H, W),
+            "intersection_shape": (H, W),
+            "new_shape": (H, W),
+            "square_size": min(H, W),
+            "offset": (0, 0),
+            "intersection_bounds": None,
+            "square_bounds": None,
+            "requested_bounds": None,
+            "applied_pad": (0, 0, 0, 0),
+            "pad_param": _normalize_pad(pad),
+            "note": "No finite pixels found; returned original stack",
+        }
+        return stack.copy(), meta
+
+    # Tight intersection bounds in exclusive-end coordinates
+    y_min, y_max = np.where(rows)[0][[0, -1]]
+    x_min, x_max = np.where(cols)[0][[0, -1]]
+    y0_i, y1_i = y_min, y_max + 1
+    x0_i, x1_i = x_min, x_max + 1
+    H_i, W_i = (y1_i - y0_i), (x1_i - x0_i)
+
+    # Largest centered square INSIDE the intersection
+    size = min(H_i, W_i)
+    r_start = (H_i - size) // 2  # offset within the intersection (for metadata compat)
+    c_start = (W_i - size) // 2
+
+    # Convert that to absolute image coordinates
+    y0_sq = y0_i + r_start
+    x0_sq = x0_i + c_start
+    y1_sq = y0_sq + size
+    x1_sq = x0_sq + size
+
+    # Apply outward padding around the square
+    pt, pb, pl, pr = _normalize_pad(pad)
+    y0_req = y0_sq - pt
+    y1_req = y1_sq + pb
+    x0_req = x0_sq - pl
+    x1_req = x1_sq + pr
+
+    # Single crop directly from the original (no prior intersection cropping)
+    cropped, applied_pad = _crop_with_pad(stack, y0_req, y1_req, x0_req, x1_req)
 
     meta = {
         "operation": "crop_square",
-        "original_shape": stack.shape[1:],
-        "intersection_shape": inter_meta["new_shape"],
-        "new_shape": cropped_sq.shape[1:],
+        "original_shape": (H, W),
+        "intersection_shape": (H_i, W_i),
+        "new_shape": cropped.shape[1:],
         "square_size": size,
         "offset": (r_start, c_start),
+        "intersection_bounds": (y0_i, y1_i, x0_i, x1_i),
+        "square_bounds": (y0_sq, y1_sq, x0_sq, x1_sq),
+        "requested_bounds": (y0_req, y1_req, x0_req, x1_req),
+        "applied_pad": applied_pad,  # actual pad used beyond image edges
+        "pad_param": (pt, pb, pl, pr),  # requested pad
     }
-    return cropped_sq, meta
+
+    return cropped, meta
 
 
 @param_conditions(value=lambda p: p.get("mode") == "constant")

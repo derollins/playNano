@@ -159,11 +159,11 @@ class ProcessingPipeline:
         """
         Execute configured steps on the AFMImageStack, storing outputs and provenance.
 
-        The pipeline iterates through all added masks, filters, and plugins in order,
-        applying each to the current data. Masks are combined if multiple are applied
-        before a filter. Each step's output is stored in `stack.processed` (filters) or
-        `stack.masks` (masks), and a detailed provenance record is saved in
-        `stack.provenance["processing"]`.
+        The pipeline iterates through all added mask, filter, and plugin steps in
+        order, applying each to the current data. Masks are combined if multiple are
+        applied before a filter. Each step's output is stored in `stack.processed`
+        (filters) or `stack.masks` (masks), and a detailed provenance record is saved
+        in `stack.provenance["processing"]`.
 
         Behavior
         --------
@@ -178,7 +178,8 @@ class ProcessingPipeline:
         3. If not already present, snapshot the original data as ``"raw"`` in
         ``stack.processed``.
 
-        4. Iterate over ``self.steps`` in order (1-based index):
+        4. Iterate over ``self.steps`` in order (1-based index) with
+        ``_run_single_step(...)``:
 
         - Resolve the step type via ``stack._resolve_step(step_name)``, which returns
           a tuple of the form (``step_type``, ``fn``).
@@ -200,12 +201,31 @@ class ProcessingPipeline:
             - Update the current mask and record ``"mask_key"`` and ``"mask_summary"``
               in provenance.
 
-        - Else (filter/method/plugin):
+        - Elif ``step_type`` is ``filter``/``method``/``plugin``):
             - Call ``stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)``
               to obtain the new array.
             - Store the result under
               ``stack.processed["step_<idx>_<safe_name>"]`` and update ``arr``.
             - Record ``"processed_key"`` and ``"output_summary"`` in provenance.
+
+        - Elif ``step_type`` is ``video_filter``/``video_plugin``):
+            - Call ``stack._execute_video_processing_step(fn, arr, **kwargs)``
+              to obtain the new array.
+            - Store the result under
+              ``stack.processed["step_<idx>_<safe_name>"]`` and update ``arr``.
+            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.
+
+        - Elif ``step_type`` is ``stack_edit``:
+            - If the step name is ``drop_frames``, call it directly to get the new
+              array.
+            - Otherwise, call the stack edit function to get indices to drop, then
+              delegate to the ``drop_frames`` function to perform the edit. This
+              ensures that all stack edits are recorded in a consistent way in
+              provenance.
+            - Store the result under ``stack.processed["step_<idx>_drop_frames"]``
+              and update ``arr``.
+
+        - Else raise an warning for unrecognized step type.
 
         5. After all steps, overwrite ``stack.data`` with ``arr``.
 
@@ -370,7 +390,7 @@ class ProcessingPipeline:
             return self._handle_filter_step(
                 step_idx, step_name, fn, arr, mask, step_record, kwargs
             )
-        elif step_type == "video_filter":
+        elif step_type in {"video_filter", "video_plugin"}:
             return self._handle_video_filter_step(
                 step_idx, step_name, fn, arr, step_record, kwargs
             )
@@ -414,8 +434,8 @@ class ProcessingPipeline:
         Resolve a processing step to its type and callable, with error logging.
 
         This method attempts to determine what kind of processing step is
-        requested (mask, filter, method, plugin, video filter, stack edit),
-        and returns the step type along with a callable implementing it.
+        requested (mask, filter, method, plugin, video filter, video plugin,
+        stack edit), and returns the step type along with a callable implementing it.
 
         If the step cannot be resolved, the original exception is logged and
         re-raised, preserving its type.
@@ -431,14 +451,14 @@ class ProcessingPipeline:
         -------
         tuple[str, callable | None]
             - step type: one of "clear", "mask", "method", "plugin", "filter",
-            "video_filter", "stack_edit"
+            "video_plugin", "video_filter", "stack_edit"
             - callable implementing the step, or None if step_type == "clear"
 
         Raises
         ------
         ValueError
             If the step name is not recognized among masks, filters, methods,
-            plugins, video filters, or stack edits.
+            plugins, video filters, video plugins, or stack edits.
         """
         try:
             return self.stack._resolve_step(step_name)
@@ -465,7 +485,7 @@ class ProcessingPipeline:
             Version string if available.
         """
         version = getattr(fn, "__version__", None)
-        if version is None and step_type == "plugin":
+        if version is None and step_type in {"plugin", "video_plugin"}:
             version = _get_plugin_version(fn)
         return version
 
@@ -625,7 +645,10 @@ class ProcessingPipeline:
         kwargs: dict[str, Any],
     ) -> Tuple[np.ndarray, Optional[dict]]:
         """
-        Execute a 'video_filter' step, producing a new array for all frames.
+        Execute 'video_filter' or 'video_plugin' steps.
+
+        This funciton runs filters that apply to and return a 3D numpy array and
+        creates a new array for all frames.
 
         Parameters
         ----------
