@@ -98,7 +98,7 @@ Operation Types
 ^^^^^^^^^^^^^^^
 
 - **Filters (2D frame operations)** — modify individual frames (e.g. flattening,
-  smoothing). Filter fucntions accept 2D NumPy arrays and return 2D NumPy float arrays.
+  smoothing). Filter functions accept 2D NumPy arrays and return 2D NumPy float arrays.
   Some filters can also accept a mask (if defined by a preceding mask operation)
   and masked regions are excluded automatically from the filter calculation.
 - **Masks (2D binary operations)** — generate boolean masks to exclude regions from
