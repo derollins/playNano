@@ -49,3 +49,6 @@ _version.py
 
 # Outputs from notebooks from running pipelines
 output/
+
+#  File to trigger docs rebuilds
+.docs_trigger

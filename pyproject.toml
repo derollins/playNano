@@ -86,7 +86,7 @@ dev = [
 ]
 
 docs = [
-    "sphinx",
+    "sphinx<9",
     "furo",
     "myst-parser",
     "sphinx-autoapi",
@@ -150,7 +150,6 @@ include = '\.pyi?$'
 exclude = '''
 /(
     \.git
-  | \.mypy_cache
   | \.venv
   | __pycache__
   | build

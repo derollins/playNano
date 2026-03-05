@@ -1,6 +1,6 @@
 """Module for the AnalysisPipeline class for orchastration of analysis workflows."""
 
-import importlib.metadata
+import importlib.metadata as metadata
 import logging
 from collections import defaultdict
 from typing import Any, Optional
@@ -142,6 +142,7 @@ class AnalysisPipeline:
         TypeError
             If the loaded module is not an instance of `AnalysisModule`.
         """
+        # Fast path: cached
         if module_name in self._module_cache:
             return self._module_cache[module_name]
 
@@ -152,26 +153,50 @@ class AnalysisPipeline:
         except Exception:
             cls = None
 
+        # 2) Entry points (plugin mechanism)
         if cls is None:
-            # 2) Try entry points
-            eps = importlib.metadata.entry_points().select(
+            # Modern API available on Python 3.10–3.12
+            eps = metadata.entry_points().select(
                 group="playnano.analysis", name=module_name
             )
-            # In older importlib.metadata: entry_points().get('playnano.analysis', [])
-            if not eps:
+            ep = next(iter(eps), None)
+            if ep is None:
                 raise ValueError(
                     f"Analysis module '{module_name}' not found in registry or entry points"  # noqa
                 )
-            # If multiple, pick first
-            ep = eps[0]
-            cls = ep.load()
-        # Instantiate
-        instance = cls()
-        # Optionally check it's subclass of AnalysisModule
+
+            try:
+                cls = ep.load()
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to load entry point for analysis module '{module_name}': {e}"  # noqa
+                ) from e
+
+        # 3) Instantiate and type-check
+
+        # First: check class/type without instantiating
+        if not callable(cls):
+            raise TypeError(
+                f"Loaded analysis module '{module_name}' is not instantiable "
+                f"(got {cls!r})"
+            )
+
+        # Create the instance
+        try:
+            instance = cls()
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to instantiate analysis module '{module_name}' ({cls}): {e}"
+            ) from e
+
+        # Now validate that instance is correct type
         if not isinstance(instance, AnalysisModule):
             raise TypeError(
-                f"Loaded module for '{module_name}' is not an AnalysisModule subclass"
+                f"Loaded module, '{module_name}', is not an AnalysisModule subclass;"
+                f"got {type(instance)!r}"
             )
+
+        # Cache and return
         self._module_cache[module_name] = instance
         return instance
 
