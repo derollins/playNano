@@ -887,6 +887,7 @@ def _mk_feats_masks():
 
 
 def test_no_suitable_detection_module_found_raises():
+    """Test that RuntimeError is triggered by no required detection module."""
     tracker = _StubTracker()
     previous_results = {
         # Intentionally empty or containing unrelated modules
@@ -908,6 +909,7 @@ def test_no_suitable_detection_module_found_raises():
 
 
 def test_missing_coord_key_raises():
+    """Test that a RuntimeError is raised when coord_key is missing."""
     tracker = _StubTracker()
     feats, masks = _mk_feats_masks()
     previous_results = {
@@ -991,7 +993,7 @@ def test_fallback_to_requires_latest_available_and_returns_data():
 
 def test_preferred_present_is_used_even_if_others_exist():
     """
-    If the preferred detection_module is present, it should be used directly.
+    Test that the preferred detection_module is present, it should be used directly.
     """
     tracker = _StubTracker()
     feats1, masks1 = _mk_feats_masks()

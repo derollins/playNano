@@ -647,7 +647,7 @@ class ProcessingPipeline:
         """
         Execute 'video_filter' or 'video_plugin' steps.
 
-        This funciton runs filters that apply to and return a 3D numpy array and
+        This function runs filters that apply to and return a 3D numpy array and
         creates a new array for all frames.
 
         Parameters
