@@ -198,7 +198,7 @@ def main() -> None:
     process_parser.add_argument(
         "--scale-bar-nm",
         type=int,
-        help="Interger length of scale bar in nm",
+        help="Integer length of scale bar in nm",
     )
     process_parser.add_argument(
         "--zmin",

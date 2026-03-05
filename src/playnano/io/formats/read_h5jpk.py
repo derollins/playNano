@@ -200,7 +200,7 @@ def _get_z_unit_h5(channel_group: h5py.Group) -> str:
 
 def _get_image_shape(measurement_group: h5py.Group) -> float:
     """
-    Extract pixel width and hight from an HDF5 JPK measurement group.
+    Extract pixel width and height from an HDF5 JPK measurement group.
 
     The pixel dimensions are used to determine image shape.
 

@@ -246,7 +246,7 @@ def export_gif(
     - Uses processed data if available; otherwise falls back to raw data.
     - Timestamps and pixel size are read from ``afm_stack`` metadata although if raw
       data is exported after an edit_stack processing step then the timestamps in
-      ``afm_stack.state_backups['frame_metadata_before_edit']`` are retrived and used.
+      ``afm_stack.state_backups['frame_metadata_before_edit']`` are retrieved and used.
     - Output file name includes ``"_filtered"`` if processed data is exported.
     """
     if not make_gif:

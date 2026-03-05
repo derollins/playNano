@@ -96,7 +96,7 @@ class ParticleTrackingModule(AnalysisModule):
             available = [m for m in reversed(self.requires) if m in previous_results]
             if not available:
                 raise RuntimeError(
-                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."
+                    f"{self.name!r} requires one of {self.requires}, but none were found in previous results."  # noqa
                 )
             chosen = available[0]
 
@@ -104,11 +104,11 @@ class ParticleTrackingModule(AnalysisModule):
 
         if coord_key not in fd_out:
             raise RuntimeError(
-                f"{self.name!r} expected detection output {chosen!r} to contain {coord_key!r}."
+                f"{self.name!r} expected detection output {chosen!r} to contain {coord_key!r}."  # noqa
             )
         if "labeled_masks" not in fd_out:
             raise RuntimeError(
-                f"{self.name!r} expected detection output {chosen!r} to contain 'labeled_masks'."
+                f"{self.name!r} expected detection output {chosen!r} to contain 'labeled_masks'."  # noqa
             )
 
         return fd_out[coord_key], fd_out["labeled_masks"]
@@ -212,7 +212,7 @@ class ParticleTrackingModule(AnalysisModule):
         coords_dense: list[Optional[tuple[float, float]]] = [None] * len(span_frames)
         idx_dense: list[Optional[int]] = [None] * len(span_frames)
 
-        for f, c, i in zip(det_frames, det_coords, det_idxs):
+        for f, c, i in zip(det_frames, det_coords, det_idxs, strict=False):
             j = f - start
             coords_dense[j] = c
             idx_dense[j] = i
@@ -235,7 +235,9 @@ class ParticleTrackingModule(AnalysisModule):
         (frame_idx, point_idx) : tuple[int, int] or None
             Last detection pair, or None if no detections are present.
         """
-        for t_f, i_f in zip(reversed(trk["frames"]), reversed(trk["point_indices"])):
+        for t_f, i_f in zip(
+            reversed(trk["frames"]), reversed(trk["point_indices"]), strict=False
+        ):
             if i_f is not None:
                 return t_f, i_f
         return None
@@ -271,8 +273,8 @@ class ParticleTrackingModule(AnalysisModule):
             Which module to read features from (default: "feature_detection").
 
         coord_key : str, optional
-            Key in previous_results[detection_module] containing per-frame feature dicts
-            (default: "features_per_frame").
+            Key in previous_results[detection_module] containing per-frame feature
+            dicts (default: "features_per_frame").
 
         coord_columns : Sequence[str], optional
             Keys to extract coordinates from each feature; falls back to "centroid" if
@@ -308,7 +310,8 @@ class ParticleTrackingModule(AnalysisModule):
                   Indices into features_per_frame
 
                 - coords : list[Optional[tuple[float, float]]]
-                  Coordinates (coord0, coord1) aligned with frames; None indicates missing detection.
+                  Coordinates (coord0, coord1) aligned with frames; None indicates
+                  missing detection.
 
             - track_masks : dict[int, np.ndarray]
               Last mask per track

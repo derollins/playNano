@@ -79,7 +79,7 @@ a new virtual environment.
  conda activate playnano_env  # Activate the virtual environment
  ```
 
-The simpliest way to install **playNano** is through PyPi using the command:
+The simplest way to install **playNano** is through PyPi using the command:
 
 ```bash
 pip install playnano

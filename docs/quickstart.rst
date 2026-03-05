@@ -9,7 +9,7 @@ the CLI and GUI. For full details see the linked pages (:doc:`installation`, :do
 -------------------------------------------
 
 Ensure you have Anaconda or Miniconda installed (see :doc:`installation` for links) and
-open the terminal (Anaconda PowerShel Pront for Windows).
+open the terminal (Anaconda PowerShell Prompt for Windows).
 
 .. code-block:: bash
 
@@ -50,10 +50,10 @@ own data to view other files. There is a preset processing pipeline can can be
 applied by pressing the "F" key or the "Apply Filters" button in the GUI. You can
 find out more about using the GUI in :doc:`gui`.
 
-Batch process, analyis and export (no GUI):
+Batch process, analysis and export (no GUI):
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For batch processing and analysis the processing and analyis pipelines are run through seperate commands.
+For batch processing and analysis the processing and analysis pipelines are run through separate commands.
 To run these commands on example data, these commands can be run from the project root.
 
 .. code-block:: bash

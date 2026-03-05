@@ -139,7 +139,7 @@ def register_stack_edit_processing() -> dict[str, Callable]:
 
     Keys are names of the operations, values are the functions themselves.
     drop_frames is the operational function takes a 3D stack (n_frames,
-    H, W) and a list of indicies and returns a ndarray. drop_frame_range and
+    H, W) and a list of indices and returns a ndarray. drop_frame_range and
     select_frames are helper functions that return lists of indices to drop
     which can be passed to drop_frames.
     """

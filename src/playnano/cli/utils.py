@@ -74,7 +74,7 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
     ----------
     processing_str : str
         Semicolon-delimited string specifying processing steps.
-        Each step may have optional parameters (seperated by commas) after a colon,
+        Each step may have optional parameters (separated by commas) after a colon,
         e.g., "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
 
     Returns

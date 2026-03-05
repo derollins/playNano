@@ -82,7 +82,7 @@ def test_incomplete_subclass_instantiation_fails():
 
 
 class DummyModule(AnalysisModule):
-    """Dummy module for testing analysis module initilisation."""
+    """Dummy module for testing analysis module initialisation."""
 
     @property
     def name(self):
@@ -346,7 +346,7 @@ def hole_mask(frame: np.ndarray, **kwargs) -> np.ndarray:
 
 
 def test_requires_mask_fn_or_key(stack_1frame_with_timestamps):
-    """Test that module requires either a mask funciton or key."""
+    """Test that module requires either a mask function or key."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
     # Neither mask_fn nor mask_key provided => ValueError
@@ -371,7 +371,7 @@ def test_invalid_data_shape():
 
 
 def test_mask_fn_returns_invalid_shape(stack_1frame_with_timestamps):
-    """Test that mask_fn returns ivalid data shapes raise ValueError."""
+    """Test that mask_fn returns invalid data shapes raise ValueError."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
 
@@ -384,7 +384,7 @@ def test_mask_fn_returns_invalid_shape(stack_1frame_with_timestamps):
 
 
 def test_mask_key_not_in_previous_results(stack_1frame_with_timestamps):
-    """Test that if mask_key not in pervious result KeyError."""
+    """Test that if mask_key not in previous result KeyError."""
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
     # previous_results empty => KeyError
@@ -575,7 +575,7 @@ def test_skip_empty_vals(monkeypatch):
     monkeypatch.setattr(feature_detection, "label", fake_label)
 
     def mask_fn(frame, **kwargs):
-        """Imitate a masking funciton."""
+        """Imitate a masking function."""
         return np.ones_like(frame, dtype=bool)
 
     result = fd.run(stack, mask_fn=mask_fn, min_size=1)

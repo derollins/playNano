@@ -77,7 +77,7 @@ This release introduces video processing, stack editing, multi-version documenta
     - `video_processing` and `stack_edit` modules added.
   - Added internal state backup mechanism (`state_backups` attribute) for preserving
     origonal metadata.
-  - Moved the versioning module for funcitons from the processing subpakage to the utils subpackage.
+  - Moved the versioning module for functions from the processing subpakage to the utils subpackage.
 
 - **Docs Generation**
   - Automatic inclusion of `playNano.analysis.utils.loader`, `playNano.processing.video_processing`, and
@@ -115,7 +115,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
   - **Notebooks**
     - Added a root search function so hard coded paths to demo data from the tests folder
-      can be accessed whereever jupyter is launched from.
+      can be accessed wherever jupyter is launched from.
 
 ### Fixed
 
@@ -131,7 +131,7 @@ This release introduces video processing, stack editing, multi-version documenta
   - Add workflows for pypi publishing
 
 - **Documentation**
-  - Add badges for tests, PyPi python versino and PyPi relases.
+  - Add badges for tests, PyPi python version and PyPi releases.
   - Added links to the documentation and user guide on github pages.
   - Added a PyPi installation guide to the README and user guide.
   - Some general rewriting and improvements

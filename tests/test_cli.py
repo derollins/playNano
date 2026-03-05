@@ -555,7 +555,7 @@ def test_wizard_remove_and_move_valid_analysis(capsys):
             "",  # num_sigma default
             "",  # threshold default
             "",  # overlap default
-            "",  # include radius defualt
+            "",  # include radius default
             "amove 2 1",  # swap positions
             "alist",
             "exit",
@@ -663,7 +663,7 @@ def mock_filters(monkeypatch):
 
 
 def test_parse_processing_string_with_mock(mock_filters):
-    """Test the parseing of the processing steps string input."""
+    """Test the parsing of the processing steps string input."""
     from playnano.cli.utils import parse_processing_string
 
     s = "mock_mask:param1=1; mock_filter:param2=2"
@@ -692,7 +692,7 @@ def test_parse_processing_string_basic(mock_filters):
 
 
 def test_parse_processing_string_with_bools_and_ints(mock_filters):
-    """Test the parsing of bools and intergers from rpocessing strings."""
+    """Test the parsing of bools and integers from rpocessing strings."""
     MASK_MAP["some_mask"] = lambda: None
     s = "remove_plane; some_mask:enabled=true,threshold=5"
     steps = parse_processing_string(s)
@@ -767,7 +767,7 @@ def test_parse_processing_file_invalid_schema(tmp_path):
 
 
 def test_parse_processing_file_invalid_filter_entry(tmp_path):
-    """Test the parsing of a processing file with an invlaid step."""
+    """Test the parsing of a processing file with an invalid step."""
     bad_yaml = tmp_path / "bad.yaml"
     bad_yaml.write_text(yaml.dump({"filters": [{"sigma": 1.0}]}))
     with pytest.raises(ValueError, match="must be a dict containing 'name'"):
@@ -1397,7 +1397,7 @@ def test_handle_aadd_inline_spec(mock_ask_params, wizard_mock_io):
 
 @patch("playnano.cli.actions.ask_for_analysis_params")
 def test_handle_aadd_interactive(mock_ask_params, wizard_mock_io):
-    """Test adding ana nalysis step interactivly."""
+    """Test adding ana nalysis step interactively."""
     wiz = wizard_mock_io
     mock_ask_params.return_value = {"param": 2}
     wiz.io = MagicMock()
@@ -2299,7 +2299,7 @@ def test_get_processing_step_type_unknown():
     ],
 )
 def test_handlers_invalid_indices(tmp_path, handler, args, expected):
-    """Tests that handlers can gracefully handle invlid indices."""
+    """Tests that handlers can gracefully handle invalid indices."""
     io = CaptureIO([])
     wiz = make_wizard(tmp_path, io)
     method = getattr(wiz, handler)
@@ -2455,7 +2455,7 @@ def test_io_ask(monkeypatch):
     inputs = iter(["hello"])
 
     def mock_input(prompt):
-        """Mock the promt input."""
+        """Mock the prompt input."""
         return next(inputs)
 
     monkeypatch.setattr(builtins, "input", mock_input)

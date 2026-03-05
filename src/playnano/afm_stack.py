@@ -178,7 +178,7 @@ class AFMImageStack:
           5. Filter from FILTER_MAP
           6. Video filter from VIDEO_FILTER_MAP
           7. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
-             the stack, the other funcitons return lists of indices to be passed to
+             the stack, the other functions return lists of indices to be passed to
              ``drop_frames`` - this is done within the ProcesssingPipeline)
 
         Parameters
