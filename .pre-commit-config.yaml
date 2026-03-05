@@ -43,7 +43,7 @@ repos:
         exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.18.1
+    rev: v0.10.0
     hooks:
       - id: markdownlint-cli2
         args: [--fix]
