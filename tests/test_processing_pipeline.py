@@ -157,18 +157,20 @@ def test_run_applies_3D_filter_and_plugin(toy_stack, monkeypatch):
 
     # Ensure we called the 3D executor twice and the first call used the original array
     assert toy_stack._execute_video_processing_step.call_count == 2
-    (video_filter_fn_arg, video_filter_arr_arg), video_filter_kwargs = (
-        toy_stack._execute_video_processing_step.call_args_list[0]
-    )
+    (
+        video_filter_fn_arg,
+        video_filter_arr_arg,
+    ), video_filter_kwargs = toy_stack._execute_video_processing_step.call_args_list[0]
 
     assert video_filter_fn_arg == "video_filter_fn"
     np.testing.assert_array_equal(video_filter_arr_arg, original)
     assert video_filter_kwargs == {}
 
     # And the second call receives the once-processed array (original + 10)
-    (video_plugin_fn_arg, video_plugin_arr_arg), video_plugin_kwargs = (
-        toy_stack._execute_video_processing_step.call_args_list[1]
-    )
+    (
+        video_plugin_fn_arg,
+        video_plugin_arr_arg,
+    ), video_plugin_kwargs = toy_stack._execute_video_processing_step.call_args_list[1]
     assert video_plugin_fn_arg == "video_plugin_fn"
     np.testing.assert_array_equal(video_plugin_arr_arg, original + 10)
     assert video_plugin_kwargs == {}
