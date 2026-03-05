@@ -40,7 +40,18 @@ _ANALYSIS_PLUGIN_ENTRYPOINTS = {
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
-SKIP_PARAM_NAMES = {"data", "image", "arr", "mask", "stack", "debug"}
+SKIP_PARAM_NAMES = {
+    "data",
+    "image",
+    "arr",
+    "mask",
+    "stack",
+    "debug",
+    "imarray",
+    "array",
+    "frame",
+    "video",
+}
 
 logger = logging.getLogger(__name__)
 
