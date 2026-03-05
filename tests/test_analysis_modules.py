@@ -992,9 +992,7 @@ def test_fallback_to_requires_latest_available_and_returns_data():
 
 
 def test_preferred_present_is_used_even_if_others_exist():
-    """
-    Test that the preferred detection_module is present, it should be used directly.
-    """
+    """Test that the preferred detection_module is present."""
     tracker = _StubTracker()
     feats1, masks1 = _mk_feats_masks()
     feats2, masks2 = _mk_feats_masks()
