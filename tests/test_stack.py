@@ -1233,7 +1233,7 @@ def test_resolve_step_video_filter(monkeypatch):
 
     # Create a fake filter function
     def fake_filter(arr):
-        """A fake video filter that just returns the input array."""
+        """Fake a video filter that just returns the input array."""
         return arr
 
     # Patch VIDEO_FILTER_MAP to contain a test filter
@@ -1250,6 +1250,7 @@ def test_resolve_step_video_filter(monkeypatch):
 
 
 def test_resolve_step_stack_edit(monkeypatch):
+    """Test that stack edit steps are resolved from STACK_EDIT_MAP."""
     # small dummy stack again
     stack = AFMImageStack(
         data=np.ones((2, 4, 4)),
