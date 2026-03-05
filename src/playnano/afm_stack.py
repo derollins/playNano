@@ -795,32 +795,6 @@ class AFMImageStack:
         with open(path, "w") as f:
             json.dump(self.analysis_results, f, indent=2, cls=NumpyEncoder)
 
-    def _load_plugin(self, name: str):
-        """
-        Load a filter plugin dynamically from entry points under "playnano.filters".
-
-        Parameters
-        ----------
-        name : str
-            Name of the plugin filter to load.
-
-        Returns
-        -------
-        Callable
-            Loaded filter function.
-
-        Raises
-        ------
-        ValueError
-            If the plugin name is not found among entry points.
-        """
-        for ep in metadata.entry_points(group="playnano.filters"):
-            if ep.name == name:
-                logger.debug(f"Loaded plugin '{name}' from {ep.value}")
-                return ep.load()
-
-        raise ValueError(f"Unknown filter plugin: {name}")
-
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """
         Apply a sequence of processing steps to each frame in the AFM image stack.

@@ -4,7 +4,6 @@ import json
 import logging
 import types
 from datetime import datetime
-from importlib import metadata
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
@@ -240,14 +239,7 @@ def test_flatten_images_uses_apply(monkeypatch):
     # 2) What we expect after “flatten”: every pixel = 7.0
     fake_flat = np.full_like(data, 7.0)
 
-    # 3) Patch out any possibility of loading a real plugin:
-    #    Make AFMImageStack._load_plugin(...) return None so
-    # the code falls back to FILTER_MAP.
-    monkeypatch.setattr(
-        "playnano.afm_stack.AFMImageStack._load_plugin", lambda self, name: None
-    )
-
-    # 4) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
+    # 3) Now override the module‐level FILTER_MAP entry for "topostats_flatten"
     # patch _reslve_step to directly return our fake function
     monkeypatch.setattr(
         stack,
@@ -264,32 +256,6 @@ def test_flatten_images_uses_apply(monkeypatch):
     # 7) Also verify that stack.processed["topostats_flatten"] was set to fake_flat
     assert "topostats_flatten" in stack.processed
     np.testing.assert_array_equal(stack.processed["topostats_flatten"], fake_flat)
-
-
-def test_load_plugin(monkeypatch):
-    """Test _load_plugin loads a valid plugin and raises error for unknown plugin."""
-    data = np.ones((2, 2, 2))
-    stack = AFMImageStack(data.copy(), 1.0, "ch", ".", [{}] * 2)
-
-    # Patch metadata.entry_points to mock a plugin
-    fake_ep = Mock()
-    fake_ep.name = "dummy"
-    fake_ep.value = "some.module:dummy"
-    fake_ep.load = Mock(return_value=lambda x: x + 1)
-
-    monkeypatch.setattr(
-        metadata,
-        "entry_points",
-        lambda group=None: [fake_ep] if group == "playnano.filters" else [],
-    )
-
-    plugin_fn = stack._load_plugin("dummy")
-    assert callable(plugin_fn)
-    assert plugin_fn(1) == 2
-
-    # Check error for unknown plugin
-    with pytest.raises(ValueError):
-        stack._load_plugin("not_exist")
 
 
 def test_frames_with_metadata_iterator():
