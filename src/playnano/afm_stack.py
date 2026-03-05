@@ -812,8 +812,8 @@ class AFMImageStack:
         ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.
 
         This is a stateless convenience: applies clear/mask/filter steps in order,
-        snapshots only 'raw' and final data in self.processed, but does not assign
-        unique keys per step or update provenance.
+        snapshots 'raw' and the data after each filter step in self.processed, but does
+        not assign unique keys per step or update provenance.
 
         Parameters
         ----------
@@ -882,12 +882,15 @@ class AFMImageStack:
                     new_arr = getattr(self, "data", arr)
                 arr = new_arr
 
+            # (G) UNRECOGNIZED - should not happen due to _resolve_step
             else:
                 raise ValueError(f"Unsupported step type '{step_type}'.")
 
+            # Store a snapshot in processed dict
+            self.processed[step] = arr.copy()
+
         # 5) Save final output
         self.data = arr
-        self.processed["final"] = arr.copy()
         return arr
 
     def time_for_frame(self, idx: int) -> float:
