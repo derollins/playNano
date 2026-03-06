@@ -758,6 +758,102 @@ def test_two_separate_regions(stack_1frame_with_timestamps):
         assert np.count_nonzero(lm) == 2
 
 
+@pytest.fixture
+def fd():
+    """Return a bare FeatureDetectionModule instance."""
+    return FeatureDetectionModule()
+
+
+def test_separate_touching_zero_radius_returns_input(fd):
+    """selem_radius <= 0 should return the input unchanged."""
+    labeled = np.array([[0, 1, 1], [0, 1, 1], [0, 0, 0]], dtype=np.int32)
+    result = fd._separate_touching_by_opening(labeled, selem_radius=0)
+    np.testing.assert_array_equal(result, labeled)
+
+
+def test_separate_touching_background_only(fd):
+    """All-background mask should return all zeros."""
+    labeled = np.zeros((5, 5), dtype=np.int32)
+    result = fd._separate_touching_by_opening(labeled, selem_radius=1)
+    assert result.sum() == 0
+
+
+def test_separate_touching_single_large_blob_preserved(fd):
+    """A single large blob that survives opening should be relabeled as label 1."""
+    # 10x10 filled square — large enough to survive a radius-1 opening
+    labeled = np.zeros((12, 12), dtype=np.int32)
+    labeled[1:11, 1:11] = 1
+    result = fd._separate_touching_by_opening(labeled, selem_radius=1)
+    unique = np.unique(result)
+    # Background + exactly one object
+    assert set(unique) == {0, 1}
+    # Object pixel count should be close to original (opening may trim edges slightly)
+    assert (result == 1).sum() > 0
+
+
+def test_separate_touching_two_touching_blobs_split(fd):
+    """Two blobs touching along a thin bridge should be split into two labels."""
+    # Two 7x7 squares connected by a single-pixel-wide bridge
+    labeled = np.zeros((7, 20), dtype=np.int32)
+    labeled[:, :7] = 1  # left blob
+    labeled[3, 7:13] = 1  # thin bridge
+    labeled[:, 13:] = 1  # right blob
+    result = fd._separate_touching_by_opening(labeled, selem_radius=2)
+    unique_labels = np.unique(result[result > 0])
+    assert len(unique_labels) == 2
+
+
+def test_separate_touching_small_blob_fallback(fd):
+    """A blob too small to survive opening should fall back to its original shape."""
+    # 3x3 blob — will be entirely eroded by radius-2 opening
+    labeled = np.zeros((10, 10), dtype=np.int32)
+    labeled[4:7, 4:7] = 1
+    orig_area = int((labeled == 1).sum())
+    result = fd._separate_touching_by_opening(
+        labeled, selem_radius=2, max_area_loss=0.6
+    )
+    # Should fall back: area preserved
+    assert (result > 0).sum() == orig_area
+
+
+def test_separate_touching_labels_are_contiguous_from_one(fd):
+    """Output labels should start from 1 and be contiguous integers."""
+    labeled = np.zeros((10, 30), dtype=np.int32)
+    labeled[1:9, 1:9] = 1
+    labeled[1:9, 11:19] = 2
+    labeled[1:9, 21:29] = 3
+    result = fd._separate_touching_by_opening(labeled, selem_radius=1)
+    unique = sorted(np.unique(result[result > 0]))
+    assert unique == list(range(1, len(unique) + 1))
+
+
+def test_separate_touching_output_dtype(fd):
+    """Output array should have dtype int32."""
+    labeled = np.zeros((8, 8), dtype=np.int32)
+    labeled[2:6, 2:6] = 1
+    result = fd._separate_touching_by_opening(labeled, selem_radius=1)
+    assert result.dtype == np.int32
+
+
+def test_separate_touching_output_shape_preserved(fd):
+    """Output shape must match input shape."""
+    labeled = np.zeros((15, 20), dtype=np.int32)
+    labeled[2:8, 2:8] = 1
+    result = fd._separate_touching_by_opening(labeled, selem_radius=1)
+    assert result.shape == labeled.shape
+
+
+def test_separate_touching_max_area_loss_zero_always_fallback(fd):
+    """With max_area_loss=0, any area loss triggers fallback to original shape."""
+    labeled = np.zeros((10, 10), dtype=np.int32)
+    labeled[3:7, 3:7] = 1  # 4x4 blob, opening will trim corners
+    orig_area = int((labeled == 1).sum())
+    result = fd._separate_touching_by_opening(
+        labeled, selem_radius=1, max_area_loss=0.0
+    )
+    assert (result > 0).sum() == orig_area
+
+
 # --- Tests for particle_tracking ---
 
 
