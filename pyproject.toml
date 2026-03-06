@@ -68,6 +68,7 @@ dependencies = [
   "python-dateutil>=2.8",
   "scipy",
   "scikit-learn",
+  "scikit-image",
   "pyyaml>=6.0",
   "PySide6>=6.5",
 ]

@@ -150,6 +150,7 @@ This project requires the following Python packages:
 - `matplotlib`
 - `scipy`
 - `scikit-learn`
+- `scikit-image`
 - `python-dateutil`
 - `tifffile`
 - `pyyaml`
