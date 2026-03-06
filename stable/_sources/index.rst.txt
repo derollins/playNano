@@ -6,7 +6,7 @@ and exporting high-speed AFM (HS-AFM) time-series data.
 
 *playNano* provides a reproducible, provenance-aware workflow for handling AFM
 videos from raw instrument files to flattened, filtered, and analysed outputs.
-The toolkit includes a command-line interface (CLI), an interactive GUI for viewing
+The toolkit includes a command-line interface (CLI), an interactive GUI for veiwing
 data, and a modular analysis system that supports both built-in and custom extensions.
 
 .. image:: images/GUI_window.png

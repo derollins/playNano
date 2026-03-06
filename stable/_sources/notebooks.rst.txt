@@ -15,7 +15,7 @@ need adjusting in order to process a high-speed dataset. The notebooks can be fo
 cloning the GitHub repository.
 
 To access these notebooks you will need to clone the **playNano** repository from [GitHub](https://github.com/derollins/playNano)
-and install the optional notebook dependencies using ``pip install .[notebooks]``.
+and install the optional notebook dependancies using ``pip install .[notebooks]``.
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ Once installed Jupyter can be launched from the command line.
 This will open a browser window where you can navigate to the `notebooks/` directory and open the
 notebooks.
 
-Run each cell in the notebooks sequentially to see the workflow in action. Initially example data from
+Run each cell in the notebooks sequentially to see the workflow in action. Intially example data from
 the test folder is used however you can change the paths to examine your own data and modify the processing
 and analysis steps to begin to analyse your data.
 

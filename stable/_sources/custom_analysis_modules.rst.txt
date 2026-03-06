@@ -5,7 +5,7 @@ You can extend **playNano** by writing your own analysis modules and registering
 them as plugins. This allows you to integrate custom feature detectors, tracking
 methods, or specialised statistics into the standard pipeline.
 
-Structure and Requirements
+Stucture and Requirements
 -------------------------
 
 Custom modules must subclass :class:`playnano.analysis.base.AnalysisModule` and
@@ -63,8 +63,7 @@ declare this using the ``requires`` class attribute:
 
 This ensures the pipeline provides access to upstream results.
 
-This isn't fully fleshed out so if you encounter any issues please raise and issue on GitHub.
-https://github.com/derollins/playNano/issues
+This isn't fully fleshed out so if you encounter any isssue please raise and issue on GitHub.
 
 Registering the Module
 ----------------------
