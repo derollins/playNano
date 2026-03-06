@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from importlib.resources import files
 
-# Allow compatability with Python 3.10
+# Allow compatibility with Python 3.10
 try:
     from datetime import UTC
 except ImportError:

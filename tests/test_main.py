@@ -61,7 +61,7 @@ def test_load_jpk_file(resource_path):
     """
     Test loading a .jpk folder returns a valid AFMImageStack.
 
-    Alternativly this is skipped on NumPy 2.x.
+    Alternatively this is skipped on NumPy 2.x.
     """
     folder = resource_path / "jpk_folder_0"
 

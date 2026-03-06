@@ -92,7 +92,7 @@ def get_loader_for_file(
     Returns
     -------
     (str, callable)
-        The file extention string and the loader function for the file.
+        The file extension string and the loader function for the file.
 
     Raises
     ------

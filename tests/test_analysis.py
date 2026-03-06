@@ -1,4 +1,4 @@
-"""Tests for the analsyis functions other than the pipeline."""
+"""Tests for the analysis functions other than the pipeline."""
 
 import json
 import os
@@ -68,7 +68,7 @@ def test_export_analysis_to_json_creates_file_and_dir():
 
 
 def test_gather_environment_info_contains_expected_keys():
-    """Test that enviroment info is gathered."""
+    """Test that environment info is gathered."""
     info = system_info.gather_environment_info()
 
     assert "timestamp" in info

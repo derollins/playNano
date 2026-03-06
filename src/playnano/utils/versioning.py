@@ -1,4 +1,4 @@
-"""Module for applying verision numbes to filters and masks."""
+"""Module for applying version numbers to filters and masks."""
 
 
 def versioned_filter(version: str):

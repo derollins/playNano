@@ -701,7 +701,7 @@ def test_save_h5_bundle_creates_file(dummy_stack):
 
 
 def test_export_bundles_all_formats_unfiltered(afm_stack_obj):
-    """Test that export bundles exports raw data without _filtered sufix."""
+    """Test that export bundles exports raw data without _filtered suffix."""
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir)
         export_bundles(afm_stack_obj, out_dir, "test_stack", ["tif", "npz", "h5"])
