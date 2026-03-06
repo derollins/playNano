@@ -1,16 +1,28 @@
 """
 Threshold-based feature detection for AFM image stacks.
 
-This is a playNano analysis module for analyzing processed high- speed AFM
-data. This implements a concrete subclass of the abstract `AnalysisModule`
-base class.
+This is a playNano analysis module implementing a concrete subclass of the
+abstract `AnalysisModule` base class. It detects contiguous features in each
+frame of an AFM image stack using user-provided or precomputed masks, with
+optional hole filling, morphological separation, size and edge filtering, and
+per-feature statistics extraction.
 
-This module detects contiguous features in each frame of an AFM image stack
-using user-provided or precomputed masks. It performs optional hole filling,
-morphological separation, size and edge filtering, and extracts per-feature
-statistics for each frame.
+See Also
+--------
+playnano.analysis.modules.log_blob_detection : LoG-based alternative detection method.
+playnano.analysis.modules.particle_tracking : Links detected features across frames.
 
-Author: Daniel E. Rollins (d.e.rollins@leed.ac.uk) / Github: derollins
+.. versionadded:: 0.2.0
+
+Author
+------
+Daniel E. Rollins (d.e.rollins@leeds.ac.uk) / GitHub: derollins
+
+AI Transparency Note
+--------------------
+AI-based tools were used for limited typing/formatting assistance
+and for debugging, refactoring, and documentation suggestions. All code paths,
+algorithms, and final behaviour were reviewed and validated by the author.
 """
 
 import inspect

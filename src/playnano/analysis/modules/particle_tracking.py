@@ -15,6 +15,23 @@ Each resulting track includes:
     - A list of coordinates describing the particle's positions
 
 Optionally, per-track masks are extracted from the labeled feature masks.
+
+See Also
+--------
+playnano.analysis.modules.feature_detection : Mask based particle detection method.
+playnano.analysis.modules.log_blob_detection : LoG-based particle detection method.
+
+.. versionadded:: 0.2.0
+
+Author
+------
+Daniel E. Rollins (d.e.rollins@leeds.ac.uk) / GitHub: derollins
+
+AI Transparency Note
+--------------------
+AI-based tools were used for limited typing/formatting assistance
+and for debugging, refactoring, and documentation suggestions. All code paths,
+algorithms, and final behaviour were reviewed and validated by the author.
 """
 
 from typing import Any, Optional, Sequence
@@ -139,7 +156,9 @@ class ParticleTrackingModule(AnalysisModule):
         try:
             return tuple(float(f[k]) for k in coord_columns)
         except KeyError:
-            c = f.get("centroid")
+            c = f.get(
+                "centroid"
+            )  # 'centroid' is an output of playnano.analysis.modules.feature_detection
             if not c or len(c) < 2:
                 raise KeyError(
                     f"Missing coordinate keys {coord_columns} and fallback 'centroid'"

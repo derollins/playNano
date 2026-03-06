@@ -8,6 +8,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Processing Plugins**
+  - Support for 3D stack plugins via the `playnano.video_processing` entry point,
+    alongside the existing `playnano.filters` entry point for 2D frame plugins.
+  - CLI and wizard now recognise and expose video plugins as a step type.
+
+- **Feature Detection**
+  - `morph_opening` and `sep_radius` parameters added to `FeatureDetectionModule`
+    to optionally separate touching or overlapping particles using morphological opening.
+
+- **Particle Tracking**
+  - `max_missing` parameter: tracks can now persist across frames with missing
+    detections (default: 0, preserving previous behaviour).
+  - `distance_scale` parameter: distance threshold can now be scaled with time since
+    last detection using `"constant"` (default), `"linear"`, or `"sqrt"` modes.
+
+- **Video Processing**
+  - `pad` parameter added to `intersection_crop` and `crop_square`, allowing outward
+    expansion of the crop region beyond the finite-pixel intersection, filled with NaN.
+
+- **CI**
+  - Pre-commit and test workflows now also trigger on `dev` branch pull requests.
+  - Test workflow supports `workflow_dispatch` for manual triggering.
+
+- `CONTRIBUTING.md` covering development setup, project structure, code style,
+  type hint and docstring requirements, branching workflow, and guidance on contributing
+  analysis modules and processing plugins.
+
+### Changed
+
+- **Breaking: Particle Tracking output**
+  - Track key renamed from `centroids` to `coords`.
+  - Tracks now use a dense representation spanning first to last detection; frames
+    with missing detections have `None` entries in `coords` and `point_indices`.
+  - Migration: replace `track["centroids"]` with `track["coords"]` and handle
+    `None` entries where `max_missing > 0`.
+
+- **Breaking: `flatten_particle_features` output columns**
+  - `mean_intensity`, `min_intensity`, `max_intensity` renamed to `mean`, `min`, `max`.
+  - Migration: update any downstream code or saved pipelines referencing the old names.
+
+- **Breaking: `intersection_crop` and `crop_square` metadata**
+  - `bounds` key replaced by `intersection_bounds` (exclusive-end coordinates).
+  - New keys added: `intersection_shape`, `requested_bounds`, `applied_pad`, `pad_param`.
+  - Migration: replace `meta["bounds"]` with `meta["intersection_bounds"]`.
+
+- **Internal API**
+  - `_load_plugin` and `_get_plugin_version` removed from `AFMImageStack`; plugin
+    loading is now handled entirely through `_resolve_step`.
+  - `apply()` now snapshots results for all step types (video filters, stack edits,
+    methods), not only 2D filters.
+
+- **Tooling**
+  - Pre-commit Python version pinned to 3.11; demo notebook kernels updated to 3.11.
+  - `markdownlint-cli2` downgraded to v0.10.0 as a workaround for a CI dependency
+    conflict (to be revisited in a future release).
+  - Author name updated to "Daniel E. Rollins" in `pyproject.toml`.
+
+### Fixed
+
+- Numerous typos corrected across docstrings, inline comments, docs, and tests.
+- CLI `SKIP_PARAM_NAMES` expanded to avoid exposing internal array parameter names
+  (`imarray`, `array`, `frame`, `video`) in the interactive wizard.
+
+### Documentation
+
+- API reference restructured with captioned sections: Core, Analysis, Analysis Modules,
+  Processing, IO, CLI, GUI.
+- Module-level docstrings added/improved for `feature_detection` and
+  `particle_tracking`, including `See Also` cross-references, version info, and
+  AI transparency notes.
+- `processing.rst` updated to document the `playnano.video_processing` plugin entry
+  point and link to the plugins repository.
+- Various improvements to quickstart, processing, and notebook documentation.
+
 ## [0.2.2]
 
 ### Fixed

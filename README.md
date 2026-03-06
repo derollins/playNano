@@ -85,23 +85,9 @@ The simplest way to install **playNano** is through PyPi using the command:
 pip install playnano
 ```
 
-Alternatively clone the repository from GitHub into a new folder:
-
-```bash
-git clone https://github.com/derollins/playNano.git
-cd playNano
-```
-
-Then install in editable mode:
-
-```bash
-pip install -e .
-```
-
-Key dependencies (install via pip install -e .): numpy, h5py, Pillow, matplotlib,
-scipy, scikit-learn, python-dateutil, tifffile, AFMReader.
-
 More information on installation is available in the documentation: <https://derollins.github.io/playNano/main/installation.html>
+
+For development setup see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 🚀 Quickstart
 
@@ -131,14 +117,14 @@ playnano process ./tests/resources/sample_0.h5-jpk \
 See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/main/cli.html),
 [GUI guide](https://derollins.github.io/playNano/main/gui.html), filters, YAML schemas, and examples.
 
-## Notebooks
+## 📒 Notebooks
 
 <p align="center">
   <img src="docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
 </p>
 
 To access and use the [Notebooks](https://derollins.github.io/playNano/main/notebooks.html) you need to clone the
-repository and install the required dependencies `pip install -e .[notebooks]' see the docs page for more
+repository and install the required dependencies `pip install -e .[notebooks]` see the docs page for more
 details and full instructions: <https://derollins.github.io/playNano/main/notebooks.html>
 
 Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks\ folder. These
@@ -146,31 +132,31 @@ notebooks allow the user to experiment with using **playNano** programmatically 
 pipelines interactively and with rapid feedback on the parameters that may need adjusting in order to process
 a high-speed dataset.
 
-## ⚠️ Notes
+## 🤝 Contributing
 
-- Make sure the input file includes valid metadata like line_rate, or GIF generation may fail.
-
-- If --channel is incorrect or missing from the file, you’ll receive an error.
-
-- For .h5-jpk, .asd and other multi-frame formats, a single file is loaded. For formats like .jpk or .spm, provide a
-    folder containing the frame files.
+Contributions are welcome — bug reports, new features, processing plugins, and analysis modules.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style requirements, and guidance
+on how to contribute analysis modules and processing plugins either directly or via the
+[playNano-plugins](https://github.com/derollins/playNano-plugins) repository.
 
 ## 🧩 Dependencies
 
 This project requires the following Python packages:
 
 - `numpy`
+- `pandas`
 - `h5py`
 - `Pillow`
 - `matplotlib`
-- `opencv-python`
 - `scipy`
 - `scikit-learn`
 - `python-dateutil`
 - `tifffile`
+- `pyyaml`
+- `PySide6` — for the GUI
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
 
-## 🤝 Related Software
+## 🔗 Related Software
 
 These are some software packages that have helped and inspired this project:
 
@@ -191,6 +177,11 @@ factor. Within playNano this library is used to open the folder-based AFM video 
 A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and
 high-speed AFM videos. Featuring mask analysis, particle detection and tracking, it also
 integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
+
+NOW AVAILABLE: The masking, levelling and auto levelling routines rewritten in Python can be found
+here: [Python-NanoLocz-Library](https://github.com/derollins/Python-Nanolocz-Library).
+This project also contains playNano entry points so can be used directly when installed in the same
+environment as playNano.
 
 ## 📜 License
 
@@ -216,6 +207,12 @@ If you use **playNano** in academic work, please cite it as:
 ```
 
 </details>
+
+## AI Transparency Note
+
+AI-based tools were used for limited typing/formatting assistance
+and for debugging, refactoring, and documentation suggestions. All code paths,
+algorithms, and final behaviour were reviewed and validated by the author.
 
 ## Included Fonts
 
