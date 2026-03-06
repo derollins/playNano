@@ -33,7 +33,7 @@ Quick links
 - :doc:`exporting` - exporting data and GIFs from CLI, GUI, or programmatically
 - :doc:`analysis` - running analysis modules and provenance
    - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
-- :doc:`whats_new/v0.1.0` - highlights of the latest release
+- :doc:`whats_new/v0.3.0` - highlights of the latest release
 - :doc:`changelog` - release notes and history
 
 Quickstart (example)

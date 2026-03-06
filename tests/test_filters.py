@@ -73,15 +73,9 @@ def test_polynomial_flatten_various_orders():
 
     # Generate data: plane + quadratic + cubic terms
     data_linear = 3 + 2 * X + 5 * Y  # order=1 exact
-    data_quadratic = (
-        data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2
-    )  # order=2 exact
+    data_quadratic = data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2  # order=2 exact
     data_cubic = (
-        data_quadratic
-        + 0.1 * X**3
-        - 0.2 * X**2 * Y
-        + 0.3 * X * Y**2
-        - 0.4 * Y**3
+        data_quadratic + 0.1 * X**3 - 0.2 * X**2 * Y + 0.3 * X * Y**2 - 0.4 * Y**3
     )  # order=3 exact
 
     # Test order=1 flattening recovers zero residual for linear surface
@@ -120,24 +114,6 @@ def test_zero_mean_no_mask():
     zeroed = filters.zero_mean(data)
     # mean of output should be zero
     assert abs(np.mean(zeroed)) < 1e-12
-
-
-def test_zero_mean_with_mask():
-    """Test the zero_mean function with a mask."""
-    data = np.array([[1, 2], [3, 4]], dtype=float)
-    mask = np.array([[False, True], [False, False]])
-    zeroed = filters.zero_mean(data, mask=mask)
-    # mean of unmasked pixels should be ~0
-    assert np.allclose(np.mean(zeroed[~mask]), 0)
-    # masked pixels unaffected by mean calc
-
-
-def test_zero_mean_mask_all_masked():
-    """Test the error for zero_mean when all pixels are masked."""
-    data = np.ones((3, 3))
-    mask = np.ones_like(data, dtype=bool)  # all True, exclude all pixels
-    with pytest.raises(ValueError):
-        filters.zero_mean(data, mask=mask)
 
 
 def test_gaussian_filter_smooths():
@@ -424,13 +400,15 @@ def test_zero_mean_masked_basic():
 
     result = zero_mean_masked(data, mask)
     np.testing.assert_allclose(result, expected)
+    # mean of unmasked pixels should be ~0
+    assert np.allclose(np.mean(result[~mask]), 0)
 
 
 def test_zero_mean_masked_all_foreground():
     """Test that error is raised if whole image is masked."""
     data = np.ones((2, 2))
     mask = np.ones_like(data, dtype=bool)  # all foreground
-    with pytest.raises(ValueError, match="No background pixels"):
+    with pytest.raises(ValueError, match="Mask excludes all pixels"):
         zero_mean_masked(data, mask)
 
 
