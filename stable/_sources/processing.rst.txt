@@ -4,7 +4,7 @@ Processing
 Overview
 --------
 
-The ``playnano.processing`` subpackage provides tools for preparing AFM time-series
+The ``playnano.processing`` subpackage provides tools for processing AFM time-series
 data for viewing and analysis. It includes functions for levelling, filtering,
 masking, alignment, and trimming. These
 :doc:`operations <processing-operations-reference>` are modular and composable,
@@ -98,8 +98,9 @@ Operation Types
 ^^^^^^^^^^^^^^^
 
 - **Filters (2D frame operations)** — modify individual frames (e.g. flattening,
-  smoothing). Accept 2D NumPy arrays and return float arrays. Masked regions (if
-  defined by a preceding mask operation) are excluded automatically.
+  smoothing). Filter functions accept 2D NumPy arrays and return 2D NumPy float arrays.
+  Some filters can also accept a mask (if defined by a preceding mask operation)
+  and masked regions are excluded automatically from the filter calculation.
 - **Masks (2D binary operations)** — generate boolean masks to exclude regions from
   filters or analysis. Masks are combined via logical OR. Use ``clear`` to reset.
 - **Video Processing (3D stack operations)** — apply transformations across full
@@ -139,8 +140,12 @@ See :doc:`processing-operations-reference` for a full list.
 Plugins
 ^^^^^^^
 
-Custom filters can be added via entry points under ``playnano.filters``. Any callable
-that accepts a 2D NumPy array and returns a processed array can be registered.
+Custom filters can be added via entry points under ``playnano.filters`` for 2D frame
+operations or ``playnano.video_processing`` for 3D stack operations. Any callable
+that accepts a 2D or 3D NumPy array and returns a processed array of the same
+dimensionality can be registered by defining an entry point in the package's
+``pyproject.toml``. This allows seamless integration of custom processing functions
+into **playNano** processing pipelines, appearing alongside built-in operations.
 
 Example ``pyproject.toml`` snippet:
 
@@ -149,6 +154,9 @@ Example ``pyproject.toml`` snippet:
    [project.entry-points."playnano.filters"]
    my_plugin = "my_pkg.module:my_filter"
 
+   [project.entry-points."playnano.video_processing"]
+   my_3D_plugin = "my_pkg.module:my_3D_filter"
+
 Example plugin function:
 
 .. code-block:: python
@@ -156,9 +164,18 @@ Example plugin function:
    def my_filter(frame: np.ndarray, **kwargs) -> np.ndarray:
        """Process a 2D array and return a filtered version."""
 
+When the package with this plugin is installed in the same environment as **playNano**,
+it appears in the same CLI/API list as the built-in filters.
 
-When the plugin is installed, it appears in the same CLI/API list as the
-built-in filters.
+A repository of optional **playNano** plugins is available at:
+https://github.com/derollins/playNano-plugins
+
+Several projects also have the required entry points and can be installed to add new
+filters:
+
+- **Python-Nanolocz_Library** (``pnanolocz``) — collection of AFM processing functions,
+  including flattening and filtering with automated routines.
+  https://github.com/derollins/Python-Nanolocz-Library
 
 CLI / GUI Usage
 ---------------
