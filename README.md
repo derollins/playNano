@@ -39,7 +39,7 @@ Learn more about the motivation, design, and structure of playNano in the [Intro
 
 </div>
 
-This project requires Python 3.10 or newer and is in development. If you find any issues, please open an issue at:
+This project requires Python 3.10 - 3.12 and is in development. If you find any issues, please open an issue at:
 <https://github.com/derollins/playNano/issues>
 
 Questions? Email: <d.e.rollins@leeds.ac.uk>
@@ -150,6 +150,7 @@ This project requires the following Python packages:
 - `matplotlib`
 - `scipy`
 - `scikit-learn`
+- `scikit-image`
 - `python-dateutil`
 - `tifffile`
 - `pyyaml`

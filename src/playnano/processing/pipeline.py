@@ -392,7 +392,7 @@ class ProcessingPipeline:
             )
         elif step_type in {"video_filter", "video_plugin"}:
             return self._handle_video_filter_step(
-                step_idx, step_name, fn, arr, step_record, kwargs
+                step_idx, step_name, fn, arr, mask, step_record, kwargs
             )
         elif step_type == "stack_edit":
             return self._handle_stack_edit_step(
@@ -605,12 +605,19 @@ class ProcessingPipeline:
         Parameters
         ----------
         step_idx : int
+            Index of the step within the pipeline.
         step_name : str
+            Name of the filter function being executed.
         fn : callable
+            The filter function to apply.
         arr : np.ndarray
+            Input 3D image stack or 2D frame array.
         mask : np.ndarray or None
+            Any masks present in the pipeline, not used but passed.
         step_record : dict
+            Provenance record to update.
         kwargs : dict
+            Additional keyword arguments for the filter function.
 
         Returns
         -------
@@ -641,6 +648,7 @@ class ProcessingPipeline:
         step_name: str,
         fn,
         arr: np.ndarray,
+        mask: Optional[np.ndarray],
         step_record: dict[str, Any],
         kwargs: dict[str, Any],
     ) -> Tuple[np.ndarray, Optional[dict]]:
@@ -657,9 +665,11 @@ class ProcessingPipeline:
         step_name : str
             Name of the filter function being executed.
         fn : callable
-            The filter function to apply.
+            The video filter function (built in or plugin) to apply.
         arr : np.ndarray
             Input 3D image stack or 2D frame array.
+        mask : np.ndarray or None
+            Any masks present in the pipeline, not used but passed.
         step_record : dict
             Provenance record to update.
         kwargs : dict
@@ -669,8 +679,15 @@ class ProcessingPipeline:
         -------
         new_arr : np.ndarray
             The filtered array.
-        metadata : dict or None
-            Metadata returned by the filter function, if available.
+        mask : np.ndarray or None
+            Mask if present
+
+        Notes
+        -----
+        Although masks are not currently supported for video filters any masks present
+        are passed to align with the other handling functions.
+        Video filter output metadata is not returned but is saved in provenance as
+        a side effect.
         """
         try:
             result = self.stack._execute_video_processing_step(fn, arr, **kwargs)
@@ -695,7 +712,7 @@ class ProcessingPipeline:
         }
 
         self._record_step(step_record)
-        return new_arr, metadata
+        return new_arr, mask
 
     def _handle_stack_edit_step(
         self,

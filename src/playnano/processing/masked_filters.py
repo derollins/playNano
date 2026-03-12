@@ -157,32 +157,45 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return aligned
 
 
-@versioned_filter("0.1.0")
-def zero_mean_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
+@versioned_filter("0.2.0")
+def zero_mean_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
-    Subtract the mean of background pixels (mask==False) from the entire image.
+    Subtract the overall mean height to center the background around zero.
+
+    If a mask is provided, mean is computed only over background (mask == False).
 
     Parameters
     ----------
     data : np.ndarray
-        2D AFM image.
-    mask : np.ndarray
-        Boolean mask of same shape; True=foreground, False=background.
+        2D AFM image data.
+    mask : np.ndarray, optional
+        Boolean mask of same shape as data; True indicates region to exclude from mean.
 
     Returns
     -------
     np.ndarray
-        Image with zero-mean background.
+        Zero-mean image.
     """
-    if mask.shape != data.shape:
-        raise ValueError("Mask must have same shape as data.")
-
-    bg_idx = ~mask
-    if np.count_nonzero(bg_idx) == 0:
-        raise ValueError("No background pixels to compute mean.")
-
-    mean_val = np.mean(data[bg_idx])
-    return data.astype(np.float64) - mean_val
+    img = data.astype(np.float64).copy()
+    if mask is None:
+        logger.warning(
+            "Masked zero_mean filter selected but no mask found. Applying unmasked."
+        )
+        mean_val = np.mean(img)
+    else:
+        if mask.shape != img.shape:
+            raise ValueError("Mask must have same shape as data.")
+        # Compute mean over background (where mask is False)
+        unmasked = img[~mask]
+        if unmasked.size == 0:
+            mean_val = np.mean(img)
+            raise ValueError(
+                "Mask excludes all pixels — cannot compute mean. "
+                "zero_mean applied without mask."
+            )
+        mean_val = np.mean(unmasked)
+    logger.debug(f"Mean value calculated: {mean_val}. Subtracting.")
+    return img - mean_val
 
 
 def register_mask_filters():

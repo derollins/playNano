@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-12
+
+### Fixed
+
+- Resolved incorrect mask output in video processing pipeline.
+  Video filter functions that return (array, metadata) were previously interpreted as (array, mask),
+  causing metadata to be mis‑assigned as a mask and leading to failures in pipelines using mask‑aware steps.
+
+### Changed
+
+- Updated `ProcessingPipeline._handle_video_filter_step()` to accept mask as an explicit optional parameter,
+  ensuring its correct propagation through `run()` / `_run_single_step()` without overloading metadata as mask data.
+- Metadata from video‑filter functions is now stored only in `step_record` as a side effect and is no longer returned
+  as a mask-like object.
+- Added debug‑level logging for clearer diagnosis of mask‑related failures.
+- Updated the test suite to:
+  - reflect the new behaviour of mask passthrough in _handle_video_filter_step(),
+  - confirm that metadata is recorded correctly,
+  - ensure mask value is preserved through video filter steps.
+- Removed mask handling from filters.zero_mean() and improved robustness of masked_filter.zero_mean_masked() to make
+  each function role‑specific.
+- Incremented version numbers to reflect these changes.
+- Updated docstrings for clarity and corrected supported Python versions in the README.
+
+## [0.3.0] - 2026-03-06
+
 ### Added
 
 - **Processing Plugins**
@@ -274,3 +300,5 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
 [0.2.1]: https://github.com/derollins/playNano/releases/tag/v0.2.1
 [0.2.2]: https://github.com/derollins/playNano/releases/tag/v0.2.2
+[0.3.0]: https://github.com/derollins/playNano/releases/tag/v0.3.0
+[0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1

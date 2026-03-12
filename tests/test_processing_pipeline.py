@@ -807,19 +807,20 @@ def test_handle_video_filter_step(toy_stack, monkeypatch):
 
     # monkeypatch stack method
     monkeypatch.setattr(toy_stack, "_execute_video_processing_step", fake_video_fn)
-
-    out, meta = pipeline._handle_video_filter_step(
+    mask = toy_stack.data > 0.5
+    out, out_mask = pipeline._handle_video_filter_step(
         step_idx=1,
         step_name="video_filter_test",
         fn=fake_video_fn,
         arr=toy_stack.data,
+        mask=mask,
         step_record=step_record,
         kwargs=kwargs,
     )
 
     # verify output array and mask
     np.testing.assert_array_equal(out, data + 1)
-    assert meta == {}
+    np.testing.assert_array_equal(out_mask, mask)
 
     # verify processed key added
     key = "step_1_video_filter_test"

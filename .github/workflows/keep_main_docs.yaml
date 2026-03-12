@@ -1,33 +1,22 @@
 name: Keep Main Docs Alive
-# This workflow creates a dummy commit on the main branch after a new version tag is pushed.
-# This ensures that the documentation for the main branch remains up-to-date after releases.
 
 on:
   push:
     tags:
       - 'v*.*.*'
 
-env:
-  GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
 jobs:
-  keep-main-alive:
+  trigger-main-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v3
+      - name: Trigger docs workflow for main
+        uses: actions/github-script@v7
         with:
-          ref: main
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Create dummy commit
-        run: |
-          echo "# Keep main alive" > .docs_trigger
-          git add -f .docs_trigger
-          git commit -m "chore: keep main docs alive post-release"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
-          git push origin main
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docs.yaml',
+              ref: 'main'
+            })
