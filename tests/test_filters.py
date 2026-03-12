@@ -413,7 +413,7 @@ def test_zero_mean_masked_basic():
 
 
 def test_zero_mean_masked_no_mask(caplog):
-    """Test warning is logged zero_mean output returned when no mask is supplied"""
+    """Test warning is logged zero_mean output returned when no mask is supplied."""
     # Simple 3x3 image
     caplog.set_level(logging.WARNING, logger="playnano.processing.masked_filters")
 

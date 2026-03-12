@@ -684,9 +684,9 @@ class ProcessingPipeline:
 
         Notes
         -----
-        Although masks are not currently suported for video filters any masks present
+        Although masks are not currently supported for video filters any masks present
         are passed to align with the other handling functions.
-        Metadata is not returned but is saved in provenance.
+        Video filter output metadata is not returned but is saved in provenance as a side effect.
         """
         try:
             result = self.stack._execute_video_processing_step(fn, arr, **kwargs)
