@@ -347,6 +347,35 @@
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <section id="unreleased">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/compare/v0.1.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h3>
+<section id="fixed">
+<h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Resolved incorrect mask output in video processing pipeline.
+Video filter functions that return (array, metadata) were previously interpreted as (array, mask),
+causing metadata to be mis‑assigned as a mask and leading to failures in pipelines using mask‑aware steps.</p></li>
+</ul>
+</section>
+<section id="changed">
+<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Updated <code class="docutils literal notranslate"><span class="pre">ProcessingPipeline._handle_video_filter_step()</span></code> to accept mask as an explicit optional parameter,
+ensuring its correct propagation through <code class="docutils literal notranslate"><span class="pre">run()</span></code> / <code class="docutils literal notranslate"><span class="pre">_run_single_step()</span></code> without overloading metadata as mask data.</p></li>
+<li><p>Metadata from video‑filter functions is now stored only in <code class="docutils literal notranslate"><span class="pre">step_record</span></code> as a side effect and is no longer returned
+as a mask-like object.</p></li>
+<li><p>Added debug‑level logging for clearer diagnosis of mask‑related failures.</p></li>
+<li><p>Updated the test suite to:</p>
+<ul>
+<li><p>reflect the new behaviour of mask passthrough in _handle_video_filter_step(),</p></li>
+<li><p>confirm that metadata is recorded correctly,</p></li>
+<li><p>ensure mask value is preserved through video filter steps.</p></li>
+</ul>
+</li>
+<li><p>Removed mask handling from filters.zero_mean() and improved robustness of masked_filter.zero_mean_masked() to make
+each function role‑specific.</p></li>
+<li><p>Incremented version numbers to reflect these changes.</p></li>
+<li><p>Updated docstrings for clarity and corrected supported Python versions in the README.</p></li>
+</ul>
+</section>
 </section>
 <section id="id1">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.0">0.3.0</a> - 2026-03-06<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
@@ -391,8 +420,8 @@ type hint and docstring requirements, branching workflow, and guidance on contri
 analysis modules and processing plugins.</p></li>
 </ul>
 </section>
-<section id="changed">
-<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<section id="id2">
+<h4>Changed<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Breaking: Particle Tracking output</strong></p>
 <ul>
@@ -434,8 +463,8 @@ conflict (to be revisited in a future release).</p></li>
 </li>
 </ul>
 </section>
-<section id="fixed">
-<h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<section id="id3">
+<h4>Fixed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Numerous typos corrected across docstrings, inline comments, docs, and tests.</p></li>
 <li><p>CLI <code class="docutils literal notranslate"><span class="pre">SKIP_PARAM_NAMES</span></code> expanded to avoid exposing internal array parameter names
@@ -456,10 +485,10 @@ point and link to the plugins repository.</p></li>
 </ul>
 </section>
 </section>
-<section id="id2">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
-<section id="id3">
-<h4>Fixed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<section id="id4">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<section id="id5">
+<h4>Fixed<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Resolved a bug where the <code class="docutils literal notranslate"><span class="pre">clear</span></code> processing step unintentionally replaced <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>
 with an invalid or uninitialised array, causing corrupted or excessively large
@@ -471,8 +500,8 @@ returned by regionprops were interpreted as (row, col) but incorrectly assigned 
 Improved robustness of GIF frame generation when AFM data contains missing or extreme Z-values.</p></li>
 </ul>
 </section>
-<section id="id4">
-<h4>Changed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<section id="id6">
+<h4>Changed<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Normalization step now uses np.nan_to_num and np.clip to ensure all values are within the valid
 range before casting.</p></li>
@@ -484,8 +513,8 @@ range before casting.</p></li>
 </li>
 </ul>
 </section>
-<section id="id5">
-<h4>Added<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<section id="id7">
+<h4>Added<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Safe normalization logic for GIF export in create_gif_with_scale_and_timestamp to handle NaN, inf,
 and out-of-range values before casting to np.uint8.</p></li>
@@ -500,10 +529,10 @@ and out-of-range values before casting to np.uint8.</p></li>
 </ul>
 </section>
 </section>
-<section id="id6">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
-<section id="id7">
-<h4>Changed<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<section id="id8">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<section id="id9">
+<h4>Changed<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Package renames to all lowercase <code class="docutils literal notranslate"><span class="pre">playnano</span></code> to follow PEP8 and prevent cross-platform
 issues with case-sensitivity.</p></li>
@@ -518,11 +547,11 @@ to playnano.*.</p></li>
 </ul>
 </section>
 </section>
-<section id="id8">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<section id="id10">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
 <p>This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.</p>
-<section id="id9">
-<h4>Added<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<section id="id11">
+<h4>Added<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -566,8 +595,8 @@ origonal metadata.</p></li>
 </li>
 </ul>
 </section>
-<section id="id10">
-<h4>Changed<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<section id="id12">
+<h4>Changed<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -615,8 +644,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </li>
 </ul>
 </section>
-<section id="id11">
-<h4>Fixed<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<section id="id13">
+<h4>Fixed<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -629,8 +658,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </section>
 <section id="post1-2025-10-14">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0.post1">0.1.0.post1</a> - 2025-10-14<a class="headerlink" href="#post1-2025-10-14" title="Link to this heading">¶</a></h3>
-<section id="id12">
-<h4>Changed<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
+<section id="id14">
+<h4>Changed<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>GitHub</strong></p>
 <ul>
@@ -648,10 +677,10 @@ can be accessed wherever jupyter is launched from.</p></li>
 </ul>
 </section>
 </section>
-<section id="id13">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
-<section id="id14">
-<h4>Added<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
+<section id="id15">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
+<section id="id16">
+<h4>Added<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>First public release 🎉</p></li>
 <li><p><strong>AFM data loading &amp; playback</strong></p>
@@ -714,14 +743,14 @@ for quick sharing and presentation.</p></li>
 </li>
 </ul>
 </section>
-<section id="id15">
-<h4>Changed<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h4>
+<section id="id17">
+<h4>Changed<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
 </section>
-<section id="id16">
-<h4>Fixed<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
+<section id="id18">
+<h4>Fixed<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
@@ -787,38 +816,42 @@ for quick sharing and presentation.</p></li>
             <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
 <li><a class="reference internal" href="#changelog">Changelog</a><ul>
-<li><a class="reference internal" href="#unreleased">Unreleased</a></li>
+<li><a class="reference internal" href="#unreleased">Unreleased</a><ul>
+<li><a class="reference internal" href="#fixed">Fixed</a></li>
+<li><a class="reference internal" href="#changed">Changed</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id1">0.3.0 - 2026-03-06</a><ul>
 <li><a class="reference internal" href="#added">Added</a></li>
-<li><a class="reference internal" href="#changed">Changed</a></li>
-<li><a class="reference internal" href="#fixed">Fixed</a></li>
+<li><a class="reference internal" href="#id2">Changed</a></li>
+<li><a class="reference internal" href="#id3">Fixed</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id2">0.2.2</a><ul>
-<li><a class="reference internal" href="#id3">Fixed</a></li>
-<li><a class="reference internal" href="#id4">Changed</a></li>
-<li><a class="reference internal" href="#id5">Added</a></li>
+<li><a class="reference internal" href="#id4">0.2.2</a><ul>
+<li><a class="reference internal" href="#id5">Fixed</a></li>
+<li><a class="reference internal" href="#id6">Changed</a></li>
+<li><a class="reference internal" href="#id7">Added</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">0.2.1</a><ul>
-<li><a class="reference internal" href="#id7">Changed</a></li>
+<li><a class="reference internal" href="#id8">0.2.1</a><ul>
+<li><a class="reference internal" href="#id9">Changed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id8">0.2.0</a><ul>
-<li><a class="reference internal" href="#id9">Added</a></li>
-<li><a class="reference internal" href="#id10">Changed</a></li>
-<li><a class="reference internal" href="#id11">Fixed</a></li>
+<li><a class="reference internal" href="#id10">0.2.0</a><ul>
+<li><a class="reference internal" href="#id11">Added</a></li>
+<li><a class="reference internal" href="#id12">Changed</a></li>
+<li><a class="reference internal" href="#id13">Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#post1-2025-10-14">0.1.0.post1 - 2025-10-14</a><ul>
-<li><a class="reference internal" href="#id12">Changed</a></li>
+<li><a class="reference internal" href="#id14">Changed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id13">0.1.0 - 2025-09-17</a><ul>
-<li><a class="reference internal" href="#id14">Added</a></li>
-<li><a class="reference internal" href="#id15">Changed</a></li>
-<li><a class="reference internal" href="#id16">Fixed</a></li>
+<li><a class="reference internal" href="#id15">0.1.0 - 2025-09-17</a><ul>
+<li><a class="reference internal" href="#id16">Added</a></li>
+<li><a class="reference internal" href="#id17">Changed</a></li>
+<li><a class="reference internal" href="#id18">Fixed</a></li>
 </ul>
 </li>
 </ul>

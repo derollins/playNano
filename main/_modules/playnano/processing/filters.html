@@ -470,12 +470,10 @@
 
 <div class="viewcode-block" id="zero_mean">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.zero_mean">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">zero_mean</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.2.0&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">zero_mean</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Subtract the overall mean height to center the background around zero.</span>
-
-<span class="sd">    If a mask is provided, mean is computed only over background (mask == False).</span>
+<span class="sd">    Subtract the overall mean height to center data around zero.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -490,20 +488,8 @@
 <span class="sd">        Zero-mean image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Mask must have same shape as data.&quot;</span><span class="p">)</span>
-        <span class="c1"># Compute mean over background (where mask is False)</span>
-        <span class="n">unmasked</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">unmasked</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Mask excludes all pixels — cannot compute mean. &quot;</span>
-                <span class="s2">&quot;zero_mean applied without mask.&quot;</span>
-            <span class="p">)</span>
-        <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">unmasked</span><span class="p">)</span>
+    <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean value calculated: </span><span class="si">{</span><span class="n">mean_val</span><span class="si">}</span><span class="s2">. Subtracting.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">img</span> <span class="o">-</span> <span class="n">mean_val</span></div>
 
 

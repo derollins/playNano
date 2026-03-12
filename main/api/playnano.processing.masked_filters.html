@@ -419,17 +419,18 @@ False=background (used to fit).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.zero_mean_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_mean_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_mean_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Subtract the mean of background pixels (mask==False) from the entire image.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_mean_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_mean_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the overall mean height to center the background around zero.</p>
+<p>If a mask is provided, mean is computed only over background (mask == False).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
+<li><p><strong>mask</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Boolean mask of same shape as data; True indicates region to exclude from mean.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Image with zero-mean background.</p>
+<dd class="field-even"><p>Zero-mean image.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
