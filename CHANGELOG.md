@@ -301,3 +301,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.2.1]: https://github.com/derollins/playNano/releases/tag/v0.2.1
 [0.2.2]: https://github.com/derollins/playNano/releases/tag/v0.2.2
 [0.3.0]: https://github.com/derollins/playNano/releases/tag/v0.3.0
+[0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
