@@ -76,7 +76,7 @@ playNano/
 **`AFMImageStack`** is the central data class. It holds raw and processed frame data,
 metadata, provenance, masks, and analysis results. Both pipelines operate on it.
 Raw AFM data is loaded into this class and the raw image data is held alongside
-timestamp infomation and any processing or analysis outputs.
+timestamp information and any processing or analysis outputs.
 
 **Processing** transforms the data in `AFMImageStack.data`. Steps are resolved by
 `_resolve_step()` which checks — in priority order — masks, bound methods, 2D plugins,
@@ -258,6 +258,7 @@ section linking related modules, a `.. versionadded::` directive, and an `Author
 ## Branching and Pull Requests
 
 - **Base all pull requests on `dev`**, not `main`. The `main` branch is reserved for releases.
+- **Urgent** bug fixes and documentation changes can be merged directly into main under cirtain circumstaces.
 - Use a descriptive branch name, e.g. `feature/morph-opening` or `fix/tracking-none-index`.
 - Keep pull requests focused — one feature or fix per PR where possible.
 - CI (tests and pre-commit) runs automatically on pull requests to both `dev` and `main`.

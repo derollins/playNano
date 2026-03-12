@@ -126,12 +126,10 @@ def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     return flattened
 
 
-@versioned_filter("0.1.0")
-def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
+@versioned_filter("0.2.0")
+def zero_mean(data: np.ndarray) -> np.ndarray:
     """
-    Subtract the overall mean height to center the background around zero.
-
-    If a mask is provided, mean is computed only over background (mask == False).
+    Subtract the overall mean height to center data around zero.
 
     Parameters
     ----------
@@ -146,20 +144,8 @@ def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
         Zero-mean image.
     """
     img = data.astype(np.float64).copy()
-    if mask is None:
-        mean_val = np.mean(img)
-    else:
-        if mask.shape != img.shape:
-            raise ValueError("Mask must have same shape as data.")
-        # Compute mean over background (where mask is False)
-        unmasked = img[~mask]
-        if unmasked.size == 0:
-            mean_val = np.mean(img)
-            raise ValueError(
-                "Mask excludes all pixels — cannot compute mean. "
-                "zero_mean applied without mask."
-            )
-        mean_val = np.mean(unmasked)
+    mean_val = np.mean(img)
+    logger.debug(f"Mean value calculated: {mean_val}. Subtracting.")
     return img - mean_val
 
 

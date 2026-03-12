@@ -343,6 +343,7 @@ class AFMImageStack:
         new_arr = np.zeros_like(arr)
 
         if mask is not None and step_name in MASK_FILTERS_MAP:
+            logger.debug(f"Mask present and masked {step_name} filter selected.")
             masked_fn = MASK_FILTERS_MAP[step_name]
             for i in range(n_frames):
                 try:
@@ -361,6 +362,7 @@ class AFMImageStack:
                     )
                     new_arr[i] = arr[i]
         else:
+            logger.debug(f"{step_name} filter applied without mask.")
             for i in range(n_frames):
                 try:
                     new_arr[i] = filter_fn(arr[i], **kwargs)
