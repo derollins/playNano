@@ -164,6 +164,26 @@ def zero_mean(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
 
 
 @versioned_filter("0.1.0")
+def zero_median(data: np.ndarray) -> np.ndarray:
+    """
+    Subtract the overall median height to center the background around zero.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D AFM image data.
+
+    Returns
+    -------
+    np.ndarray
+        Zero-mean image.
+    """
+    img = data.astype(np.float64).copy()
+    mean_val = np.median(img)
+    return img - mean_val
+
+
+@versioned_filter("0.1.0")
 def gaussian_filter(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
     Apply a Gaussian low-pass filter to smooth high-frequency noise.
@@ -189,6 +209,7 @@ def register_filters():
         "remove_plane": remove_plane,
         "row_median_align": row_median_align,
         "zero_mean": zero_mean,
+        "zero_median": zero_median,
         "polynomial_flatten": polynomial_flatten,
         "gaussian_filter": gaussian_filter,
     }

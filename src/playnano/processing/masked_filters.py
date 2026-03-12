@@ -185,6 +185,43 @@ def zero_mean_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     return data.astype(np.float64) - mean_val
 
 
+@versioned_filter("0.1.0")
+def zero_median_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
+    """
+    Subtract the overall median height to center the background around zero.
+
+    If a mask is provided, median is computed only over background (mask == False).
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D AFM image data.
+    mask : np.ndarray, optional
+        Boolean mask of same shape as data; True indicates region to exclude from mean.
+
+    Returns
+    -------
+    np.ndarray
+        Zero-mean image.
+    """
+    img = data.astype(np.float64).copy()
+    if mask is None:
+        mean_val = np.median(img)
+    else:
+        if mask.shape != img.shape:
+            raise ValueError("Mask must have same shape as data.")
+        # Compute mean over background (where mask is False)
+        unmasked = img[~mask]
+        if unmasked.size == 0:
+            mean_val = np.median(img)
+            raise ValueError(
+                "Mask excludes all pixels — cannot compute mean. "
+                "zero_mean applied without mask."
+            )
+        mean_val = np.median(unmasked)
+    return img - mean_val
+
+
 def register_mask_filters():
     """Return list of masking options."""
     return {
@@ -192,4 +229,5 @@ def register_mask_filters():
         "polynomial_flatten": polynomial_flatten_masked,
         "row_median_align": row_median_align_masked,
         "zero_mean": zero_mean_masked,
+        "zero_median": zero_median_masked,
     }
