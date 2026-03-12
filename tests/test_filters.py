@@ -5,6 +5,7 @@ import pytest
 from scipy.ndimage import generate_binary_structure
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
+import logging
 
 import playnano.processing.filters as filters
 import playnano.processing.mask_generators as mask_gen
@@ -73,9 +74,15 @@ def test_polynomial_flatten_various_orders():
 
     # Generate data: plane + quadratic + cubic terms
     data_linear = 3 + 2 * X + 5 * Y  # order=1 exact
-    data_quadratic = data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2  # order=2 exact
+    data_quadratic = (
+        data_linear + 1.5 * X**2 - 0.5 * X * Y + 2 * Y**2
+    )  # order=2 exact
     data_cubic = (
-        data_quadratic + 0.1 * X**3 - 0.2 * X**2 * Y + 0.3 * X * Y**2 - 0.4 * Y**3
+        data_quadratic
+        + 0.1 * X**3
+        - 0.2 * X**2 * Y
+        + 0.3 * X * Y**2
+        - 0.4 * Y**3
     )  # order=3 exact
 
     # Test order=1 flattening recovers zero residual for linear surface
@@ -402,6 +409,22 @@ def test_zero_mean_masked_basic():
     np.testing.assert_allclose(result, expected)
     # mean of unmasked pixels should be ~0
     assert np.allclose(np.mean(result[~mask]), 0)
+
+
+def test_zero_mean_masked_no_mask(caplog):
+    """Test warning is logged zero_mean output returned when no mask is supplied"""
+    # Simple 3x3 image
+    caplog.set_level(logging.WARNING, logger="playnano.processing.masked_filters")
+
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
+    mask = None
+    result = zero_mean_masked(data, mask)
+    assert np.mean(result) == 0
+    assert any(
+        "Masked zero_mean filter selected but no mask found. Applying unmasked."
+        in rec.message
+        for rec in caplog.records
+    )
 
 
 def test_zero_mean_masked_all_foreground():
