@@ -1,11 +1,12 @@
 """Tests for filters and masking functions in playnano.processing."""
 
+import logging
+
 import numpy as np
 import pytest
 from scipy.ndimage import generate_binary_structure
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-import logging
 
 import playnano.processing.filters as filters
 import playnano.processing.mask_generators as mask_gen
