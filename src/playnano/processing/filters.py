@@ -169,6 +169,24 @@ def gaussian_filter(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     return ndimage.gaussian_filter(data, sigma=sigma)
 
 
+@versioned_filter("0.1.0")
+def vertical_flip(data: np.ndarray) -> np.ndarray:
+    """
+    Vertically flip an image, reversing the row order.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D AFM image data.
+
+    Returns
+    -------
+    np.ndarray
+        Vertically flipped image.
+    """
+    return np.flipud(data)
+
+
 def register_filters():
     """Return list of filter options."""
     return {
@@ -177,4 +195,5 @@ def register_filters():
         "zero_mean": zero_mean,
         "polynomial_flatten": polynomial_flatten,
         "gaussian_filter": gaussian_filter,
+        "vertical_flip": vertical_flip,
     }
