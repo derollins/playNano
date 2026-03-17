@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Flip Filter**
+  - Added built-in processing filter, `vertical_flip`, which uses the NumPy `flipud()` function to reverse the row
+    order of a 2D image. No eqivielent masked filter.
+
 ## [0.3.1] - 2026-03-12
 
 ### Fixed
