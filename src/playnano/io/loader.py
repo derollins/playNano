@@ -21,9 +21,9 @@ from playnano.io.data_loaders import (
     load_npz_bundle,
     load_ome_tiff_stack,
 )
+from playnano.io.formats.read_aris import load_aris
 from playnano.io.formats.read_asd import load_asd_file
 from playnano.io.formats.read_h5jpk import load_h5jpk
-from playnano.io.formats.read_aris import load_aris
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder
 

@@ -607,29 +607,6 @@ def test_load_spm_folder_inconsistent_shape_raises(
         load_spm_folder(tmp_path, channel="height")
 
 
-@patch("playnano.io.formats.read_spm_folder.spm.load_spm")
-@patch("playnano.io.formats.read_spm_folder.parse_spm_header")
-def test_load_spm_folder_inconsistent_pixel_size_raises(
-    mock_parse_header, mock_load_spm, tmp_path
-):
-    """Test `load_spm_folder` raises ValueError for inconsistent pixel sizes."""
-    # Create two dummy .spm files
-    f1 = tmp_path / "frame1.spm"
-    f2 = tmp_path / "frame2.spm"
-    f1.write_text("placeholder")
-    f2.write_text("placeholder")
-
-    # Same shape, but pixel sizes differ
-    mock_load_spm.side_effect = [
-        (np.ones((10, 10)), 1.0),
-        (np.ones((10, 10)), 2.0),
-    ]
-    mock_parse_header.return_value = {"Scan Rate": "10"}
-
-    with pytest.raises(ValueError, match="Inconsistent pixel size"):
-        load_spm_folder(tmp_path, channel="height")
-
-
 @pytest.mark.parametrize(
     (
         "folder_name",

@@ -317,6 +317,8 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
             logger.warning(f"Failed to parse OME-XML metadata for {path}: {e}")
 
         frame_metadata = [{"timestamp": t} for t in timestamps]
+        for frame in frame_metadata:
+            frame["frame_pixel_size_nm"] = ps_nm
 
         stack = AFMImageStack(
             data=data,

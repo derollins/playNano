@@ -372,11 +372,12 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
     # Create a 3-frame dummy image stack
     stack = np.random.rand(3, 10, 10)
     timestamps = [0.0, 1.0, 2.0]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
     output_path = tmp_path / "test_output.gif"
 
     create_gif_with_scale_and_timestamp(
         image_stack=stack,
-        pixel_size_nm=1.0,
+        pixel_sizes_nm=pixel_sizes_nm,
         timestamps=timestamps,
         scale_bar_length_nm=5,
         output_path=output_path,
@@ -398,12 +399,13 @@ def test_create_gif_with_flat_data(tmp_path):
     """Test that GIF creation handles flat data without crashing."""
     image_stack = np.zeros((3, 4, 4))  # flat stack
     timestamps = [0, 1, 2]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
     output_path = tmp_path / "test.gif"
 
     with patch("PIL.Image.Image.save") as mock_save:
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=timestamps,
             output_path=str(output_path),
             zmin=None,
@@ -434,13 +436,14 @@ def test_create_gif_with_various_zscales(zmin, zmax):
     )
 
     timestamps = [0.0, 1.0]
+    pixel_sizes_nm = [1.0, 1.0]
 
     with TemporaryDirectory() as tmp:
         out_path = Path(tmp) / "test.gif"
 
         create_gif_with_scale_and_timestamp(
             image_stack=stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=timestamps,
             scale_bar_length_nm=50,
             output_path=str(out_path),
@@ -522,7 +525,7 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
 
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=[1.0, 1.0, 1.0],
             timestamps=ts,
             output_path=output_path,
             scale_bar_length_nm=50,
@@ -538,6 +541,7 @@ def test_fallback_to_index_if_no_timestamps(tmp_path):
     """Test that gif_export falls back to frame index if there are no timestamps."""
     image_stack = np.ones((2, 2, 2), dtype=float)
     bad_timestamps = "invalid type"
+    pixel_sizes_nm = [1.0, 1.0]
 
     output_path = tmp_path / "test.gif"
 
@@ -546,7 +550,7 @@ def test_fallback_to_index_if_no_timestamps(tmp_path):
 
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=bad_timestamps,
             output_path=output_path,
             scale_bar_length_nm=50,
@@ -622,16 +626,19 @@ def dummy_stack():
     data = np.random.rand(3, 4, 4).astype(np.float32)
     timestamps = [0.0, 1.0, 2.0]
     metadata = [{"timestamp": t} for t in timestamps]
-    return data, timestamps, metadata
+    for frame in metadata:
+        frame["frame_pixel_size_nm"] = 1.0
+    px2nm = 1.0
+    return data, timestamps, metadata, px2nm
 
 
 @pytest.fixture
 def afm_stack_obj(dummy_stack):
     """Generate a dummy AFMImageStack object."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         frame_metadata=metadata,
         file_path="dummy_path.h5-jpk",
         channel="height_trace",
@@ -643,10 +650,10 @@ def afm_stack_obj(dummy_stack):
 
 def test_save_ome_tiff_stack_creates_file(dummy_stack):
     """Test that save_tiff_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         file_path="dummy_path.h5-jpk",
         frame_metadata=metadata,
         channel="height_trace",
@@ -661,11 +668,11 @@ def test_save_ome_tiff_stack_creates_file(dummy_stack):
 
 def test_save_npz_bundle_creates_file(dummy_stack):
     """Test that save_npz_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
         file_path="dummy_path.h5-jpk",
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         frame_metadata=metadata,
         channel="height_trace",
     )
@@ -682,10 +689,10 @@ def test_save_npz_bundle_creates_file(dummy_stack):
 
 def test_save_h5_bundle_creates_file(dummy_stack):
     """Test that save_h5_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         file_path="dummy_path.h5-jpk",
         frame_metadata=metadata,
         channel="height_trace",
@@ -1073,6 +1080,8 @@ def test_ome_tif_export_and_reload_synthetic(tmp_path):
     raw_data = np.random.rand(n_frames, H, W).astype(np.float32)
     processed_data = raw_data + 1.0
     meta = [{"timestamp": i} for i in range(n_frames)]
+    for frame in meta:
+        frame["frame_pixel_size_nm"] = 2.0
 
     stack = AFMImageStack(
         data=processed_data,

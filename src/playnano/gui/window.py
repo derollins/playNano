@@ -563,10 +563,8 @@ class MainWindow(QMainWindow):
 
         # Read timestamp
         timestamp = self.afm_stack.time_for_frame(idx)
-        try:
-            pixel_size_nm = self.afm_stack.frame_metadata[idx]["frame_pixel_size_nm"]
-        except ValueError:
-            pixel_size_nm = self.afm_stack.pixel_size_nm
+        pixel_size_nm = self.afm_stack.scaling_for_frame(idx)
+
         if not isinstance(pixel_size_nm, (float, int)) or pixel_size_nm <= 0:
             pixel_size_nm = 1.0  # fallback or disable scale bar
 

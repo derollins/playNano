@@ -14,9 +14,9 @@ import numpy as np
 from playnano.afm_stack import AFMImageStack
 from playnano.utils.io_utils import (
     convert_height_units_to_nm,
+    decode_hdf5_attr,
     guess_height_data_units,
     height_units,
-    decode_hdf5_attr,
 )
 
 logger = logging.getLogger(__name__)
@@ -404,7 +404,7 @@ def load_h5jpk(
             frame_metadata.append(
                 {
                     "timestamp": ts,
-                    "frame_pixel_scan_nm": _jpk_pixel_to_nm_scaling_h5(
+                    "frame_pixel_size_nm": _jpk_pixel_to_nm_scaling_h5(
                         measurement_group
                     ),
                     "line_rate": line_rate,

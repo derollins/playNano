@@ -931,6 +931,49 @@ class AFMImageStack:
         ts = self.frame_metadata[idx].get("timestamp", None)
         return float(idx) if ts is None else ts
 
+    def scaling_for_frame(self, idx: int) -> float:
+        """
+        Get the frame_pixel_size_nm for a given frame index.
+
+        If the frame_metadata dictionaries or frame_pixel_size_nm values are missing
+        fallback to the pixel_size_nm attribute.
+
+        Parameters
+        ----------
+        idx : int
+            Frame index.
+
+        Returns
+        -------
+        float
+            Pixel to nanometer scaling factor.
+
+        Raises
+        ------
+        IndexError
+            If idx is out of range.
+
+        Notes
+        -----
+        The fallback to pixel_size_nm is valid for stacks with a constant size.
+
+        Examples
+        --------
+        >>> stack.pixel_size_nm = 1.0   # fallback value
+        >>> stack.frame_metadata = [
+        ...     {"frame_pixel_size_nm": 1.0},
+        ...     {},
+        ...     {"frame_pixel_size_nm": 2.0},
+        ... ]
+        >>> stack.scaling_for_frame(0)
+        1.0
+        >>> stack.scaling_for_frame(1)
+        1.0          # falls back to stack.pixel_size_nm
+        >>> stack.scaling_for_frame(2)
+        2.0
+        """
+        return self.frame_metadata[idx].get("frame_pixel_size_nm", self.pixel_size_nm)
+
     def get_frame_times(self) -> list[float]:
         """
         Return a list of timestamps (in seconds) for each frame in the stack.

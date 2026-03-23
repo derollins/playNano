@@ -105,7 +105,7 @@ def load_jpk_folder(
             frame_metadata.append(
                 {
                     "timestamp": ts,
-                    "frame_px_size_nm": px_size_nm,
+                    "frame_pixel_size_nm": px_size_nm,
                     "line_rate": line_rate,
                 }
             )

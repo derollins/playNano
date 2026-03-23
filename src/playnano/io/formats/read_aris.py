@@ -154,7 +154,7 @@ def load_aris(
         timestamps = info["Series"]["Time"][:]
         if len(timestamps) != len(sorted_keys):
             raise ValueError(
-                f"Timestamp count ({len(timestamps)}) does not match frame count ({len(sorted_keys)})."
+                f"Timestamp count ({len(timestamps)}) does not match frame count ({len(sorted_keys)})."  # noqa
             )
         line_rate = info["Global/Parameters/Scan"].attrs["ScanRate"]
 
