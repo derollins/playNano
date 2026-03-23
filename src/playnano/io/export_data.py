@@ -146,6 +146,13 @@ def save_ome_tiff_stack(
     channel = afm_stack.channel
     planes = [{"DeltaT": float(t)} for t in timestamps]
 
+    pixel_sizes = [md["frame_pixel_size_nm"] for md in meta_src]
+    if not np.allclose(afm_stack.pixel_size_nm, pixel_sizes):
+        raise ValueError(
+            f"pixel_size_nm is not consistent across frames "
+            f"(min={min(pixel_sizes):.4f}, max={max(pixel_sizes):.4f} nm)."
+        )
+
     ome_metadata = {
         "axes": "TCZYX",
         "PhysicalSizeX": afm_stack.pixel_size_nm * 1e-3,

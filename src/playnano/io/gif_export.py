@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 def create_gif_with_scale_and_timestamp(
     image_stack,
-    pixel_size_nm,
+    pixel_sizes_nm,
     timestamps=None,
     scale_bar_length_nm=100,
     output_path="output",
@@ -54,8 +54,8 @@ def create_gif_with_scale_and_timestamp(
     image_stack : np.ndarray
         3D array of shape (N, H, W) representing the AFM image stack.
 
-    pixel_size_nm : float
-        Size of each pixel in nanometers.
+    pixel_sizes_nm : list
+        List containing the size of a pixel in nanometers for each frame.
 
     timestamps : list[float] or tuple[float], optional
         Timestamps for each frame in seconds. If ``None`` or invalid,
@@ -121,6 +121,18 @@ def create_gif_with_scale_and_timestamp(
             "Invalid timestamps provided, will use frame indices as timestamps."
         )
 
+    # Check pixel_sizes_nm list
+
+    if (
+        pixel_sizes_nm is not None
+        and isinstance(pixel_sizes_nm, list)
+        and len(pixel_sizes_nm) == len(image_stack)
+    ):
+        pass
+    else:
+        draw_scale = False
+        logger.warning("Invalid pixel_sizes_nm list, will not draw scale bar.")
+
     if zmin is not None or zmax is not None:
         zmin_val, zmax_val = compute_zscale_range(image_stack, zmin, zmax)
     else:
@@ -134,7 +146,6 @@ def create_gif_with_scale_and_timestamp(
                 # Flat image: avoid division by zero, render as black
                 frame_norm = np.zeros_like(frame, dtype=np.uint8)
             else:
-                clipped = np.clip(frame, zmin_val, zmax_val)
                 clipped = np.clip(frame, zmin_val, zmax_val)
                 normalized = (clipped - zmin_val) / (zmax_val - zmin_val) * 255
                 normalized = np.nan_to_num(
@@ -158,11 +169,14 @@ def create_gif_with_scale_and_timestamp(
                 f"Invalid timestamps provided, using frame index {i} as timestamp."
             )
             timestamp = i
+
+        # Determine pixel_size_nm for frame
+        draw_pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
         # Add annotations
         frame_with_overlay = draw_scale_and_timestamp(
             color_frame,
             timestamp=timestamp,
-            pixel_size_nm=pixel_size_nm,
+            pixel_size_nm=draw_pixel_size_nm,
             scale=1.0,
             bar_length_nm=scale_bar_length_nm,
             font_scale=frame.shape[0] / 256,
@@ -257,36 +271,28 @@ def export_gif(
 
     # Determine whether to use raw or processed data
     # (allows saving of unfiltered from play mode)
-    if raw is False:
-        stack_data = afm_stack.data
-        raw_exists = "raw" in afm_stack.processed
-        filtered_exists = raw_exists and any(
-            key != "raw" for key in afm_stack.processed.keys()
+    if raw and "raw" in afm_stack.processed:
+        stack_data = afm_stack.processed["raw"]
+        meta_src = afm_stack.state_backups.get(
+            "frame_metadata_before_edit", afm_stack.frame_metadata
         )
-        timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
+    else:
+        if raw:
+            logger.debug("Requested raw export on unprocessed data; using loaded data.")
+        stack_data = afm_stack.data
+        meta_src = afm_stack.frame_metadata
+        filtered_exists = "raw" in afm_stack.processed and any(
+            key != "raw" for key in afm_stack.processed
+        )
         if filtered_exists:
             base = f"{base}_filtered"
 
-    elif raw is True:
-        if "raw" in afm_stack.processed:
-            stack_data = afm_stack.processed["raw"]
-            if "frame_metadata_before_edit" in afm_stack.state_backups:
-                timestamps = [
-                    md["timestamp"]
-                    for md in afm_stack.state_backups.get(
-                        "frame_metadata_before_edit", afm_stack.frame_metadata
-                    )
-                ]
-            else:
-                timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
-        else:
-            logger.debug("Requested raw export on unprocessed data; using loaded data.")
-            stack_data = afm_stack.data
-            timestamps = [md["timestamp"] for md in afm_stack.frame_metadata]
+    timestamps = [md["timestamp"] for md in meta_src]
+    pixels_to_nm = [
+        md.get("frame_pixel_size_nm", afm_stack.pixel_size_nm) for md in meta_src
+    ]
 
     gif_path = out_dir / f"{base}.gif"
-
-    pixel_to_nm = afm_stack.pixel_size_nm
 
     # default scale bar
     bar_nm = scale_bar_nm if scale_bar_nm is not None else 100
@@ -294,7 +300,7 @@ def export_gif(
     logger.debug(f"[export] Writing GIF → {gif_path}")
     create_gif_with_scale_and_timestamp(
         stack_data,
-        pixel_to_nm,
+        pixels_to_nm,
         timestamps,
         output_path=gif_path,
         scale_bar_length_nm=bar_nm,

@@ -6,6 +6,7 @@ Supported extensions:
   - .spm        (folder)
   - .h5-jpk     (single-file JPK)
   - .asd        (single-file ASD)
+  - .ARIS       (single-file ARIS)
   - .ome.tif / .tif  (OME-TIFF bundles)
   - .npz        (playNano NPZ bundles)
   - .h5         (playNano HDF5 bundles)
@@ -22,6 +23,7 @@ from playnano.io.data_loaders import (
 )
 from playnano.io.formats.read_asd import load_asd_file
 from playnano.io.formats.read_h5jpk import load_h5jpk
+from playnano.io.formats.read_aris import load_aris
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder
 
@@ -147,6 +149,7 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     logger.debug(f"Resolved path: {file_path}")
     logger.debug(f"Loading AFM stack from {file_path} for channel '{channel}'")
 
+    # All file formats in lowercase
     folder_loaders = {
         ".jpk": load_jpk_folder,
         ".spm": load_spm_folder,
@@ -156,6 +159,7 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     file_loaders = {
         ".h5-jpk": load_h5jpk,
         ".asd": load_asd_file,
+        ".aris": load_aris,
         ".npz": load_npz_bundle,
         ".h5": load_h5_bundle,
         ".ome.tif": load_ome_tiff_stack,

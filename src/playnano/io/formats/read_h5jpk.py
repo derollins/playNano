@@ -16,28 +16,10 @@ from playnano.utils.io_utils import (
     convert_height_units_to_nm,
     guess_height_data_units,
     height_units,
+    decode_hdf5_attr,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _decode_attr(attr: bytes | str) -> str:
-    """
-    Decode an attribute that may be bytes or a string.
-
-    Parameters
-    ----------
-    attr : bytes or str
-        The attribute to decode.
-
-    Returns
-    -------
-    str
-        The decoded string.
-    """
-    if isinstance(attr, bytes):
-        return attr.decode("utf-8")
-    return str(attr)
 
 
 def _attr_to_bool(attr: bytes | str | bool | int | float) -> bool:
@@ -55,7 +37,7 @@ def _attr_to_bool(attr: bytes | str | bool | int | float) -> bool:
         The boolean interpretation of the value.
     """
     if isinstance(attr, (bytes, str)):
-        return _decode_attr(attr).strip().lower() == "true"
+        return decode_hdf5_attr(attr).strip().lower() == "true"
     return bool(attr)
 
 
@@ -88,7 +70,7 @@ def _discover_available_channels(f: h5py.File) -> dict[str, str]:
 
             retrace = _attr_to_bool(c_group.attrs.get("retrace", False))
             tr_rt = "retrace" if retrace else "trace"
-            full_key = f"{_decode_attr(name).strip().lower()}_{tr_rt}"
+            full_key = f"{decode_hdf5_attr(name).strip().lower()}_{tr_rt}"
             full_path = f"{m_key}/{c_key}"
             if full_key not in channel_map:
                 channel_map[full_key] = full_path
@@ -419,7 +401,15 @@ def load_h5jpk(
         # Compose per-frame metadata list
         frame_metadata = []
         for ts in timestamps:
-            frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
+            frame_metadata.append(
+                {
+                    "timestamp": ts,
+                    "frame_pixel_scan_nm": _jpk_pixel_to_nm_scaling_h5(
+                        measurement_group
+                    ),
+                    "line_rate": line_rate,
+                }
+            )
 
         return AFMImageStack(
             data=image_stack,

@@ -45,7 +45,7 @@ class AFMImageStack:
         data.
 
     pixel_size_nm : float
-        Physical pixel size in nanometers.
+        Physical pixel size in nanometers of the first frame (fallback).
 
     channel : str
         Channel name.
@@ -54,7 +54,8 @@ class AFMImageStack:
         Path to the source file or folder.
 
     frame_metadata : list[dict[str, Any]]
-        Per-frame metadata dicts; each will include a normalized 'timestamp' key.
+        Per-frame metadata dicts; each will include a normalized 'timestamp' key and
+        per frame 'frame_pixel_size_nm'.
 
     processed : dict[str, np.ndarray]
         Snapshots of processed data arrays from filters. Keys like
@@ -95,7 +96,7 @@ class AFMImageStack:
             stack.
 
         pixel_size_nm : float
-            Pixel size in nanometers; must be positive.
+            Pixel size in nanometers for the first frame; must be positive.
 
         channel : str
             Channel name (e.g., 'height_trace').

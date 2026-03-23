@@ -281,8 +281,10 @@ def play_pipeline_mode(
     """
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
-    except Exception as e:
-        raise LoadError(f"Failed to load {input_file}") from e
+    except LoadError as e:
+        logger.exception(
+            f"Failed to load {input_file}, error: {e}"
+        )  # exception() includes traceback
     # Determine fps from metadata
     frame_metadata = getattr(afm_stack, "frame_metadata", None)
     line_rate = None
