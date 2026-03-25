@@ -904,6 +904,37 @@ def test_load_frames_with_override(tmp_path):
     assert not np.isclose(pixel_sizes[0], pixel_sizes[1])
 
 
+def test_load_frames_reverts_to_global_pixel_size(tmp_path):
+    """Test per-frame scaling falls back to global scale when missing."""
+    file_path = tmp_path / "missing_frame_pixel.aris"
+    create_aris_file_on_disk(file_path)
+
+    # Set a new global FastScanSize to verify fallback behaviour
+    new_global_scan_size = 2e-7  # 0.2 µm
+    expected_pixel_nm = (new_global_scan_size / 256) * 1e9
+
+    with h5py.File(file_path, "a") as f:
+        # Modify global scan size
+        f["/DataSetInfo/Global/Parameters/Scan"].attrs[
+            "FastScanSize"
+        ] = new_global_scan_size
+
+        # Remove per-frame scan metadata (so loader must fall back)
+        for i in range(3):
+            try:
+                del f[f"/DataSetInfo/Frames/Frame {i}/Parameters/Scan"]
+            except KeyError:
+                pass  # already missing -> fine
+
+        data = f["/DataSet/Resolution 0"]
+        info = f["/DataSetInfo"]
+        _, pixel_sizes = load_frames_and_scaling(data, info, "height_trace")
+
+    # Validate fallback for all frames
+    for px in pixel_sizes:
+        assert np.isclose(px, expected_pixel_nm)
+
+
 def test_load_aris_returns_correct_type(tmp_path):
     """Test that load_aris returns an AFMImageStack."""
     file_path = tmp_path / "test.aris"
