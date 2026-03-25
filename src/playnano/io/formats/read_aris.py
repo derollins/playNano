@@ -1,7 +1,11 @@
 """
 Module to decode and load .aris high speed AFM data files into a AFMImageStack object.
 
-Files containing multiple image frames are read together.
+Files containing multiple image frames are read together. Since the frames in .aris
+files can be different sizes the pixel scaling value for the first frame is held as
+an AFMImageStack object (pixel_size_nm) while the values for indevidual frames are
+stored per frame in the frame_metadat list of dictionaries under the key,
+``frame_pixel_size_nm``.
 """
 
 import logging

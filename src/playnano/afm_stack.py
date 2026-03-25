@@ -107,7 +107,9 @@ class AFMImageStack:
         frame_metadata : list of dict, optional
             List of per-frame metadata dicts. Will be padded or trimmed to length
             n_frames. After initialization, each entry is normalized to include a
-            numeric 'timestamp' (fallback to frame index if missing).
+            numeric 'timestamp' (fallback to frame index if missing). A pixel scaling
+            value for each frame `frame_pixel_size_nm` is also recorded when data is
+            loaded from a raw or processed file.
 
         Raises
         ------

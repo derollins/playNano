@@ -35,7 +35,7 @@ Learn more about the motivation, design, and structure of playNano in the [Intro
 **Files read:**
 <div align="center">
 
-**`.h5-jpk`, `.jpk`, `.asd`, `.spm`**
+**`.h5-jpk`, `.jpk`, `.asd`, `.spm`, `.aris`**
 
 </div>
 
@@ -54,7 +54,7 @@ Full documentation: <https://derollins.github.io/playNano/>
 
 ## ✨ Features
 
-- 📂 **AFM time-series extraction** — reads `.h5-jpk`, `.asd`, and folders of `.jpk` or `.spm` frames.
+- 📂 **AFM time-series extraction** — reads `.h5-jpk`, `.asd`, `.aris`, and folders of `.jpk` or `.spm` frames.
 - ▶️ **Interactive video viewer** — PySide6-based GUI with playback, z-scale control, and export tools.
 - 🪟 **Processing pipeline** — applies filters and masks with full provenance tracking.
 - 📏 **Analysis pipeline** — runs detection, clustering, and tracking with reproducible outputs.
