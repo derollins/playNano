@@ -102,19 +102,32 @@ def get_loader_for_file(
         If the file type is unsupported or better handled as a folder.
     """
     logger.debug(f"Determining loader for file {file_path}")
-    ext = file_path.suffix.lower()
-    if not ext:
+
+    suffixes = [s.lower() for s in file_path.suffixes]
+
+    # --- Case 1: no suffix at all ---
+    if not suffixes:
         raise ValueError(f"{file_path} has no extension and cannot be identified.")
 
+    # --- Case 2: multi-suffix formats like .ome.tif ---
+    multi = "".join(suffixes)  # e.g. [".ome", ".tif"] -> ".ome.tif"
+    if multi in file_loaders:
+        return multi, file_loaders[multi]
+
+    # --- Case 3: single suffix fallback ---
+    ext = suffixes[-1]  # always safe now
     if ext in file_loaders:
         return ext, file_loaders[ext]
-    elif ext in folder_loaders:
+
+    # --- Case 4: folder-only formats ---
+    if ext in folder_loaders:
         raise ValueError(
             f"The {ext} file type is typically a single-frame export."
             "To load HS-AFM video, pass the full folder instead."
         )
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
+
+    # --- Case 5: unsupported extension ---
+    raise ValueError(f"Unsupported file type: {ext}")
 
 
 def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageStack:
@@ -162,7 +175,9 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
         ".aris": load_aris,
         ".npz": load_npz_bundle,
         ".h5": load_h5_bundle,
-        ".ome.tif": load_ome_tiff_stack,
+        # Currently, ".ome.tif" files are loaded with the same loader as .tif files.
+        # Sice Path.suffix only extrcts the string after the final '.' they are read as tiff
+        # ".ome.tif": load_ome_tiff_stack,
         ".tif": load_ome_tiff_stack,
         # Add others as needed
     }
