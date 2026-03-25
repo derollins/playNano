@@ -10,6 +10,13 @@ import numpy as np
 import pytest
 
 from playnano.afm_stack import AFMImageStack
+from playnano.io.formats.read_aris import (
+    _aris_global_pixel_to_nm_scaling_h5,
+    _get_channel_names,
+    _get_sorted_frame_keys,
+    load_aris,
+    load_frames_and_scaling,
+)
 from playnano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
 from playnano.io.formats.read_h5jpk import (
     _get_z_scaling_h5,
@@ -20,7 +27,7 @@ from playnano.io.formats.read_h5jpk import (
 )
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
-from playnano.io.loader import get_loader_for_folder
+from playnano.io.loader import get_loader_for_file, get_loader_for_folder
 
 
 def test_load_afm_stack_file_calls_correct_loader(tmp_path):
@@ -172,12 +179,129 @@ def test_get_loader_for_folder_detects_extension(tmp_path):
 
     folder_loaders = {
         ".jpk": lambda p: None,
-        ".asd": lambda p: None,
+        ".spm": lambda p: None,
     }
 
     ext, loader = get_loader_for_folder(tmp_path, folder_loaders)
     assert ext.lower() == ".jpk"
     assert callable(loader)
+
+
+def dummy_file_loader():
+    """Dummy a file loader for testing."""
+    pass
+
+
+def test_returns_correct_loader():
+    """Test that get_loader_for_file returns correct file loader."""
+    file_loaders = {".txt": dummy_file_loader}
+    folder_loaders = {}
+
+    ext, loader = get_loader_for_file(Path("test.txt"), file_loaders, folder_loaders)
+
+    assert ext == ".txt"
+    assert loader is dummy_file_loader
+
+
+def test_file_loader_raises_for_folder_loader_extension():
+    """Test that get_loader_for_file rises ValueError if passed folder loader file."""
+    file_loaders = {}
+    folder_loaders = {".hsa": "placeholder"}
+
+    with pytest.raises(ValueError) as excinfo:
+        get_loader_for_file(Path("frame.hsa"), file_loaders, folder_loaders)
+
+    assert "pass the full folder instead" in str(excinfo.value)
+
+
+def test_get_loader_for_file_raises_for_unsupported_extension():
+    """Test that get_loader_for_file raises a ValueError for an invalid extension."""
+    file_loaders = {}
+    folder_loaders = {}
+
+    with pytest.raises(ValueError) as excinfo:
+        get_loader_for_file(Path("data.weird"), file_loaders, folder_loaders)
+
+    assert "Unsupported file type" in str(excinfo.value)
+
+
+def test_get_loader_for_file_handles_multi_suffix():
+    """Test that get_loader_for_file handles multi suffix extentions."""
+    file_loaders = {".ome.tif": dummy_file_loader}
+    folder_loaders = {}
+    file = "test.ome.tif"
+    ext, loader = get_loader_for_file(Path(file), file_loaders, folder_loaders)
+
+    assert ext == ".ome.tif"
+    assert loader is dummy_file_loader
+
+
+def test_raises_for_missing_extension():
+    """Test that get_loader_for_file raises a ValueError for missing extension."""
+    file_loaders = {}
+    folder_loaders = {}
+
+    with pytest.raises(ValueError) as excinfo:
+        get_loader_for_file(Path("noextension"), file_loaders, folder_loaders)
+
+    assert "has no extension" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "ext",
+    [
+        ".h5-jpk",
+        ".asd",
+        ".aris",
+        ".npz",
+        ".h5",
+        ".tif",
+        ".ome.tif",
+        ".tiff",
+        ".ome.tiff",
+    ],
+)
+def test_get_loader_for_file_valid_all_formats(ext):
+    """Test that all file loaders open valid extensions."""
+
+    # Create a different dummy loader per extension
+    def dummy_loader():
+        """Dummy a loader for testing."""
+        return f"loaded {ext}"
+
+    file_loaders = {ext: dummy_loader}
+    folder_loaders = {}
+
+    # Simulate input file in lowercase
+    file_path = Path(f"test{ext}")
+
+    returned_ext, returned_loader = get_loader_for_file(
+        file_path, file_loaders, folder_loaders
+    )
+
+    assert returned_ext == ext
+    assert returned_loader is dummy_loader
+
+
+def test_get_loader_for_file_folder_conflict():
+    file_loaders = {}
+    folder_loaders = {".jpk": dummy_file_loader}
+
+    with pytest.raises(ValueError):
+        get_loader_for_file(Path("frame.jpk"), file_loaders, folder_loaders)
+
+
+def test_get_loader_for_file_unsupported():
+    file_loaders = {}
+    folder_loaders = {}
+
+    with pytest.raises(ValueError):
+        get_loader_for_file(Path("data.unknown"), file_loaders, folder_loaders)
+
+
+def test_get_loader_for_file_no_extension():
+    with pytest.raises(ValueError):
+        get_loader_for_file(Path("noext"), {}, {})
 
 
 def test_open_file(resource_path):
@@ -652,3 +776,161 @@ def test_read_spm_valid_files(
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
     assert result.data.sum() == stack_sum
     assert len(result.frame_metadata) == result.data.shape[0]
+
+
+# --- ARIS loader tests ---
+
+
+def create_aris_file_on_disk(path: Path, num_frames=3, override_second_frame=False):
+    """
+    Create an in-memory ARIS-like HDF5 file for testing.
+
+    Do not have .ARIS  test data, so create some.
+
+    Parameters
+    ----------
+    num_frames : int, optional
+        Number of synthetic frames to generate (default: 3).
+    override_second_frame : bool, optional
+        If True, applies a per-frame pixel-scaling override to Frame 1
+        to test per-frame scan parameter handling.
+
+    Returns
+    -------
+    h5py.File
+        An in-memory HDF5 file configured like an ARIS dataset.
+    """
+
+    with h5py.File(path, "w") as f:
+
+        # --- DataSet structure ---
+        data_group = f.create_group("/DataSet/Resolution 0")
+        for i in range(num_frames):
+            frame_g = data_group.create_group(f"Frame {i}")
+            ch_g = frame_g.create_group("height_trace")
+            ch_g.create_dataset("Image", data=np.full((4, 4), i, float))
+
+        # --- DataSetInfo ---
+        info = f.create_group("/DataSetInfo")
+        info.attrs["ChannelNames"] = [b"height_trace"]
+
+        # Global params
+        gscan = info.create_group("Global/Parameters/Scan")
+        gscan.attrs["FastScanSize"] = 2e-6
+        gscan.attrs["ScanPoints"] = 256
+        gscan.attrs["ScanRate"] = 350.0
+
+        frames = info.create_group("Frames")
+
+        for i in range(num_frames):
+            p = frames.create_group(f"Frame {i}").create_group("Parameters/Scan")
+            p.attrs["FastScanSize"] = 2e-6
+            p.attrs["ScanPoints"] = 256
+
+        if override_second_frame and num_frames > 1:
+            p2 = frames["Frame 1"]["Parameters/Scan"]
+            p2.attrs["FastScanSize"] = 1e-6
+            p2.attrs["ScanPoints"] = 256
+
+        series = info.create_group("Series")
+        series.create_dataset("Time", data=np.arange(num_frames))
+
+    return path
+
+
+def test_get_channel_names(tmp_path):
+    """Test extraction of ARIS channel names."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    with h5py.File(file_path, "r") as f:
+        info = f["/DataSetInfo"]
+        channels = _get_channel_names(info)
+
+    assert channels == ["height_trace"]
+
+
+def test_global_pixel_scaling(tmp_path):
+    """Test computing global pixel size in nanometres."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    with h5py.File(file_path, "r") as f:
+        info = f["/DataSetInfo"]
+        pixel_size = _aris_global_pixel_to_nm_scaling_h5(info)
+
+    assert np.isclose(pixel_size, 7.8125)
+
+
+def test_sorted_frame_keys(tmp_path):
+    """Test numeric sorting of ARIS frame keys."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    with h5py.File(file_path, "r") as f:
+        data = f["/DataSet/Resolution 0"]
+        keys = _get_sorted_frame_keys(data)
+
+    assert keys == ["Frame 0", "Frame 1", "Frame 2"]
+
+
+def test_load_frames_without_override(tmp_path):
+    """Test frame loading when no per-frame scaling override is used."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    with h5py.File(file_path, "r") as f:
+        data = f["/DataSet/Resolution 0"]
+        info = f["/DataSetInfo"]
+        stack, pixel_sizes = load_frames_and_scaling(data, info, "height_trace")
+
+    assert stack.shape == (3, 4, 4)
+    assert np.all(stack[2] == 2)
+    assert all(np.isclose(px, pixel_sizes[0]) for px in pixel_sizes)
+
+
+def test_load_frames_with_override(tmp_path):
+    """Test per-frame scaling override for Frame 1."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path, override_second_frame=True)
+
+    with h5py.File(file_path, "r") as f:
+        data = f["/DataSet/Resolution 0"]
+        info = f["/DataSetInfo"]
+        stack, pixel_sizes = load_frames_and_scaling(data, info, "height_trace")
+
+    assert not np.isclose(pixel_sizes[0], pixel_sizes[1])
+
+
+def test_load_aris_returns_correct_type(tmp_path):
+    """Test that load_aris returns an AFMImageStack."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    result = load_aris(file_path, "height_trace")
+
+    assert isinstance(result, AFMImageStack)
+    assert result.data.shape == (3, 4, 4)
+
+
+def test_load_aris_raises_missing_channel(tmp_path):
+    """Test error raised when loading a missing ARIS channel."""
+    file_path = tmp_path / "test.aris"
+    create_aris_file_on_disk(file_path)
+
+    with pytest.raises(ValueError):
+        load_aris(file_path, "nonexistent")
+
+
+def test_load_aris_timestamp_mismatch(tmp_path):
+    """Test error raised when timestamps do not match frame count."""
+    file_path = tmp_path / "bad.aris"
+    create_aris_file_on_disk(file_path)
+
+    # Replace timestamps with too few values
+    with h5py.File(file_path, "a") as f:
+        del f["/DataSetInfo/Series/Time"]
+        f["/DataSetInfo/Series"].create_dataset("Time", data=np.array([0.0, 1.0]))
+
+    with pytest.raises(ValueError):
+        load_aris(file_path, "height_trace")

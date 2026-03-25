@@ -175,10 +175,10 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
         ".aris": load_aris,
         ".npz": load_npz_bundle,
         ".h5": load_h5_bundle,
-        # Currently, ".ome.tif" files are loaded with the same loader as .tif files.
-        # Sice Path.suffix only extrcts the string after the final '.' they are read as tiff
-        # ".ome.tif": load_ome_tiff_stack,
+        ".ome.tif": load_ome_tiff_stack,
         ".tif": load_ome_tiff_stack,
+        ".ome.tiff": load_ome_tiff_stack,
+        ".tiff": load_ome_tiff_stack,
         # Add others as needed
     }
 
