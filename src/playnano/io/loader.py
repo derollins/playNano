@@ -6,6 +6,7 @@ Supported extensions:
   - .spm        (folder)
   - .h5-jpk     (single-file JPK)
   - .asd        (single-file ASD)
+  - .ARIS       (single-file ARIS)
   - .ome.tif / .tif  (OME-TIFF bundles)
   - .npz        (playNano NPZ bundles)
   - .h5         (playNano HDF5 bundles)
@@ -20,6 +21,7 @@ from playnano.io.data_loaders import (
     load_npz_bundle,
     load_ome_tiff_stack,
 )
+from playnano.io.formats.read_aris import load_aris
 from playnano.io.formats.read_asd import load_asd_file
 from playnano.io.formats.read_h5jpk import load_h5jpk
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
@@ -100,19 +102,32 @@ def get_loader_for_file(
         If the file type is unsupported or better handled as a folder.
     """
     logger.debug(f"Determining loader for file {file_path}")
-    ext = file_path.suffix.lower()
-    if not ext:
+
+    suffixes = [s.lower() for s in file_path.suffixes]
+
+    # --- Case 1: no suffix at all ---
+    if not suffixes:
         raise ValueError(f"{file_path} has no extension and cannot be identified.")
 
+    # --- Case 2: multi-suffix formats like .ome.tif ---
+    multi = "".join(suffixes)  # e.g. [".ome", ".tif"] -> ".ome.tif"
+    if multi in file_loaders:
+        return multi, file_loaders[multi]
+
+    # --- Case 3: single suffix fallback ---
+    ext = suffixes[-1]  # always safe now
     if ext in file_loaders:
         return ext, file_loaders[ext]
-    elif ext in folder_loaders:
+
+    # --- Case 4: folder-only formats ---
+    if ext in folder_loaders:
         raise ValueError(
             f"The {ext} file type is typically a single-frame export."
             "To load HS-AFM video, pass the full folder instead."
         )
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
+
+    # --- Case 5: unsupported extension ---
+    raise ValueError(f"Unsupported file type: {ext}")
 
 
 def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageStack:
@@ -147,6 +162,7 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     logger.debug(f"Resolved path: {file_path}")
     logger.debug(f"Loading AFM stack from {file_path} for channel '{channel}'")
 
+    # All file formats in lowercase
     folder_loaders = {
         ".jpk": load_jpk_folder,
         ".spm": load_spm_folder,
@@ -156,10 +172,13 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     file_loaders = {
         ".h5-jpk": load_h5jpk,
         ".asd": load_asd_file,
+        ".aris": load_aris,
         ".npz": load_npz_bundle,
         ".h5": load_h5_bundle,
         ".ome.tif": load_ome_tiff_stack,
         ".tif": load_ome_tiff_stack,
+        ".ome.tiff": load_ome_tiff_stack,
+        ".tiff": load_ome_tiff_stack,
         # Add others as needed
     }
 

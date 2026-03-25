@@ -954,6 +954,25 @@ def stack_with_times():
         yield stack
 
 
+@pytest.fixture
+def stack_with_frame_px():
+    """Test AFMImageStack with frame_pixel_size_nm values."""
+    # Create small data and metadata
+    data = np.zeros((4, 2, 2), dtype=float)
+    # frame_metadata: first has timestamp 0.0, second missing, third 2.5, fourth missing
+    meta = [{"frame_pixel_size_nm": 2.0}, {}, {"frame_pixel_size_nm": 3.0}, {}]
+    # Use TemporaryDirectory for file_path
+    with TemporaryDirectory() as td:
+        stack = AFMImageStack(
+            data.copy(),
+            pixel_size_nm=1.0,
+            channel="h",
+            file_path=Path(td),
+            frame_metadata=meta,
+        )
+        yield stack
+
+
 # --- Tests for AFMImageStack time methods ---
 
 
@@ -965,6 +984,16 @@ def test_time_for_frame_with_and_without_timestamp(stack_with_times):
     assert stack.time_for_frame(1) == 1.0
     assert pytest.approx(stack.time_for_frame(2)) == 2.5
     assert stack.time_for_frame(3) == 3.0
+
+
+def test_scaling_for_frame_with_and_without_frame_pixel_size(stack_with_frame_px):
+    """scaling_for_frame should return frame pixel value or the initial as float."""
+    stack = stack_with_frame_px
+    assert stack.scaling_for_frame(0) == 2.0
+    # missing timestamp: fallback to index
+    assert stack.scaling_for_frame(1) == 1.0
+    assert pytest.approx(stack.scaling_for_frame(2)) == 3.0
+    assert stack.scaling_for_frame(3) == 1.0
 
 
 def test_get_frame_times(stack_with_times):

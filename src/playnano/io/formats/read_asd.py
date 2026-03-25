@@ -78,9 +78,17 @@ def load_asd_file(file_path: Path | str, channel: str) -> AFMImageStack:
     timestamps = np.arange(num_frames) * frame_interval
 
     # Compose per-frame metadata list
+    # Variable scan sizes/ pixel sizes not allowed in .asd files- simply use
+    # pixel_size_nm in all frame_metadata dictionaries.
     frame_metadata = []
     for ts in timestamps:
-        frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
+        frame_metadata.append(
+            {
+                "timestamp": ts,
+                "frame_pixel_size_nm": pixel_size_nm,
+                "line_rate": line_rate,
+            }
+        )
 
     return AFMImageStack(
         data=image_stack,

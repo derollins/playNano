@@ -105,6 +105,13 @@ The OME-TIFF export stores the processed AFM video from the
 of frames in a format compatible with ImageJ, Fiji, Bio-Formats, and general
 image analysis tools.
 
+.. note::
+
+   Since the OME-TIFF metadata schema only contains a
+   single value for `PhysicalSizeX`, `PhysicalSizeY` for all images in a stack,
+   all frames in a stack must have the same `frame_pixel_size_nm` value in the
+   `frame_metadata` dictionaries.
+
 **Contents**
 
 - Each frame stored as a TIFF plane
@@ -150,7 +157,7 @@ NPZ Export
 - ``data`` - raw or processed image stack
 - ``processed__<step>`` - processed frame arrays
 - ``masks__<mask>`` - Boolean mask arrays
-- ``frame_metadata_json`` - per-frame metadata including timestamps
+- ``frame_metadata_json`` - per-frame metadata including timestamps and per frame pixel sizes in nanometres
 - ``provenance_json`` - full processing and analysis history
 - ``pixel_size_nm`` - pixel size in nanometres
 - ``channel`` - data channel name
@@ -201,12 +208,12 @@ HDF5 Export
 - ``/data`` - raw or processed image stack
 - ``/processed/<step>`` - filtered or analysis layers
 - ``/masks/<mask>`` - Boolean masks
-- ``/frame_metadata_json`` - per-frame metadata including timestamps
+- ``/frame_metadata_json`` - per-frame metadata including timestamps and per frame pixel sizes in nanometres
 - ``/provenance_json`` - full processing and analysis history
 
 **Attributes**
 
-- ``pixel_size_nm`` - pixel size in nanometres
+- ``pixel_size_nm`` - pixel size in nanometres for the first frame (usually same for all frames)
 - ``channel`` - channel name
 
 **Example structure**
@@ -257,7 +264,7 @@ stack, with optional annotations.
 **Annotations**
 
 - **Timestamps** - derived from frame metadata
-- **Scale bar** - physical calibration (default 100 nm)
+- **Scale bar** - physical calibration (default 100 nm) determined from the per frame pixel size metadata
 - **Colour map** - default ``afmhot`` normalisation
 - **Frame rate** - determined from timing metadata
 

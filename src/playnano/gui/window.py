@@ -563,8 +563,8 @@ class MainWindow(QMainWindow):
 
         # Read timestamp
         timestamp = self.afm_stack.time_for_frame(idx)
+        pixel_size_nm = self.afm_stack.scaling_for_frame(idx)
 
-        pixel_size_nm = self.afm_stack.pixel_size_nm
         if not isinstance(pixel_size_nm, (float, int)) or pixel_size_nm <= 0:
             pixel_size_nm = 1.0  # fallback or disable scale bar
 
@@ -575,7 +575,7 @@ class MainWindow(QMainWindow):
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
                 draw_raw_label=not self._show_flat,
-                pixel_size_nm=self.afm_stack.pixel_size_nm,
+                pixel_size_nm=pixel_size_nm,
                 scale_bar_nm=self.scale_bar_nm,
             )
         except Exception as e:
