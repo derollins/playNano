@@ -14,6 +14,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added built-in processing filter, `vertical_flip`, which uses the NumPy `flipud()` function to reverse the row
     order of a 2D image. No eqivielent masked filter.
 
+- **ARIS Reader**
+  - Support for loading Asylum Research **`.aris`** high‑speed AFM data files.
+  - Comprehensive ARIS file loader including:
+    - Channel-name extraction from HDF5 metadata.
+    - Global and per‑frame pixel-size scaling with correct fallback behaviour.
+    - Frame sorting and stacked‑image construction.
+    - Timestamp parsing and validation.
+
+  - Multi‑suffix file loading support, enabling correct detection of formats such as
+    `.ome.tif` alongside standard single‑suffix extensions.
+
+  - **Tests** including:
+    - Synthetic ARIS HDF5 generator.
+    - Tests for multi-suffix handling (`.ome.tif` / `.tif`).
+    - Tests for per-frame scaling overrides and global-scaling fallback.
+    - Tests for timestamp mismatch, missing channels, and invalid files.
+
+### Changed
+
+- **Pixel size scaling**
+  - `pixel_size_nm` handling updated:
+    - AFMImageStack attribute `pixel_size_nm` retained and specified as a global
+      or first frame value.
+    - Per-frame overrides stored in `frame_metadata["frame_pixel_size_nm"]`.
+    - For most loaded data these values will all be the same unless the physical
+      scan size changes mid scan (i.e. in an ARIS file.)
+    - GUI and gif_export updated to use these per-frame values.
+    - Documentation updated in NPZ, OME-TIFF, and HDF5 export sections to reflect
+      per-frame pixel-size support.
+
+### Fixed
+
+- Resolved missing-extension and no-suffix errors in loader logic.
+
 ## [0.3.1] - 2026-03-12
 
 ### Fixed
