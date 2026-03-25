@@ -152,6 +152,14 @@ def test_remove_plane_removes_slope():
     assert abs(model.coef_[1]) < 0.05  # slope in y
 
 
+def test_vertical_flip():
+    """Test that vertical_flip correctly flips a 2 by 2 array vertically."""
+    data = np.array([[1, 2], [3, 4]], dtype=float)
+    flipped = filters.vertical_flip(data)
+    expected = np.array([[3, 4], [1, 2]], dtype=float)
+    assert np.array_equal(flipped, expected)
+
+
 def test_register_filters_keys():
     """Test that filters are registered correctly."""
     keys = filters.register_filters().keys()
@@ -161,6 +169,7 @@ def test_register_filters_keys():
         "zero_mean",
         "polynomial_flatten",
         "gaussian_filter",
+        "vertical_flip",
     }
     assert set(keys) == expected
 
