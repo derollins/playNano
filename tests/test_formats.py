@@ -188,7 +188,7 @@ def test_get_loader_for_folder_detects_extension(tmp_path):
 
 
 def dummy_file_loader():
-    """Dummy a file loader for testing."""
+    """Make a dummy file loader for testing."""
     pass
 
 
@@ -266,7 +266,7 @@ def test_get_loader_for_file_valid_all_formats(ext):
 
     # Create a different dummy loader per extension
     def dummy_loader():
-        """Dummy a loader for testing."""
+        """Make a dummy loader for testing."""
         return f"loaded {ext}"
 
     file_loaders = {ext: dummy_loader}
@@ -284,6 +284,7 @@ def test_get_loader_for_file_valid_all_formats(ext):
 
 
 def test_get_loader_for_file_folder_conflict():
+    """Test that get_loader_for_file raises a ValueError when given a file format."""
     file_loaders = {}
     folder_loaders = {".jpk": dummy_file_loader}
 
@@ -292,6 +293,7 @@ def test_get_loader_for_file_folder_conflict():
 
 
 def test_get_loader_for_file_unsupported():
+    """Test that get_loader_for_file raises a ValueError for unknown extension."""
     file_loaders = {}
     folder_loaders = {}
 
@@ -300,6 +302,7 @@ def test_get_loader_for_file_unsupported():
 
 
 def test_get_loader_for_file_no_extension():
+    """Test that get_loader_for_file raises a ValueError for no extension."""
     with pytest.raises(ValueError):
         get_loader_for_file(Path("noext"), {}, {})
 
@@ -802,7 +805,6 @@ def create_aris_file_on_disk(path: Path, num_frames=3, override_second_frame=Fal
     """
 
     with h5py.File(path, "w") as f:
-
         # --- DataSet structure ---
         data_group = f.create_group("/DataSet/Resolution 0")
         for i in range(num_frames):
