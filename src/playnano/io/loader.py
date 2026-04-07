@@ -25,6 +25,7 @@ from playnano.io.formats.read_aris import load_aris
 from playnano.io.formats.read_asd import load_asd_file
 from playnano.io.formats.read_h5jpk import load_h5jpk
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_nhf_folder import load_nhf_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder
 
 logger = logging.getLogger(__name__)
@@ -166,6 +167,7 @@ def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageSt
     folder_loaders = {
         ".jpk": load_jpk_folder,
         ".spm": load_spm_folder,
+        ".nhf": load_nhf_folder,
         # Add others as needed
     }
 
