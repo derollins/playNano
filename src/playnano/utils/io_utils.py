@@ -82,15 +82,15 @@ def guess_height_data_units(stack: np.ndarray) -> str:
 
 def convert_height_units_to_nm(data: np.ndarray, unit: str) -> np.ndarray:
     """
-    Convert AFM height data from the guessed unit to nanometers.
+    Convert AFM height data from the specified unit to nanometers.
 
     Parameters
     ----------
     data : np.ndarray
         Input height data array, typically 2D or 3D.
     unit : str
-        Unit string as returned by `guess_height_data_units`. Must be one of:
-        'pm', 'nm', 'um', 'mm', or 'm'.
+        Unit string such as one as returned by `guess_height_data_units`. Must be one
+        of: 'pm', 'nm', 'um', 'mm', or 'm'.
 
     Returns
     -------
