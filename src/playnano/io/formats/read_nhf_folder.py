@@ -79,17 +79,24 @@ def _timestamps_to_elapsed_seconds(times: list[datetime]) -> np.ndarray:
 
 
 def get_image_number(file_path: Path) -> int:
-    """Extract the image number from the "Measurement Name" of a .nhf file."""
+    """Extract the image number from the NHF measurement_name attribute."""
     with nhf_reader.NHFFileReader(file_path) as nhf_file:
-        image_keys = [k for k in nhf_file.measurement.keys() if k.startswith("Image")]
-
-        if len(image_keys) != 1:
+        if len(nhf_file.measurement) != 1:
             raise ValueError(
-                f"{file_path.name} contains {len(image_keys)} Image groups"
+                f"{file_path.name} contains {len(nhf_file.measurement)} measurements"
             )
 
-        key = image_keys[0]
-        return int(re.search(r"\d+", key).group())
+        measurement = next(iter(nhf_file.measurement.values()))
+        name = measurement.attribute.get("measurement_name")
+
+        if not isinstance(name, str):
+            raise ValueError(f"{file_path.name} missing measurement_name")
+
+        match = re.search(r"\d+", name)
+        if match is None:
+            raise ValueError(f"{file_path.name} has invalid measurement_name: {name!r}")
+
+        return int(match.group())
 
 
 def load_nhf(file_path: Path, channel: str):
@@ -186,6 +193,10 @@ def load_nhf_folder(
     times = []
     for fpath in nhf_files:
         img, px_size_nm, line_rate = load_nhf(fpath, channel)
+
+        if line_rate is None:
+            raise ValueError("Missing data: line_rate=None")
+
         t = get_nhf_time(fpath)
 
         image_stack.append(img)
