@@ -65,6 +65,7 @@ dependencies = [
   "tifffile",
   "matplotlib",
   "afmreader",
+  "nanosurf",
   "python-dateutil>=2.8",
   "scipy",
   "scikit-learn",
