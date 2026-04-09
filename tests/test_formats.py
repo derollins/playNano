@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -26,6 +27,11 @@ from playnano.io.formats.read_h5jpk import (
     load_h5jpk,
 )
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_nhf_folder import (
+    get_image_number,
+    get_nhf_time,
+    load_nhf_folder,
+)
 from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
 from playnano.io.loader import get_loader_for_file, get_loader_for_folder
 
@@ -967,3 +973,284 @@ def test_load_aris_timestamp_mismatch(tmp_path):
 
     with pytest.raises(ValueError):
         load_aris(file_path, "height_trace")
+
+
+# --- NHF loader tests ---
+
+
+@pytest.mark.parametrize(
+    (
+        "folder_name",
+        "channel",
+        "pixel_to_nm_scaling",
+        "stack_shape",
+        "image_dtype",
+        "metadata_dtype",
+        "stack_sum",
+    ),
+    [
+        pytest.param(
+            "nhf_folder_0",
+            "Topography_trace",
+            10.154255319148936,
+            (3, 500, 500),
+            float,
+            dict,
+            908261278.2984858,
+        )
+    ],
+)
+def test_read_nhf_valid_files(
+    folder_name: str,
+    channel: str,
+    pixel_to_nm_scaling: float,
+    stack_shape: tuple[int, int, int],
+    image_dtype: type[np.floating],
+    metadata_dtype: type,
+    stack_sum: float,
+    resource_path: Path,
+) -> None:
+    """Test the normal operation of loading a .nhf folder."""
+    nhf_result = load_nhf_folder(resource_path / folder_name, channel)
+
+    assert isinstance(nhf_result, AFMImageStack)
+    assert nhf_result.pixel_size_nm == pixel_to_nm_scaling
+    assert isinstance(nhf_result.data, np.ndarray)
+    assert nhf_result.data.shape == stack_shape
+    assert nhf_result.data.dtype == np.dtype(image_dtype)
+    assert isinstance(nhf_result.frame_metadata, list)
+    assert all(isinstance(frame, metadata_dtype) for frame in nhf_result.frame_metadata)
+    assert nhf_result.data.sum() == stack_sum
+    assert len(nhf_result.frame_metadata) == nhf_result.data.shape[0]
+
+    required_keys = {"timestamp", "frame_pixel_size_nm", "line_rate"}
+
+    for frame in nhf_result.frame_metadata:
+        assert required_keys.issubset(frame.keys())
+
+
+@patch("playnano.io.formats.read_nhf_folder.get_nhf_time")
+@patch("playnano.io.formats.read_nhf_folder.get_image_number")
+@patch("playnano.io.formats.read_nhf_folder.load_nhf")
+def test_load_nhf_folder_missing_line_rate_raises(
+    mock_load_nhf,
+    mock_get_image_number,
+    mock_get_nhf_time,
+    tmp_path,
+):
+    """Test that load_nhf_folder raises ValueError if line_rate is missing."""
+    dummy_file = tmp_path / "frame1.nhf"
+    dummy_file.write_text("placeholder")
+
+    # Prevent file I/O
+    mock_get_image_number.return_value = 0
+    mock_get_nhf_time.return_value = datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+
+    # Missing line_rate
+    mock_load_nhf.return_value = (
+        np.ones((10, 10)),
+        1.0,
+        None,
+    )
+
+    with pytest.raises(ValueError, match="line_rate"):
+        load_nhf_folder(tmp_path, channel="Topography_trace")
+
+
+@patch("playnano.io.formats.read_nhf_folder.get_nhf_time")
+@patch("playnano.io.formats.read_nhf_folder.get_image_number")
+@patch("playnano.io.formats.read_nhf_folder.load_nhf")
+def test_load_nhf_folder_missing_timestamp_raises(
+    mock_load_nhf,
+    mock_get_image_number,
+    mock_get_nhf_time,
+    tmp_path,
+):
+    """Test that load_nhf_folder raises ValueError if timestamp is missing."""
+    dummy_file = tmp_path / "frame1.nhf"
+    dummy_file.write_text("placeholder")
+
+    mock_get_image_number.return_value = 0
+    mock_get_nhf_time.return_value = None
+
+    mock_load_nhf.return_value = (
+        np.ones((10, 10)),
+        1.0,
+        1.0,
+    )
+
+    with pytest.raises((TypeError, AttributeError)):
+        load_nhf_folder(tmp_path, channel="Topography_trace")
+
+
+@patch("playnano.io.formats.read_nhf_folder.get_nhf_time")
+@patch("playnano.io.formats.read_nhf_folder.get_image_number")
+@patch("playnano.io.formats.read_nhf_folder.load_nhf")
+def test_load_nhf_folder_backwards_timestamps_raise(
+    mock_load_nhf,
+    mock_get_image_number,
+    mock_get_nhf_time,
+    tmp_path,
+):
+    """Test that load_nhf_folder raises ValueError if timestamps are not monotonic."""
+    # Two frames
+    (tmp_path / "frame1.nhf").write_text("placeholder")
+    (tmp_path / "frame2.nhf").write_text("placeholder")
+
+    mock_get_image_number.side_effect = [0, 1]
+
+    t0 = datetime(2024, 1, 1, 12, 0, tzinfo=timezone.utc)
+    t1 = t0 - timedelta(seconds=5)  # ← backwards time
+
+    mock_get_nhf_time.side_effect = [t0, t1]
+
+    mock_load_nhf.return_value = (
+        np.ones((10, 10)),
+        1.0,
+        1.0,
+    )
+
+    with pytest.raises(ValueError, match="not monotonic"):
+        load_nhf_folder(tmp_path, channel="Topography_trace")
+
+
+@patch("playnano.io.formats.read_nhf_folder.get_nhf_time")
+@patch("playnano.io.formats.read_nhf_folder.get_image_number")
+@patch("playnano.io.formats.read_nhf_folder.load_nhf")
+def test_load_nhf_folder_repeated_timestamps_warn(
+    mock_load_nhf,
+    mock_get_image_number,
+    mock_get_nhf_time,
+    tmp_path,
+    caplog,
+):
+    """Test that load_nhf_folder logs a warning if timestamps are repeated."""
+    (tmp_path / "frame1.nhf").write_text("placeholder")
+    (tmp_path / "frame2.nhf").write_text("placeholder")
+
+    mock_get_image_number.side_effect = [0, 1]
+
+    t = datetime(2024, 1, 1, 12, 0, tzinfo=timezone.utc)
+    mock_get_nhf_time.side_effect = [t, t]  # ← repeated
+
+    mock_load_nhf.return_value = (
+        np.ones((10, 10)),
+        1.0,
+        1.0,
+    )
+
+    with caplog.at_level("WARNING"):
+        load_nhf_folder(tmp_path, channel="Topography_trace")
+
+    assert any("repeated values" in record.message for record in caplog.records)
+
+
+class DummyMeasurement:
+    def __init__(self, *, created=None, measurement_name=None):
+        self.attribute = {}
+        if created is not None:
+            self.attribute["created"] = created
+        if measurement_name is not None:
+            self.attribute["measurement_name"] = measurement_name
+
+
+class DummyNHFFile:
+    def __init__(self, measurements: dict[str, DummyMeasurement]):
+        self.measurement = measurements
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        pass
+
+
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_nhf_time_iso_z(mock_reader):
+    created = "2026-02-01T12:54:32.990Z"
+    mock_reader.return_value = DummyNHFFile(
+        {"Image 1": DummyMeasurement(created=created)}
+    )
+
+    t = get_nhf_time(Path("dummy.nhf"))
+
+    assert isinstance(t, datetime)
+    assert t.isoformat() == "2026-02-01T12:54:32.990000+00:00"
+
+
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_nhf_time_iso_no_z(mock_reader):
+    created = "2026-02-01T12:54:32.990"
+    mock_reader.return_value = DummyNHFFile(
+        {"Image 1": DummyMeasurement(created=created)}
+    )
+
+    t = get_nhf_time(Path("dummy.nhf"))
+
+    assert isinstance(t, datetime)
+    assert t.isoformat() == "2026-02-01T12:54:32.990000"
+
+
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_nhf_time_numpy_scalar(mock_reader):
+    created = np.array("2026-02-01T12:54:32.990Z")
+    mock_reader.return_value = DummyNHFFile(
+        {"Image 1": DummyMeasurement(created=created)}
+    )
+
+    t = get_nhf_time(Path("dummy.nhf"))
+
+    assert isinstance(t, datetime)
+    assert t.tzinfo is not None
+
+
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_nhf_time_bytes(mock_reader):
+    created = b"2026-02-01T12:54:32.990Z"
+    mock_reader.return_value = DummyNHFFile(
+        {"Image 1": DummyMeasurement(created=created)}
+    )
+
+    t = get_nhf_time(Path("dummy.nhf"))
+
+    assert isinstance(t, datetime)
+    assert t.isoformat() == "2026-02-01T12:54:32.990000+00:00"
+
+
+@pytest.mark.parametrize(
+    "measurement_name, expected",
+    [
+        ("Image 1", 1),
+        ("Image 12", 12),
+        ("Topography 3", 3),
+        ("Scan_007", 7),
+        ("Measurement #42", 42),
+    ],
+)
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_image_number_valid_names(
+    mock_reader,
+    measurement_name,
+    expected,
+):
+    mock_reader.return_value = DummyNHFFile(
+        {"only": DummyMeasurement(measurement_name=measurement_name)}
+    )
+
+    result = get_image_number(Path("dummy.nhf"))
+
+    assert result == expected
+
+
+@patch("playnano.io.formats.read_nhf_folder.nhf_reader.NHFFileReader")
+def test_get_image_number_invalid_measurement_name_no_digits_raises(mock_reader):
+    """
+    measurement_name is a string but contains no digits,
+    so get_image_number must raise ValueError.
+    """
+    mock_reader.return_value = DummyNHFFile(
+        {"Image 1": DummyMeasurement(measurement_name="Topography")}  # ← no digits
+    )
+
+    with pytest.raises(ValueError, match="invalid measurement_name"):
+        get_image_number(Path("dummy.nhf"))
