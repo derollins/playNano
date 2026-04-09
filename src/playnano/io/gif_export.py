@@ -129,6 +129,9 @@ def create_gif_with_scale_and_timestamp(
         and len(pixel_sizes_nm) == len(image_stack)
     ):
         pass
+    elif pixel_sizes_nm is None:
+        draw_scale = False
+        logger.warning("No pixel size information provided, will not draw scale bar.")
     else:
         draw_scale = False
         logger.warning("Invalid pixel_sizes_nm list, will not draw scale bar.")

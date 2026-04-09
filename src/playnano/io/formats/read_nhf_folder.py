@@ -138,7 +138,7 @@ def load_nhf(file_path: Path, channel: str):
 
         if channel not in channel_names:
             raise ValueError(
-                f"Channel '{channel}' not found in {file_path.name}. Available channels: {list(channel_names)}"  # noqa
+                f"Channel '{channel}' not found in {file_path.name}. Available channels: {list(channel_names)}"  # noqa E501
             )
 
         if measurement.measurement_type == nhf_reader.NHFMeasurementType.Image:
@@ -217,7 +217,7 @@ def load_nhf_folder(
         raise ValueError("NHF timestamps are not monotonic (time goes backwards).")
     if np.any(dt == 0):
         logger.warning(
-            "NHF timestamps contain repeated values (zero time difference between frames)."
+            "NHF timestamps contain repeated values (zero time difference between frames)."  # noqa E501
         )
 
     for i, frame in enumerate(frame_metadata):

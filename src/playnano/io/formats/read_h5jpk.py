@@ -241,6 +241,7 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
     KeyError
         If required attributes are missing in the measurement group.
     """
+    logger.debug("Extracting pixel-to-nm scaling from H5-JPK measurement group.")
     try:
         ulength = measurement_group.attrs[
             "position-pattern.grid.ulength"
@@ -398,22 +399,22 @@ def load_h5jpk(
         )  # seconds per frame (height lines / lines per second)
         timestamps = np.arange(num_frames) * frame_interval
 
+        px_size_nm = _jpk_pixel_to_nm_scaling_h5(measurement_group)
+
         # Compose per-frame metadata list
         frame_metadata = []
         for ts in timestamps:
             frame_metadata.append(
                 {
                     "timestamp": ts,
-                    "frame_pixel_size_nm": _jpk_pixel_to_nm_scaling_h5(
-                        measurement_group
-                    ),
+                    "frame_pixel_size_nm": px_size_nm,
                     "line_rate": line_rate,
                 }
             )
 
         return AFMImageStack(
             data=image_stack,
-            pixel_size_nm=_jpk_pixel_to_nm_scaling_h5(measurement_group),
+            pixel_size_nm=px_size_nm,
             channel=channel,
             file_path=str(file_path),
             frame_metadata=frame_metadata,
