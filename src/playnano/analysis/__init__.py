@@ -8,6 +8,7 @@ from .modules.k_means_clustering import KMeansClusteringModule
 from .modules.log_blob_detection import LoGBlobDetectionModule
 from .modules.particle_tracking import ParticleTrackingModule
 from .modules.x_means_clustering import XMeansClusteringModule
+from .modules.particle_extraction import ParticleRegionExtractionModule
 
 # import other built-in modules implemented, e.g.:
 # from .modules.detection import ParticleDetector
@@ -23,6 +24,7 @@ _BUILTIN = [
     XMeansClusteringModule,
     KMeansClusteringModule,
     DBSCANClusteringModule,
+    ParticleRegionExtractionModule,
     # FrameSegmenter,
     # etc.
 ]
