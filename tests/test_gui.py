@@ -224,7 +224,7 @@ def test_show_frame_fallback_pixel_size(qtbot):
 
 
 def test_colormap_normalize_flat_range(qtbot):
-    """Test _colormap_and_normalize when zmin == zmax returns zeros."""
+    """Test _colormap_and_normalize when zmin == zmax returns zeros for 'afmhot'."""
     mock_stack = MagicMock(width=256, height=256, data=np.ones((1, 5, 5)))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.frame_metadata = []
@@ -233,6 +233,7 @@ def test_colormap_normalize_flat_range(qtbot):
     qtbot.addWidget(wnd)
 
     wnd._zmin_raw = wnd._zmax_raw  # force flat range
+    wnd._cmap_name = "afmhot"
     rgb = wnd._colormap_and_normalize(np.ones((5, 5)))
     assert np.all(rgb == 0)
     wnd.close()
@@ -312,6 +313,7 @@ def test_update_background_color_flat_branch():
     wnd._zperc_flat = 0.5
     wnd._zmin_flat = 1.0
     wnd._zmax_flat = 5.0
+    wnd._cmap_name = "afm_brown"
 
     wnd.viewer = MagicMock()
     wnd.viewer.set_background_color = MagicMock()
@@ -322,7 +324,7 @@ def test_update_background_color_flat_branch():
     # Calculate expected RGB value the same way as in code:
     from playnano.gui.window import z_to_rgb
 
-    expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afmhot")
+    expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afm_brown")
 
     wnd.viewer.set_background_color.assert_called_once_with(expected_rgb)
     del wnd
@@ -376,8 +378,8 @@ def test_export_gif_branches(
     qtbot.addWidget(wnd)
 
     # Set radio button states
-    wnd.gif_raw_radio.setChecked(raw_checked)
-    wnd.gif_processed_radio.setChecked(not raw_checked)
+    wnd.animated_raw_radio.setChecked(raw_checked)
+    wnd.animated_processed_radio.setChecked(not raw_checked)
 
     # Set z-range values
     wnd._zmin_raw, wnd._zmax_raw = -1.0, 1.0
@@ -405,6 +407,92 @@ def test_export_gif_branches(
     # timestamp and scale bar toggles passed correctly
     assert call_args["draw_ts"] is True
     assert call_args["draw_scale"] is False
+    wnd.close()
+    wnd.deleteLater()
+
+
+@pytest.mark.parametrize(
+    "raw_present, raw_checked, expected_raw, exporters",
+    [
+        (True, True, True, {"gif": True, "video": True, "image": True}),
+        (False, True, False, {"gif": True, "video": False, "image": True}),
+        (True, False, False, {"gif": False, "video": True, "image": False}),
+    ],
+)
+@patch("playnano.io.gif_export.export_gif")
+@patch("playnano.io.video_export.export_video")
+@patch("playnano.io.image_sequence_export.export_image_sequence")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
+def test_export_animated_branches(
+    mock_prepare,
+    mock_image_seq,
+    mock_video,
+    mock_gif,
+    raw_present,
+    raw_checked,
+    expected_raw,
+    exporters,
+    qtbot,
+):
+    """Test _export_animated handles raw branches, z-range & exporter selection."""
+    mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
+    mock_stack.pixel_size_nm = 1.0
+    mock_stack.time_for_frame = MagicMock(return_value=0.1)
+    mock_stack.processed = {"raw": mock_stack.data} if raw_present else {}
+
+    wnd = MainWindow(mock_stack)
+    qtbot.addWidget(wnd)
+
+    wnd.animated_raw_radio.setChecked(raw_checked)
+    wnd.animated_processed_radio.setChecked(not raw_checked)
+
+    # Explicit exporter selection
+    wnd.export_gif_cb.setChecked(exporters["gif"])
+    wnd.export_mp4_cb.setChecked(exporters["video"])
+    wnd.export_avi_cb.setChecked(False)
+    wnd.export_png_folder_cb.setChecked(exporters["image"])
+
+    wnd._zmin_raw, wnd._zmax_raw = -1.0, 1.0
+    wnd._zmin_flat, wnd._zmax_flat = -2.0, 2.0
+
+    wnd.show_timestamp_box.setChecked(True)
+    wnd.show_scale_bar_box.setChecked(False)
+
+    # ---------------- Act ----------------
+    wnd._export_animated()
+
+    # ---------------- Assert ----------------
+    mock_prepare.assert_called_once_with(wnd.output_dir, "output")
+
+    expected_zmin = wnd._zmin_raw if expected_raw else wnd._zmin_flat
+    expected_zmax = wnd._zmax_raw if expected_raw else wnd._zmax_flat
+
+    def assert_export(mock, name):
+        kwargs = mock.call_args.kwargs
+        assert kwargs["raw"] == expected_raw
+        assert kwargs["zmin"] == expected_zmin
+        assert kwargs["zmax"] == expected_zmax
+        assert kwargs["draw_ts"] is True
+        assert kwargs["draw_scale"] is False
+
+    if exporters["gif"]:
+        assert mock_gif.called
+        assert_export(mock_gif, "gif")
+    else:
+        mock_gif.assert_not_called()
+
+    if exporters["video"]:
+        assert mock_video.called
+        assert_export(mock_video, "video")
+    else:
+        mock_video.assert_not_called()
+
+    if exporters["image"]:
+        assert mock_image_seq.called
+        assert_export(mock_image_seq, "image")
+    else:
+        mock_image_seq.assert_not_called()
+
     wnd.close()
     wnd.deleteLater()
 

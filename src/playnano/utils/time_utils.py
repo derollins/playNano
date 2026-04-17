@@ -107,7 +107,9 @@ def draw_scale_and_timestamp(
     W, H = pil.size
 
     # ==== Font setup ====
-    steps_font_path = files("playnano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
+    steps_font_path = files("playnano.resources.fonts").joinpath(
+        "Steps-Mono/Steps-Mono.otf"
+    )
 
     # compute a point size to match the GUI's QFont
     ptsize = int(15 * font_scale)

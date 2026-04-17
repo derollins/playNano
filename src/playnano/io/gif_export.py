@@ -15,6 +15,7 @@ Dependencies
 import logging
 from pathlib import Path
 
+import cv2
 import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
@@ -37,7 +38,7 @@ def create_gif_with_scale_and_timestamp(
     scale_bar_length_nm=100,
     output_path="output",
     duration=0.5,
-    cmap_name="afmhot",
+    cmap_name="afm_brown",
     zmin: float | str | None = None,
     zmax: float | str | None = None,
     draw_ts: bool = True,
@@ -172,14 +173,27 @@ def create_gif_with_scale_and_timestamp(
 
         # Determine pixel_size_nm for frame
         draw_pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
+
+        # Upscale BEFORE annotation
+        if color_frame.shape[0] < 512:
+            TARGET_HEIGHT = 512
+        else:
+            TARGET_HEIGHT = color_frame.shape[0]
+        scale = TARGET_HEIGHT / color_frame.shape[0]
+        FONT_SCALE = 2  # tuned for 512px frames
+
+        color_frame = cv2.resize(
+            color_frame, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC
+        )
+
         # Add annotations
         frame_with_overlay = draw_scale_and_timestamp(
             color_frame,
             timestamp=timestamp,
             pixel_size_nm=draw_pixel_size_nm,
-            scale=1.0,
+            scale=scale,
             bar_length_nm=scale_bar_length_nm,
-            font_scale=frame.shape[0] / 256,
+            font_scale=FONT_SCALE,
             draw_ts=draw_ts,
             draw_scale=draw_scale,
             color=(255, 255, 255),
@@ -205,6 +219,7 @@ def export_gif(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    cmap_name: str = "afm_brown",
     raw: bool = False,
     zmin: float | None = None,
     zmax: float | None = None,
@@ -304,7 +319,7 @@ def export_gif(
         timestamps,
         output_path=gif_path,
         scale_bar_length_nm=bar_nm,
-        cmap_name="afmhot",
+        cmap_name=cmap_name,
         zmin=zmin,
         zmax=zmax,
         draw_ts=draw_ts,

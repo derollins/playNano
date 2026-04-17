@@ -391,7 +391,7 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
     with Image.open(output_path) as img:
         frames = [frame.copy() for frame in ImageSequence.Iterator(img)]
         assert len(frames) == 3
-        assert all(f.size == (10, 10) for f in frames)
+        assert all(f.size == (512, 512) for f in frames)  # default size from code
         assert all(f.mode in ("P", "RGB", "RGBA") for f in frames)  # Flexible for GIFs
 
 
