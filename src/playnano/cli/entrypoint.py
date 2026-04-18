@@ -12,6 +12,7 @@ from playnano.cli.handlers import (
     handle_wizard,
 )
 from playnano.errors import LoadError
+from playnano.utils.colormaps import DEFAULT_CMAP
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,12 @@ def main() -> None:
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
     )
+    play_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The colormap to use for visualisation (default=afm_brown).",
+    )
     # Mutually exclusive: either processing string or processing file (or none)
     group = play_parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -161,6 +168,12 @@ def main() -> None:
         "--scale-bar-nm",
         type=int,
         help="Integer length of scale bar in nm",
+    )
+    wizard_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The colormap to use for animated export (default=afm_brown).",
     )
     wizard_parser.set_defaults(func=handle_wizard)
 
@@ -211,6 +224,12 @@ def main() -> None:
         type=str,
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    process_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The colormap to use for animated export (default=afm_brown).",
     )
     # Mutually exclusive: either processing string or processing file (or none)
     filter_group = process_parser.add_mutually_exclusive_group()

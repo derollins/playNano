@@ -1063,6 +1063,7 @@ def test_handle_play_accepts_path_object():
         scale_bar_nm=100,
         zmin="auto",
         zmax="auto",
+        cmap="afm_brown",
     )
 
     with patch("playnano.cli.handlers.play_pipeline_mode") as mock_play:
@@ -1104,6 +1105,7 @@ def make_args(**kwargs) -> argparse.Namespace:
         "output_folder": None,
         "output_name": None,
         "scale_bar_nm": 100,
+        "cmap": "afm_brown",
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -1120,6 +1122,7 @@ def test_handle_processing_wizard_success(mock_wizard):
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,
+        cmap="afm_brown",
     )
 
 

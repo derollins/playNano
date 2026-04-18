@@ -6,7 +6,7 @@ them as plugins. This allows you to integrate custom feature detectors, tracking
 methods, or specialised statistics into the standard pipeline.
 
 Structure and Requirements
--------------------------
+--------------------------
 
 Custom modules must subclass :class:`playnano.analysis.base.AnalysisModule` and
 implement two things:

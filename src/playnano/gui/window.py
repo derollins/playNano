@@ -41,6 +41,7 @@ from playnano.afm_stack import AFMImageStack
 from playnano.gui.widgets.controls import PlaybackControls
 from playnano.gui.widgets.viewer import ViewerWidget
 from playnano.processing.pipeline import ProcessingPipeline
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.constants import default_steps_with_kwargs
 from playnano.utils.io_utils import compute_zscale_range, prepare_output_directory
 
@@ -60,6 +61,7 @@ class MainWindow(QMainWindow):
         scale_bar_nm: int = 100,
         zmin: str = "auto",
         zmax: str = "auto",
+        cmap: str = DEFAULT_CMAP,
     ):
         """
         Initialize the main application window.
@@ -80,6 +82,8 @@ class MainWindow(QMainWindow):
         zmin, zmax : 'auto' or float, default="auto"
             Display range endpoints; if "auto", they will be computed
             from the data.
+        cmap : str, default=DEFAULT_CMAP
+            Name of the colormap to use for visualisation on launch.
 
         Returns
         -------
@@ -91,8 +95,6 @@ class MainWindow(QMainWindow):
             If zmin/zmax cannot be parsed (not 'auto' or float).
 
         """
-        if not QMainWindow.__init__.__call__:
-            raise RuntimeError("Base QMainWindow not properly initialized")
         super().__init__()
         self.setWindowTitle("playNano Player")
 
@@ -126,7 +128,22 @@ class MainWindow(QMainWindow):
         if not basic_family:
             logger.warning("Failed to load basic font. GUI stylesheet will fallback.")
 
-        self._cmap_name = "afm_brown"
+        self._available_cmaps = [
+            DEFAULT_CMAP,
+            "playnano_gold",
+            "classic_afm",
+            "afmhot",
+            "gray",
+            "viridis",
+            "cividis",
+            "magma",
+            "inferno",
+            "plasma",
+            "coolwarm",
+            "turbo",
+        ]
+
+        self._cmap_name = cmap if cmap in self._available_cmaps else DEFAULT_CMAP
 
         self.annotation_font = QFont(steps_family, 18)
 
@@ -405,22 +422,7 @@ class MainWindow(QMainWindow):
         color_group.setFixedHeight(30)
 
         self.cmap_combo = QComboBox()
-        self.cmap_combo.addItems(
-            [
-                "afm_brown",
-                "playnano_gold",
-                "classic_afm",
-                "afmhot",
-                "gray",
-                "viridis",
-                "cividis",
-                "magma",
-                "inferno",
-                "plasma",
-                "coolwarm",
-                "turbo",
-            ]
-        )
+        self.cmap_combo.addItems(self._available_cmaps)
 
         self.cmap_combo.setCurrentText(self._cmap_name)
         self.cmap_combo.currentTextChanged.connect(self._on_cmap_changed)
@@ -498,6 +500,16 @@ class MainWindow(QMainWindow):
         )
         self.auto_btn.clicked.connect(self._on_auto)
 
+    def _get_cmap(self):
+        try:
+            return matplotlib.colormaps.get_cmap(self._cmap_name)
+        except Exception:
+            logger.warning(
+                f"Invalid cmap '{self._cmap_name}', falling back to 'afm_brown'"
+            )
+            self._cmap_name = DEFAULT_CMAP
+            return matplotlib.colormaps.get_cmap(DEFAULT_CMAP)
+
     def apply_filters(self):
         """
         Apply the selected processing pipeline to the AFM stack.
@@ -543,7 +555,10 @@ class MainWindow(QMainWindow):
         self.zmax_spin.blockSignals(True)
         self.zmax_spin.blockSignals(False)
         # and for z scale
-        lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        if self._show_flat:
+            lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        else:
+            lo, hi = sorted((self._zmin_raw, self._zmax_raw))
         self.zmin_spin.blockSignals(True)
         self.zmax_spin.blockSignals(True)
 
@@ -670,7 +685,7 @@ class MainWindow(QMainWindow):
             clipped = np.clip(arr, zmin, zmax)
             norm8 = ((clipped - zmin) / (zmax - zmin) * 255).astype(np.uint8)
 
-        cmap = matplotlib.colormaps.get_cmap(self._cmap_name)
+        cmap = self._get_cmap()
 
         rgba = cmap(norm8 / 255.0)
         return (rgba[..., :3] * 255).astype(np.uint8)
@@ -1066,7 +1081,7 @@ class MainWindow(QMainWindow):
             zmin, zmax = self._zmin_raw, self._zmax_raw
 
         norm = colors.Normalize(vmin=zmin, vmax=zmax)
-        cmap = matplotlib.colormaps.get_cmap(self._cmap_name)
+        cmap = self._get_cmap()
 
         bar_colors = cmap(norm(centers))
 
@@ -1100,7 +1115,7 @@ class MainWindow(QMainWindow):
             zmin, zmax = self._zmin_raw, self._zmax_raw
 
         norm = colors.Normalize(vmin=zmin, vmax=zmax)
-        cmap = matplotlib.colormaps.get_cmap(self._cmap_name)
+        cmap = self._get_cmap()
 
         new_colors = cmap(norm(self._hist_centers))
 
@@ -1314,7 +1329,7 @@ class MainWindow(QMainWindow):
         self.show_frame(self._idx)
 
 
-def z_to_rgb(z_value, zmin, zmax, cmap_name="afm_brown"):
+def z_to_rgb(z_value, zmin, zmax, cmap_name=DEFAULT_CMAP):
     """
     Map a single height value to an RGB triple via a matplotlib colormap.
 
@@ -1324,7 +1339,7 @@ def z_to_rgb(z_value, zmin, zmax, cmap_name="afm_brown"):
         Height value to map.
     zmin, zmax : float
         Data range for normalization.  If zmax == zmin, returns black.
-    cmap_name : str, default="afm_brown"
+    cmap_name : str, default=DEFAULT_CMAP
         Name of the matplotlib colormap to use.
 
     Returns

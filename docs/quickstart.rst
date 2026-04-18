@@ -46,12 +46,12 @@ To open a sample file in the GUI, run:
    playnano play ./tests/resources/sample_0.h5-jpk  # Opens GUI with loaded file
 
 This opens a sample AFM file when run in the project root. Change the path to your
-own data to view other files. There is a preset processing pipeline can can be
+own data to view other files. There is a preset processing pipeline can be
 applied by pressing the "F" key or the "Apply Filters" button in the GUI. You can
 find out more about using the GUI in :doc:`gui`.
 
 Batch process, analysis and export (no GUI):
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For batch processing and analysis the processing and analysis pipelines are run through separate commands.
 To run these commands on example data, these commands can be run from the project root.

@@ -129,6 +129,7 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
         scale_bar_nm=100,
         zmin="auto",
         zmax="auto",
+        cmap="afm_brown",
     )
     mock_window.show.assert_called_once()
     mock_app.exec.assert_called_once()

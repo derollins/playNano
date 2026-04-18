@@ -47,7 +47,8 @@ Apply filters and export without user interaction.
      [--output-name BASE_NAME] \
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
-     [--zmax MAXIMUM]
+     [--zmax MAXIMUM] \
+    [--cmap COLORMAP_NAME]
 
 Primary options
 ~~~~~~~~~~~~~~~
@@ -60,6 +61,7 @@ Primary options
 - ``--output-folder`` / ``--output-name`` - export location and basename.
 - ``--scale-bar-nm`` - integer length (nm) for scale bar in GIF (0 disables).
 - ``--zmin`` / ``--zmax`` - initial z-range; can be a float or ``auto`` (1st/99th percentiles).
+- ``--cmap`` - name of colormap to use for animated visualisation export (default=afm_brown).
 
 .. note::
 
@@ -182,7 +184,8 @@ Open the PySide6 GUI viewer:
      [--output-name BASE_NAME] \
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
-     [--zmax MAXIMUM]
+     [--zmax MAXIMUM] \
+    [--cmap COLORMAP_NAME]
 
 GUI highlights
 ^^^^^^^^^^^^^^

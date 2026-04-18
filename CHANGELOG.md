@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Flip Filter**
   - Added built-in processing filter, `vertical_flip`, which uses the NumPy `flipud()` function to reverse the row
-    order of a 2D image. No eqivielent masked filter.
+    order of a 2D image. No equivalent masked filter.
 
 - **ARIS Reader**
   - Support for loading Asylum Research **`.aris`** high‑speed AFM data files.
@@ -24,6 +24,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - Multi‑suffix file loading support, enabling correct detection of formats such as
     `.ome.tif` alongside standard single‑suffix extensions.
+
+  - **Video & Image Sequence Export**
+  - New export formats for animated data presentation:
+    - **Video (MP4/AVI)**: Export colormapped and annotated high-speed AFM videos.
+    - **Image Sequences**: Export individual colormapped frames into a numbered directory.
+  - All exports support metadata overlays including scale bars, timestamps, and data labels.
+  - New format exports supported in the API and also through the GUI.
+
+- **Configurable Colormaps & Perceptual Scaling**
+  - Introduced a dedicated colormap selection system for the GUI, and all visual exports (GIF/Video).
+  - Added a suite of custom-designed colormaps for AFM data visualisation:
+    - **afm_brown**: The new project default. Perceptually linear (R²=0.996) to prevent contrast compression
+      in low-height regions and eliminate flickering in HS-AFM videos.
+    - **playnano_gold**: High-contrast, full-dynamic-range (L* 0-100) map for complex topography.
+    - **classic_afm**: A legacy-matching map for continuity with older AFM software.
+  - A new `--cmap` argument was added to the CLI to select the colormap.
+
+- **Resource Management System**
+  - Created `src/playnano/resources/` to house non-code assets. Colormaps were added and fonts moved here.
+  - Added `importlib.resources` integration for robust cross-platform asset loading.
+
+- **Automated API Documentation**
+  - Integrated `sphinx-apidoc` directly into `conf.py` via a `builder-inited` hook, enabling "self-healing"
+    documentation that updates automatically during the build process.
+  - Added automated discovery for analysis modules to ensure new plugins are documented without manual RST updates.
 
   - **Tests** including:
     - Synthetic ARIS HDF5 generator.
@@ -43,6 +68,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - GUI and gif_export updated to use these per-frame values.
     - Documentation updated in NPZ, OME-TIFF, and HDF5 export sections to reflect
       per-frame pixel-size support.
+
+- **GUI colormap selection**
+  - A colormap selection dropdown menu added to the export panel of the GUI.
+  - The colormap is now displayed on the histogram, aligned with the relevant heights
+    and updated when zmin and zmax are changed.
+
+- **Package Asset Restructuring (Internal Breaking Change)**
+  - Moved bundled fonts from `src/playnano/fonts/` to `src/playnano/resources/fonts/`.
 
 ### Fixed
 

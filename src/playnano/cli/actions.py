@@ -32,6 +32,7 @@ from playnano.gui.main import gui_entry
 from playnano.io.export_data import export_bundles
 from playnano.io.gif_export import export_gif
 from playnano.processing.core import process_stack
+from playnano.utils.colormaps import DEFAULT_CMAP, is_valid_cmap
 from playnano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def process_pipeline_mode(
     scale_bar_nm: int | None,
     zmin: str = "auto",
     zmax: str = "auto",
+    cmap: str = DEFAULT_CMAP,
 ) -> None:
     """
     Apply a processing pipeline to an AFM file, then optionally export data and GIF.
@@ -56,7 +58,7 @@ def process_pipeline_mode(
     Steps
     -----
     1. Parse processing steps from either `processing_file` (YAML/JSON)
-    or `processing_str`.
+       or `processing_str`.
     2. Run the ProcessingPipeline on the AFM stack to apply all filters.
     3. Export the processed stack to TIFF/NPZ/HDF5 formats (`export_bundles`).
     4. Generate an animated GIF of the filtered data (`export_gif`).
@@ -87,13 +89,18 @@ def process_pipeline_mode(
         Minimum Z-value for GIF color normalization (float string or `"auto"`).
     zmax : str
         Maximum Z-value for GIF color normalization (float string or `"auto"`).
+    cmap : str
+        Name of the colormap to use for GIF export (default=DEFAULT_CMAP).
 
     Returns
     -------
     None
     """
-
     logger.debug("Entering process_pipeline_mode: %r", locals())
+
+    if not is_valid_cmap(cmap):
+        logger.warning(f"Unknown colormap '{cmap}', falling back to 'afm_brown'.")
+        cmap = DEFAULT_CMAP
 
     # 1) Build steps_with_kwargs for processing
     if processing_file:
@@ -132,6 +139,7 @@ def process_pipeline_mode(
         raw=False,
         zmin=zmin,
         zmax=zmax,
+        cmap_name=cmap,
     )
 
 
@@ -243,6 +251,7 @@ def play_pipeline_mode(
     scale_bar_nm: int | None,
     zmin: str = "auto",
     zmax: str = "auto",
+    cmap: str = DEFAULT_CMAP,
 ) -> None:
     """
     Launch an interactive GUI to browse an AFM stack with optional filters.
@@ -274,6 +283,8 @@ def play_pipeline_mode(
         Minimum Z-value mapping (float or `"auto"`).
     zmax : str
         Maximum Z-value mapping (float or `"auto"`).
+    cmap : str
+        Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).
 
     Returns
     -------
@@ -335,6 +346,7 @@ def play_pipeline_mode(
         scale_bar_nm=scale_bar_nm or 100,
         zmin=zmin,
         zmax=zmax,
+        cmap=cmap,
     )
 
 
@@ -377,6 +389,8 @@ class Wizard:
     io : IO or None, optional
         I/O abstraction used for reading commands and printing output. If None,
         standard input/output will be used. Mainly for testing and automation.
+    cmap : str, optional
+        Name of the colormap to use for GIF exports(default=DEFAULT_CMAP).
 
     Attributes
     ----------
@@ -409,6 +423,7 @@ class Wizard:
         output_name: Optional[str],
         scale_bar_nm: Optional[int],
         io: Optional[IO] = None,
+        cmap: str = DEFAULT_CMAP,
     ) -> None:
         """
         Initialize the Wizard for interactive processing and analysis of a AFM stack.
@@ -444,6 +459,7 @@ class Wizard:
         self.output_folder = output_folder
         self.output_name = output_name
         self.scale_bar_nm = scale_bar_nm
+        self.cmap = cmap
         self.io = io or IO()
 
         if not self.input_path.exists():
@@ -751,7 +767,7 @@ class Wizard:
         Execute the currently queued processing steps and optionally export outputs.
 
         Behavior
-        ----
+        --------
         - Runs processing and caches the result.
         - Prompts the user whether to export (tif/npz/h5) and/or create a GIF.
 
@@ -801,6 +817,7 @@ class Wizard:
                 self.scale_bar_nm,
                 zmin=zmin_choice,
                 zmax=zmax_choice,
+                cmap_name=self.cmap,
             )
         self.io.say("Processing complete; processed stack cached.")
 
@@ -1112,11 +1129,12 @@ class Wizard:
         Execute the analysis pipeline, running processing if needed and export results.
 
         The function supports two modes:
-        - If the wizard has processing steps configured (self.process_steps), it will
+
+        * If the wizard has processing steps configured (self.process_steps), it will
           ensure the processed stack is available and up-to-date and then run analysis
           in-memory on that processed stack.
-        - If there are no processing steps, analysis runs directly on the loaded AFM
-        stack.
+        * If there are no processing steps, analysis runs directly on the loaded AFM
+          stack.
 
         Results are exported as JSON and HDF5 into `self.output_folder` (or current
         directory). The JSON is created with `make_json_safe` and both JSON/HDF5 are

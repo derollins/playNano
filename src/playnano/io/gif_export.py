@@ -20,6 +20,7 @@ import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
 
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.io_utils import (
     compute_zscale_range,
     normalize_to_uint8,
@@ -38,7 +39,7 @@ def create_gif_with_scale_and_timestamp(
     scale_bar_length_nm=100,
     output_path="output",
     duration=0.5,
-    cmap_name="afm_brown",
+    cmap_name=DEFAULT_CMAP,
     zmin: float | str | None = None,
     zmax: float | str | None = None,
     draw_ts: bool = True,
@@ -219,7 +220,7 @@ def export_gif(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
-    cmap_name: str = "afm_brown",
+    cmap_name: str = DEFAULT_CMAP,
     raw: bool = False,
     zmin: float | None = None,
     zmax: float | None = None,

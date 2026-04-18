@@ -11,12 +11,17 @@ Overview
 The GUI provides:
 
 - **Playback controls** - play / pause, FPS control, and frame slider.
+- **Filter application** - run a pre-configured processing pipeline on demand and
+  update the processed view.
 - **Raw vs processed views** - toggle between original frames and a flattened (processed)
   version produced by the Processing pipeline.
 - **Annotations** - timestamp and scale-bar overlays (configurable length).
 - **Interactive Z-scale histogram** - draggable zmin / zmax lines, "Auto" reset,
   and numeric spin boxes for precise control.
-- **Export panel** - save animated GIFs and data bundles (NPZ, OME-TIFF, HDF5).
+- **Colormap selection** - choose from new, optimised, playNano colourmaps or built-in Matplotlib
+  colormaps for the viewer and exports.
+- **Export panel** - save animated and annotated videos, GIFs and image sequences or processed data
+  bundles (NPZ, OME-TIFF, HDF5).
 
 .. image:: images/GUI_window.png
    :alt: playNano GUI main window
@@ -58,7 +63,7 @@ Arguments & common options
 - **--output-folder** (*str*) / **--output-name** (*str*)
   Base folder/name for exports created from the GUI.
 
-- **--scale-bar-nm** (*int*, default=100)  
+- **--scale-bar-nm** (*int*, default=100)
   Length of the scale bar drawn on images (set ``0`` to disable).
 
 - **--zmin**, **--zmax** (*float* or *str*, optional)
@@ -76,8 +81,7 @@ Main window
   Playback controls and filter buttons are located below the viewer.
 
 - **Right-side tabs** - includes:
-  - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin (red)
-    and zmax (blue).
+  - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin (red) and zmax (blue).
   - **GIF Export**: choose raw/processed and save an annotated animated GIF.
   - **Data Export**: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.
 
@@ -104,30 +108,30 @@ Raw vs Processed data behaviour
 Export behaviour & filenames
 ----------------------------
 
-- **GIF**: exported GIF filename / folder is derived from ``--output-folder`` /
-  ``--output-name`` or defaults to an ``output`` subfolder in the working directory.
-  GIF export requires some metadata (for example ``line_rate``) to create timing
-  information - if that metadata is missing GIF export may fail (check logs).
-- **Data bundles**: NPZ, OME-TIFF, and HDF5 exports include processing metadata,
-  provenance information, and snapshots (raw + intermediate processed steps, when available).
+- **Animated data**: (GIF, MP4, AVI, folder of PNGs) - the exported file/folder name / save location
+  is derived from ``--output-name`` / ``--output-folder`` respectively or defaults to an ``output``
+  subfolder in the working directory. Animated export requires some metadata (for example ``line_rate``)
+  to create timing information - if that metadata is missing export may fail (check logs).
+- **Data bundles**: (NPZ, OME-TIFF, HDF5) - exports include processing metadata, provenance information,
+  and snapshots (raw + intermediate processed steps, when available).
 
-GIF annotations
-^^^^^^^^^^^^^^^
+Animated export annotations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Any visual annotations you see in the viewer are **burned into** exported GIFs.
-That means the exported animation reflects the current viewer display - it is
-not an independent overlay file.
+Any visual annotations you see in the viewer are **burned into** exported GIFs,
+videos and exported frame sequences. That means the exported animation reflects
+the current viewer display - it is not an independent overlay file.
 
 What is included
 ~~~~~~~~~~~~~~~~
 
 - **Timestamps** - if the ``Show Timestamp`` checkbox is enabled, the frame
-  timestamp displayed in the viewer will be drawn into every exported GIF frame.
+  timestamp displayed in the viewer will be drawn into every exported frame.
 - **Scale bar** - if the ``Show Scale Bar`` checkbox is enabled, the scale bar
-  and the current ``--scale-bar-nm`` length are drawn into the GIF.
-- **Raw / Processed selection** - the GIF uses whichever source (raw or
-  processed) is selected in the GIF export radio buttons.
-- **Current z-range** - the GIF uses the zmin / zmax values visible in the
+  and the current ``--scale-bar-nm`` length are drawn into the video/frame sequence.
+- **Raw / Processed selection** - the exported animation uses whichever source (raw or
+  processed) is selected in the animated data export radio buttons.
+- **Current z-range** - the exported animation uses the zmin / zmax values visible in the
   histogram / spinboxes at the time of export. If you have adjusted the draggable
   lines or spinboxes, the exported frames reflect those settings.
 
@@ -135,11 +139,11 @@ How to control annotations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Use the viewer checkboxes to toggle annotations before export:
-  - Uncheck **Show Timestamp** to remove timestamps from the exported GIF.
+  - Uncheck **Show Timestamp** to remove timestamps from the exported animation.
   - Uncheck **Show Scale Bar** (or set ``--scale-bar-nm`` to ``0``) to remove the scale bar.
-- Choose **Save Raw** or **Save Processed** in the GIF export panel to pick the data source.
-  - The *RAW* label that appears in the viewer when raw data is selected is not included in the GIF.
-- Use the histogram or spinboxes to set the precise z-range that will be used in the GIF.
+- Choose **Save Raw** or **Save Processed** in the animated data export panel to pick the data source.
+  - The *RAW* label that appears in the viewer when raw data is selected is not included in the exported animation.
+- Use the histogram or spinboxes to set the precise z-range that will be used in the exported animation.
 
 Troubleshooting & tips
 ----------------------

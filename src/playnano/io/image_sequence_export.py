@@ -21,6 +21,7 @@ import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
 
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.io_utils import (
     compute_zscale_range,
     normalize_to_uint8,
@@ -45,7 +46,7 @@ def create_image_sequence(
     output_folder: str | Path = "output_frames",
     base_name: str = "frame",
     fmt: str = "png",
-    cmap_name: str = "afm_brown",
+    cmap_name: str = DEFAULT_CMAP,
     zmin: float | str | None = None,
     zmax: float | str | None = None,
     draw_ts: bool = True,
@@ -241,7 +242,7 @@ def export_image_sequence(
     zmax: float | None = None,
     draw_ts: bool = True,
     draw_scale: bool = True,
-    cmap_name: str = "afm_brown",
+    cmap_name: str = DEFAULT_CMAP,
 ) -> None:
     """
     Export an AFM image stack as a folder of annotated PNG or JPEG images.

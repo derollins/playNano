@@ -9,6 +9,8 @@ from matplotlib.colors import ListedColormap
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_CMAP = "afm_brown"
+
 
 def register_custom_colormaps():
     """
@@ -46,3 +48,32 @@ def register_custom_colormaps():
             import logging
 
             logging.getLogger(__name__).error(f"Failed to load colormap {name}: {e}")
+
+
+def is_valid_cmap(name: str) -> bool:
+    """
+    Check whether a colormap name is valid.
+
+    This includes:
+    - Built-in Matplotlib colormaps
+    - Custom playNano colormaps (after registration)
+
+    Parameters
+    ----------
+    name : str
+        Name of the colormap.
+
+    Returns
+    -------
+    bool
+        True if the colormap exists, False otherwise.
+    """
+    if not isinstance(name, str):
+        return False
+
+    return name in plt.colormaps()
+
+
+def get_available_cmaps() -> list[str]:
+    """Return a sorted list of available colormap names."""
+    return sorted(plt.colormaps())

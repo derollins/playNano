@@ -27,6 +27,7 @@ import imageio
 import numpy as np
 from matplotlib import colormaps as cm
 
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.io_utils import (
     compute_zscale_range,
     normalize_to_uint8,
@@ -48,7 +49,7 @@ def create_video_with_scale_and_timestamp(
     scale_bar_length_nm: int = 100,
     output_path: str | Path = "output.mp4",
     fps: float = 10.0,
-    cmap_name: str = "afm_brown",
+    cmap_name: str = DEFAULT_CMAP,
     zmin: float | str | None = None,
     zmax: float | str | None = None,
     draw_ts: bool = True,
@@ -217,7 +218,7 @@ def export_video(
     zmax: float | None = None,
     draw_ts: bool = True,
     draw_scale: bool = True,
-    cmap_name: str = "afm_brown",
+    cmap_name: str = DEFAULT_CMAP,
     codec: str | None = None,
 ) -> None:
     """
