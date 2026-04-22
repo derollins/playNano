@@ -43,12 +43,14 @@ Apply filters and export without user interaction.
      [--processing-file pipeline.yaml] \
      [--export tif,npz,h5] \
      [--make-gif] \
+     [--make-video mp4,avi] \
+     [--make-sequence] \
      [--output-folder OUTPUT_DIR] \
      [--output-name BASE_NAME] \
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
      [--zmax MAXIMUM] \
-    [--cmap COLORMAP_NAME]
+     [--cmap COLORMAP_NAME]
 
 Primary options
 ~~~~~~~~~~~~~~~
@@ -58,6 +60,8 @@ Primary options
 - ``--processing-file`` - YAML/JSON file describing the processing pipeline.
 - ``--export`` - comma-separated list of formats to write: ``tif``, ``npz``, ``h5``.
 - ``--make-gif`` - write an animated GIF with current annotations.
+- ``--make-video`` - write an annotated video; specify formats (e.g. ``mp4``, ``avi``).
+- ``--make-sequence`` - write an annotated image sequence (PNG files).
 - ``--output-folder`` / ``--output-name`` - export location and basename.
 - ``--scale-bar-nm`` - integer length (nm) for scale bar in GIF (0 disables).
 - ``--zmin`` / ``--zmax`` - initial z-range; can be a float or ``auto`` (1st/99th percentiles).
@@ -185,7 +189,7 @@ Open the PySide6 GUI viewer:
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
      [--zmax MAXIMUM] \
-    [--cmap COLORMAP_NAME]
+     [--cmap COLORMAP_NAME]
 
 GUI highlights
 ^^^^^^^^^^^^^^
@@ -193,7 +197,7 @@ GUI highlights
 - Playback controls (play/pause, FPS slider, frame slider)
 - Toggle raw vs processed views and apply processing on demand
 - Z-scale histogram with draggable zmin/zmax lines and numeric spinboxes
-- Export panel: NPZ, OME-TIFF, HDF5 and GIF export options
+- Export panel: NPZ, OME-TIFF, HDF5 and animated export options
 - Keyboard shortcuts: ``Space`` (play/pause), ``F`` (apply filters), ``R`` (toggle raw/processed), ``G`` (export GIF), ``E`` (export selected formats)
 
 Notes about z-range

@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Video (MP4/AVI)**: Export colormapped and annotated high-speed AFM videos.
     - **Image Sequences**: Export individual colormapped frames into a numbered directory.
   - All exports support metadata overlays including scale bars, timestamps, and data labels.
-  - New format exports supported in the API and also through the GUI.
+  - New format exports supported in the API, CLI and also through the GUI.
 
 - **Configurable Colormaps & Perceptual Scaling**
   - Introduced a dedicated colormap selection system for the GUI, and all visual exports (GIF/Video).

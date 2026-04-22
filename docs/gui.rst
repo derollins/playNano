@@ -82,7 +82,8 @@ Main window
 
 - **Right-side tabs** - includes:
   - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin (red) and zmax (blue).
-  - **GIF Export**: choose raw/processed and save an annotated animated GIF.
+  - **Colormap Selection** for viewer and exports.
+  - **Animated Export**: choose raw/processed and save an annotated animated GIF, video or image sequence.
   - **Data Export**: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.
 
 Keyboard shortcuts
@@ -130,7 +131,8 @@ What is included
 - **Scale bar** - if the ``Show Scale Bar`` checkbox is enabled, the scale bar
   and the current ``--scale-bar-nm`` length are drawn into the video/frame sequence.
 - **Raw / Processed selection** - the exported animation uses whichever source (raw or
-  processed) is selected in the animated data export radio buttons.
+  processed) is selected in the animated data export radio buttons and rendered with the
+  selected colormap.
 - **Current z-range** - the exported animation uses the zmin / zmax values visible in the
   histogram / spinboxes at the time of export. If you have adjusted the draggable
   lines or spinboxes, the exported frames reflect those settings.

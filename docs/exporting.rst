@@ -201,18 +201,31 @@ Video Export
 
 :func:`playnano.io.video_export.export_video` creates annotated videos.
 
-Video exports provide a higher-quality visualisation of the AFM video or
-processed stack, suitable for publication and presentation.
-
-.. note::
-
-   Video export is currently under development and is only available
-   programmatically and via the GUI. CLI support will be added in a future release.
+Video exports provide a high-quality visualisation of the AFM video or
+processed stack, suitable for publication and presentation. Videos can be exported in MP4 or AVI
+format, and support the same annotations and colourmap options as GIFs.
 
 **Annotations**
 
 - **Timestamps** — derived from frame metadata.
 - **Scale bar** — physical calibration (default 100 nm) derived from per-frame pixel size metadata.
+
+Video Export Options (CLI)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   playnano process input_folder --make-video --output-name my_video \
+       --scale-bar-nm 50 --zmin auto --zmax auto --cmap playnano_gold
+
+**Flags**
+
+- ``--make-video`` — Generate an animated video after processing default is MP4 but can add a string to
+  specify the format, i.e. ``--make-video avi``.
+- ``--scale-bar-nm`` — Integer length of the scale bar in nanometres (default: 100).
+- ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
+- ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
+- ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
 
 Programmatic Video Export
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -253,6 +266,22 @@ publications or for importing into external tools.
 - **Timestamps** — derived from frame metadata; drawn onto each frame if enabled in the GUI.
 - **Scale bar** — physical calibration (default 100 nm) derived from per-frame pixel size metadata;
   drawn onto each frame if enabled in the GUI.
+
+Image Sequence Export Options (CLI)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   playnano process input_folder --make-sequence --output-name my_frames \
+       --scale-bar-nm 50 --zmin auto --zmax auto --cmap playnano_gold
+
+**Flags**
+
+- ``--make-sequence`` — Generate an image sequence after processing (PNG).
+- ``--scale-bar-nm`` — Integer length of the scale bar in nanometres (default: 100).
+- ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
+- ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
+- ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
 
 Programmatic Image Sequence Export
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
