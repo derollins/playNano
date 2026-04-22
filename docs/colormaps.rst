@@ -49,7 +49,7 @@ Overview
 
 .. _colormap-preview:
 
-.. figure:: docs/images/native_colormaps.png
+.. figure:: images/native_colormaps.png
    :alt: playNano native colormaps
    :align: center
    :width: 500px
