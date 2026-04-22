@@ -122,7 +122,7 @@ def main() -> None:
         "--cmap",
         type=str,
         default=DEFAULT_CMAP,
-        help="The colormap to use for visualisation (default=afm_brown).",
+        help="The initial colormap to use for visualisation (default=afm_brown).",
     )
     # Mutually exclusive: either processing string or processing file (or none)
     group = play_parser.add_mutually_exclusive_group()
@@ -201,6 +201,19 @@ def main() -> None:
         help="Also write an animated GIF after filtering.",
     )
     process_parser.add_argument(
+        "--make-sequence",
+        action="store_true",
+        help="Also create a folder with a sequence of images (png) after filtering.",
+    )
+    process_parser.add_argument(
+        "--make-video",
+        nargs="?",
+        type=str,
+        const="mp4",
+        default=None,
+        help="Export video(s); optionally specify comma-separated formats (default: mp4). Supported: mp4, avi.",  # noqa
+    )
+    process_parser.add_argument(
         "--output-folder",
         type=str,
         help="Folder to write bundles and/or GIF (default='./output').",
@@ -224,6 +237,11 @@ def main() -> None:
         type=str,
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    process_parser.add_argument(
+        "--draw-ts",
+        action="store_true",
+        help="Toggle drawing of timestamps on GIF/video/sequence (default=True).",
     )
     process_parser.add_argument(
         "--cmap",

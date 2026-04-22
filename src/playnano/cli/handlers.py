@@ -113,11 +113,14 @@ def handle_process(args: argparse.Namespace) -> None:
             processing_file=args.processing_file,
             export=args.export,
             make_gif=args.make_gif,
+            make_video=args.make_video,
+            make_sequence=args.make_sequence,
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
             zmin=args.zmin,
             zmax=args.zmax,
+            draw_ts=args.draw_ts,
             cmap=args.cmap,
         )
     except Exception as e:

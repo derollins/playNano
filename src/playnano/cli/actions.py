@@ -31,6 +31,8 @@ from playnano.errors import LoadError
 from playnano.gui.main import gui_entry
 from playnano.io.export_data import export_bundles
 from playnano.io.gif_export import export_gif
+from playnano.io.image_sequence_export import export_image_sequence
+from playnano.io.video_export import export_video
 from playnano.processing.core import process_stack
 from playnano.utils.colormaps import DEFAULT_CMAP, is_valid_cmap
 from playnano.utils.param_utils import prune_kwargs
@@ -45,11 +47,14 @@ def process_pipeline_mode(
     processing_file: str | None,
     export: str | None,
     make_gif: bool,
+    make_video: str | None,
+    make_sequence: bool,
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
     zmin: str = "auto",
     zmax: str = "auto",
+    draw_ts: bool = False,
     cmap: str = DEFAULT_CMAP,
 ) -> None:
     """
@@ -139,6 +144,38 @@ def process_pipeline_mode(
         raw=False,
         zmin=zmin,
         zmax=zmax,
+        draw_ts=draw_ts,
+        cmap_name=cmap,
+    )
+
+    # 5) Video Export
+    if make_video is not None:
+        for fmt in make_video.split(","):
+            fmt = fmt.strip()
+            export_video(
+                afm_stack=afm_stack,
+                make_video=True,
+                output_folder=output_folder,
+                output_name=output_name,
+                scale_bar_nm=scale_bar_nm,
+                fmt=fmt,
+                raw=False,
+                zmin=zmin,
+                zmax=zmax,
+                draw_ts=draw_ts,
+                cmap_name=cmap,
+            )
+    # 6) Image Sequence Export
+    export_image_sequence(
+        afm_stack=afm_stack,
+        make_sequence=make_sequence,
+        output_folder=output_folder,
+        output_name=output_name,
+        scale_bar_nm=scale_bar_nm,
+        raw=False,
+        zmin=zmin,
+        zmax=zmax,
+        draw_ts=draw_ts,
         cmap_name=cmap,
     )
 
@@ -807,6 +844,26 @@ class Wizard:
                 .strip()
                 .lower()
             )
+            draw_ts_choice = self.io.ask("Add timestamps? (y/n): ").strip().lower() in (
+                "y",
+                "yes",
+            )
+            scale_bar_choice = self.io.ask("Add a scale bar? (y/n): ").strip().lower()
+            if scale_bar_choice in ("y", "yes"):
+                gif_scale_bar_length_raw = self.io.ask(
+                    "Enter scale bar length in nm: "
+                ).strip()
+                try:
+                    gif_scale_bar_nm = int(gif_scale_bar_length_raw)
+                except ValueError:
+                    self.io.say(
+                        f"Invalid scale bar length '{gif_scale_bar_length_raw}' (must be an integer).; "  # noqa: E501
+                        "using session default."
+                    )
+                    gif_scale_bar_nm = self.scale_bar_nm
+            else:
+                gif_scale_bar_nm = 0
+
             zmin_choice = self._parse_scale_value(zmin_raw)
             zmax_choice = self._parse_scale_value(zmax_raw)
             export_gif(
@@ -814,10 +871,55 @@ class Wizard:
                 True,
                 self.output_folder,
                 self.output_name,
-                self.scale_bar_nm,
+                gif_scale_bar_nm,
                 zmin=zmin_choice,
                 zmax=zmax_choice,
                 cmap_name=self.cmap,
+                draw_ts=draw_ts_choice,
+            )
+        export_video_choice = self.io.ask("Create a video? (y/n): ").strip().lower()
+        if export_video_choice in ("y", "yes"):
+            zmin_raw = (
+                self.io.ask("Enter a minimum value for the Z scale (or 'auto'): ")
+                .strip()
+                .lower()
+            )
+            zmax_raw = (
+                self.io.ask("Enter a maximum value for the Z scale (or 'auto'): ")
+                .strip()
+                .lower()
+            )
+            ts_choice = self.io.ask("Add timestamps? (y/n): ").strip().lower() in (
+                "y",
+                "yes",
+            )
+            scale_bar_choice = self.io.ask("Add a scale bar? (y/n): ").strip().lower()
+            if scale_bar_choice in ("y", "yes"):
+                scale_bar_length_raw = self.io.ask(
+                    "Enter scale bar length in nm: "
+                ).strip()
+                try:
+                    video_scale_bar_nm = int(scale_bar_length_raw)
+                except ValueError:
+                    self.io.say(
+                        f"Invalid scale bar length '{scale_bar_length_raw}' (must be an integer); "  # noqa: E501
+                        "using session default."
+                    )
+                    video_scale_bar_nm = self.scale_bar_nm
+            else:
+                video_scale_bar_nm = 0
+            zmin_choice = self._parse_scale_value(zmin_raw)
+            zmax_choice = self._parse_scale_value(zmax_raw)
+            export_video(
+                afm_stack_local,
+                True,
+                self.output_folder,
+                self.output_name,
+                video_scale_bar_nm,
+                zmin=zmin_choice,
+                zmax=zmax_choice,
+                cmap_name=self.cmap,
+                draw_ts=ts_choice,
             )
         self.io.say("Processing complete; processed stack cached.")
 

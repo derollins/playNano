@@ -119,10 +119,18 @@ def test_sanitize_invalid_characters_dir():
         prepare_output_directory("./inva|id", "default")
 
 
-def test_sanitize_empty_output_dir():
+def test_sanitize_empty_output_dir(tmp_path, monkeypatch):
     """Test that an empty directory path defaults to the fallback path."""
+    # Move the test execution into a temporary folder
+    monkeypatch.chdir(tmp_path)
+
     result = prepare_output_directory("", "default")
-    assert result.resolve().name == "default"
+
+    # Check that the name is correct
+    assert result.name == "default"
+    # Verify it exists inside the temp path, not your project root
+    assert result.exists()
+    assert str(tmp_path) in str(result.resolve())
 
 
 def test_setup_logging_warn_level():
@@ -275,11 +283,15 @@ def test_handle_process_bad_output_folder(monkeypatch, tmp_path, caplog):
         scale_bar_nm=None,
         export="tif",
         make_gif=False,
+        make_video="mp4",
+        make_sequence=False,
         output_folder="bad|name",
         output_name=None,
         zmin="auto",
         zmax="auto",
         cmap="afm_brown",
+        draw_ts=True,
+        draw_scale=False,
     )
     (tmp_path / "test.jpk").write_text("data")
 
@@ -319,12 +331,111 @@ def test_handle_process_make_gif(monkeypatch, tmp_path):
         processing_file=None,
         export=None,
         make_gif=True,
+        make_sequence=False,
+        make_video=None,
         output_folder=str(tmp_path),
         output_name="outputname",
         scale_bar_nm=100,
         zmin="auto",
         zmax="auto",
         cmap="afm_brown",
+        draw_ts=True,
+    )
+    (tmp_path / "sample.jpk").write_text("x")
+
+    # Run the function
+    handle_process(args)
+
+
+def test_handle_process_make_video(monkeypatch, tmp_path):
+    """Test handle_process creates a video when make_video is True."""
+    from argparse import Namespace
+
+    from playnano.cli.handlers import handle_process
+
+    fake_data = np.zeros((10, 10, 10))
+    fake_stack = MagicMock()
+    fake_stack.data = fake_data
+    fake_stack.pixel_size_nm = 1.0
+    fake_stack.frame_metadata = [{"timestamp": i} for i in range(10)]
+    fake_stack.channel = "height_trace"
+    fake_stack.image_shape = (10, 10)
+    fake_stack.file_path = tmp_path / "sample.jpk"
+    fake_stack.processed = {}
+
+    # Patch load_data to return our fake stack
+    monkeypatch.setattr(
+        "playnano.cli.actions.AFMImageStack.load_data", lambda *a, **k: fake_stack
+    )
+
+    # Patch the actual video creation so no file is written
+    monkeypatch.setattr("playnano.cli.actions.export_video", lambda *a, **k: None)
+
+    args = Namespace(
+        input_file=str(tmp_path / "sample.jpk"),
+        channel="height_trace",
+        processing=None,
+        processing_file=None,
+        export=None,
+        make_gif=False,
+        make_sequence=False,
+        make_video="mp4,avi",
+        output_folder=str(tmp_path),
+        output_name="outputname",
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+        cmap="afm_brown",
+        draw_ts=True,
+    )
+    (tmp_path / "sample.jpk").write_text("x")
+
+    # Run the function
+    handle_process(args)
+
+
+def test_handle_process_make_sequence(monkeypatch, tmp_path):
+    """Test handle_process creates a image sequence when make_video is True."""
+    from argparse import Namespace
+
+    from playnano.cli.handlers import handle_process
+
+    fake_data = np.zeros((10, 10, 10))
+    fake_stack = MagicMock()
+    fake_stack.data = fake_data
+    fake_stack.pixel_size_nm = 1.0
+    fake_stack.frame_metadata = [{"timestamp": i} for i in range(10)]
+    fake_stack.channel = "height_trace"
+    fake_stack.image_shape = (10, 10)
+    fake_stack.file_path = tmp_path / "sample.jpk"
+    fake_stack.processed = {}
+
+    # Patch load_data to return our fake stack
+    monkeypatch.setattr(
+        "playnano.cli.actions.AFMImageStack.load_data", lambda *a, **k: fake_stack
+    )
+
+    # Patch the actual sequence creation so no file is written
+    monkeypatch.setattr(
+        "playnano.cli.actions.export_image_sequence", lambda *a, **k: None
+    )
+
+    args = Namespace(
+        input_file=str(tmp_path / "sample.jpk"),
+        channel="height_trace",
+        processing=None,
+        processing_file=None,
+        export=None,
+        make_gif=False,
+        make_sequence=True,
+        make_video=None,
+        output_folder=str(tmp_path),
+        output_name="outputname",
+        scale_bar_nm=100,
+        zmin="auto",
+        zmax="auto",
+        cmap="afm_brown",
+        draw_ts=True,
     )
     (tmp_path / "sample.jpk").write_text("x")
 
