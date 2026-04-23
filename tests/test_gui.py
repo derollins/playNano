@@ -291,6 +291,8 @@ def test_update_histogram_colors_uses_raw_zrange_when_not_flat(monkeypatch):
 
     assert used["vmin"] == 2.0
     assert used["vmax"] == 8.0
+    assert used["vmin"] == window._zmin_raw
+    assert used["vmax"] == window._zmax_raw
 
 
 @patch("playnano.gui.main.QApplication")
