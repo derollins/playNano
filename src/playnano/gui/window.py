@@ -508,7 +508,7 @@ class MainWindow(QMainWindow):
             return matplotlib.colormaps.get_cmap(self._cmap_name)
         except Exception:
             logger.warning(
-                f"Invalid cmap '{self._cmap_name}', falling back to 'afm_brown'"
+                f"Invalid cmap '{self._cmap_name}', falling back to '{DEFAULT_CMAP}'"
             )
             self._cmap_name = DEFAULT_CMAP
             return matplotlib.colormaps.get_cmap(DEFAULT_CMAP)

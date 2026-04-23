@@ -3,14 +3,17 @@
 import logging
 from unittest.mock import ANY, MagicMock, patch
 
+import matplotlib
 import numpy as np
 import pytest
+from matplotlib import colors
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
 from playnano.gui import main
 from playnano.gui.widgets.viewer import ViewerWidget
 from playnano.gui.window import MainWindow
+from playnano.utils.colormaps import DEFAULT_CMAP
 
 log = logging.getLogger(__name__)
 
@@ -97,6 +100,197 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     assert wnd._show_flat is False
     wnd.close()
     wnd.deleteLater()
+
+
+def test_get_cmap_invalid_falls_back(monkeypatch, caplog):
+    """
+    Test that _get_cmap fall back to default cmap.
+
+    Invalid colormap names should:
+    - log a warning
+    - reset _cmap_name to DEFAULT_CMAP
+    - return the DEFAULT_CMAP colormap
+    """
+
+    # Create instance without running full Qt init
+    window = MainWindow.__new__(MainWindow)
+    window._cmap_name = "definitely_not_a_real_colormap"
+
+    caplog.set_level("WARNING")
+
+    cmap = window._get_cmap()
+
+    assert cmap.name == matplotlib.colormaps.get_cmap(DEFAULT_CMAP).name
+
+    assert window._cmap_name == DEFAULT_CMAP
+
+    assert "Invalid cmap" in caplog.text
+    assert DEFAULT_CMAP in caplog.text
+
+
+def test_on_cmap_changed_invalid_name(caplog):
+    """
+    Test the behaviour of _on_cmap_change() with invalid cmap.
+
+    Invalid colormap names should:
+    - log a warning
+    - not update internal state
+    - not trigger any redraw / update methods
+    """
+
+    # Create instance without Qt init
+    window = MainWindow.__new__(MainWindow)
+    window._cmap_name = "viridis"  # existing valid state
+    window._idx = 0
+
+    # Attach spies that would fail if called
+    window._update_background_color = pytest.fail
+    window.show_frame = pytest.fail
+    window._draw_bars = pytest.fail
+    window._init_lines = pytest.fail
+
+    caplog.set_level("WARNING")
+
+    window._on_cmap_changed("this_is_not_a_real_cmap")
+
+    assert "not registered" in caplog.text
+
+    assert window._cmap_name == "viridis"
+
+
+def test_on_cmap_changed_valid_name(monkeypatch):
+    """
+    Test the behaviour of _on_cmap_change() with valid cmap.
+
+    Valid colormap names should:
+    - update _cmap_name
+    - call background update
+    - redraw the frame
+    - rebuild histogram bars and lines
+    """
+
+    window = MainWindow.__new__(MainWindow)
+    window._idx = 3
+    window._cmap_name = "plasma"
+
+    calls = []
+
+    def record(name):
+        calls.append(name)
+
+    window._update_background_color = lambda: record("update_bg")
+    window.show_frame = lambda idx: record(f"show_frame_{idx}")
+    window._draw_bars = lambda: record("draw_bars")
+    window._init_lines = lambda: record("init_lines")
+
+    window._on_cmap_changed("viridis")
+
+    assert window._cmap_name == "viridis"
+
+    assert calls == [
+        "update_bg",
+        "show_frame_3",
+        "draw_bars",
+        "init_lines",
+    ]
+
+
+def test_on_cmap_changed_valid_does_not_warn(caplog):
+    """Verify that selecting a valid colormap does not trigger a warning."""
+    window = MainWindow.__new__(MainWindow)
+    window._idx = 0
+
+    window._update_background_color = lambda: None
+    window.show_frame = lambda _: None
+    window._draw_bars = lambda: None
+    window._init_lines = lambda: None
+
+    caplog.set_level("WARNING")
+
+    window._on_cmap_changed("viridis")
+
+    assert caplog.text == ""
+
+
+def test_update_histogram_colors_no_bars_returns_early():
+    """Return early and perform no actions when histogram bars are not present."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    # Fail fast if any downstream method is called
+    window._get_cmap = pytest.fail
+    window.hist_canvas = pytest.fail
+
+    # Should simply return without error
+    window._update_histogram_colors()
+
+
+def test_update_histogram_colors_uses_flat_zrange(monkeypatch):
+    """Use flat zmin/zmax when flat view is enabled and flat data is present."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    # Required state
+    window._hist_bars = [type("Bar", (), {"set_color": lambda self, c: None})()]
+    window._hist_centers = [0.5]
+    window._show_flat = True
+    window._flat = object()
+
+    window._zmin_flat = -1.0
+    window._zmax_flat = 1.0
+    window._zmin_raw = -10.0
+    window._zmax_raw = 10.0
+
+    # Track which vmin/vmax Normalize receives
+    used = {}
+
+    def fake_normalize(vmin, vmax):
+        used["vmin"] = vmin
+        used["vmax"] = vmax
+        return lambda x: x
+
+    monkeypatch.setattr(colors, "Normalize", fake_normalize)
+
+    window._get_cmap = lambda: lambda x: [(1, 0, 0, 1)]
+    window.hist_canvas = type("Canvas", (), {"draw_idle": lambda self: None})()
+
+    window._update_histogram_colors()
+
+    assert used["vmin"] == -1.0
+    assert used["vmax"] == 1.0
+
+
+def test_update_histogram_colors_uses_raw_zrange_when_not_flat(monkeypatch):
+    """Use raw zmin/zmax when flat view is disabled or no flat data is available."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    window._hist_bars = [type("Bar", (), {"set_color": lambda self, c: None})()]
+    window._hist_centers = [0.5]
+    window._show_flat = False
+    window._flat = None
+
+    window._zmin_raw = 2.0
+    window._zmax_raw = 8.0
+    window._zmin_flat = -1.0
+    window._zmax_flat = 1.0
+
+    used = {}
+
+    def fake_normalize(vmin, vmax):
+        used["vmin"] = vmin
+        used["vmax"] = vmax
+        return lambda x: x
+
+    monkeypatch.setattr(colors, "Normalize", fake_normalize)
+
+    window._get_cmap = lambda: lambda x: [(0, 1, 0, 1)]
+    window.hist_canvas = type("Canvas", (), {"draw_idle": lambda self: None})()
+
+    window._update_histogram_colors()
+
+    assert used["vmin"] == 2.0
+    assert used["vmax"] == 8.0
 
 
 @patch("playnano.gui.main.QApplication")
