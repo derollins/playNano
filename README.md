@@ -115,7 +115,7 @@ Press the **f** key or press **Apply Filters** to level the data with default st
 ```bash
 playnano process ./tests/resources/sample_0.h5-jpk \
   --processing "remove_plane;gaussian_filter:sigma=1.0" \
-  --export tif,npz --make-gif --output-folder ./results
+  --export tif,npz --make-gif --draw-ts --output-folder ./results
 ```
 
 See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/main/cli.html),
@@ -194,7 +194,7 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](htt
 
 If you use **playNano** in academic work, please cite it as:
 
-> Rollins, D. E. (2025). *playNano: AFM Video Reader and Analysis Toolkit.*
+> Rollins, D. E. (2026). *playNano: AFM Video Processing and Analysis Toolkit.*
 > GitHub repository: <https://github.com/derollins/playNano>
 
 <details>
@@ -203,8 +203,8 @@ If you use **playNano** in academic work, please cite it as:
 ```bibtex
 @misc{rollins2025playnano,
   author = {Rollins, D. E.},
-  title  = {playNano: AFM Video Reader and Analysis Toolkit},
-  year   = {2025},
+  title  = {playNano: AFM Video Processing and Analysis Toolkit},
+  year   = {2026},
   url    = {https://github.com/derollins/playNano}
 }
 ```

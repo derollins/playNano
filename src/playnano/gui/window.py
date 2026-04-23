@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
         zmin: str = "auto",
         zmax: str = "auto",
         cmap: str = DEFAULT_CMAP,
+        fps: float = 5.0,
     ):
         """
         Initialize the main application window.
@@ -84,7 +85,8 @@ class MainWindow(QMainWindow):
             from the data.
         cmap : str, default=DEFAULT_CMAP
             Name of the colormap to use for visualisation on launch.
-
+        fps : float, default=5.0
+            Initial frame rate for the GIF in frames per second.
         Returns
         -------
         None
@@ -177,6 +179,7 @@ class MainWindow(QMainWindow):
         self.zmax = zmax
         self._idx = 0
         self._percentile_P = 25
+        self.fps = fps
 
         # Raw view z-scale
         self._zmin_raw, self._zmax_raw = compute_zscale_range(
@@ -217,9 +220,9 @@ class MainWindow(QMainWindow):
         self.zmax_spin.setValue(self._zmax_raw)
         self.zmax_spin.setDecimals(1)
 
-        self._init_ui()
+        self._init_ui(fps=self.fps)
 
-    def _init_ui(self):
+    def _init_ui(self, fps=5.0):
         """
         Construct and lay out all GUI widgets.
 
@@ -280,7 +283,7 @@ class MainWindow(QMainWindow):
         annotation_hbox.addWidget(self.show_scale_bar_box)
         controls_layout.addLayout(annotation_hbox)
 
-        self.controls = PlaybackControls()
+        self.controls = PlaybackControls(initial_fps=fps)
         play_btn = self.controls.play_btn
         fps_label = QLabel("FPS:")
         fps_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
@@ -884,6 +887,7 @@ class MainWindow(QMainWindow):
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
                 cmap_name=self._cmap_name,
+                fps=self.controls.fps_box.value(),
             )
             logger.info("Exported GIF.")
         except Exception as e:
@@ -938,6 +942,7 @@ class MainWindow(QMainWindow):
                 save_dir,
                 output_name=self.output_name,
                 raw=raw,
+                fps=self.controls.fps_box.value(),
                 zmin=zmin,
                 zmax=zmax,
                 scale_bar_nm=self.scale_bar_nm,

@@ -66,8 +66,10 @@ CLI Flags
 - ``--output-folder`` — Destination directory (default: ``output/``).
 - ``--output-name`` — Base name for exported files (default: derived from input).
 
-The GIF annotations can be further customised using ``--scale-bar-nm``,
-``--zmin``, and ``--zmax`` options; see :ref:`export-gif` for details.
+The visual export annotations can be further customised using ``--scale-bar-nm``,
+``--zmin``, and ``--zmax`` options; see :ref:`export-animated` for details.
+
+The frame rate can be set using ``--fps``, the deafult without the tag is 5.0.
 
 For full syntax, see :doc:`cli`.
 Files can also be exported from the GUI window; see :doc:`gui` for details.
@@ -159,6 +161,7 @@ GIF Export Options (CLI)
 - ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
 - ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
 - ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
+- ``--fps`` — Set the frame rate for the animation in seconds (default: 5.0).
 
 GIFs can be combined with the usual ``--export`` options to produce NPZ, HDF5,
 or TIFF bundles simultaneously.
@@ -183,11 +186,12 @@ Programmatic GIF Export
        output_folder="exports",
        output_name="sample",
        scale_bar_nm=100,
+       fps=6.0,
        cmap_name="classic_afm",  # any matplotlib-registered colormap
        zmin="auto",
        zmax="auto",
        draw_ts=False,
-      draw_scale_bar=True,
+       draw_scale_bar=True,
    )
 
 ---
@@ -226,6 +230,7 @@ Video Export Options (CLI)
 - ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
 - ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
 - ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
+- ``--fps`` — Set the frame rate for the animation in seconds (default: 5.0).
 
 Programmatic Video Export
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -242,6 +247,7 @@ Programmatic Video Export
        fmt="mp4", #or "avi"
        cmap_name="playnano_gold",  # any matplotlib-registered colormap
        scale_bar_nm=100,
+       fps=6.0,
        zmin="auto",
        zmax="auto",
        draw_ts=True,

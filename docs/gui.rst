@@ -69,6 +69,10 @@ Arguments & common options
 - **--zmin**, **--zmax** (*float* or *str*, optional)
   Initial display z-limits. Use the string ``"auto"`` to automatically set 1st / 99th percentiles.
 
+- **--fps** (*float*, optional)
+  Inital frame rate in the viewer, if left blank the frame rate is calculate from `line_rate`` value in
+  the `frame_metadata` dictionary of the first frame.
+
 Main window
 -----------
 
@@ -116,12 +120,15 @@ Export behaviour & filenames
 - **Data bundles**: (NPZ, OME-TIFF, HDF5) - exports include processing metadata, provenance information,
   and snapshots (raw + intermediate processed steps, when available).
 
-Animated export annotations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Animated export annotations and frame rate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Any visual annotations you see in the viewer are **burned into** exported GIFs,
-videos and exported frame sequences. That means the exported animation reflects
+videos and exported frame sequences (other than the RAW label). That means the exported animation reflects
 the current viewer display - it is not an independent overlay file.
+
+For GIF and video exports the frame rate of the export reflects whatever the current FPS value in the
+playback control is.
 
 What is included
 ~~~~~~~~~~~~~~~~

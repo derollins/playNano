@@ -71,6 +71,7 @@ def handle_play(args: argparse.Namespace) -> None:
             zmin=args.zmin,
             zmax=args.zmax,
             cmap=args.cmap,
+            fps=args.fps,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
@@ -122,6 +123,7 @@ def handle_process(args: argparse.Namespace) -> None:
             zmax=args.zmax,
             draw_ts=args.draw_ts,
             cmap=args.cmap,
+            fps=args.fps,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)

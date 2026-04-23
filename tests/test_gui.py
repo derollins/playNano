@@ -72,7 +72,7 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     assert wnd.isVisible()
 
     # FPS defaults
-    assert wnd.controls.fps_box.value() == 10
+    assert wnd.controls.fps_box.value() == 5.0
 
     # Slider config
     assert wnd.controls.slider.minimum() == 0
@@ -130,6 +130,7 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
         zmin="auto",
         zmax="auto",
         cmap="afm_brown",
+        fps=5.0,
     )
     mock_window.show.assert_called_once()
     mock_app.exec.assert_called_once()

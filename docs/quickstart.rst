@@ -60,7 +60,7 @@ To run these commands on example data, these commands can be run from the projec
 
    playnano process ./tests/resources/sample_0.h5-jpk\
      --processing "remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2" \
-     --export h5,tif,npz --make-gif --output-folder ./results --output-name sample_processed
+     --export h5,tif,npz --make-gif --draw-ts --output-folder ./results --output-name sample_processed
 
 This will load demo data, apply a processing pipeline, export the processed data as an HDF5 file (``h5``), a
 NumPy zipped archive (``npz``) and a multi-page OME-TIFF (``tif``) to the ``./results`` folder. It will also

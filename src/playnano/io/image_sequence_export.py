@@ -4,8 +4,8 @@ Image-sequence export utilities for AFM image stacks.
 This module provides functions for saving each frame of an AFM image stack as
 an individual PNG or JPEG file inside a dedicated output folder. Frames can be
 normalised automatically or scaled with a fixed z-range, and are annotated with
-optional timestamps and scale bars using the same rendering pipeline as
-:mod:`~playNano.io.gif_export`.
+optional timestamps and scale bars using the shared rendering pipeline in
+:mod:`~playNano.io.render_utils`
 
 Dependencies
 ------------
@@ -21,14 +21,17 @@ import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
 
+from playnano.io.render_utils import (
+    DEFAULT_FONT_SCALE,
+    render_frame,
+    resolve_stack_data,
+)
 from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.io_utils import (
     compute_zscale_range,
-    normalize_to_uint8,
     prepare_output_directory,
     sanitize_output_name,
 )
-from playnano.utils.time_utils import draw_scale_and_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,7 @@ def create_image_sequence(
     zmax: float | str | None = None,
     draw_ts: bool = True,
     draw_scale: bool = True,
+    font_scale: float = DEFAULT_FONT_SCALE,
 ) -> Path:
     """
     Save every frame of an AFM image stack as an individual image file.
@@ -91,6 +95,8 @@ def create_image_sequence(
         Whether to draw timestamps on each frame. Default is ``True``.
     draw_scale : bool
         Whether to draw a scale bar on each frame. Default is ``True``.
+    font_scale : float
+        Base font scale for annotations at the reference height.
 
     Returns
     -------
@@ -116,7 +122,6 @@ def create_image_sequence(
         raise ValueError(
             f"Unsupported image format '{fmt}'. Choose from {_VALID_IMAGE_FORMATS}."
         )
-    # Normalise jpeg → jpg for PIL save calls
     save_fmt = "jpeg" if fmt in ("jpg", "jpeg") else "png"
     ext = "jpg" if save_fmt == "jpeg" else "png"
 
@@ -125,7 +130,7 @@ def create_image_sequence(
 
     cmap = cm.get_cmap(cmap_name)
     n_frames = len(image_stack)
-    pad = max(4, len(str(n_frames)))  # zero-pad width grows for large stacks
+    pad = max(4, len(str(n_frames)))
 
     # Validate timestamps
     if (
@@ -149,7 +154,6 @@ def create_image_sequence(
         draw_scale = False
         logger.warning("Invalid pixel_sizes_nm list; scale bar will be omitted.")
 
-    # Global z-range (optional)
     if zmin is not None or zmax is not None:
         zmin_val, zmax_val = compute_zscale_range(image_stack, zmin, zmax)
     else:
@@ -160,71 +164,37 @@ def create_image_sequence(
         save_kwargs["quality"] = _JPEG_QUALITY
 
     for i, frame in enumerate(image_stack):
-        # --- Normalise and colourise ---
-        if zmin_val is not None and zmax_val is not None:
-            if zmin_val == zmax_val:
-                frame_norm = np.zeros_like(frame, dtype=np.uint8)
-            else:
-                clipped = np.clip(frame, zmin_val, zmax_val)
-                normalised = (clipped - zmin_val) / (zmax_val - zmin_val) * 255
-                normalised = np.nan_to_num(
-                    normalised, nan=0.0, posinf=255.0, neginf=0.0
-                )
-                frame_norm = np.clip(normalised, 0, 255).astype(np.uint8)
-        else:
-            frame_norm = normalize_to_uint8(frame)
-
-        frame_float = frame_norm / 255.0
-        color_frame = (cmap(frame_float)[..., :3] * 255).astype(np.uint8)
-
-        # --- Timestamp ---
+        # Determine timestamps
         if has_valid_timestamps:
             try:
                 timestamp = float(timestamps[i])
             except (TypeError, ValueError, IndexError):
                 timestamp = i
         else:
+            logger.warning(
+                f"Invalid timestamps provided, using frame index {i} as timestamp."
+            )
             timestamp = i
 
-        # ---- Display resizing ----
-        MIN_DISPLAY_HEIGHT = 512
+        pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
 
-        if color_frame.shape[0] < MIN_DISPLAY_HEIGHT:
-            TARGET_HEIGHT = MIN_DISPLAY_HEIGHT
-        else:
-            TARGET_HEIGHT = color_frame.shape[0]
-
-        scale = TARGET_HEIGHT / color_frame.shape[0]
-        FONT_SCALE = 2  # tuned for 512px frames
-        if scale != 1.0:
-            import cv2
-
-            color_frame = cv2.resize(
-                color_frame,
-                None,
-                fx=scale,
-                fy=scale,
-                interpolation=cv2.INTER_CUBIC,
-            )
-
-        # --- Overlay ---
-        draw_pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
-        frame_annotated = draw_scale_and_timestamp(
-            color_frame,
+        frame_annotated = render_frame(
+            frame=frame,
+            cmap=cmap,
             timestamp=timestamp,
-            pixel_size_nm=draw_pixel_size_nm,
-            scale=scale,
-            bar_length_nm=scale_bar_length_nm,
-            font_scale=FONT_SCALE,
+            pixel_size_nm=pixel_size_nm,
+            scale_bar_length_nm=scale_bar_length_nm,
+            font_scale=font_scale,
             draw_ts=draw_ts,
             draw_scale=draw_scale,
-            color=(255, 255, 255),
+            zmin_val=zmin_val,
+            zmax_val=zmax_val,
         )
 
-        # --- Save ---
         file_name = f"{base_name}_{str(i).zfill(pad)}.{ext}"
-        img = Image.fromarray(frame_annotated)
-        img.save(output_folder / file_name, format=save_fmt, **save_kwargs)
+        Image.fromarray(frame_annotated).save(
+            output_folder / file_name, format=save_fmt, **save_kwargs
+        )
 
     logger.info(f"{n_frames} frames written to {output_folder}")
     return output_folder
@@ -243,6 +213,7 @@ def export_image_sequence(
     draw_ts: bool = True,
     draw_scale: bool = True,
     cmap_name: str = DEFAULT_CMAP,
+    font_scale: float = DEFAULT_FONT_SCALE,
 ) -> None:
     """
     Export an AFM image stack as a folder of annotated PNG or JPEG images.
@@ -300,22 +271,9 @@ def export_image_sequence(
     out_root = prepare_output_directory(output_folder, default="output")
     base = sanitize_output_name(output_name, Path(afm_stack.file_path).stem)
 
-    # Choose data source (mirrors gif_export.export_gif logic exactly)
-    if raw and "raw" in afm_stack.processed:
-        stack_data = afm_stack.processed["raw"]
-        meta_src = afm_stack.state_backups.get(
-            "frame_metadata_before_edit", afm_stack.frame_metadata
-        )
-    else:
-        if raw:
-            logger.debug("Requested raw export on unprocessed data; using loaded data.")
-        stack_data = afm_stack.data
-        meta_src = afm_stack.frame_metadata
-        filtered_exists = "raw" in afm_stack.processed and any(
-            key != "raw" for key in afm_stack.processed
-        )
-        if filtered_exists:
-            base = f"{base}_filtered"
+    stack_data, meta_src, is_filtered = resolve_stack_data(afm_stack, raw)
+    if is_filtered:
+        base = f"{base}_filtered"
 
     timestamps = [md["timestamp"] for md in meta_src]
     pixels_to_nm = [
@@ -323,8 +281,6 @@ def export_image_sequence(
     ]
 
     bar_nm = scale_bar_nm if scale_bar_nm is not None else 100
-
-    # Frames go into their own subfolder so they don't clutter the root dir
     frames_dir = out_root / base
 
     logger.debug(f"[export] Writing image sequence → {frames_dir}")
@@ -341,5 +297,6 @@ def export_image_sequence(
         zmax=zmax,
         draw_ts=draw_ts,
         draw_scale=draw_scale,
+        font_scale=font_scale,
     )
     logger.debug(f"[export] Image sequence written to {frames_dir}")

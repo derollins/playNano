@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 
+from playnano import __version__
 from playnano.cli.actions import print_env_info
 from playnano.cli.handlers import (
     handle_analyze,
@@ -31,6 +32,22 @@ def setup_logging(level: int = logging.INFO) -> None:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         force=True,
     )
+
+
+def make_fps_type(fallback: float):
+    """Return an argparse type function with a configurable fallback FPS."""
+
+    def fps_type(value: str) -> float:
+        """If a non-numerical value is provided for fps, return default value."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Invalid --fps value '%s'; using default %.1f FPS", value, fallback
+            )
+            return fallback
+
+    return fps_type
 
 
 def main() -> None:
@@ -72,6 +89,11 @@ def main() -> None:
         help="Set logging level (default=INFO).",
     )
 
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"playnano {__version__}",
+    )
     subparsers = parser.add_subparsers(
         title="subcommands",
         dest="command",
@@ -105,6 +127,19 @@ def main() -> None:
         type=int,
         default=None,
         help="Integer length of scale bar in nm (default=100) set to 0 to disable scale bar.",  # noqa
+    )
+    play_parser.add_argument(
+        "--fps",
+        nargs="?",
+        default=None,
+        const=5.0,
+        type=make_fps_type(5.0),
+        help=(
+            "Frames per second for animated exports. "
+            "If not specified, the frame rate is taken from the data. "
+            "If specified without a value, or with a non-numeric value, "
+            "a default of 5 frames per second is used."
+        ),
     )
     play_parser.add_argument(
         "--zmin",
@@ -225,6 +260,12 @@ def main() -> None:
         "--scale-bar-nm",
         type=int,
         help="Integer length of scale bar in nm",
+    )
+    process_parser.add_argument(
+        "--fps",
+        type=float,
+        default=5.0,
+        help="Frames per second for animated exports (default=5.0).",
     )
     process_parser.add_argument(
         "--zmin",

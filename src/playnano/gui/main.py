@@ -19,6 +19,7 @@ def gui_entry(
     zmin="auto",
     zmax="auto",
     cmap=DEFAULT_CMAP,
+    fps=5.0,
 ):
     """
     Launch the playNano GUI with a given AFM stack and visualization/export settings.
@@ -48,6 +49,8 @@ def gui_entry(
         uses that value (default: "auto").
     cmap : str, optional
         Name of the colormap to use for visualisation on launch (default=DEFAULT_CMAP).
+    fps : float, optional
+        Initial frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
@@ -72,6 +75,7 @@ def gui_entry(
         zmin=zmin,
         zmax=zmax,
         cmap=cmap,
+        fps=fps,
     )
     wnd.show()
     sys.exit(app.exec())

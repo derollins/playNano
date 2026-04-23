@@ -56,6 +56,7 @@ def process_pipeline_mode(
     zmax: str = "auto",
     draw_ts: bool = False,
     cmap: str = DEFAULT_CMAP,
+    fps: float = 5.0,
 ) -> None:
     """
     Apply a processing pipeline to an AFM file, then optionally export data and GIF.
@@ -96,6 +97,8 @@ def process_pipeline_mode(
         Maximum Z-value for GIF color normalization (float string or `"auto"`).
     cmap : str
         Name of the colormap to use for GIF export (default=DEFAULT_CMAP).
+    fps : float
+        Frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
@@ -146,6 +149,7 @@ def process_pipeline_mode(
         zmax=zmax,
         draw_ts=draw_ts,
         cmap_name=cmap,
+        fps=fps,
     )
 
     # 5) Video Export
@@ -164,6 +168,7 @@ def process_pipeline_mode(
                 zmax=zmax,
                 draw_ts=draw_ts,
                 cmap_name=cmap,
+                fps=fps,
             )
     # 6) Image Sequence Export
     export_image_sequence(
@@ -286,6 +291,7 @@ def play_pipeline_mode(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    fps: float | None,
     zmin: str = "auto",
     zmax: str = "auto",
     cmap: str = DEFAULT_CMAP,
@@ -322,35 +328,39 @@ def play_pipeline_mode(
         Maximum Z-value mapping (float or `"auto"`).
     cmap : str
         Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).
+    fps : float
+        Initial frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
     None
     """
-
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
     except Exception as e:
         logger.error(f"Failed to load {input_file}. {e}")
         raise LoadError(f"Failed to load {input_file}: {e}") from e
 
-    # Determine fps from metadata
-    frame_metadata = getattr(afm_stack, "frame_metadata", None)
-    line_rate = None
-    if (
-        isinstance(frame_metadata, (list, tuple))
-        and len(frame_metadata) > 0
-        and isinstance(frame_metadata[0], dict)
-    ):
-        line_rate = frame_metadata[0].get("line_rate")
-    if not line_rate:
-        logger.warning("No line_rate in metadata; defaulting to 1 fps")
-        fps = 1.0
+    if fps is None:
+        # Determine fps from metadata
+        frame_metadata = getattr(afm_stack, "frame_metadata", None)
+        line_rate = None
+        if (
+            isinstance(frame_metadata, (list, tuple))
+            and len(frame_metadata) > 0
+            and isinstance(frame_metadata[0], dict)
+        ):
+            line_rate = frame_metadata[0].get("line_rate")
+        if not line_rate:
+            logger.warning("No line_rate in metadata; defaulting to 5.0 fps")
+            fps = 5.0
+        else:
+            fps = line_rate / afm_stack.image_shape[0]
+            logger.debug(
+                f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
+            )
     else:
-        fps = line_rate / afm_stack.image_shape[0]
-        logger.debug(
-            f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
-        )
+        logger.debug(f"Overiding data frame rate. FPS = {fps:.2f}.")
 
     if processing_file:
         steps_with_kwargs = parse_processing_file(processing_file)
@@ -384,6 +394,7 @@ def play_pipeline_mode(
         zmin=zmin,
         zmax=zmax,
         cmap=cmap,
+        fps=fps,
     )
 
 

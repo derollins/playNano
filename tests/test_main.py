@@ -226,6 +226,7 @@ def test_handle_play_file_not_found(tmp_path, caplog):
         zmin="auto",
         zmax="auto",
         cmap="afm_brown",
+        fps=5.0,
     )
 
     with pytest.raises(SystemExit):
@@ -256,6 +257,7 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
         zmin="auto",
         zmax="auto",
         cmap="afm_brown",
+        fps=5.0,
     )
 
     with pytest.raises(SystemExit):
@@ -292,6 +294,7 @@ def test_handle_process_bad_output_folder(monkeypatch, tmp_path, caplog):
         cmap="afm_brown",
         draw_ts=True,
         draw_scale=False,
+        fps=5.0,
     )
     (tmp_path / "test.jpk").write_text("data")
 
@@ -340,6 +343,7 @@ def test_handle_process_make_gif(monkeypatch, tmp_path):
         zmax="auto",
         cmap="afm_brown",
         draw_ts=True,
+        fps=None,
     )
     (tmp_path / "sample.jpk").write_text("x")
 
@@ -387,6 +391,7 @@ def test_handle_process_make_video(monkeypatch, tmp_path):
         zmax="auto",
         cmap="afm_brown",
         draw_ts=True,
+        fps=None,
     )
     (tmp_path / "sample.jpk").write_text("x")
 
@@ -436,6 +441,7 @@ def test_handle_process_make_sequence(monkeypatch, tmp_path):
         zmax="auto",
         cmap="afm_brown",
         draw_ts=True,
+        fps=None,
     )
     (tmp_path / "sample.jpk").write_text("x")
 
