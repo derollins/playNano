@@ -34,7 +34,7 @@ from playnano.io.gif_export import export_gif
 from playnano.io.image_sequence_export import export_image_sequence
 from playnano.io.video_export import export_video
 from playnano.processing.core import process_stack
-from playnano.utils.colormaps import DEFAULT_CMAP, is_valid_cmap
+from playnano.utils.colormaps import DEFAULT_CMAP, resolve_cmap
 from playnano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
@@ -106,9 +106,7 @@ def process_pipeline_mode(
     """
     logger.debug("Entering process_pipeline_mode: %r", locals())
 
-    if not is_valid_cmap(cmap):
-        logger.warning(f"Unknown colormap '{cmap}', falling back to 'afm_brown'.")
-        cmap = DEFAULT_CMAP
+    cmap = resolve_cmap(cmap)  # validate or apply fallback
 
     # 1) Build steps_with_kwargs for processing
     if processing_file:
