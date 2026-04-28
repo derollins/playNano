@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD033 -->
 # 📽️ playNano
 
-**AFM Video Reader for `.h5-jpk` files and other high-speed AFM video formats**
+## AFM processing and analysis platform for high-speed AFM videos and time-series
 
 <div align="center">
 
@@ -24,11 +24,11 @@
 **playNano** is a Python tool for loading, filtering, visualising, and exporting time-series AFM data,
 such as high-speed AFM (HS-AFM) videos. It supports interactive playback, flexible processing pipelines,
 and provenance-aware analysis tracking, and export in multiple formats, including OME-TIFF, NPZ (NumPy zipped archive),
-HDF5 bundles, and animated GIFs.
+HDF5 bundles, and animated videos and GIFs.
 
-**playNano** handles complete time-series datasets—such as high-speed AFM videos—as unified, time-aware stacks rather
-than separate frames. Every step in a processing or analysis pipeline is recorded for full reproducibility and
-provenance tracking.
+The **playNano** package handles complete time-series datasets—such as high-speed AFM videos—as unified, time-aware
+stacks rather than separate frames. Every step in a processing or analysis pipeline is recorded for full reproducibility
+and provenance tracking.
 
 Learn more about the motivation, design, and structure of playNano in the [Introduction](https://derollins.github.io/playNano/main/introduction.html).
 
@@ -54,11 +54,14 @@ Full documentation: <https://derollins.github.io/playNano/>
 
 ## ✨ Features
 
-- 📂 **AFM time-series extraction** — reads `.h5-jpk`, `.asd`, `.aris`, and folders of `.jpk` or `.spm` frames.
+- 📂 **AFM time-series extraction** — reads `.h5-jpk`, `.asd` and `.aris` files, and folders of `.jpk` or `.spm` frames.
 - ▶️ **Interactive video viewer** — PySide6-based GUI with playback, z-scale control, and export tools.
 - 🪟 **Processing pipeline** — applies filters and masks with full provenance tracking.
 - 📏 **Analysis pipeline** — runs detection, clustering, and tracking with reproducible outputs.
-- 📩 **Flexible exports** — save to OME-TIFF, NPZ, HDF5, and annotated GIFs.
+- 📩 **Flexible exports** — save data to OME-TIFF, NPZ, HDF5, and annotated videos as GIF, MP4, AVI or a folder
+  of PNG files.
+- 🎨 **Optimised colormaps** — new perceptually uniform colourmaps for clear and artifact free visualisation, alongside
+  traditional AFM colour maps and `matplotlib` defaults.
 - 🔌 **Extensible design** — add your own filters or analysis modules as plugins.
 
 ---
@@ -102,20 +105,37 @@ playnano play ./tests/resources/sample_0.h5-jpk # This command opens example dat
 ```
 
 Replace the path with the location of your data (file for asd/h5-jpk or folder for spm/jpk)
-This opens an interactive window that can be used to view the videos and configure
-formatting for the display and GIF exports.
-Press the **f** key to flatten with default steps.
+This opens an interactive window that can be used to view the videos and configure formatting, annotations and
+colormaps, for the display and animated exports.
+
+Press the **f** key or press **Apply Filters** to level the data with default steps.
 
 **Batch process + make GIF:**
 
 ```bash
 playnano process ./tests/resources/sample_0.h5-jpk \
   --processing "remove_plane;gaussian_filter:sigma=1.0" \
-  --export tif,npz --make-gif --output-folder ./results
+  --export tif,npz --make-gif --draw-ts --output-folder ./results
 ```
 
 See the full docs for the complete [CLI reference](https://derollins.github.io/playNano/main/cli.html),
 [GUI guide](https://derollins.github.io/playNano/main/gui.html), filters, YAML schemas, and examples.
+
+## 🎨 Optimised Colormaps
+
+**playNano** features new perceptually linear colormaps designed to eliminate the "black plateau" and "banding" found in
+traditional AFM visualisation. The default, `afm_brown`, uses monotonically increasing luminance to resolve fine substrate
+detail and ensure visual stability in HS-AFM videos, preventing the "flicker" artifacts caused by non-linear lightness
+discontinuities, while retaining the classic orange-brown AFM character. The package also includes `playnano_gold`, a
+monotone-lightness high-contrast colormap spanning the full luminance range (L* 0–100) for complex, feature-rich samples,
+and `classic_afm`, a non-linear map replicating the common brown AFM colormap for continuity with existing workflows.
+
+<p align="center">
+  <img src="docs/images/native_colormaps.png" alt="playNano native colormaps" width="400" />
+</p>
+
+All three colormaps are registered globally on import as `matplotlib` cmaps, making them available across the entire
+toolkit and in your own scripts alongside built-in options such as `afmhot` and `viridis`.
 
 ## 📒 Notebooks
 
@@ -138,24 +158,6 @@ Contributions are welcome — bug reports, new features, processing plugins, and
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style requirements, and guidance
 on how to contribute analysis modules and processing plugins either directly or via the
 [playNano-plugins](https://github.com/derollins/playNano-plugins) repository.
-
-## 🧩 Dependencies
-
-This project requires the following Python packages:
-
-- `numpy`
-- `pandas`
-- `h5py`
-- `Pillow`
-- `matplotlib`
-- `scipy`
-- `scikit-learn`
-- `scikit-image`
-- `python-dateutil`
-- `tifffile`
-- `pyyaml`
-- `PySide6` — for the GUI
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
 
 ## 🔗 Related Software
 
@@ -192,7 +194,7 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](htt
 
 If you use **playNano** in academic work, please cite it as:
 
-> Rollins, D. (2025). *playNano: AFM Video Reader and Analysis Toolkit.*
+> Rollins, D. E. (2026). *playNano: AFM Video Processing and Analysis Toolkit.*
 > GitHub repository: <https://github.com/derollins/playNano>
 
 <details>
@@ -200,9 +202,9 @@ If you use **playNano** in academic work, please cite it as:
 
 ```bibtex
 @misc{rollins2025playnano,
-  author = {Rollins, D.},
-  title  = {playNano: AFM Video Reader and Analysis Toolkit},
-  year   = {2025},
+  author = {Rollins, D. E.},
+  title  = {playNano: AFM Video Processing and Analysis Toolkit},
+  year   = {2026},
   url    = {https://github.com/derollins/playNano}
 }
 ```

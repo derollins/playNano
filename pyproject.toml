@@ -1,7 +1,7 @@
 [project]
 name = "playnano"
 dynamic = ["version"]
-description = "Python toolkit for processing and visualising high-speed AFM (Atomic Force Microscopy) video data."
+description = "Python toolkit for processing, analysing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
 requires-python = ">=3.10, <3.13"
 authors = [
@@ -40,6 +40,7 @@ keywords = [
   "particle tracking",
   "clustering",
   "flattening filters",
+  "visualization",
 
   # Scientific software context
   "scientific visualization",
@@ -63,6 +64,7 @@ dependencies = [
   "h5py",
   "Pillow",
   "tifffile",
+  "opencv-python-headless",
   "matplotlib",
   "afmreader",
   "python-dateutil>=2.8",

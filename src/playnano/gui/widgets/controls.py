@@ -18,7 +18,7 @@ from PySide6.QtWidgets import QDoubleSpinBox, QPushButton, QSlider, QVBoxLayout,
 class PlaybackControls(QWidget):
     """Widget containing playback controls; play button, slider, and FPS control."""
 
-    def __init__(self):
+    def __init__(self, initial_fps: float = 5.0):
         """
         Initialize the ViewerWidget.
 
@@ -40,7 +40,7 @@ class PlaybackControls(QWidget):
         self.slider = QSlider(Qt.Horizontal)
         self.fps_box = QDoubleSpinBox()
         self.fps_box.setRange(0.1, 60)
-        self.fps_box.setValue(10)
+        self.fps_box.setValue(initial_fps)
         layout.addWidget(self.play_btn)
         layout.addWidget(self.slider)
         layout.addWidget(self.fps_box)

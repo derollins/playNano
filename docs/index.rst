@@ -16,7 +16,7 @@ data, and a modular analysis system that supports both built-in and custom exten
 
 Welcome to **playNano** - a Python toolkit for loading, processing, analysing
 and exporting high-speed AFM (HS-AFM) time-series data (`.h5-jpk`, `.jpk`,
-`.spm`, `.asd`).
+`.spm`, `.asd` and `.aris`).
 This documentation covers installation, command-line usage, the PySide6 GUI,
 processing filters, data export, analysis pipelines, and the API reference.
 
@@ -31,6 +31,7 @@ Quick links
 - :doc:`processing` - filters, masks and pipeline behaviour
    - :doc:`processing-operations-reference` - reference of all built-in processing operations
 - :doc:`exporting` - exporting data and GIFs from CLI, GUI, or programmatically
+- :doc:`colormaps` - overview of playNano's native colormaps and how to use them
 - :doc:`analysis` - running analysis modules and provenance
    - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
 - :doc:`whats_new/v0.3.0` - highlights of the latest release
@@ -92,6 +93,7 @@ User Guide
    processing
    processing-operations-reference
    exporting
+   colormaps
    analysis
    custom_analysis_modules
    cli

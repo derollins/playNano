@@ -288,26 +288,33 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
 # -------------------------------------------------------------------------
 def save_h5_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
     """
-    Save an :class:`~playNano.afm_stack.AFMImageStack` and metadata as an HDF5 bundle.
+    Save an :class:`~playnano.afm_stack.AFMImageStack` and metadata as an HDF5 bundle.
 
     The hierarchical layout preserves round-trip reconstruction fidelity and stores
     all relevant AFM stack data, processed layers, masks, timestamps, and provenance.
 
     File structure
     --------------
-    /data                    : float32 array of shape (n_frames, H, W)
-    /processed/<step>        : float32 datasets for each processing step
-    /masks/<mask>            : bool datasets for each mask
-    /timestamps              : float64 array of length n_frames
-    /frame_metadata_json     : UTF-8 encoded JSON string
-    /provenance_json         : UTF-8 encoded JSON string
-    /state_backups_json      : UTF-8 encoded JSON string (only if present)
+    /data
+        float32 array of shape (n_frames, H, W)
+    /processed/<step>
+        float32 datasets for each processing step
+    /masks/<mask>
+        bool datasets for each mask
+    /timestamps
+        float64 array of length n_frames
+    /frame_metadata_json
+        UTF-8 encoded JSON string
+    /provenance_json
+        UTF-8 encoded JSON string
+    /state_backups_json
+        UTF-8 encoded JSON string (only if present)
 
     Root attributes
     ---------------
     pixel_size_nm : float
         Physical pixel size in nanometers.
-    channel       : str
+    channel : str
         Name of the imaging channel.
 
     Parameters
@@ -323,11 +330,12 @@ def save_h5_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
 
     Notes
     -----
-    - `state_backups_json` is only created if the stack has a non-empty
-    `state_backups` attribute.
-    - Timestamps are taken from `state_backups['frame_metadata_before_edit']`
-    if exporting raw data, otherwise from `.frame_metadata`.
-    - Provenance is sanitized via :func:`~playNano.utils.io_utils.make_json_safe`.
+    * `state_backups_json` is only created if the stack has a non-empty
+      `state_backups` attribute.
+    * Timestamps are taken from `state_backups['frame_metadata_before_edit']`
+      if exporting raw data, otherwise from `.frame_metadata`.
+    * Provenance is sanitized via
+      :func:`~playnano.analysis.utils.common.make_json_safe`.
     """
     path = check_path_is_path(path).with_suffix(".h5")
     path.parent.mkdir(parents=True, exist_ok=True)

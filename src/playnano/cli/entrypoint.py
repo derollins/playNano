@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 
+from playnano import __version__
 from playnano.cli.actions import print_env_info
 from playnano.cli.handlers import (
     handle_analyze,
@@ -12,6 +13,7 @@ from playnano.cli.handlers import (
     handle_wizard,
 )
 from playnano.errors import LoadError
+from playnano.utils.colormaps import DEFAULT_CMAP
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,22 @@ def setup_logging(level: int = logging.INFO) -> None:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         force=True,
     )
+
+
+def make_fps_type(fallback: float):
+    """Return an argparse type function with a configurable fallback FPS."""
+
+    def fps_type(value: str) -> float:
+        """If a non-numerical value is provided for fps, return default value."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Invalid --fps value '%s'; using default %.1f FPS", value, fallback
+            )
+            return fallback
+
+    return fps_type
 
 
 def main() -> None:
@@ -71,6 +89,11 @@ def main() -> None:
         help="Set logging level (default=INFO).",
     )
 
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"playnano {__version__}",
+    )
     subparsers = parser.add_subparsers(
         title="subcommands",
         dest="command",
@@ -106,6 +129,19 @@ def main() -> None:
         help="Integer length of scale bar in nm (default=100) set to 0 to disable scale bar.",  # noqa
     )
     play_parser.add_argument(
+        "--fps",
+        nargs="?",
+        default=None,
+        const=5.0,
+        type=make_fps_type(5.0),
+        help=(
+            "Frames per second for animated exports. "
+            "If not specified, the frame rate is taken from the data. "
+            "If specified without a value, or with a non-numeric value, "
+            "a default of 5 frames per second is used."
+        ),
+    )
+    play_parser.add_argument(
         "--zmin",
         type=str,
         default="auto",
@@ -116,6 +152,12 @@ def main() -> None:
         type=str,
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    play_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The initial colormap to use for visualisation (default=afm_brown).",
     )
     # Mutually exclusive: either processing string or processing file (or none)
     group = play_parser.add_mutually_exclusive_group()
@@ -162,6 +204,12 @@ def main() -> None:
         type=int,
         help="Integer length of scale bar in nm",
     )
+    wizard_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The colormap to use for animated export (default=afm_brown).",
+    )
     wizard_parser.set_defaults(func=handle_wizard)
 
     # 3) 'process' subcommand
@@ -188,6 +236,19 @@ def main() -> None:
         help="Also write an animated GIF after filtering.",
     )
     process_parser.add_argument(
+        "--make-sequence",
+        action="store_true",
+        help="Also create a folder with a sequence of images (png) after filtering.",
+    )
+    process_parser.add_argument(
+        "--make-video",
+        nargs="?",
+        type=str,
+        const="mp4",
+        default=None,
+        help="Export video(s); optionally specify comma-separated formats (default: mp4). Supported: mp4, avi.",  # noqa
+    )
+    process_parser.add_argument(
         "--output-folder",
         type=str,
         help="Folder to write bundles and/or GIF (default='./output').",
@@ -201,6 +262,12 @@ def main() -> None:
         help="Integer length of scale bar in nm",
     )
     process_parser.add_argument(
+        "--fps",
+        type=float,
+        default=5.0,
+        help="Frames per second for animated exports (default=5.0).",
+    )
+    process_parser.add_argument(
         "--zmin",
         type=str,
         default="auto",
@@ -211,6 +278,17 @@ def main() -> None:
         type=str,
         default="auto",
         help="The maximum value of the z scale, float or 'auto' (default=('auto').",  # noqa
+    )
+    process_parser.add_argument(
+        "--draw-ts",
+        action="store_true",
+        help="Toggle drawing of timestamps on GIF/video/sequence (default=True).",
+    )
+    process_parser.add_argument(
+        "--cmap",
+        type=str,
+        default=DEFAULT_CMAP,
+        help="The colormap to use for animated export (default=afm_brown).",
     )
     # Mutually exclusive: either processing string or processing file (or none)
     filter_group = process_parser.add_mutually_exclusive_group()
