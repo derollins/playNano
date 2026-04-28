@@ -5,6 +5,7 @@ import builtins
 import inspect
 import json
 import logging
+import sys
 import tempfile
 from argparse import Namespace
 from collections import UserDict
@@ -19,9 +20,9 @@ import yaml
 
 import playnano.cli.actions as actions
 from playnano.afm_stack import AFMImageStack
+from playnano.cli import entrypoint
 from playnano.cli import utils as cli_utils
 from playnano.cli.actions import IO, Wizard, analyze_pipeline_mode
-from playnano.cli.entrypoint import setup_logging
 from playnano.cli.handlers import handle_analyze, handle_play, handle_wizard
 from playnano.cli.utils import (
     FILTER_MAP,
@@ -62,6 +63,8 @@ def test_process_pipeline_mode_load_error_logs_and_returns(mock_process, caplog)
             processing_file=None,
             export=None,
             make_gif=False,
+            make_sequence=False,
+            make_video=False,
             output_folder=None,
             output_name=None,
             scale_bar_nm=None,
@@ -77,17 +80,76 @@ def test_process_pipeline_mode_load_error_logs_and_returns(mock_process, caplog)
 @patch("playnano.cli.actions.process_stack")
 @patch("playnano.cli.actions.export_bundles")
 @patch("playnano.cli.actions.export_gif")
-def test_process_pipeline_mode_flow(mock_gif, mock_bundles, mock_proc, mock_parse):
+@patch("playnano.cli.actions.export_video")
+@patch("playnano.cli.actions.export_image_sequence")
+def test_process_pipeline_mode_flow(
+    mock_image_sequence, mock_video, mock_gif, mock_bundles, mock_proc, mock_parse
+):
     """Test the full flow of process_pipeline_mode with processing string."""
     pipe = MagicMock()
     mock_proc.return_value = pipe
 
     actions.process_pipeline_mode(
-        "in.jpk", "ch", "f1;f2:a=1", None, "npz,h5", True, "od", "nm", 10
+        "in.jpk",
+        "ch",
+        "f1;f2:a=1",
+        None,
+        "npz,h5",
+        True,
+        "avi",
+        True,
+        "od",
+        "nm",
+        10,
+        True,
+        True,
+        True,
+        "classic_afm",
+        3.0,
     )
     mock_parse.assert_called_once()
     mock_proc.assert_called_once_with(
         Path("in.jpk"), "ch", [("f1", {}), ("f2", {"a": 1})]
+    )
+
+    mock_video.assert_called_once_with(
+        afm_stack=pipe,
+        make_video=True,
+        output_folder="od",
+        output_name="nm",
+        scale_bar_nm=10,
+        fmt="avi",
+        raw=False,
+        zmin=True,
+        zmax=True,
+        draw_ts=True,
+        cmap_name="classic_afm",
+        fps=3.0,
+    )
+    mock_gif.assert_called_once_with(
+        afm_stack=pipe,
+        make_gif=True,
+        output_folder="od",
+        output_name="nm",
+        scale_bar_nm=10,
+        raw=False,
+        zmin=True,
+        zmax=True,
+        draw_ts=True,
+        cmap_name="classic_afm",
+        fps=3.0,
+    )
+    mock_image_sequence.assert_called_once_with(
+        afm_stack=pipe,
+        make_sequence=True,
+        output_folder="od",
+        output_name="nm",
+        scale_bar_nm=10,
+        raw=False,
+        zmin=True,
+        zmax=True,
+        draw_ts=True,
+        cmap_name="classic_afm",
     )
     mock_bundles.assert_called_once_with(pipe, "od", "nm", ["npz", "h5"])
 
@@ -271,7 +333,8 @@ def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
             None,
             None,
             None,
-            False,
+            None,
+            None,
             None,
         )
     assert "Failed to load in.jpk" in str(exc.value)
@@ -296,6 +359,7 @@ def test_play_pipeline_mode_with_valid_zmin_zmax(
         output_folder=str(tmp_path),
         output_name="test_output",
         scale_bar_nm=100,
+        fps=3.0,
         zmin="0.0",
         zmax="1.0",
     )
@@ -325,6 +389,7 @@ def test_play_pipeline_mode_with_invalid_zmin_logs_error(
             output_folder=str(tmp_path),
             output_name="test_output",
             scale_bar_nm=100,
+            fps=3.0,
             zmin="not_a_number",
             zmax="auto",
         )
@@ -352,6 +417,7 @@ def test_play_pipeline_mode_with_invalid_zmax_logs_error(
             output_folder=str(tmp_path),
             output_name="test_output",
             scale_bar_nm=100,
+            fps=3.0,
             zmin="auto",
             zmax="not_a_number",
         )
@@ -380,6 +446,7 @@ def test_play_pipeline_mode_uses_processing_file(
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,
+        fps=3.0,
         zmin="auto",
         zmax="auto",
     )
@@ -408,11 +475,46 @@ def test_play_pipeline_mode_uses_processing_str(
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,
+        fps=None,
         zmin="auto",
         zmax="auto",
     )
 
     mock_parse_str.assert_called_once_with("gaussian_filter:sigma=2")
+
+
+@pytest.mark.parametrize(
+    "argv, expected_fps",
+    [
+        (["playnano", "play", "data.afm"], None),
+        (["playnano", "play", "data.afm", "--fps"], 5.0),
+        (["playnano", "play", "data.afm", "--fps", "2.5"], 2.5),
+        (["playnano", "play", "data.afm", "--fps", "foo"], 5.0),
+    ],
+)
+def test_play_fps_parsing(monkeypatch, argv, expected_fps):
+    """
+    Verify --fps handling for play subcommand.
+
+    - not present -> None
+    - present without value -> fallback (5)
+    - present with valid value -> parsed float
+    - present with invalid value -> fallback (5)
+    """
+
+    captured = {}
+
+    def fake_handle_play(args):
+        """Fake the handle_play function."""
+        captured["fps"] = args.fps
+
+    monkeypatch.setattr(entrypoint, "handle_play", fake_handle_play)
+
+    monkeypatch.setattr(sys, "argv", argv)
+
+    entrypoint.main()
+
+    assert captured["fps"] == expected_fps
 
 
 def test_wizard_mode_file_not_found(monkeypatch, caplog):
@@ -422,6 +524,29 @@ def test_wizard_mode_file_not_found(monkeypatch, caplog):
     with pytest.raises(FileNotFoundError) as exc:
         actions.Wizard("nofile.jpk", "ch", None, None, None)
     assert str(exc.value) == "File not found: nofile.jpk"
+
+
+def test_process_fps_invalid_is_error(monkeypatch):
+    """Test that an invlaid fps tag causes error for process."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["playnano", "process", "data.afm", "--fps", "foo"],
+    )
+
+    with pytest.raises(SystemExit):
+        entrypoint.main()
+
+
+def test_play_help_mentions_fps_defaults(monkeypatch, capsys):
+    """Test the play help includes tthe default."""
+    monkeypatch.setattr(sys, "argv", ["playnano", "play", "--help"])
+
+    with pytest.raises(SystemExit):
+        entrypoint.main()
+
+    help_text = capsys.readouterr().out
+    assert "default of 5 frames per second" in help_text.lower()
 
 
 # Fixture to prepare wizard environment
@@ -1061,8 +1186,10 @@ def test_handle_play_accepts_path_object():
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,
+        fps=3.0,
         zmin="auto",
         zmax="auto",
+        cmap="afm_brown",
     )
 
     with patch("playnano.cli.handlers.play_pipeline_mode") as mock_play:
@@ -1104,6 +1231,7 @@ def make_args(**kwargs) -> argparse.Namespace:
         "output_folder": None,
         "output_name": None,
         "scale_bar_nm": 100,
+        "cmap": "afm_brown",
     }
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
@@ -1120,6 +1248,7 @@ def test_handle_processing_wizard_success(mock_wizard):
         output_folder=None,
         output_name=None,
         scale_bar_nm=100,
+        cmap="afm_brown",
     )
 
 
@@ -1144,7 +1273,7 @@ def test_handle_processing_wizard_raises(mock_wizard, caplog):
 @patch("playnano.cli.handlers.logging.basicConfig")
 def test_setup_logging_defaults(mock_basic_config):
     """Test that setup_logging uses default logging configuration."""
-    setup_logging()  # uses default level=logging.INFO
+    entrypoint.setup_logging()  # uses default level=logging.INFO
     mock_basic_config.assert_called_once_with(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -1155,7 +1284,7 @@ def test_setup_logging_defaults(mock_basic_config):
 @patch("playnano.cli.handlers.logging.basicConfig")
 def test_setup_logging_debug(mock_basic_config):
     """Test that setup_logging sets DEBUG level when specified."""
-    setup_logging(logging.DEBUG)
+    entrypoint.setup_logging(logging.DEBUG)
     mock_basic_config.assert_called_once_with(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -1163,13 +1292,19 @@ def test_setup_logging_debug(mock_basic_config):
     )
 
 
+@patch("playnano.cli.actions.export_video")
 @patch("playnano.cli.actions.export_gif")
 @patch("playnano.cli.actions.export_bundles")
 @patch("playnano.cli.actions.process_stack")
 @patch("playnano.cli.actions.AFMImageStack.load_data")
 @patch("builtins.input")
 def test_wizard_mode_zscale_input(
-    mock_input, mock_load_data, mock_process_stack, mock_export_bundles, mock_export_gif
+    mock_input,
+    mock_load_data,
+    mock_process_stack,
+    mock_export_bundles,
+    mock_export_gif,
+    mock_export_video,
 ):
     """Test that wizard mode correctly accepts zmin and zmax."""
     # Mock AFM stack
@@ -1190,6 +1325,15 @@ def test_wizard_mode_zscale_input(
         "y",  # create GIF
         "0.0",  # zmin
         "1.0",  # zmax
+        "y",  # timestamps
+        "y",  # scale bar
+        "20",  # scale bar length
+        "y",  # create a video
+        "0.1",  # zmin
+        "1.4",  # zmax
+        "y",  # timestamps
+        "y",  # scale bar
+        "20",  # scale bar length
         "quit",  # exit - now must be done explicitly
     ]
     wiz = Wizard(
@@ -1203,9 +1347,13 @@ def test_wizard_mode_zscale_input(
         wiz.run()
 
     mock_export_gif.assert_called_once()
-    _, kwargs = mock_export_gif.call_args
-    assert kwargs["zmin"] == 0.0
-    assert kwargs["zmax"] == 1.0
+    _, kwargs_gif = mock_export_gif.call_args
+    mock_export_video.assert_called_once()
+    _, kwargs_video = mock_export_video.call_args
+    assert kwargs_gif["zmin"] == 0.0
+    assert kwargs_gif["zmax"] == 1.0
+    assert kwargs_video["zmin"] == 0.1
+    assert kwargs_video["zmax"] == 1.4
 
 
 # More wizard tests
@@ -1587,7 +1735,17 @@ def test_process_pipeline_mode_loaderror(monkeypatch, tmp_path, caplog):
     monkeypatch.setattr(actions, "process_stack", boom)
     with pytest.raises(SystemExit):
         actions.process_pipeline_mode(
-            "f", "c", None, None, None, False, None, None, 100
+            "f",
+            "c",
+            None,
+            None,
+            None,
+            False,
+            None,
+            False,
+            None,
+            None,
+            100,
         )
     assert "bad" in caplog.text
 
@@ -1604,7 +1762,7 @@ def test_play_pipeline_mode_loaderror(monkeypatch):
         type("AFMImageStack", (), {"load_data": staticmethod(boom)}),
     )
     with pytest.raises(LoadError):
-        actions.play_pipeline_mode("f", "c", None, None, None, None, 100)
+        actions.play_pipeline_mode("f", "c", None, None, None, None, 100, None)
 
 
 def test_play_pipeline_mode_invalid_zmin_zmax(monkeypatch):
@@ -1621,7 +1779,7 @@ def test_play_pipeline_mode_invalid_zmin_zmax(monkeypatch):
 
     monkeypatch.setattr(actions, "gui_entry", fake_gui)
     actions.play_pipeline_mode(
-        "f", "c", None, None, None, None, 100, zmin="bad", zmax="bad"
+        "f", "c", None, None, None, None, 100, None, zmin="bad", zmax="bad"
     )
     assert called["yes"]
 
@@ -1756,6 +1914,9 @@ def test_wizard_run_with_export_and_gif(monkeypatch, tmp_path):
     monkeypatch.setattr(
         actions, "export_gif", lambda *a, **k: called.setdefault("gif", True)
     )
+    monkeypatch.setattr(
+        actions, "export_video", lambda *a, **k: called.setdefault("video", True)
+    )
 
     # Patch is_valid_step/get_processing_step_type to accept our fake filter
     monkeypatch.setattr(actions, "is_valid_step", lambda name: True)
@@ -1772,6 +1933,15 @@ def test_wizard_run_with_export_and_gif(monkeypatch, tmp_path):
             "y",  # gif? yes
             "auto",  # zmin
             "auto",  # zmax
+            "yes",  # timestamps
+            "y",  # scale bar
+            "20",  # scale bar lengths
+            "yes",  # create video
+            "0",  # zmin
+            "3",  # zmax
+            "yes",  # timestamps
+            "y",  # scale bar
+            "30",  # scale bar lengths
             "quit",  # exit
         ]
     )
@@ -2142,8 +2312,8 @@ def test_help_and_unknown_command(tmp_path, inputs, expected_substrings):
         assert substr in out
 
 
-def test_run_with_export_and_gif(tmp_path, monkeypatch):
-    """Test that wizard can data export and make gif after processing with run."""
+def test_run_with_export_gif_and_video(tmp_path, monkeypatch):
+    """Test that wizard can exprt data, gif and video after processing with run."""
     called = {}
 
     # patch exports to mark calls
@@ -2152,6 +2322,9 @@ def test_run_with_export_and_gif(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(
         actions, "export_gif", lambda *a, **k: called.setdefault("gif", True)
+    )
+    monkeypatch.setattr(
+        actions, "export_video", lambda *a, **k: called.setdefault("video", True)
     )
 
     # accept any filter name and return no params
@@ -2167,6 +2340,15 @@ def test_run_with_export_and_gif(tmp_path, monkeypatch):
         "y",  # create gif?
         "auto",  # zmin
         "auto",  # zmax
+        "yes",  # timestamps
+        "y",  # scale bar
+        "10",  # scale bar lengths
+        "yes",  # create video
+        "0",  # zmin
+        "4.5",  # zmax
+        "no",  # timestamps
+        "y",  # scale bar
+        "15",  # scale bar lengths
         "quit",
     ]
     io = CaptureIO(inputs)

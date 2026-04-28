@@ -13,29 +13,12 @@ Subpackages
 Submodules
 ----------
 
-playnano.analysis.base module
------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.analysis.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.analysis.export module
--------------------------------
-
-.. automodule:: playnano.analysis.export
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.analysis.pipeline module
----------------------------------
-
-.. automodule:: playnano.analysis.pipeline
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playnano.analysis.base
+   playnano.analysis.export
+   playnano.analysis.pipeline
 
 Module contents
 ---------------

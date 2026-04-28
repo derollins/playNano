@@ -15,17 +15,20 @@ Dependencies
 import logging
 from pathlib import Path
 
-import numpy as np
 from matplotlib import colormaps as cm
 from PIL import Image
 
+from playnano.io.render_utils import (
+    DEFAULT_FONT_SCALE,
+    render_frame,
+    resolve_stack_data,
+)
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.io_utils import (
     compute_zscale_range,
-    normalize_to_uint8,
     prepare_output_directory,
     sanitize_output_name,
 )
-from playnano.utils.time_utils import draw_scale_and_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +39,13 @@ def create_gif_with_scale_and_timestamp(
     timestamps=None,
     scale_bar_length_nm=100,
     output_path="output",
-    duration=0.5,
-    cmap_name="afmhot",
+    fps: float = 5.0,
+    cmap_name=DEFAULT_CMAP,
     zmin: float | str | None = None,
     zmax: float | str | None = None,
     draw_ts: bool = True,
     draw_scale: bool = True,
+    font_scale: float = DEFAULT_FONT_SCALE,
 ):
     """
     Create an animated GIF from an AFM image stack with optional overlays.
@@ -67,8 +71,10 @@ def create_gif_with_scale_and_timestamp(
     output_path : str
         Path where the GIF will be saved. Default is 'output'.
 
-    duration : float
-        Duration of each frame in seconds. Default is 0.5.
+    fps : float
+        Playback frame rate in frames per second. Default is 5.0.
+        GIF format has limited temporal resolution; the actual frame
+        delay is rounded to the nearest millisecond.
 
     cmap_name : str
         Name of the matplotlib colormap to apply. Default is 'afmhot'.
@@ -77,17 +83,18 @@ def create_gif_with_scale_and_timestamp(
         Minimum z-value mapped to colormap low end.
         The string literal ``"auto"`` uses the 1st percentile.
 
-
     zmax : float or str or None, optional
         Maximum z-value mapped to colormap high end.
         The string literal ``"auto"`` uses the 99th percentile.
-
 
     draw_ts : bool
         Whether to draw timestamps. Default is True.
 
     draw_scale : bool
         Whether to draw a scale bar. Default is True.
+
+    font_scale : float
+        Base font scale for annotations.
 
     Raises
     ------
@@ -108,7 +115,7 @@ def create_gif_with_scale_and_timestamp(
     frames = []
     cmap = cm.get_cmap(cmap_name)
 
-    # Check if timestamps are usable
+    # Validate timestamps
     if (
         timestamps is not None
         and isinstance(timestamps, (list, tuple))
@@ -118,20 +125,17 @@ def create_gif_with_scale_and_timestamp(
     else:
         has_valid_timestamps = False
         logger.warning(
-            "Invalid timestamps provided, will use frame indices as timestamps."
+            "Invalid timestamps provided; frame indices will be used instead."
         )
 
-    # Check pixel_sizes_nm list
-
-    if (
+    # Validate pixel sizes
+    if not (
         pixel_sizes_nm is not None
         and isinstance(pixel_sizes_nm, list)
         and len(pixel_sizes_nm) == len(image_stack)
     ):
-        pass
-    else:
         draw_scale = False
-        logger.warning("Invalid pixel_sizes_nm list, will not draw scale bar.")
+        logger.warning("Invalid pixel_sizes_nm list; scale bar will be omitted.")
 
     if zmin is not None or zmax is not None:
         zmin_val, zmax_val = compute_zscale_range(image_stack, zmin, zmax)
@@ -139,26 +143,7 @@ def create_gif_with_scale_and_timestamp(
         zmin_val, zmax_val = None, None
 
     for i, frame in enumerate(image_stack):
-        # Normalize and colorize
-        if zmin_val is not None and zmax_val is not None:
-            # Clip to [zmin, zmax], normalize to [0, 255]
-            if zmin_val == zmax_val:
-                # Flat image: avoid division by zero, render as black
-                frame_norm = np.zeros_like(frame, dtype=np.uint8)
-            else:
-                clipped = np.clip(frame, zmin_val, zmax_val)
-                normalized = (clipped - zmin_val) / (zmax_val - zmin_val) * 255
-                normalized = np.nan_to_num(
-                    normalized, nan=0.0, posinf=255.0, neginf=0.0
-                )
-                frame_norm = np.clip(normalized, 0, 255).astype(np.uint8)
-        else:
-            frame_norm = normalize_to_uint8(frame)
-
-        frame_norm_float = frame_norm / 255.0  # rescale to [0, 1] for cmap input
-        color_frame = (cmap(frame_norm_float)[..., :3] * 255).astype(np.uint8)
-
-        # Determine timestamp
+        # Determine timestamps
         if has_valid_timestamps:
             try:
                 timestamp = float(timestamps[i])
@@ -170,30 +155,29 @@ def create_gif_with_scale_and_timestamp(
             )
             timestamp = i
 
-        # Determine pixel_size_nm for frame
-        draw_pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
-        # Add annotations
-        frame_with_overlay = draw_scale_and_timestamp(
-            color_frame,
+        pixel_size_nm = pixel_sizes_nm[i] if draw_scale else 1.0
+
+        frame_annotated = render_frame(
+            frame=frame,
+            cmap=cmap,
             timestamp=timestamp,
-            pixel_size_nm=draw_pixel_size_nm,
-            scale=1.0,
-            bar_length_nm=scale_bar_length_nm,
-            font_scale=frame.shape[0] / 256,
+            pixel_size_nm=pixel_size_nm,
+            scale_bar_length_nm=scale_bar_length_nm,
+            font_scale=font_scale,
             draw_ts=draw_ts,
             draw_scale=draw_scale,
-            color=(255, 255, 255),
+            zmin_val=zmin_val,
+            zmax_val=zmax_val,
         )
+        frames.append(Image.fromarray(frame_annotated))
 
-        # Convert back to PIL
-        img = Image.fromarray(frame_with_overlay)
-        frames.append(img)
+    duration_ms = int((1.0 / fps) * 1000) if fps > 0 else 500
 
     frames[0].save(
         output_path,
         save_all=True,
         append_images=frames[1:],
-        duration=int(duration * 500),
+        duration=duration_ms,
         loop=0,
     )
     logger.info(f"GIF saved to {output_path}")
@@ -205,11 +189,14 @@ def export_gif(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    cmap_name: str = DEFAULT_CMAP,
     raw: bool = False,
+    fps: float = 5.0,
     zmin: float | None = None,
     zmax: float | None = None,
     draw_ts: bool = True,
     draw_scale: bool = True,
+    font_scale: float = DEFAULT_FONT_SCALE,
 ) -> None:
     """
     Export an AFM image stack as an annotated GIF.
@@ -235,6 +222,9 @@ def export_gif(
         If ``True``, export raw (unprocessed) data; otherwise export processed data
         if available. Default is False.
 
+    fps : float
+        Frame rate for the GIF in frames per second. Default is 5.0.
+
     zmin : float or None, optional
         Minimum z-value mapped to colormap low end. The string literal ``"auto"``
         can also be used to automatically set the 1st percentile. ``None`` uses
@@ -251,6 +241,8 @@ def export_gif(
     draw_scale : bool
         Whether to draw a scale bar on each frame. Default is True.
 
+    font_scale : float
+        Base font scale for annotations at the reference height.
     Returns
     -------
     None
@@ -269,23 +261,9 @@ def export_gif(
     out_dir = prepare_output_directory(output_folder, default="output")
     base = sanitize_output_name(output_name, Path(afm_stack.file_path).stem)
 
-    # Determine whether to use raw or processed data
-    # (allows saving of unfiltered from play mode)
-    if raw and "raw" in afm_stack.processed:
-        stack_data = afm_stack.processed["raw"]
-        meta_src = afm_stack.state_backups.get(
-            "frame_metadata_before_edit", afm_stack.frame_metadata
-        )
-    else:
-        if raw:
-            logger.debug("Requested raw export on unprocessed data; using loaded data.")
-        stack_data = afm_stack.data
-        meta_src = afm_stack.frame_metadata
-        filtered_exists = "raw" in afm_stack.processed and any(
-            key != "raw" for key in afm_stack.processed
-        )
-        if filtered_exists:
-            base = f"{base}_filtered"
+    stack_data, meta_src, is_filtered = resolve_stack_data(afm_stack, raw)
+    if is_filtered:
+        base = f"{base}_filtered"
 
     timestamps = [md["timestamp"] for md in meta_src]
     pixels_to_nm = [
@@ -293,21 +271,22 @@ def export_gif(
     ]
 
     gif_path = out_dir / f"{base}.gif"
-
-    # default scale bar
     bar_nm = scale_bar_nm if scale_bar_nm is not None else 100
 
     logger.debug(f"[export] Writing GIF → {gif_path}")
+
     create_gif_with_scale_and_timestamp(
         stack_data,
         pixels_to_nm,
         timestamps,
         output_path=gif_path,
         scale_bar_length_nm=bar_nm,
-        cmap_name="afmhot",
+        cmap_name=cmap_name,
         zmin=zmin,
         zmax=zmax,
         draw_ts=draw_ts,
         draw_scale=draw_scale,
+        font_scale=font_scale,
+        fps=fps,
     )
     logger.debug(f"[export] GIF written to {gif_path}")

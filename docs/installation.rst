@@ -188,3 +188,25 @@ This will install:
    .. code-block:: bash
 
       conda env update -f environment.yaml --prune
+
+Dependencies
+------------
+
+This project requires the following Python packages:
+
+- `numpy`
+- `pandas`
+- `h5py`
+- `Pillow`
+- `matplotlib`
+- `opencv-python-headless`
+- `imageio`
+- `imageio-ffmpeg`
+- `scipy`
+- `scikit-learn`
+- `scikit-image`
+- `python-dateutil`
+- `tifffile`
+- `pyyaml`
+- `PySide6` — for the GUI
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files

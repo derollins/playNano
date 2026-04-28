@@ -6,13 +6,13 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(docs/|tests/resources/spm_folder_0|src/playnano/fonts/|LICENSE)
+        exclude: ^(docs/|tests/resources/spm_folder_0|src/playnano/resources/fonts/|LICENSE)
       - id: end-of-file-fixer
-        exclude: ^(docs/|tests/resources/spm_folder_0|src/playnano/fonts/|LICENSE)
+        exclude: ^(docs/|tests/resources/spm_folder_0|src/playnano/resources/fonts/|LICENSE)
       - id: check-yaml
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)
       - id: check-added-large-files
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -21,7 +21,7 @@ repos:
         args: ["--profile", "black"]
         name: isort (python import sorting)
         language_version: python3.11
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.7
@@ -29,7 +29,7 @@ repos:
       - id: ruff
         args: ["--fix"]
         additional_dependencies: [ "ruff>=0.0.285" ]
-        exclude: ^(docs/|notebooks/|src/playnano/fonts/|LICENSE)$
+        exclude: ^(docs/|notebooks/|src/playnano/resources/fonts/|LICENSE)$
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
@@ -43,11 +43,11 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-docstrings]
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)$
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.10.0
     hooks:
       - id: markdownlint-cli2
         args: [--fix]
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)$
