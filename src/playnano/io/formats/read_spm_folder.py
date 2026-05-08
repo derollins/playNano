@@ -120,13 +120,12 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
             raise ValueError(f"Inconsistent image shape in {fpath}")
         image_stack[i] = img
 
-    # Compose per-frame metadata list
-    frame_metadata.append(
-        {"timestamp": ts, "frame_pixel_size_nm": px_size_nm, "line_rate": line_rate}
-    )
-    logger.debug(
-        f"Loaded {num_frames} frames with shape {image_stack.shape} and pixel size"
-    )
+        # Compose per-frame metadata list
+        frame_metadata.append(
+            {"timestamp": ts, "frame_pixel_size_nm": px_size_nm, "line_rate": line_rate}
+        )
+
+    logger.debug(f"Loaded {num_frames} frames with shape {image_stack.shape}.")
 
     return AFMImageStack(
         data=image_stack,
