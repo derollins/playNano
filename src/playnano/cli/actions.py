@@ -358,7 +358,7 @@ def play_pipeline_mode(
                 f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
             )
     else:
-        logger.debug(f"Overiding data frame rate. FPS = {fps:.2f}.")
+        logger.debug(f"Overriding data frame rate. FPS = {fps:.2f}.")
 
     if processing_file:
         steps_with_kwargs = parse_processing_file(processing_file)

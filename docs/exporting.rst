@@ -215,7 +215,7 @@ format, and support the same annotations and colourmap options as GIFs.
 - **Scale bar** — physical calibration (default 100 nm) derived from per-frame pixel size metadata.
 
 Video Export Options (CLI)
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -274,7 +274,7 @@ publications or for importing into external tools.
   drawn onto each frame if enabled in the GUI.
 
 Image Sequence Export Options (CLI)
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
