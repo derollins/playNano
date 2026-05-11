@@ -11,14 +11,9 @@ as well as through GitHub.
 System requirements
 -------------------
 
-- Python **3.10 - 3.12** (3.11 recommended)
+- Python **3.10 - 3.13** (3.11 recommended)
 - Linux, macOS, or Windows
 - Internet connection for downloading packages
-
-.. note::
-
-   NumPy is currently pinned to ``<2.0`` for compatibility with some
-   scientific libraries. See the :doc:`changelog` for updates.
 
 Installation Guide
 ------------------
@@ -188,3 +183,25 @@ This will install:
    .. code-block:: bash
 
       conda env update -f environment.yaml --prune
+
+Dependencies
+------------
+
+This project requires the following Python packages:
+
+- `numpy`
+- `pandas`
+- `h5py`
+- `Pillow`
+- `matplotlib`
+- `opencv-python-headless`
+- `imageio`
+- `imageio-ffmpeg`
+- `scipy`
+- `scikit-learn`
+- `scikit-image`
+- `python-dateutil`
+- `tifffile`
+- `pyyaml`
+- `PySide6` — for the GUI
+- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files

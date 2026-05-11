@@ -46,6 +46,9 @@ module :mod:`playnano.processing.masked_filters` that contains masked variants o
    * - :func:`~playnano.processing.filters.gaussian_filter`
      - Apply Gaussian smoothing.
      - sigma (float), default: 1.0
+   * - :func:`~playnano.processing.filters.vertical_flip`
+     - Vertically flip an image.
+     - None
 
 Masks (2D Binary Operations)
 ----------------------------
