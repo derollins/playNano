@@ -6,7 +6,6 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=green)](https://github.com/derollins/playNano/releases)
-[![GitHub release downloads](https://img.shields.io/github/downloads/derollins/playNano/latest/total?color=green)](https://github.com/derollins/playNano/releases)
 [![PyPI version](https://img.shields.io/pypi/v/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
@@ -68,7 +67,7 @@ Full documentation: <https://derollins.github.io/playNano/>
 
 ## 📦 Installation and Dependencies
 
-**Python compatibility:** 3.10 – 3.12
+**Python compatibility:** 3.10 – 3.13
 
 It is recommended to use a virtual environment such as conda to isolate the installation. There
 are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/main/installation.html)
