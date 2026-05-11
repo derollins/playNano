@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Analysis" href="analysis.html"><link rel="prev" title="Processing Operations Reference" href="processing-operations-reference.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Colormaps" href="colormaps.html"><link rel="prev" title="Processing Operations Reference" href="processing-operations-reference.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Exporting Data - playnano latest documentation</title>
@@ -190,7 +190,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -200,6 +200,10 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Exporting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#animated-exports">Animated Exports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#data-exports">Data Exports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
@@ -211,44 +215,131 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/modules.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.html">playnano package</a><input aria-label="Toggle navigation of playnano package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a><input aria-label="Toggle navigation of playnano.cli package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.image_sequence_export.html">playnano.io.image_sequence_export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.video_export.html">playnano.io.video_export module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a><input aria-label="Toggle navigation of playnano.processing package" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.masked_filters.html">playnano.processing.masked_filters module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.utils.html">playnano.utils package</a><input aria-label="Toggle navigation of playnano.utils package" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.afm_stack.html">playnano.afm_stack module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.errors.html">playnano.errors module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.afm_stack.html">playnano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.errors.html">playnano.errors module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.image_sequence_export.html">playnano.io.image_sequence_export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.video_export.html">playnano.io.video_export module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a><input aria-label="Toggle navigation of playnano.processing package" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.masked_filters.html">playnano.processing.masked_filters module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
@@ -256,54 +347,126 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.utils.html">playnano.utils package</a><input aria-label="Toggle navigation of playnano.utils package" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a><input aria-label="Toggle navigation of playnano.cli package" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.0.html">What’s New in <em>playNano</em> 0.2.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.1.html">What’s New in <em>playNano</em> 0.2.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
-</div></div>
+</div>
+</div>
+
       </div>
       
     </div>
@@ -341,18 +504,18 @@
 <span id="exporting"></span><h1>Exporting Data<a class="headerlink" href="#exporting-data" title="Link to this heading">¶</a></h1>
 <p><strong>playNano</strong> supports saving processed AFM video stacks and analysis results
 in several interoperable formats. Exports can include raw data, processed
-frames, masks, provenance, and optional animated visualizations.</p>
+frames, masks, provenance, and optional animated visualisations.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
 <p>Data can be exported using the <strong>command-line interface (CLI)</strong> or from Python
 using the functions in <a class="reference internal" href="api/playnano.io.export_data.html#module-playnano.io.export_data" title="playnano.io.export_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.io.export_data</span></code></a> and
 <a class="reference internal" href="api/playnano.io.gif_export.html#module-playnano.io.gif_export" title="playnano.io.gif_export"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.io.gif_export</span></code></a>.</p>
-<p>Supported export formats include:</p>
+<p>Exports fall into two categories:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#export-ome-tiff"><span class="std std-ref">OME-TIFF Export</span></a> - Multi-frame image stack compatible with ImageJ/Fiji.</p></li>
-<li><p><a class="reference internal" href="#export-npz"><span class="std std-ref">NPZ Export</span></a> - NumPy zipped archive with data arrays and metadata.</p></li>
-<li><p><a class="reference internal" href="#export-hdf5"><span class="std std-ref">HDF5 Export</span></a> - Hierarchical HDF5 bundle including data and provenance.</p></li>
-<li><p><a class="reference internal" href="#export-gif"><span class="std std-ref">GIF Export</span></a> - Annotated animation with timestamps, scale bar, and color map.</p></li>
+<li><p><a class="reference internal" href="#export-animated"><span class="std std-ref">Animated Exports</span></a> — annotated visual outputs for presentation and communication
+(<a class="reference internal" href="#export-gif"><span class="std std-ref">GIF Export</span></a>, <a class="reference internal" href="#export-video"><span class="std std-ref">Video Export</span></a>, <a class="reference internal" href="#export-image-sequence"><span class="std std-ref">Image Sequence Export</span></a>).</p></li>
+<li><p><a class="reference internal" href="#export-data"><span class="std std-ref">Data Exports</span></a> — structured data bundles for analysis, archiving, and round-trip
+reconstruction (<a class="reference internal" href="#export-ome-tiff"><span class="std std-ref">OME-TIFF Export</span></a>, <a class="reference internal" href="#export-npz"><span class="std std-ref">NPZ Export</span></a>, <a class="reference internal" href="#export-hdf5"><span class="std std-ref">HDF5 Export</span></a>).</p></li>
 </ul>
 </section>
 <section id="format-comparison">
@@ -366,19 +529,36 @@ using the functions in <a class="reference internal" href="api/playnano.io.expor
 <th class="head"><p>Processed Data</p></th>
 <th class="head"><p>Masks</p></th>
 <th class="head"><p>Provenance / Metadata</p></th>
+<th class="head"><p>Annotations</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>OME-TIFF</p></td>
+<tr class="row-even"><td><p>GIF</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>MP4/AVI</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>PNG (folder)</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>OME-TIFF</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
 <td><p>Limited</p></td>
-</tr>
-<tr class="row-odd"><td><p>GIF</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-<td><p>No</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><p>NPZ</p></td>
@@ -386,12 +566,14 @@ using the functions in <a class="reference internal" href="api/playnano.io.expor
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Full</p></td>
+<td><p>No</p></td>
 </tr>
 <tr class="row-odd"><td><p>HDF5</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>Full, hierarchical</p></td>
+<td><p>No</p></td>
 </tr>
 </tbody>
 </table>
@@ -409,20 +591,23 @@ directories with these options:</p>
 <section id="cli-flags">
 <h3>CLI Flags<a class="headerlink" href="#cli-flags" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--export</span></code> - Choose one or more formats (<code class="docutils literal notranslate"><span class="pre">tif</span></code>, <code class="docutils literal notranslate"><span class="pre">npz</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> - Generate an annotated GIF (requires timing metadata).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> - Destination directory (default: <code class="docutils literal notranslate"><span class="pre">output/</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--output-name</span></code> - Base name for exported files (default: derived from input).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--export</span></code> — Choose one or more formats (<code class="docutils literal notranslate"><span class="pre">tif</span></code>, <code class="docutils literal notranslate"><span class="pre">npz</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> — Generate an annotated GIF (requires timing metadata).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> — Destination directory (default: <code class="docutils literal notranslate"><span class="pre">output/</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output-name</span></code> — Base name for exported files (default: derived from input).</p></li>
 </ul>
-<p>The GIF annotations can be further customised using <code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code>,
-<code class="docutils literal notranslate"><span class="pre">--zmin</span></code>, and <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> options; see <a class="reference internal" href="#export-gif"><span class="std std-ref">GIF Export</span></a> for details.</p>
+<p>The visual export annotations can be further customised using <code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--zmin</span></code>, and <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> options; see <a class="reference internal" href="#export-animated"><span class="std std-ref">Animated Exports</span></a> for details.</p>
+<p>The frame rate can be set using <code class="docutils literal notranslate"><span class="pre">--fps</span></code>, the deafult without the tag is 5.0.</p>
 <p>For full syntax, see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>.
-Files can also be exported from the GUI window, see <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> for details.</p>
+Files can also be exported from the GUI window; see <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> for details.</p>
 <p><strong>Example</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span>--export<span class="w"> </span>tif<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--export<span class="w"> </span>tif<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
 </pre></div>
 </div>
-<p>This processes an AFM stack using the <code class="docutils literal notranslate"><span class="pre">remove_plane</span></code> filter and exports OME-TIFF, NPZ, and HDF5 bundles to <a href="#id2"><span class="problematic" id="id3">`</span></a>exports/.</p>
+<p>This processes an AFM stack using the <code class="docutils literal notranslate"><span class="pre">remove_plane</span></code> filter and exports
+OME-TIFF, NPZ, and HDF5 bundles to <code class="docutils literal notranslate"><span class="pre">exports/</span></code>.</p>
 <p><strong>Example output structure</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>exports/
  ├── test_stack_filtered.ome.tif
@@ -436,28 +621,219 @@ Raw exports can also be produced using the <code class="docutils literal notrans
 <p>—</p>
 </section>
 </section>
+</section>
+<section id="animated-exports">
+<span id="export-animated"></span><h1>Animated Exports<a class="headerlink" href="#animated-exports" title="Link to this heading">¶</a></h1>
+<p>GIF, video, and image sequence exports are designed for presentation,
+communication, and visual inspection. All three support frame annotations
+(timestamps and scale bars) and share a common approach to colourmap and
+z-scale configuration.</p>
+<section id="colourmaps-and-z-scale">
+<span id="export-colourmaps"></span><h2>Colourmaps and Z-Scale<a class="headerlink" href="#colourmaps-and-z-scale" title="Link to this heading">¶</a></h2>
+<p>All animated exports use <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code> as the default colourmap — a perceptually
+linear, monotone-lightness map developed for playNano that avoids the brightness
+discontinuities and dark plateaus common in traditional AFM colourmaps. Any
+<code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>-registered colourmap can be used instead, including playNano’s
+native maps <code class="docutils literal notranslate"><span class="pre">playnano_gold</span></code> and <code class="docutils literal notranslate"><span class="pre">classic_afm</span></code>.</p>
+<p>The z-scale is automatically set to the 1st and 99th percentiles of the data
+by default, but can be overridden with explicit <code class="docutils literal notranslate"><span class="pre">zmin</span></code> and <code class="docutils literal notranslate"><span class="pre">zmax</span></code> values.
+Within the GUI, both the colourmap and z-scale can be adjusted interactively
+before export, and the exported file reflects those settings.</p>
+<p>See <a class="reference internal" href="colormaps.html#colormaps"><span class="std std-ref">Colormaps</span></a> for full details on the native colourmaps.</p>
+<p>—</p>
+</section>
+<section id="gif-export">
+<span id="export-gif"></span><h2>GIF Export<a class="headerlink" href="#gif-export" title="Link to this heading">¶</a></h2>
+<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.gif</span></code> (annotated animation)</p>
+<p><a class="reference internal" href="api/playnano.io.gif_export.html#playnano.io.gif_export.export_gif" title="playnano.io.gif_export.export_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.export_gif()</span></code></a> creates annotated GIFs.</p>
+<p>GIF exports provide a compact visualisation of the AFM video or processed
+stack, suitable for quick inspection and presentation.</p>
+<p><strong>Annotations</strong></p>
+<ul class="simple">
+<li><p><strong>Timestamps</strong> — derived from frame metadata.</p></li>
+<li><p><strong>Scale bar</strong> — physical calibration (default 100 nm) derived from per-frame pixel size metadata.</p></li>
+</ul>
+<section id="gif-export-options-cli">
+<h3>GIF Export Options (CLI)<a class="headerlink" href="#gif-export-options-cli" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>my_video<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
+</pre></div>
+</div>
+<p><strong>Flags</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> — Generate an animated GIF after processing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Set the frame rate for the animation in seconds (default: 5.0).</p></li>
+</ul>
+<p>GIFs can be combined with the usual <code class="docutils literal notranslate"><span class="pre">--export</span></code> options to produce NPZ, HDF5,
+or TIFF bundles simultaneously.</p>
+<p><strong>Example</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>test_stack<span class="w"> </span>--scale-bar-nm<span class="w"> </span><span class="m">150</span><span class="w"> </span>--zmin<span class="w"> </span><span class="m">0</span><span class="w"> </span>--zmax<span class="w"> </span><span class="m">20</span>
+</pre></div>
+</div>
+</section>
+<section id="programmatic-gif-export">
+<h3>Programmatic GIF Export<a class="headerlink" href="#programmatic-gif-export" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
+
+<span class="n">export_gif</span><span class="p">(</span>
+    <span class="n">stack</span><span class="p">,</span>
+    <span class="n">make_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">fps</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+    <span class="n">cmap_name</span><span class="o">=</span><span class="s2">&quot;classic_afm&quot;</span><span class="p">,</span>  <span class="c1"># any matplotlib-registered colormap</span>
+    <span class="n">zmin</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">draw_ts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>—</p>
+</section>
+</section>
+<section id="video-export">
+<span id="export-video"></span><h2>Video Export<a class="headerlink" href="#video-export" title="Link to this heading">¶</a></h2>
+<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> or <code class="docutils literal notranslate"><span class="pre">.avi</span></code> (annotated video)</p>
+<p><a class="reference internal" href="api/playnano.io.video_export.html#playnano.io.video_export.export_video" title="playnano.io.video_export.export_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.video_export.export_video()</span></code></a> creates annotated videos.</p>
+<p>Video exports provide a high-quality visualisation of the AFM video or
+processed stack, suitable for publication and presentation. Videos can be exported in MP4 or AVI
+format, and support the same annotations and colourmap options as GIFs.</p>
+<p><strong>Annotations</strong></p>
+<ul class="simple">
+<li><p><strong>Timestamps</strong> — derived from frame metadata.</p></li>
+<li><p><strong>Scale bar</strong> — physical calibration (default 100 nm) derived from per-frame pixel size metadata.</p></li>
+</ul>
+<section id="video-export-options-cli">
+<h3>Video Export Options (CLI)<a class="headerlink" href="#video-export-options-cli" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-video<span class="w"> </span>--output-name<span class="w"> </span>my_video<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
+</pre></div>
+</div>
+<p><strong>Flags</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-video</span></code> — Generate an animated video after processing default is MP4 but can add a string to
+specify the format, i.e. <code class="docutils literal notranslate"><span class="pre">--make-video</span> <span class="pre">avi</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Set the frame rate for the animation in seconds (default: 5.0).</p></li>
+</ul>
+</section>
+<section id="programmatic-video-export">
+<h3>Programmatic Video Export<a class="headerlink" href="#programmatic-video-export" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.video_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_video</span>
+
+<span class="n">export_video</span><span class="p">(</span>
+    <span class="n">stack</span><span class="p">,</span>
+    <span class="n">make_video</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span> <span class="c1">#or &quot;avi&quot;</span>
+    <span class="n">cmap_name</span><span class="o">=</span><span class="s2">&quot;playnano_gold&quot;</span><span class="p">,</span>  <span class="c1"># any matplotlib-registered colormap</span>
+    <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">fps</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+    <span class="n">zmin</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>—</p>
+</section>
+</section>
+<section id="image-sequence-export">
+<span id="export-image-sequence"></span><h2>Image Sequence Export<a class="headerlink" href="#image-sequence-export" title="Link to this heading">¶</a></h2>
+<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.png</span></code> (individual frames in a folder)</p>
+<p>Image sequence exports save each frame of the AFM video or processed stack as
+a separate PNG file. This is useful for extracting specific frames for
+publications or for importing into external tools.</p>
+<p><strong>Annotations</strong></p>
+<ul class="simple">
+<li><p><strong>Timestamps</strong> — derived from frame metadata; drawn onto each frame if enabled in the GUI.</p></li>
+<li><p><strong>Scale bar</strong> — physical calibration (default 100 nm) derived from per-frame pixel size metadata;
+drawn onto each frame if enabled in the GUI.</p></li>
+</ul>
+<section id="image-sequence-export-options-cli">
+<h3>Image Sequence Export Options (CLI)<a class="headerlink" href="#image-sequence-export-options-cli" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-sequence<span class="w"> </span>--output-name<span class="w"> </span>my_frames<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
+</pre></div>
+</div>
+<p><strong>Flags</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-sequence</span></code> — Generate an image sequence after processing (PNG).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
+</ul>
+</section>
+<section id="programmatic-image-sequence-export">
+<h3>Programmatic Image Sequence Export<a class="headerlink" href="#programmatic-image-sequence-export" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.image_sequence_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_image_sequence</span>
+
+<span class="n">export_image_sequence</span><span class="p">(</span>
+    <span class="n">stack</span><span class="p">,</span>
+    <span class="n">make_sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="c1">#or &quot;jpg&quot;</span>
+    <span class="n">cmap_name</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span>  <span class="c1"># any matplotlib-registered colormap</span>
+    <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">zmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>—</p>
+</section>
+</section>
+</section>
+<section id="data-exports">
+<span id="export-data"></span><h1>Data Exports<a class="headerlink" href="#data-exports" title="Link to this heading">¶</a></h1>
+<p>HDF5, NPZ, and OME-TIFF exports are designed for data archiving, round-trip
+reconstruction, and interoperability with external analysis tools. These formats
+do not include visual annotations but carry structured data, masks, and provenance.</p>
+<p>—</p>
 <section id="ome-tiff-export">
 <span id="export-ome-tiff"></span><h2>OME-TIFF Export<a class="headerlink" href="#ome-tiff-export" title="Link to this heading">¶</a></h2>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code> (single multi-frame image stack)</p>
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_ome_tiff_stack" title="playnano.io.export_data.save_ome_tiff_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_ome_tiff_stack()</span></code></a> exports OME-TIFF files.</p>
-<p>The OME-TIFF export stores the processed AFM video from the
-<a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.data" title="playnano.afm_stack.AFMImageStack.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data</span></code></a> attribute as a single stack
-of frames in a format compatible with ImageJ, Fiji, Bio-Formats, and general
-image analysis tools.</p>
+<p>The OME-TIFF export stores the processed AFM video as a single stack of frames
+in a format compatible with ImageJ, Fiji, Bio-Formats, and general image
+analysis tools.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Since the OME-TIFF metadata schema only contains a single value for
+<code class="docutils literal notranslate"><span class="pre">PhysicalSizeX</span></code> / <code class="docutils literal notranslate"><span class="pre">PhysicalSizeY</span></code> for all images in a stack, all frames
+must share the same <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code> value in their <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code>
+dictionaries.</p>
+</div>
 <p><strong>Contents</strong></p>
 <ul class="simple">
-<li><p>Each frame stored as a TIFF plane</p></li>
-<li><p>Global metadata including pixel size, timestamps, and channel name</p></li>
-<li><p>OME-XML header describing acquisition</p></li>
+<li><p>Each frame stored as a TIFF plane.</p></li>
+<li><p>Global metadata including pixel size, timestamps, and channel name.</p></li>
+<li><p>OME-XML header describing acquisition.</p></li>
 </ul>
 <p><strong>Use cases</strong></p>
 <ul class="simple">
-<li><p>Visualisation and measurement in ImageJ/Fiji</p></li>
-<li><p>Conversion to other microscopy formats</p></li>
-<li><p>Sharing of processed image stacks</p></li>
+<li><p>Visualisation and measurement in ImageJ/Fiji.</p></li>
+<li><p>Conversion to other microscopy formats.</p></li>
+<li><p>Sharing of processed image stacks.</p></li>
 </ul>
-<section id="programmatic-tiff-export">
-<h3>Programmatic TIFF Export<a class="headerlink" href="#programmatic-tiff-export" title="Link to this heading">¶</a></h3>
+<section id="programmatic-ome-tiff-export">
+<h3>Programmatic OME-TIFF Export<a class="headerlink" href="#programmatic-ome-tiff-export" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_ome_tiff_stack</span>
 
@@ -467,9 +843,9 @@ image analysis tools.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OME-TIFF exports contain only a <em>single stack</em>.
-Derived data such as masks or filtered layers are not included;
-use <a class="reference internal" href="#export-hdf5"><span class="std std-ref">HDF5 Export</span></a> or <a class="reference internal" href="#export-npz"><span class="std std-ref">NPZ Export</span></a> for multi-layer outputs.</p>
+<p>OME-TIFF exports contain only a single stack. Derived data such as masks or
+filtered layers are not included; use <a class="reference internal" href="#export-hdf5"><span class="std std-ref">HDF5 Export</span></a> or <a class="reference internal" href="#export-npz"><span class="std std-ref">NPZ Export</span></a>
+for multi-layer outputs.</p>
 </div>
 <p>—</p>
 </section>
@@ -480,13 +856,13 @@ use <a class="reference internal" href="#export-hdf5"><span class="std std-ref">
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_npz_bundle()</span></code></a> exports NPZ bundles.</p>
 <p><strong>Contents</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> - raw or processed image stack</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">processed__&lt;step&gt;</span></code> - processed frame arrays</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">masks__&lt;mask&gt;</span></code> - Boolean mask arrays</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code> - per-frame metadata including timestamps</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> - full processing and analysis history</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> - pixel size in nanometres</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> - data channel name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> — raw or processed image stack.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processed__&lt;step&gt;</span></code> — processed frame arrays.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">masks__&lt;mask&gt;</span></code> — Boolean mask arrays.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code> — per-frame metadata including timestamps and pixel sizes in nanometres.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> — full processing and analysis history.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> — pixel size in nanometres.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> — data channel name.</p></li>
 </ul>
 <p><strong>Example structure</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>data
@@ -508,7 +884,8 @@ channel
 </pre></div>
 </div>
 <p><strong>Reloading</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_npz_bundle</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.data_loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_npz_bundle</span>
+
 <span class="n">stack</span> <span class="o">=</span> <span class="n">load_npz_bundle</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.npz&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -517,20 +894,20 @@ channel
 </section>
 <section id="hdf5-export">
 <span id="export-hdf5"></span><h2>HDF5 Export<a class="headerlink" href="#hdf5-export" title="Link to this heading">¶</a></h2>
-<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.h5</span></code> (Hierarchical data container)</p>
+<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.h5</span></code> (hierarchical data container)</p>
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_h5_bundle" title="playnano.io.export_data.save_h5_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_h5_bundle()</span></code></a> exports HDF5 bundles.</p>
 <p><strong>Contents</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">/data</span></code> - raw or processed image stack</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/processed/&lt;step&gt;</span></code> - filtered or analysis layers</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/masks/&lt;mask&gt;</span></code> - Boolean masks</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/frame_metadata_json</span></code> - per-frame metadata including timestamps</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/provenance_json</span></code> - full processing and analysis history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/data</span></code> — raw or processed image stack.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/processed/&lt;step&gt;</span></code> — filtered or analysis layers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/masks/&lt;mask&gt;</span></code> — Boolean masks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/frame_metadata_json</span></code> — per-frame metadata including timestamps and pixel sizes in nanometres.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/provenance_json</span></code> — full processing and analysis history.</p></li>
 </ul>
 <p><strong>Attributes</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> - pixel size in nanometres</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> - channel name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> — pixel size in nanometres for the first frame (usually consistent across frames).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> — channel name.</p></li>
 </ul>
 <p><strong>Example structure</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/data
@@ -554,74 +931,20 @@ channel
 </div>
 <p><strong>Reloading</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_h5_bundle</span>
+
 <span class="n">stack</span> <span class="o">=</span> <span class="n">load_h5_bundle</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.h5&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>—</p>
 </section>
 </section>
-<section id="gif-export">
-<span id="export-gif"></span><h2>GIF Export<a class="headerlink" href="#gif-export" title="Link to this heading">¶</a></h2>
-<p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.gif</span></code> (annotated animation)</p>
-<p><a class="reference internal" href="api/playnano.io.gif_export.html#playnano.io.gif_export.export_gif" title="playnano.io.gif_export.export_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.export_gif()</span></code></a> creates annotated GIFs.</p>
-<p>GIF exports provide a compact visualisation of the AFM video or processed
-stack, with optional annotations.</p>
-<p><strong>Annotations</strong></p>
-<ul class="simple">
-<li><p><strong>Timestamps</strong> - derived from frame metadata</p></li>
-<li><p><strong>Scale bar</strong> - physical calibration (default 100 nm)</p></li>
-<li><p><strong>Colour map</strong> - default <code class="docutils literal notranslate"><span class="pre">afmhot</span></code> normalisation</p></li>
-<li><p><strong>Frame rate</strong> - determined from timing metadata</p></li>
-</ul>
-<section id="gif-export-options-cli">
-<h3>GIF Export Options (CLI)<a class="headerlink" href="#gif-export-options-cli" title="Link to this heading">¶</a></h3>
-<p>When exporting GIFs, the following flags control the annotations and scaling:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>my_video<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">100</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto
-</pre></div>
-</div>
-<p><strong>Flags</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> - Generate an animated GIF after processing.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> - Integer length of the scale bar in nanometres (default: 100).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> - Minimum value of the z scale; can be a float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> - Maximum value of the z scale; can be a float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
-</ul>
-<p>These options let you control the visual appearance of the GIF:</p>
-<ul class="simple">
-<li><p><strong>Scale bar</strong> shows a physical size reference.</p></li>
-<li><p><strong>Z scale</strong> sets the height (colour) mapping; auto uses min/max of the data.</p></li>
-<li><p>GIFs can be combined with the usual <code class="docutils literal notranslate"><span class="pre">--export</span></code> options to produce NPZ, HDF5, or TIFF bundles simultaneously.</p></li>
-</ul>
-<p><strong>Example</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>test_stack<span class="w"> </span>--scale-bar-nm<span class="w"> </span><span class="m">150</span><span class="w"> </span>--zmin<span class="w"> </span><span class="m">0</span><span class="w"> </span>--zmax<span class="w"> </span><span class="m">20</span>
-</pre></div>
-</div>
-</section>
-<section id="programmatic-gif-export">
-<h3>Programmatic GIF Export<a class="headerlink" href="#programmatic-gif-export" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
-<span class="n">export_gif</span><span class="p">(</span>
-    <span class="n">stack</span><span class="p">,</span>
-    <span class="n">make_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
-    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
-    <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">zmin</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">zmax</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>—</p>
-</section>
 </section>
 <section id="advanced-programmatic-usage">
-<h2>Advanced / Programmatic Usage<a class="headerlink" href="#advanced-programmatic-usage" title="Link to this heading">¶</a></h2>
-<section id="unified-export">
-<h3>Unified Export<a class="headerlink" href="#unified-export" title="Link to this heading">¶</a></h3>
-<p>Use <code class="xref py py-func docutils literal notranslate"><span class="pre">export_bundles()</span></code> to export multiple formats in one call.</p>
+<h1>Advanced / Programmatic Usage<a class="headerlink" href="#advanced-programmatic-usage" title="Link to this heading">¶</a></h1>
+<section id="unified-data-export">
+<h2>Unified Data Export<a class="headerlink" href="#unified-data-export" title="Link to this heading">¶</a></h2>
+<p>Use <a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.export_bundles" title="playnano.io.export_data.export_bundles"><code class="xref py py-func docutils literal notranslate"><span class="pre">export_bundles()</span></code></a> to export multiple formats
+in a single call.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_bundles</span>
 
@@ -637,27 +960,26 @@ stack, with optional annotations.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">raw=True</span></code> to export unprocessed snapshots only.</p>
 <p>—</p>
 </section>
-</section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>NPZ and HDF5 exports contain processed layers, masks, timestamps, and
-full provenance for round-trip reconstruction.</p></li>
-<li><p>OME-TIFF is primarily for viewing in ImageJ/Fiji and does not include
-masks or processed layers.</p></li>
+<li><p>NPZ and HDF5 exports contain processed layers, masks, timestamps, and full
+provenance for round-trip reconstruction.</p></li>
+<li><p>OME-TIFF is primarily for viewing in ImageJ/Fiji and does not include masks
+or processed layers.</p></li>
 <li><p>Use HDF5 for reproducible workflows and archiving.</p></li>
 <li><p>Use NPZ for lightweight interoperability within Python.</p></li>
-<li><p>GIFs are primarily for communication, figures, and quick inspection.</p></li>
+<li><p>GIFs and videos are primarily for communication, figures, and quick inspection.</p></li>
 </ul>
 <p>—</p>
 </section>
 <section id="provenance-tracking">
 <h2>Provenance Tracking<a class="headerlink" href="#provenance-tracking" title="Link to this heading">¶</a></h2>
-<p>All exports except OME-TIFF include a provenance record that lists:</p>
+<p>All data exports except OME-TIFF include a provenance record that lists:</p>
 <ul class="simple">
-<li><p>Each processing step and its parameters</p></li>
-<li><p>Input/output file names and timestamps</p></li>
-<li><p>Versions of filters, plugins, and the playNano package</p></li>
+<li><p>Each processing step and its parameters.</p></li>
+<li><p>Input/output file names and timestamps.</p></li>
+<li><p>Versions of filters, plugins, and the playNano package.</p></li>
 </ul>
 <p>Provenance is stored in <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> (NPZ/HDF5) or as an attribute in
 <code class="docutils literal notranslate"><span class="pre">AFMImageStack.provenance</span></code>.</p>
@@ -669,12 +991,12 @@ masks or processed layers.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="analysis.html">
+          <a class="next-page" href="colormaps.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Analysis</div>
+                <div class="title">Colormaps</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -693,7 +1015,7 @@ masks or processed layers.</p></li>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Daniel E. Rollins
+                Copyright &#169; 2026, Daniel E. Rollins
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -726,8 +1048,30 @@ masks or processed layers.</p></li>
 <li><a class="reference internal" href="#cli-flags">CLI Flags</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a class="reference internal" href="#animated-exports">Animated Exports</a><ul>
+<li><a class="reference internal" href="#colourmaps-and-z-scale">Colourmaps and Z-Scale</a></li>
+<li><a class="reference internal" href="#gif-export">GIF Export</a><ul>
+<li><a class="reference internal" href="#gif-export-options-cli">GIF Export Options (CLI)</a></li>
+<li><a class="reference internal" href="#programmatic-gif-export">Programmatic GIF Export</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#video-export">Video Export</a><ul>
+<li><a class="reference internal" href="#video-export-options-cli">Video Export Options (CLI)</a></li>
+<li><a class="reference internal" href="#programmatic-video-export">Programmatic Video Export</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#image-sequence-export">Image Sequence Export</a><ul>
+<li><a class="reference internal" href="#image-sequence-export-options-cli">Image Sequence Export Options (CLI)</a></li>
+<li><a class="reference internal" href="#programmatic-image-sequence-export">Programmatic Image Sequence Export</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-exports">Data Exports</a><ul>
 <li><a class="reference internal" href="#ome-tiff-export">OME-TIFF Export</a><ul>
-<li><a class="reference internal" href="#programmatic-tiff-export">Programmatic TIFF Export</a></li>
+<li><a class="reference internal" href="#programmatic-ome-tiff-export">Programmatic OME-TIFF Export</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#npz-export">NPZ Export</a><ul>
@@ -738,15 +1082,10 @@ masks or processed layers.</p></li>
 <li><a class="reference internal" href="#programmatic-hdf5-export">Programmatic HDF5 Export</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#gif-export">GIF Export</a><ul>
-<li><a class="reference internal" href="#gif-export-options-cli">GIF Export Options (CLI)</a></li>
-<li><a class="reference internal" href="#programmatic-gif-export">Programmatic GIF Export</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#advanced-programmatic-usage">Advanced / Programmatic Usage</a><ul>
-<li><a class="reference internal" href="#unified-export">Unified Export</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#unified-data-export">Unified Data Export</a></li>
 <li><a class="reference internal" href="#notes">Notes</a></li>
 <li><a class="reference internal" href="#provenance-tracking">Provenance Tracking</a></li>
 </ul>

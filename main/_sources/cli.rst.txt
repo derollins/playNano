@@ -10,7 +10,7 @@ General usage
 
 .. code-block:: bash
 
-   playnano <command> <input_file> [options]
+   playnano [global options] <command> <input_file> [command options]
 
 Run :command:`playnano --help` to see global options and a list of subcommands.
 
@@ -25,13 +25,67 @@ Available subcommands
 
 The CLI maps to the Python entry point ``playnano.cli.entrypoint:main``.
 
+Quick examples
+^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   playnano play data.h5-jpk
+   playnano process data.ARIS --processing "remove_plane" --make-gif
+   playnano analyze processed.h5 --analysis-file analysis.yaml
+
+Global options
+--------------
+
+These options apply to **all subcommands** (or can be used on their own).
+
+``--version``
+^^^^^^^^^^^^^
+
+Print the installed playNano version and exit.
+
+.. code-block:: bash
+
+   playnano --version
+
+Example output:
+
+.. code-block:: text
+
+   playnano 0.5.1
+
+This is useful for debugging, reporting issues, and reproducibility.
+
+``--log-level``
+^^^^^^^^^^^^^^^
+
+Set the global logging verbosity for the CLI.
+
+.. code-block:: bash
+
+   playnano --log-level DEBUG play data.afm
+   playnano --log-level WARNING process data.afm --make-gif
+
+Allowed values are:
+
+- ``DEBUG``   - Verbose output for development and debugging
+- ``INFO``    - Standard operational output (default)
+- ``WARNING`` - Only warnings and errors
+- ``ERROR``   - Errors only
+
+If not specified, the default log level is ``INFO``.
+
+.. note::
+
+   Global options must be specified **before** the subcommand name.
+
 Batch mode operations
 ---------------------
 
 Processing and analysis can be run in a non-interactive batch mode without a GUI or wizard.
 
-Batch processing mode
-^^^^^^^^^^^^^^^^^^^^^
+Batch processing mode- `process`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Apply filters and export without user interaction.
 
@@ -43,11 +97,15 @@ Apply filters and export without user interaction.
      [--processing-file pipeline.yaml] \
      [--export tif,npz,h5] \
      [--make-gif] \
+     [--make-video mp4,avi] \
+     [--make-sequence] \
      [--output-folder OUTPUT_DIR] \
      [--output-name BASE_NAME] \
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
-     [--zmax MAXIMUM]
+     [--zmax MAXIMUM] \
+     [--cmap COLORMAP_NAME] \
+     [--fps FRAMES_PER_SECOND]
 
 Primary options
 ~~~~~~~~~~~~~~~
@@ -57,9 +115,13 @@ Primary options
 - ``--processing-file`` - YAML/JSON file describing the processing pipeline.
 - ``--export`` - comma-separated list of formats to write: ``tif``, ``npz``, ``h5``.
 - ``--make-gif`` - write an animated GIF with current annotations.
+- ``--make-video`` - write an annotated video; specify formats (e.g. ``mp4``, ``avi``).
+- ``--make-sequence`` - write an annotated image sequence (PNG files).
 - ``--output-folder`` / ``--output-name`` - export location and basename.
 - ``--scale-bar-nm`` - integer length (nm) for scale bar in GIF (0 disables).
 - ``--zmin`` / ``--zmax`` - initial z-range; can be a float or ``auto`` (1st/99th percentiles).
+- ``--cmap`` - name of colormap to use for animated visualisation export (default=afm_brown).
+- ``--fps`` - the frame rate (in seconds) for GIF and video exports.
 
 .. note::
 
@@ -85,7 +147,7 @@ Example pipeline YAML (see :doc:`processing` for details):
 Batch analysis mode
 ^^^^^^^^^^^^^^^^^^^
 
-Run an analysis pipeline on an loaded AFM stack and export the results.
+Run an analysis pipeline on a loaded AFM stack and export the results.
 
 .. code-block:: bash
 
@@ -182,15 +244,17 @@ Open the PySide6 GUI viewer:
      [--output-name BASE_NAME] \
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
-     [--zmax MAXIMUM]
+     [--zmax MAXIMUM] \
+     [--cmap COLORMAP_NAME]
+     [--fps INITIAL_FRAMES_PER_SECOND]
 
 GUI highlights
 ^^^^^^^^^^^^^^
 
-- Playback controls (play/pause, FPS slider, frame slider)
+- Playback controls (play/pause, FPS, frame slider)
 - Toggle raw vs processed views and apply processing on demand
 - Z-scale histogram with draggable zmin/zmax lines and numeric spinboxes
-- Export panel: NPZ, OME-TIFF, HDF5 and GIF export options
+- Export panel: NPZ, OME-TIFF, HDF5 and animated export options
 - Keyboard shortcuts: ``Space`` (play/pause), ``F`` (apply filters), ``R`` (toggle raw/processed), ``G`` (export GIF), ``E`` (export selected formats)
 
 Notes about z-range
@@ -199,8 +263,11 @@ Notes about z-range
 - ``--zmin`` / ``--zmax`` accept a float or the string ``auto`` (default).
   When ``auto`` is used values are computed as the 1st and 99th percentiles of the stack.
 
+
+Find out more on the GUI docs page: :doc:`gui`
+
 env-info
-~~~~~~~~
+--------
 
 Prints environment and dependency information to help debugging and issue reports:
 

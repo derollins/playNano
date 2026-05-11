@@ -190,7 +190,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -200,6 +200,10 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
@@ -211,44 +215,131 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/modules.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.html">playnano package</a><input aria-label="Toggle navigation of playnano package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a><input aria-label="Toggle navigation of playnano.cli package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.image_sequence_export.html">playnano.io.image_sequence_export module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.video_export.html">playnano.io.video_export module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a><input aria-label="Toggle navigation of playnano.processing package" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.masked_filters.html">playnano.processing.masked_filters module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.utils.html">playnano.utils package</a><input aria-label="Toggle navigation of playnano.utils package" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.afm_stack.html">playnano.afm_stack module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.errors.html">playnano.errors module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.afm_stack.html">playnano.afm_stack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.errors.html">playnano.errors module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.image_sequence_export.html">playnano.io.image_sequence_export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.video_export.html">playnano.io.video_export module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.processing.html">playnano.processing package</a><input aria-label="Toggle navigation of playnano.processing package" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.masked_filters.html">playnano.processing.masked_filters module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.core.html">playnano.processing.core module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.filters.html">playnano.processing.filters module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a></li>
@@ -256,54 +347,126 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.pipeline.html">playnano.processing.pipeline module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.processing.video_processing.html">playnano.processing.video_processing module</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.html">playnano.io package</a><input aria-label="Toggle navigation of playnano.io package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.html">playnano.analysis package</a><input aria-label="Toggle navigation of playnano.analysis package" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_h5jpk.html">playnano.io.formats.read_h5jpk module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_jpk_folder.html">playnano.io.formats.read_jpk_folder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.formats.read_spm_folder.html">playnano.io.formats.read_spm_folder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.loader.html">playnano.io.loader module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.base.html">playnano.analysis.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.export.html">playnano.analysis.export module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.modules.html">playnano.analysis.modules package</a><input aria-label="Toggle navigation of playnano.analysis.modules package" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html">playnano.analysis.modules.count_nonzero module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html">playnano.analysis.modules.dbscan_clustering module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.frames.html">playnano.analysis.utils.frames module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.loader.html">playnano.analysis.utils.loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.particles.html">playnano.analysis.utils.particles module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.utils.html">playnano.utils package</a><input aria-label="Toggle navigation of playnano.utils package" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.colormaps.html">playnano.utils.colormaps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.constants.html">playnano.utils.constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.io_utils.html">playnano.utils.io_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.param_utils.html">playnano.utils.param_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.system_info.html">playnano.utils.system_info module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.time_utils.html">playnano.utils.time_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.utils.versioning.html">playnano.utils.versioning module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.cli.html">playnano.cli package</a><input aria-label="Toggle navigation of playnano.cli package" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.actions.html">playnano.cli.actions module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.entrypoint.html">playnano.cli.entrypoint module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.handlers.html">playnano.cli.handlers module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.cli.utils.html">playnano.cli.utils module</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.html">playnano.gui package</a><input aria-label="Toggle navigation of playnano.gui package" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.main.html">playnano.gui.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.gui.widgets.html">playnano.gui.widgets package</a><input aria-label="Toggle navigation of playnano.gui.widgets package" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.controls.html">playnano.gui.widgets.controls module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.widgets.viewer.html">playnano.gui.widgets.viewer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/playnano.gui.window.html">playnano.gui.window module</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">What's New</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="whats_new/index.html">What’s New</a><input aria-label="Toggle navigation of What’s New" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.1.0.html">What’s New in <em>playNano</em> 0.1.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.0.html">What’s New in <em>playNano</em> 0.2.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.1.html">What’s New in <em>playNano</em> 0.2.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
-</div></div>
+</div>
+</div>
+
       </div>
       
     </div>
@@ -349,17 +512,253 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <h3><a class="reference external" href="https://github.com/derollins/playNano/compare/v0.1.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h3>
 </section>
 <section id="id1">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.1">0.3.1</a> - 2026-03-12<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.4.0">0.4.0</a> - 2026-05-11<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="added">
+<h4>Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Official support for Python 3.13</p></li>
+<li><p>Compatibility with NumPy 2.x (including NumPy 2.0+)</p></li>
+</ul>
+<section id="processing-filters">
+<h5>Processing filters<a class="headerlink" href="#processing-filters" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p><strong>Flip filter</strong></p>
+<ul>
+<li><p>Added the built-in processing filter <code class="docutils literal notranslate"><span class="pre">vertical_flip</span></code>, which uses NumPy
+<code class="docutils literal notranslate"><span class="pre">flipud()</span></code> to reverse the row order of a 2D image.</p></li>
+<li><p>No masked equivalent is provided.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="file-readers">
+<h5>File readers<a class="headerlink" href="#file-readers" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p><strong>ARIS reader</strong></p>
+<ul>
+<li><p>Support for loading Asylum Research <strong><code class="docutils literal notranslate"><span class="pre">.aris</span></code></strong> high-speed AFM data files.</p></li>
+<li><p>Comprehensive ARIS loader including:</p>
+<ul>
+<li><p>Channel-name extraction from HDF5 metadata.</p></li>
+<li><p>Global and per-frame pixel-size scaling with well-defined fallback behaviour.</p></li>
+<li><p>Frame sorting and stacked-image construction.</p></li>
+<li><p>Timestamp parsing and validation.</p></li>
+</ul>
+</li>
+<li><p>Multi-suffix file loading support, enabling correct detection of formats such as
+<code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code> in addition to single-suffix formats.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="visual-exports">
+<h5>Visual exports<a class="headerlink" href="#visual-exports" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p><strong>Video and image sequence export</strong></p>
+<ul>
+<li><p>New export formats for animated data visualisation:</p>
+<ul>
+<li><p><strong>Video</strong> (MP4, AVI, MOV, MKV)</p></li>
+<li><p><strong>Image sequences</strong> (PNG, JPG)</p></li>
+</ul>
+</li>
+<li><p>All visual exports support metadata overlays including scale bars, timestamps,
+and data labels.</p></li>
+<li><p>Video and sequence exports are available via the API, CLI, and GUI.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="colormaps-and-perceptual-scaling">
+<h5>Colormaps and perceptual scaling<a class="headerlink" href="#colormaps-and-perceptual-scaling" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Introduced a unified colormap selection system for the GUI and all visual exports.</p></li>
+<li><p>Added custom colormaps designed for AFM data:</p>
+<ul>
+<li><p><strong>afm_brown</strong> (default): perceptually linear (R² ≈ 0.996), minimising contrast
+compression and flicker in HS-AFM videos.</p></li>
+<li><p><strong>playnano_gold</strong>: high-contrast, full-dynamic-range (L* 0–100) map for complex topography.</p></li>
+<li><p><strong>classic_afm</strong>: legacy-style map for continuity with older AFM software.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="command-line-interface-cli">
+<h5>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Added global <code class="docutils literal notranslate"><span class="pre">--version</span></code> flag.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">--cmap</span></code> option to select colormaps in <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">process</span></code> and <code class="docutils literal notranslate"><span class="pre">wizard</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">--fps</span></code> option:</p>
+<ul>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">play</span></code>:</p>
+<ul>
+<li><p>Optional argument.</p></li>
+<li><p>If not provided, the frame rate is derived from the data.</p></li>
+<li><p>If provided without a value or with a non-numeric value, a default FPS (5) is used
+and a warning is logged.</p></li>
+</ul>
+</li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">process</span></code>:</p>
+<ul>
+<li><p>Requires a numeric value.</p></li>
+<li><p>Invalid values raise an error.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">--make-sequence</span></code> and <code class="docutils literal notranslate"><span class="pre">--make-video</span></code> options for exporting image sequences
+and videos in <code class="docutils literal notranslate"><span class="pre">process</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">--draw-ts</span></code> to toggle timestamp rendering in exported media (default: off).</p></li>
+<li><p>Extended the wizard REPL:</p>
+<ul>
+<li><p>After running a processing pipeline, GIF export prompts now include options for
+timestamps and scale bars (including scale-bar length).</p></li>
+<li><p>After GIF export, the wizard can also export videos with configurable <code class="docutils literal notranslate"><span class="pre">zmin</span></code>,
+<code class="docutils literal notranslate"><span class="pre">zmax</span></code>, timestamps, and scale bars.</p></li>
+</ul>
+</li>
+<li><p>Improved CLI UX and robustness:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> in <code class="docutils literal notranslate"><span class="pre">play</span></code> now logs a warning when a non-numeric value is supplied
+and falls back gracefully, instead of failing silently.</p></li>
+<li><p>Help text now explicitly documents default FPS behaviour.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="resources-and-assets">
+<h5>Resources and assets<a class="headerlink" href="#resources-and-assets" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Introduced <code class="docutils literal notranslate"><span class="pre">src/playnano/resources/</span></code> for non-code assets.</p></li>
+<li><p>Moved bundled fonts into <code class="docutils literal notranslate"><span class="pre">resources/fonts</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">importlib.resources</span></code> integration for robust, cross-platform asset loading.</p></li>
+</ul>
+</section>
+<section id="documentation-and-tests">
+<h5>Documentation and tests<a class="headerlink" href="#documentation-and-tests" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Integrated <code class="docutils literal notranslate"><span class="pre">sphinx-apidoc</span></code> into <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> via a <code class="docutils literal notranslate"><span class="pre">builder-inited</span></code> hook for
+automatic API documentation generation.</p></li>
+<li><p>Added test coverage for:</p>
+<ul>
+<li><p>ARIS HDF5 loading and edge cases.</p></li>
+<li><p>Multi-suffix file handling (e.g. <code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code>).</p></li>
+<li><p>Per-frame pixel-size overrides and fallback logic.</p></li>
+<li><p>Timestamp mismatch and missing-channel errors.</p></li>
+<li><p>Video and image-sequence export.</p></li>
+<li><p>CLI FPS parsing and help text.</p></li>
+</ul>
+</li>
+<li><p>Refined CLI test infrastructure:</p>
+<ul>
+<li><p>CLI tests now patch the <code class="docutils literal notranslate"><span class="pre">entrypoint</span></code> dispatch directly, ensuring full coverage
+of argparse wiring and command dispatch.</p></li>
+<li><p>Added regression tests for CLI help output and invalid argument handling.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="changed">
+<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<section id="pixel-size-handling">
+<h5>Pixel-size handling<a class="headerlink" href="#pixel-size-handling" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Updated <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> semantics:</p>
+<ul>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">AFMImageStack.pixel_size_nm</span></code> attribute now represents the global or first-frame
+pixel size.</p></li>
+<li><p>Per-frame overrides are stored in <code class="docutils literal notranslate"><span class="pre">frame_metadata[&quot;frame_pixel_size_nm&quot;]</span></code>.</p></li>
+<li><p>Most datasets will have identical values; differences occur when scan size changes
+mid-scan (e.g. ARIS files).</p></li>
+<li><p>GUI playback and animated exports now respect per-frame pixel size.</p></li>
+</ul>
+</li>
+<li><p>Updated NPZ, OME-TIFF, and HDF5 export documentation to reflect per-frame support.</p></li>
+</ul>
+</section>
+<section id="visualisation-rendering">
+<h5>Visualisation rendering<a class="headerlink" href="#visualisation-rendering" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Introduced <code class="docutils literal notranslate"><span class="pre">playnano.io.render_utils</span></code> as a single source of truth for visual exports.</p>
+<ul>
+<li><p>Centralises visual constants for consistent appearance across formats.</p></li>
+<li><p>Enforces minimum output resolution to prevent pixelated annotations.</p></li>
+<li><p>Ensures scale bars are physically correct based on <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> and that text
+size and positioning are consistent across resolutions.</p></li>
+</ul>
+</li>
+<li><p>Rendering logic previously in <code class="docutils literal notranslate"><span class="pre">export_gif</span></code> has been migrated to this module.</p></li>
+</ul>
+</section>
+<section id="gui">
+<h5>GUI<a class="headerlink" href="#gui" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Added a colormap selection dropdown to the export panel.</p></li>
+<li><p>The active colormap is now displayed on the z-scale histogram and updates dynamically
+when <code class="docutils literal notranslate"><span class="pre">zmin</span></code> or <code class="docutils literal notranslate"><span class="pre">zmax</span></code> change.</p></li>
+</ul>
+</section>
+<section id="logging-and-user-feedback">
+<h5>Logging and user feedback<a class="headerlink" href="#logging-and-user-feedback" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Improved warning messages for invalid CLI arguments (e.g. non-numeric <code class="docutils literal notranslate"><span class="pre">--fps</span></code>),
+providing clearer runtime feedback without interrupting interactive workflows.</p></li>
+</ul>
+</section>
+<section id="developer-tooling">
+<h5>Developer tooling<a class="headerlink" href="#developer-tooling" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Updated pre-commit configuration, including Ruff, Black, isort and markdownlint
+version alignment and formatting fixes.</p></li>
+</ul>
+</section>
+<section id="tests">
+<h5>Tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p>Improved numerical robustness in tests (floating-point comparisons now use tolerances for cross-platform consistency)</p></li>
+<li><p>Added Python 3.13 to the test matrix</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
 <section id="fixed">
 <h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Fixed loader errors relating to missing file extensions and no-suffix inputs.</p></li>
+<li><p>Connected FPS calculation based on <code class="docutils literal notranslate"><span class="pre">line_rate</span></code> to GUI playback logic.</p></li>
+<li><p>Fixed <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> construction to ensure one entry per frame (previously overwritten or
+incomplete in some loaders, notably <code class="docutils literal notranslate"><span class="pre">.spm</span></code> and <code class="docutils literal notranslate"><span class="pre">.jpk</span></code>)</p></li>
+<li><p>Standardised metadata structure across all formats:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">line_rate</span></code></p></li>
+</ul>
+</li>
+<li><p>Clarified pixel size behaviour per format:</p>
+<ul>
+<li><p>Per-frame (<code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.aris</span></code>, <code class="docutils literal notranslate"><span class="pre">.spm</span></code>)</p></li>
+<li><p>Constant (<code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code>)</p></li>
+</ul>
+</li>
+<li><p>Updated docstrings to document pixel size semantics and usage</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.1">0.3.1</a> - 2026-03-12<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<section id="id3">
+<h4>Fixed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Resolved incorrect mask output in video processing pipeline.
 Video filter functions that return (array, metadata) were previously interpreted as (array, mask),
 causing metadata to be mis‑assigned as a mask and leading to failures in pipelines using mask‑aware steps.</p></li>
 </ul>
 </section>
-<section id="changed">
-<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<section id="id4">
+<h4>Changed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Updated <code class="docutils literal notranslate"><span class="pre">ProcessingPipeline._handle_video_filter_step()</span></code> to accept mask as an explicit optional parameter,
 ensuring its correct propagation through <code class="docutils literal notranslate"><span class="pre">run()</span></code> / <code class="docutils literal notranslate"><span class="pre">_run_single_step()</span></code> without overloading metadata as mask data.</p></li>
@@ -380,10 +779,10 @@ each function role‑specific.</p></li>
 </ul>
 </section>
 </section>
-<section id="id2">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.0">0.3.0</a> - 2026-03-06<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
-<section id="added">
-<h4>Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h4>
+<section id="id5">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.0">0.3.0</a> - 2026-03-06<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<section id="id6">
+<h4>Added<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Processing Plugins</strong></p>
 <ul>
@@ -423,8 +822,8 @@ type hint and docstring requirements, branching workflow, and guidance on contri
 analysis modules and processing plugins.</p></li>
 </ul>
 </section>
-<section id="id3">
-<h4>Changed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<section id="id7">
+<h4>Changed<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Breaking: Particle Tracking output</strong></p>
 <ul>
@@ -466,8 +865,8 @@ conflict (to be revisited in a future release).</p></li>
 </li>
 </ul>
 </section>
-<section id="id4">
-<h4>Fixed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<section id="id8">
+<h4>Fixed<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Numerous typos corrected across docstrings, inline comments, docs, and tests.</p></li>
 <li><p>CLI <code class="docutils literal notranslate"><span class="pre">SKIP_PARAM_NAMES</span></code> expanded to avoid exposing internal array parameter names
@@ -488,10 +887,10 @@ point and link to the plugins repository.</p></li>
 </ul>
 </section>
 </section>
-<section id="id5">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
-<section id="id6">
-<h4>Fixed<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<section id="id9">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<section id="id10">
+<h4>Fixed<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Resolved a bug where the <code class="docutils literal notranslate"><span class="pre">clear</span></code> processing step unintentionally replaced <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>
 with an invalid or uninitialised array, causing corrupted or excessively large
@@ -503,8 +902,8 @@ returned by regionprops were interpreted as (row, col) but incorrectly assigned 
 Improved robustness of GIF frame generation when AFM data contains missing or extreme Z-values.</p></li>
 </ul>
 </section>
-<section id="id7">
-<h4>Changed<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<section id="id11">
+<h4>Changed<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Normalization step now uses np.nan_to_num and np.clip to ensure all values are within the valid
 range before casting.</p></li>
@@ -516,8 +915,8 @@ range before casting.</p></li>
 </li>
 </ul>
 </section>
-<section id="id8">
-<h4>Added<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<section id="id12">
+<h4>Added<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Safe normalization logic for GIF export in create_gif_with_scale_and_timestamp to handle NaN, inf,
 and out-of-range values before casting to np.uint8.</p></li>
@@ -532,10 +931,10 @@ and out-of-range values before casting to np.uint8.</p></li>
 </ul>
 </section>
 </section>
-<section id="id9">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
-<section id="id10">
-<h4>Changed<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<section id="id13">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
+<section id="id14">
+<h4>Changed<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Package renames to all lowercase <code class="docutils literal notranslate"><span class="pre">playnano</span></code> to follow PEP8 and prevent cross-platform
 issues with case-sensitivity.</p></li>
@@ -550,11 +949,11 @@ to playnano.*.</p></li>
 </ul>
 </section>
 </section>
-<section id="id11">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
+<section id="id15">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
 <p>This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.</p>
-<section id="id12">
-<h4>Added<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
+<section id="id16">
+<h4>Added<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -598,8 +997,8 @@ origonal metadata.</p></li>
 </li>
 </ul>
 </section>
-<section id="id13">
-<h4>Changed<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
+<section id="id17">
+<h4>Changed<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -647,8 +1046,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </li>
 </ul>
 </section>
-<section id="id14">
-<h4>Fixed<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
+<section id="id18">
+<h4>Fixed<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -661,8 +1060,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </section>
 <section id="post1-2025-10-14">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0.post1">0.1.0.post1</a> - 2025-10-14<a class="headerlink" href="#post1-2025-10-14" title="Link to this heading">¶</a></h3>
-<section id="id15">
-<h4>Changed<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h4>
+<section id="id19">
+<h4>Changed<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>GitHub</strong></p>
 <ul>
@@ -680,10 +1079,10 @@ can be accessed wherever jupyter is launched from.</p></li>
 </ul>
 </section>
 </section>
-<section id="id16">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h3>
-<section id="id17">
-<h4>Added<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<section id="id20">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h3>
+<section id="id21">
+<h4>Added<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>First public release 🎉</p></li>
 <li><p><strong>AFM data loading &amp; playback</strong></p>
@@ -746,14 +1145,14 @@ for quick sharing and presentation.</p></li>
 </li>
 </ul>
 </section>
-<section id="id18">
-<h4>Changed<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
+<section id="id22">
+<h4>Changed<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
 </section>
-<section id="id19">
-<h4>Fixed<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
+<section id="id23">
+<h4>Fixed<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
@@ -791,7 +1190,7 @@ for quick sharing and presentation.</p></li>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, Daniel E. Rollins
+                Copyright &#169; 2026, Daniel E. Rollins
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -820,42 +1219,65 @@ for quick sharing and presentation.</p></li>
 <li><a class="reference internal" href="#">Changelog</a><ul>
 <li><a class="reference internal" href="#changelog">Changelog</a><ul>
 <li><a class="reference internal" href="#unreleased">Unreleased</a></li>
-<li><a class="reference internal" href="#id1">0.3.1 - 2026-03-12</a><ul>
-<li><a class="reference internal" href="#fixed">Fixed</a></li>
-<li><a class="reference internal" href="#changed">Changed</a></li>
+<li><a class="reference internal" href="#id1">0.4.0 - 2026-05-11</a><ul>
+<li><a class="reference internal" href="#added">Added</a><ul>
+<li><a class="reference internal" href="#processing-filters">Processing filters</a></li>
+<li><a class="reference internal" href="#file-readers">File readers</a></li>
+<li><a class="reference internal" href="#visual-exports">Visual exports</a></li>
+<li><a class="reference internal" href="#colormaps-and-perceptual-scaling">Colormaps and perceptual scaling</a></li>
+<li><a class="reference internal" href="#command-line-interface-cli">Command Line Interface (CLI)</a></li>
+<li><a class="reference internal" href="#resources-and-assets">Resources and assets</a></li>
+<li><a class="reference internal" href="#documentation-and-tests">Documentation and tests</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id2">0.3.0 - 2026-03-06</a><ul>
-<li><a class="reference internal" href="#added">Added</a></li>
-<li><a class="reference internal" href="#id3">Changed</a></li>
-<li><a class="reference internal" href="#id4">Fixed</a></li>
+<li><a class="reference internal" href="#changed">Changed</a><ul>
+<li><a class="reference internal" href="#pixel-size-handling">Pixel-size handling</a></li>
+<li><a class="reference internal" href="#visualisation-rendering">Visualisation rendering</a></li>
+<li><a class="reference internal" href="#gui">GUI</a></li>
+<li><a class="reference internal" href="#logging-and-user-feedback">Logging and user feedback</a></li>
+<li><a class="reference internal" href="#developer-tooling">Developer tooling</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fixed">Fixed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id2">0.3.1 - 2026-03-12</a><ul>
+<li><a class="reference internal" href="#id3">Fixed</a></li>
+<li><a class="reference internal" href="#id4">Changed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">0.3.0 - 2026-03-06</a><ul>
+<li><a class="reference internal" href="#id6">Added</a></li>
+<li><a class="reference internal" href="#id7">Changed</a></li>
+<li><a class="reference internal" href="#id8">Fixed</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">0.2.2</a><ul>
-<li><a class="reference internal" href="#id6">Fixed</a></li>
-<li><a class="reference internal" href="#id7">Changed</a></li>
-<li><a class="reference internal" href="#id8">Added</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id9">0.2.1</a><ul>
-<li><a class="reference internal" href="#id10">Changed</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id11">0.2.0</a><ul>
+<li><a class="reference internal" href="#id9">0.2.2</a><ul>
+<li><a class="reference internal" href="#id10">Fixed</a></li>
+<li><a class="reference internal" href="#id11">Changed</a></li>
 <li><a class="reference internal" href="#id12">Added</a></li>
-<li><a class="reference internal" href="#id13">Changed</a></li>
-<li><a class="reference internal" href="#id14">Fixed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">0.2.1</a><ul>
+<li><a class="reference internal" href="#id14">Changed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id15">0.2.0</a><ul>
+<li><a class="reference internal" href="#id16">Added</a></li>
+<li><a class="reference internal" href="#id17">Changed</a></li>
+<li><a class="reference internal" href="#id18">Fixed</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#post1-2025-10-14">0.1.0.post1 - 2025-10-14</a><ul>
-<li><a class="reference internal" href="#id15">Changed</a></li>
+<li><a class="reference internal" href="#id19">Changed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id16">0.1.0 - 2025-09-17</a><ul>
-<li><a class="reference internal" href="#id17">Added</a></li>
-<li><a class="reference internal" href="#id18">Changed</a></li>
-<li><a class="reference internal" href="#id19">Fixed</a></li>
+<li><a class="reference internal" href="#id20">0.1.0 - 2025-09-17</a><ul>
+<li><a class="reference internal" href="#id21">Added</a></li>
+<li><a class="reference internal" href="#id22">Changed</a></li>
+<li><a class="reference internal" href="#id23">Fixed</a></li>
 </ul>
 </li>
 </ul>
