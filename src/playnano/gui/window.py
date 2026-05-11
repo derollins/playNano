@@ -14,6 +14,7 @@ from typing import Optional
 
 import matplotlib
 import numpy as np
+from matplotlib import colors
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, QTimer
@@ -21,6 +22,7 @@ from PySide6.QtGui import QFont, QFontDatabase
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
+    QComboBox,
     QDoubleSpinBox,
     QGroupBox,
     QHBoxLayout,
@@ -39,6 +41,7 @@ from playnano.afm_stack import AFMImageStack
 from playnano.gui.widgets.controls import PlaybackControls
 from playnano.gui.widgets.viewer import ViewerWidget
 from playnano.processing.pipeline import ProcessingPipeline
+from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.constants import default_steps_with_kwargs
 from playnano.utils.io_utils import compute_zscale_range, prepare_output_directory
 
@@ -58,6 +61,8 @@ class MainWindow(QMainWindow):
         scale_bar_nm: int = 100,
         zmin: str = "auto",
         zmax: str = "auto",
+        cmap: str = DEFAULT_CMAP,
+        fps: float = 5.0,
     ):
         """
         Initialize the main application window.
@@ -78,7 +83,10 @@ class MainWindow(QMainWindow):
         zmin, zmax : 'auto' or float, default="auto"
             Display range endpoints; if "auto", they will be computed
             from the data.
-
+        cmap : str, default=DEFAULT_CMAP
+            Name of the colormap to use for visualisation on launch.
+        fps : float, default=5.0
+            Initial frame rate for the GIF in frames per second.
         Returns
         -------
         None
@@ -89,15 +97,17 @@ class MainWindow(QMainWindow):
             If zmin/zmax cannot be parsed (not 'auto' or float).
 
         """
-        if not QMainWindow.__init__.__call__:
-            raise RuntimeError("Base QMainWindow not properly initialized")
         super().__init__()
         self.setWindowTitle("playNano Player")
 
-        steps_path = files("playnano.fonts").joinpath("Steps-Mono/Steps-Mono.otf")
+        steps_path = files("playnano.resources.fonts").joinpath(
+            "Steps-Mono/Steps-Mono.otf"
+        )
         steps_id = QFontDatabase.addApplicationFont(str(steps_path))
 
-        basic_path = files("playnano.fonts").joinpath("basic/basic_regular.ttf")
+        basic_path = files("playnano.resources.fonts").joinpath(
+            "basic/basic_regular.ttf"
+        )
         basic_id = QFontDatabase.addApplicationFont(str(basic_path))
 
         steps_family = (
@@ -119,6 +129,23 @@ class MainWindow(QMainWindow):
 
         if not basic_family:
             logger.warning("Failed to load basic font. GUI stylesheet will fallback.")
+
+        self._available_cmaps = [
+            DEFAULT_CMAP,
+            "playnano_gold",
+            "classic_afm",
+            "afmhot",
+            "gray",
+            "viridis",
+            "cividis",
+            "magma",
+            "inferno",
+            "plasma",
+            "coolwarm",
+            "turbo",
+        ]
+
+        self._cmap_name = cmap if cmap in self._available_cmaps else DEFAULT_CMAP
 
         self.annotation_font = QFont(steps_family, 18)
 
@@ -152,6 +179,7 @@ class MainWindow(QMainWindow):
         self.zmax = zmax
         self._idx = 0
         self._percentile_P = 25
+        self.fps = fps
 
         # Raw view z-scale
         self._zmin_raw, self._zmax_raw = compute_zscale_range(
@@ -192,9 +220,9 @@ class MainWindow(QMainWindow):
         self.zmax_spin.setValue(self._zmax_raw)
         self.zmax_spin.setDecimals(1)
 
-        self._init_ui()
+        self._init_ui(fps=self.fps)
 
-    def _init_ui(self):
+    def _init_ui(self, fps=5.0):
         """
         Construct and lay out all GUI widgets.
 
@@ -227,7 +255,12 @@ class MainWindow(QMainWindow):
         self.viewer.set_annotation_font(self.annotation_font)
         self.viewer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.viewer.set_background_color(
-            z_to_rgb(self._zperc_raw, self._zmin_raw, self._zmax_raw)
+            z_to_rgb(
+                self._zperc_raw,
+                self._zmin_raw,
+                self._zmax_raw,
+                cmap_name=self._cmap_name,
+            )
         )
         left_layout.addWidget(self.viewer)
 
@@ -250,7 +283,7 @@ class MainWindow(QMainWindow):
         annotation_hbox.addWidget(self.show_scale_bar_box)
         controls_layout.addLayout(annotation_hbox)
 
-        self.controls = PlaybackControls()
+        self.controls = PlaybackControls(initial_fps=fps)
         play_btn = self.controls.play_btn
         fps_label = QLabel("FPS:")
         fps_label.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
@@ -313,28 +346,46 @@ class MainWindow(QMainWindow):
         export_tab = QWidget()
         export_layout = QVBoxLayout(export_tab)
 
-        # ── Group: GIF Export ────────────────────────────────────────────────
-        gif_group = QGroupBox("Save Animated GIF")
-        gif_layout = QVBoxLayout()
-        gif_layout.setContentsMargins(10, 25, 10, 10)
+        # ── Group: Animation Export ────────────────────────────────────────────────
+        animated_group = QGroupBox("Save Animated Data")
+        animated_layout = QVBoxLayout()
+        animated_layout.setContentsMargins(10, 25, 10, 10)
 
-        self.gif_raw_radio = QRadioButton("Save Raw")
-        self.gif_processed_radio = QRadioButton("Save Processed")
-        self.gif_processed_radio.setChecked(True)
+        self.animated_raw_radio = QRadioButton("Save Raw")
+        self.animated_processed_radio = QRadioButton("Save Processed")
+        self.animated_processed_radio.setChecked(True)
 
-        gif_radio_group = QButtonGroup(self)
-        gif_radio_group.addButton(self.gif_raw_radio)
-        gif_radio_group.addButton(self.gif_processed_radio)
+        animated_radio_group = QButtonGroup(self)
+        animated_radio_group.addButton(self.animated_raw_radio)
+        animated_radio_group.addButton(self.animated_processed_radio)
 
-        self.save_gif_btn = QPushButton("Save GIF")
+        # Format checkboxes in a horizontal layout
+        animated_hbox = QHBoxLayout()
+        self.export_gif_cb = QCheckBox("GIF")
+        self.export_mp4_cb = QCheckBox("MP4")
+        self.export_avi_cb = QCheckBox("AVI")
+        self.export_png_folder_cb = QCheckBox("PNG Folder")
+
+        for cb in [
+            self.export_gif_cb,
+            self.export_mp4_cb,
+            self.export_avi_cb,
+            self.export_png_folder_cb,
+        ]:
+            cb.setChecked(True)
+            animated_hbox.addWidget(cb)
+
+        animated_layout.addLayout(animated_hbox)
+
+        self.save_animated_btn = QPushButton("Save Animated Data")
 
         radio_row = QHBoxLayout()
-        radio_row.addWidget(self.gif_raw_radio)
-        radio_row.addWidget(self.gif_processed_radio)
+        radio_row.addWidget(self.animated_raw_radio)
+        radio_row.addWidget(self.animated_processed_radio)
 
-        gif_layout.addLayout(radio_row)
-        gif_layout.addWidget(self.save_gif_btn)
-        gif_group.setLayout(gif_layout)
+        animated_layout.addLayout(radio_row)
+        animated_layout.addWidget(self.save_animated_btn)
+        animated_group.setLayout(animated_layout)
 
         # ── Group: Z-Scale Histogram ─────────────────────────────
         hist_group = QGroupBox("Z-Scale Histogram")
@@ -366,6 +417,22 @@ class MainWindow(QMainWindow):
         self.zmax_spin.setFixedWidth(80)
         self.auto_btn.setFixedHeight(30)
         self.auto_btn.setFixedWidth(60)
+
+        # ── Group:Colour map selector ─────────────────────────────
+        color_group = QGroupBox("Colour map selector")
+        color_layout = QVBoxLayout(color_group)
+        color_layout.setContentsMargins(10, 25, 10, 25)
+        color_group.setFixedHeight(30)
+
+        self.cmap_combo = QComboBox()
+        self.cmap_combo.addItems(self._available_cmaps)
+
+        self.cmap_combo.setCurrentText(self._cmap_name)
+        self.cmap_combo.currentTextChanged.connect(self._on_cmap_changed)
+
+        export_layout.addWidget(QLabel("Colormap"))
+        export_layout.addWidget(self.cmap_combo)
+        export_layout.addSpacing(10)
 
         # ── Group: Data Export ───────────────────────────────────────────────
         data_group = QGroupBox("Data Export")
@@ -404,7 +471,7 @@ class MainWindow(QMainWindow):
         data_group.setLayout(data_layout)
 
         # ── Add to right tab layout ──────────────────────────────────────────
-        export_layout.addWidget(gif_group)
+        export_layout.addWidget(animated_group)
         export_layout.addSpacing(10)
         export_layout.addWidget(data_group)
         export_layout.addStretch(1)
@@ -414,7 +481,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(container)
 
-        self.save_gif_btn.clicked.connect(self._export_gif)
+        self.save_animated_btn.clicked.connect(self._export_animated)
         self.export_btn.clicked.connect(self._export_checked)
 
         self._timer = QTimer(self)
@@ -435,6 +502,16 @@ class MainWindow(QMainWindow):
             lambda v: self._on_spinbox_changed("max", v)
         )
         self.auto_btn.clicked.connect(self._on_auto)
+
+    def _get_cmap(self):
+        try:
+            return matplotlib.colormaps.get_cmap(self._cmap_name)
+        except Exception:
+            logger.warning(
+                f"Invalid cmap '{self._cmap_name}', falling back to '{DEFAULT_CMAP}'"
+            )
+            self._cmap_name = DEFAULT_CMAP
+            return matplotlib.colormaps.get_cmap(DEFAULT_CMAP)
 
     def apply_filters(self):
         """
@@ -481,7 +558,10 @@ class MainWindow(QMainWindow):
         self.zmax_spin.blockSignals(True)
         self.zmax_spin.blockSignals(False)
         # and for z scale
-        lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        if self._show_flat:
+            lo, hi = sorted((self._zmin_flat, self._zmax_flat))
+        else:
+            lo, hi = sorted((self._zmin_raw, self._zmax_raw))
         self.zmin_spin.blockSignals(True)
         self.zmax_spin.blockSignals(True)
 
@@ -499,7 +579,7 @@ class MainWindow(QMainWindow):
 
         self._update_export_options()
         # Select processed for both GIF and data after filtering
-        self.gif_processed_radio.setChecked(True)
+        self.animated_processed_radio.setChecked(True)
         self.data_processed_radio.setChecked(True)
 
     def toggle_play(self):
@@ -563,8 +643,8 @@ class MainWindow(QMainWindow):
 
         # Read timestamp
         timestamp = self.afm_stack.time_for_frame(idx)
+        pixel_size_nm = self.afm_stack.scaling_for_frame(idx)
 
-        pixel_size_nm = self.afm_stack.pixel_size_nm
         if not isinstance(pixel_size_nm, (float, int)) or pixel_size_nm <= 0:
             pixel_size_nm = 1.0  # fallback or disable scale bar
 
@@ -575,7 +655,7 @@ class MainWindow(QMainWindow):
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
                 draw_raw_label=not self._show_flat,
-                pixel_size_nm=self.afm_stack.pixel_size_nm,
+                pixel_size_nm=pixel_size_nm,
                 scale_bar_nm=self.scale_bar_nm,
             )
         except Exception as e:
@@ -608,9 +688,24 @@ class MainWindow(QMainWindow):
             clipped = np.clip(arr, zmin, zmax)
             norm8 = ((clipped - zmin) / (zmax - zmin) * 255).astype(np.uint8)
 
-        cmap = matplotlib.colormaps.get_cmap("afmhot")
+        cmap = self._get_cmap()
+
         rgba = cmap(norm8 / 255.0)
         return (rgba[..., :3] * 255).astype(np.uint8)
+
+    def _on_cmap_changed(self, name: str):
+        if name not in matplotlib.colormaps:
+            logger.warning(f"Colormap '{name}' not registered")
+            return
+
+        self._cmap_name = name
+        self._update_background_color()
+        self.show_frame(self._idx)
+
+        # Rebuild histogram with new colormap
+        self._draw_bars()
+        # and redraw lines on top
+        self._init_lines()
 
     def keyPressEvent(self, ev):
         """
@@ -731,7 +826,7 @@ class MainWindow(QMainWindow):
             z_bg = self._zperc_raw
             zmin, zmax = self._zmin_raw, self._zmax_raw
 
-        rgb = z_to_rgb(z_bg, zmin, zmax, cmap_name="afmhot")
+        rgb = z_to_rgb(z_bg, zmin, zmax, cmap_name=self._cmap_name)
         self.viewer.set_background_color(rgb)
 
     def _update_timer_interval(self, fps: int):
@@ -765,7 +860,7 @@ class MainWindow(QMainWindow):
         """
         from playnano.io.gif_export import export_gif
 
-        raw = self.gif_raw_radio.isChecked()
+        raw = self.animated_raw_radio.isChecked()
         save_dir = prepare_output_directory(self.output_dir, "output")
 
         # Check for presence of raw data if user requests it
@@ -791,10 +886,116 @@ class MainWindow(QMainWindow):
                 zmax=zmax,
                 draw_ts=self.show_timestamp_box.isChecked(),
                 draw_scale=self.show_scale_bar_box.isChecked(),
+                cmap_name=self._cmap_name,
+                fps=self.controls.fps_box.value(),
             )
             logger.info("Exported GIF.")
         except Exception as e:
             logger.error(f"GIF export failed: {e}")
+
+    def _export_animated(self):
+        """
+        Export animated versions of the AFM stack in the selected formats.
+
+            Honors the “Raw vs Processed” radio button and writes to
+        `self.output_dir`/“output” with filename “gui_export.gif”.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        Exception
+            If GIF export fails.
+        """
+        from playnano.io import video_export
+        from playnano.io.gif_export import export_gif
+        from playnano.io.image_sequence_export import (  # if you have this
+            export_image_sequence,
+        )
+
+        save_dir = prepare_output_directory(self.output_dir, "output")
+
+        # Determine raw vs processed once
+        raw = self.animated_raw_radio.isChecked()
+
+        if raw and "raw" not in self.afm_stack.processed:
+            logger.info(
+                "Raw requested but not available — exporting processed instead."
+            )
+            raw = False
+
+        if raw:
+            zmin, zmax = self._zmin_raw, self._zmax_raw
+        else:
+            zmin, zmax = self._zmin_flat, self._zmax_flat
+
+        exported_any = False
+
+        # ---- GIF ----
+        if self.export_gif_cb.isChecked():
+            logger.info("Exporting GIF...")
+            export_gif(
+                self.afm_stack,
+                True,
+                save_dir,
+                output_name=self.output_name,
+                raw=raw,
+                fps=self.controls.fps_box.value(),
+                zmin=zmin,
+                zmax=zmax,
+                scale_bar_nm=self.scale_bar_nm,
+                draw_ts=self.show_timestamp_box.isChecked(),
+                draw_scale=self.show_scale_bar_box.isChecked(),
+                cmap_name=self._cmap_name,
+            )
+            exported_any = True
+
+        # ---- MP4 / AVI (same exporter) ----
+        for fmt, cb in [
+            ("mp4", self.export_mp4_cb),
+            ("avi", self.export_avi_cb),
+        ]:
+            if cb.isChecked():
+                logger.info(f"Exporting {fmt.upper()}...")
+                video_export.export_video(
+                    self.afm_stack,
+                    True,
+                    output_folder=save_dir,
+                    output_name=self.output_name,
+                    fmt=fmt,
+                    raw=raw,
+                    zmin=zmin,
+                    zmax=zmax,
+                    fps=self.controls.fps_box.value(),
+                    scale_bar_nm=self.scale_bar_nm,
+                    draw_ts=self.show_timestamp_box.isChecked(),
+                    draw_scale=self.show_scale_bar_box.isChecked(),
+                    cmap_name=self._cmap_name,
+                )
+                exported_any = True
+
+        # ---- PNG folder ----
+        if self.export_png_folder_cb.isChecked():
+            logger.info("Exporting PNG image sequence...")
+            export_image_sequence(
+                self.afm_stack,
+                True,
+                output_folder=save_dir,
+                output_name=self.output_name,
+                raw=raw,
+                zmin=zmin,
+                zmax=zmax,
+                scale_bar_nm=self.scale_bar_nm,
+                draw_ts=self.show_timestamp_box.isChecked(),
+                draw_scale=self.show_scale_bar_box.isChecked(),
+                cmap_name=self._cmap_name,
+            )
+            exported_any = True
+
+        if not exported_any:
+            logger.warning("No animation formats selected — nothing exported.")
 
     def _export_checked(self):
         """
@@ -847,10 +1048,10 @@ class MainWindow(QMainWindow):
             key != "raw" for key in self.afm_stack.processed
         )
 
-        # For GIF export
-        self.gif_processed_radio.setEnabled(has_filtered)
+        # For animated export
+        self.animated_processed_radio.setEnabled(has_filtered)
         if not has_filtered:
-            self.gif_raw_radio.setChecked(True)
+            self.animated_raw_radio.setChecked(True)
 
         # For data export
         self.data_processed_radio.setEnabled(has_filtered)
@@ -878,11 +1079,23 @@ class MainWindow(QMainWindow):
         centers = (edges[:-1] + edges[1:]) / 2
 
         # draw bars & style
-        ax.bar(
+        # Choose the same z-range as the viewer
+        if self._show_flat and self._flat is not None:
+            zmin, zmax = self._zmin_flat, self._zmax_flat
+        else:
+            zmin, zmax = self._zmin_raw, self._zmax_raw
+
+        norm = colors.Normalize(vmin=zmin, vmax=zmax)
+        cmap = self._get_cmap()
+
+        bar_colors = cmap(norm(centers))
+
+        self._hist_centers = centers
+        self._hist_bars = ax.bar(
             centers,
             counts,
             width=edges[1] - edges[0],
-            color="lightgray",
+            color=bar_colors,
             edgecolor="none",
         )
         ax.set_xlim(hist_min, hist_max)
@@ -894,6 +1107,26 @@ class MainWindow(QMainWindow):
         ax.tick_params(axis="x", colors="#888", labelsize=8)
         ax.spines["bottom"].set_color("#555")
         self.hist_fig.subplots_adjust(left=0.05, right=0.98, top=0.95, bottom=0.18)
+        self.hist_canvas.draw_idle()
+
+    def _update_histogram_colors(self):
+        """Update bar colors based on current zmin/zmax without clearing axes."""
+        if not hasattr(self, "_hist_bars"):
+            return
+
+        if self._show_flat and self._flat is not None:
+            zmin, zmax = self._zmin_flat, self._zmax_flat
+        else:
+            zmin, zmax = self._zmin_raw, self._zmax_raw
+
+        norm = colors.Normalize(vmin=zmin, vmax=zmax)
+        cmap = self._get_cmap()
+
+        new_colors = cmap(norm(self._hist_centers))
+
+        for bar, color in zip(self._hist_bars, new_colors, strict=False):
+            bar.set_color(color)
+
         self.hist_canvas.draw_idle()
 
     def _init_lines(self):
@@ -938,6 +1171,8 @@ class MainWindow(QMainWindow):
         self.span_right = ax.axvspan(
             zmax, xmax, facecolor="#209ba5", alpha=0.2, linewidth=0
         )
+        # Update bar colors to reflect new zmin/zmax
+        self._update_histogram_colors()
 
         self.hist_canvas.draw_idle()
 
@@ -1006,6 +1241,10 @@ class MainWindow(QMainWindow):
 
             # rebuild histogram (so shading and lines update)
             self._move_lines()
+
+            # Update bar colors to reflect new zmin/zmax
+            self._update_histogram_colors()
+
             self._update_background_color()
             self.show_frame(self._idx)
 
@@ -1095,7 +1334,7 @@ class MainWindow(QMainWindow):
         self.show_frame(self._idx)
 
 
-def z_to_rgb(z_value, zmin, zmax, cmap_name="afmhot"):
+def z_to_rgb(z_value, zmin, zmax, cmap_name=DEFAULT_CMAP):
     """
     Map a single height value to an RGB triple via a matplotlib colormap.
 
@@ -1105,7 +1344,7 @@ def z_to_rgb(z_value, zmin, zmax, cmap_name="afmhot"):
         Height value to map.
     zmin, zmax : float
         Data range for normalization.  If zmax == zmin, returns black.
-    cmap_name : str, default="afmhot"
+    cmap_name : str, default=DEFAULT_CMAP
         Name of the matplotlib colormap to use.
 
     Returns

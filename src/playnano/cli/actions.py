@@ -31,7 +31,10 @@ from playnano.errors import LoadError
 from playnano.gui.main import gui_entry
 from playnano.io.export_data import export_bundles
 from playnano.io.gif_export import export_gif
+from playnano.io.image_sequence_export import export_image_sequence
+from playnano.io.video_export import export_video
 from playnano.processing.core import process_stack
+from playnano.utils.colormaps import DEFAULT_CMAP, resolve_cmap
 from playnano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
@@ -44,11 +47,16 @@ def process_pipeline_mode(
     processing_file: str | None,
     export: str | None,
     make_gif: bool,
+    make_video: str | None,
+    make_sequence: bool,
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
     zmin: str = "auto",
     zmax: str = "auto",
+    draw_ts: bool = False,
+    cmap: str = DEFAULT_CMAP,
+    fps: float = 5.0,
 ) -> None:
     """
     Apply a processing pipeline to an AFM file, then optionally export data and GIF.
@@ -56,7 +64,7 @@ def process_pipeline_mode(
     Steps
     -----
     1. Parse processing steps from either `processing_file` (YAML/JSON)
-    or `processing_str`.
+       or `processing_str`.
     2. Run the ProcessingPipeline on the AFM stack to apply all filters.
     3. Export the processed stack to TIFF/NPZ/HDF5 formats (`export_bundles`).
     4. Generate an animated GIF of the filtered data (`export_gif`).
@@ -87,13 +95,18 @@ def process_pipeline_mode(
         Minimum Z-value for GIF color normalization (float string or `"auto"`).
     zmax : str
         Maximum Z-value for GIF color normalization (float string or `"auto"`).
+    cmap : str
+        Name of the colormap to use for GIF export (default=DEFAULT_CMAP).
+    fps : float
+        Frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
     None
     """
-
     logger.debug("Entering process_pipeline_mode: %r", locals())
+
+    cmap = resolve_cmap(cmap)  # validate or apply fallback
 
     # 1) Build steps_with_kwargs for processing
     if processing_file:
@@ -132,6 +145,41 @@ def process_pipeline_mode(
         raw=False,
         zmin=zmin,
         zmax=zmax,
+        draw_ts=draw_ts,
+        cmap_name=cmap,
+        fps=fps,
+    )
+
+    # 5) Video Export
+    if make_video is not None:
+        for fmt in make_video.split(","):
+            fmt = fmt.strip()
+            export_video(
+                afm_stack=afm_stack,
+                make_video=True,
+                output_folder=output_folder,
+                output_name=output_name,
+                scale_bar_nm=scale_bar_nm,
+                fmt=fmt,
+                raw=False,
+                zmin=zmin,
+                zmax=zmax,
+                draw_ts=draw_ts,
+                cmap_name=cmap,
+                fps=fps,
+            )
+    # 6) Image Sequence Export
+    export_image_sequence(
+        afm_stack=afm_stack,
+        make_sequence=make_sequence,
+        output_folder=output_folder,
+        output_name=output_name,
+        scale_bar_nm=scale_bar_nm,
+        raw=False,
+        zmin=zmin,
+        zmax=zmax,
+        draw_ts=draw_ts,
+        cmap_name=cmap,
     )
 
 
@@ -241,8 +289,10 @@ def play_pipeline_mode(
     output_folder: str | None,
     output_name: str | None,
     scale_bar_nm: int | None,
+    fps: float | None,
     zmin: str = "auto",
     zmax: str = "auto",
+    cmap: str = DEFAULT_CMAP,
 ) -> None:
     """
     Launch an interactive GUI to browse an AFM stack with optional filters.
@@ -274,6 +324,10 @@ def play_pipeline_mode(
         Minimum Z-value mapping (float or `"auto"`).
     zmax : str
         Maximum Z-value mapping (float or `"auto"`).
+    cmap : str
+        Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).
+    fps : float
+        Initial frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
@@ -282,24 +336,29 @@ def play_pipeline_mode(
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
     except Exception as e:
-        raise LoadError(f"Failed to load {input_file}") from e
-    # Determine fps from metadata
-    frame_metadata = getattr(afm_stack, "frame_metadata", None)
-    line_rate = None
-    if (
-        isinstance(frame_metadata, (list, tuple))
-        and len(frame_metadata) > 0
-        and isinstance(frame_metadata[0], dict)
-    ):
-        line_rate = frame_metadata[0].get("line_rate")
-    if not line_rate:
-        logger.warning("No line_rate in metadata; defaulting to 1 fps")
-        fps = 1.0
+        logger.error(f"Failed to load {input_file}. {e}")
+        raise LoadError(f"Failed to load {input_file}: {e}") from e
+
+    if fps is None:
+        # Determine fps from metadata
+        frame_metadata = getattr(afm_stack, "frame_metadata", None)
+        line_rate = None
+        if (
+            isinstance(frame_metadata, (list, tuple))
+            and len(frame_metadata) > 0
+            and isinstance(frame_metadata[0], dict)
+        ):
+            line_rate = frame_metadata[0].get("line_rate")
+        if not line_rate:
+            logger.warning("No line_rate in metadata; defaulting to 5.0 fps")
+            fps = 5.0
+        else:
+            fps = line_rate / afm_stack.image_shape[0]
+            logger.debug(
+                f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
+            )
     else:
-        fps = line_rate / afm_stack.image_shape[0]
-        logger.debug(
-            f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
-        )
+        logger.debug(f"Overiding data frame rate. FPS = {fps:.2f}.")
 
     if processing_file:
         steps_with_kwargs = parse_processing_file(processing_file)
@@ -332,6 +391,8 @@ def play_pipeline_mode(
         scale_bar_nm=scale_bar_nm or 100,
         zmin=zmin,
         zmax=zmax,
+        cmap=cmap,
+        fps=fps,
     )
 
 
@@ -374,6 +435,8 @@ class Wizard:
     io : IO or None, optional
         I/O abstraction used for reading commands and printing output. If None,
         standard input/output will be used. Mainly for testing and automation.
+    cmap : str, optional
+        Name of the colormap to use for GIF exports(default=DEFAULT_CMAP).
 
     Attributes
     ----------
@@ -406,6 +469,7 @@ class Wizard:
         output_name: Optional[str],
         scale_bar_nm: Optional[int],
         io: Optional[IO] = None,
+        cmap: str = DEFAULT_CMAP,
     ) -> None:
         """
         Initialize the Wizard for interactive processing and analysis of a AFM stack.
@@ -441,6 +505,7 @@ class Wizard:
         self.output_folder = output_folder
         self.output_name = output_name
         self.scale_bar_nm = scale_bar_nm
+        self.cmap = cmap
         self.io = io or IO()
 
         if not self.input_path.exists():
@@ -748,7 +813,7 @@ class Wizard:
         Execute the currently queued processing steps and optionally export outputs.
 
         Behavior
-        ----
+        --------
         - Runs processing and caches the result.
         - Prompts the user whether to export (tif/npz/h5) and/or create a GIF.
 
@@ -788,6 +853,26 @@ class Wizard:
                 .strip()
                 .lower()
             )
+            draw_ts_choice = self.io.ask("Add timestamps? (y/n): ").strip().lower() in (
+                "y",
+                "yes",
+            )
+            scale_bar_choice = self.io.ask("Add a scale bar? (y/n): ").strip().lower()
+            if scale_bar_choice in ("y", "yes"):
+                gif_scale_bar_length_raw = self.io.ask(
+                    "Enter scale bar length in nm: "
+                ).strip()
+                try:
+                    gif_scale_bar_nm = int(gif_scale_bar_length_raw)
+                except ValueError:
+                    self.io.say(
+                        f"Invalid scale bar length '{gif_scale_bar_length_raw}' (must be an integer).; "  # noqa: E501
+                        "using session default."
+                    )
+                    gif_scale_bar_nm = self.scale_bar_nm
+            else:
+                gif_scale_bar_nm = 0
+
             zmin_choice = self._parse_scale_value(zmin_raw)
             zmax_choice = self._parse_scale_value(zmax_raw)
             export_gif(
@@ -795,9 +880,55 @@ class Wizard:
                 True,
                 self.output_folder,
                 self.output_name,
-                self.scale_bar_nm,
+                gif_scale_bar_nm,
                 zmin=zmin_choice,
                 zmax=zmax_choice,
+                cmap_name=self.cmap,
+                draw_ts=draw_ts_choice,
+            )
+        export_video_choice = self.io.ask("Create a video? (y/n): ").strip().lower()
+        if export_video_choice in ("y", "yes"):
+            zmin_raw = (
+                self.io.ask("Enter a minimum value for the Z scale (or 'auto'): ")
+                .strip()
+                .lower()
+            )
+            zmax_raw = (
+                self.io.ask("Enter a maximum value for the Z scale (or 'auto'): ")
+                .strip()
+                .lower()
+            )
+            ts_choice = self.io.ask("Add timestamps? (y/n): ").strip().lower() in (
+                "y",
+                "yes",
+            )
+            scale_bar_choice = self.io.ask("Add a scale bar? (y/n): ").strip().lower()
+            if scale_bar_choice in ("y", "yes"):
+                scale_bar_length_raw = self.io.ask(
+                    "Enter scale bar length in nm: "
+                ).strip()
+                try:
+                    video_scale_bar_nm = int(scale_bar_length_raw)
+                except ValueError:
+                    self.io.say(
+                        f"Invalid scale bar length '{scale_bar_length_raw}' (must be an integer); "  # noqa: E501
+                        "using session default."
+                    )
+                    video_scale_bar_nm = self.scale_bar_nm
+            else:
+                video_scale_bar_nm = 0
+            zmin_choice = self._parse_scale_value(zmin_raw)
+            zmax_choice = self._parse_scale_value(zmax_raw)
+            export_video(
+                afm_stack_local,
+                True,
+                self.output_folder,
+                self.output_name,
+                video_scale_bar_nm,
+                zmin=zmin_choice,
+                zmax=zmax_choice,
+                cmap_name=self.cmap,
+                draw_ts=ts_choice,
             )
         self.io.say("Processing complete; processed stack cached.")
 
@@ -1109,11 +1240,12 @@ class Wizard:
         Execute the analysis pipeline, running processing if needed and export results.
 
         The function supports two modes:
-        - If the wizard has processing steps configured (self.process_steps), it will
+
+        * If the wizard has processing steps configured (self.process_steps), it will
           ensure the processed stack is available and up-to-date and then run analysis
           in-memory on that processed stack.
-        - If there are no processing steps, analysis runs directly on the loaded AFM
-        stack.
+        * If there are no processing steps, analysis runs directly on the loaded AFM
+          stack.
 
         Results are exported as JSON and HDF5 into `self.output_folder` (or current
         directory). The JSON is created with `make_json_safe` and both JSON/HDF5 are

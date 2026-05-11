@@ -4,21 +4,11 @@ playnano.gui.widgets package
 Submodules
 ----------
 
-playnano.gui.widgets.controls module
-------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: playnano.gui.widgets.controls
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-playnano.gui.widgets.viewer module
-----------------------------------
-
-.. automodule:: playnano.gui.widgets.viewer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   playnano.gui.widgets.controls
+   playnano.gui.widgets.viewer
 
 Module contents
 ---------------

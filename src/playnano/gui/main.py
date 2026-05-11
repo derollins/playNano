@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QApplication
 
 from playnano.gui import styles
 from playnano.gui.window import MainWindow
+from playnano.utils.colormaps import DEFAULT_CMAP
 
 
 def gui_entry(
@@ -17,6 +18,8 @@ def gui_entry(
     scale_bar_nm=100,
     zmin="auto",
     zmax="auto",
+    cmap=DEFAULT_CMAP,
+    fps=5.0,
 ):
     """
     Launch the playNano GUI with a given AFM stack and visualization/export settings.
@@ -44,6 +47,10 @@ def gui_entry(
         Maximum height value for the initial colormap range. If "auto", uses the
         99th percentile of the data; if None, uses the data maximum; if a float,
         uses that value (default: "auto").
+    cmap : str, optional
+        Name of the colormap to use for visualisation on launch (default=DEFAULT_CMAP).
+    fps : float, optional
+        Initial frame rate for the GIF in frames per second (default=5.0).
 
     Returns
     -------
@@ -67,6 +74,8 @@ def gui_entry(
         scale_bar_nm=scale_bar_nm,
         zmin=zmin,
         zmax=zmax,
+        cmap=cmap,
+        fps=fps,
     )
     wnd.show()
     sys.exit(app.exec())

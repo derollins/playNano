@@ -4,7 +4,8 @@ Data loaders for AFM image stacks exported by **playNano**.
 This module provides readers for serialized AFMImageStack bundles created
 by the export routines (``.npz``, ``.h5``, and OME-TIFF). Each loader
 reconstructs a :class:`~playNano.afm_stack.AFMImageStack` with correct
-data, pixel size, channel name, and per-frame metadata (timestamps).
+data, pixel size, channel name, and per-frame metadata (timestamps,
+frame_pixel_size_nm etc.)
 All loaders restore provenance and any stored processing or mask data.
 
 Functions
@@ -316,6 +317,8 @@ def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageSt
             logger.warning(f"Failed to parse OME-XML metadata for {path}: {e}")
 
         frame_metadata = [{"timestamp": t} for t in timestamps]
+        for frame in frame_metadata:
+            frame["frame_pixel_size_nm"] = ps_nm
 
         stack = AFMImageStack(
             data=data,

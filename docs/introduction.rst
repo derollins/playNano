@@ -35,7 +35,8 @@ Core Components
 1. **Loading** - Imports a sequence of AFM frames into an
    :class:`~playnano.afm_stack.AFMImageStack`, preserving timestamps and metadata.
    The following AFM file formats are supported:
-   ``.jpk``, ``.asd``, ``.h5-jpk``, and ``.spm``.
+   ``.jpk``, ``.asd``, ``.aris``, ``.h5-jpk``, and ``.spm``.
+   Additionally files exported from playNano can be re-loaded back into the programme.
 2. **Processing** - Applies flattening, filtering, and frame-alignment operations
    to prepare data for analysis and export. Pipelines are defined as ordered
    lists of steps that run serially on the stack. See more: :doc:`processing`.

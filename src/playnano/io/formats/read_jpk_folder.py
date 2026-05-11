@@ -89,22 +89,27 @@ def load_jpk_folder(
     frame_interval = 1.0 / frame_rate  # time taken per frame
     timestamps = np.arange(num_frames) * frame_interval
 
+    frame_metadata = []
+
     # Load all images
     for i, fpath in enumerate(jpk_files):
+        ts = timestamps[i]
         logger.debug(f"Loading {fpath.name}")
         img, px_size_nm = load_jpk(fpath, channel)
         if img.shape != (height_px, width_px):
             raise ValueError(f"Inconsistent image shape in {fpath}")
-        if not np.isclose(px_size_nm, first_pixel_size_nm):
-            raise ValueError(f"Inconsistent pixel size in {fpath}")
         if flip_image:
             img = np.flipud(img)
         image_stack[i] = img
 
         # Compose per-frame metadata list
-        frame_metadata = []
-        for ts in timestamps:
-            frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
+        frame_metadata.append(
+            {
+                "timestamp": ts,
+                "frame_pixel_size_nm": px_size_nm,
+                "line_rate": line_rate,
+            }
+        )
 
     return AFMImageStack(
         data=image_stack,

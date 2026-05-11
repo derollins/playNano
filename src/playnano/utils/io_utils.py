@@ -302,3 +302,22 @@ def make_json_safe(obj):
         return obj.__name__
     else:
         return obj
+
+
+def decode_hdf5_attr(attr: bytes | str) -> str:
+    """
+    Decode an attribute that may be bytes or a string.
+
+    Parameters
+    ----------
+    attr : bytes or str
+        The attribute to decode.
+
+    Returns
+    -------
+    str
+        The decoded string.
+    """
+    if isinstance(attr, bytes):
+        return attr.decode("utf-8")
+    return str(attr)
