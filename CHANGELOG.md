@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Official support for Python 3.13
-- - Compatibility with NumPy 2.x (including NumPy 2.0+)
+- Compatibility with NumPy 2.x (including NumPy 2.0+)
 
 #### Processing filters
 
