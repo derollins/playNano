@@ -187,6 +187,12 @@ def load_aris(
     -------
     AFMImageStack
         Loaded AFM image stack with metadata and per-frame info.
+
+    Notes
+    -----
+    Pixel size may vary between frames in ARIS files. The global
+    `pixel_size_nm` attribute corresponds to the first frame, while
+    per-frame values are stored in `frame_metadata`.
     """
     file_path = Path(file_path)
     with h5py.File(file_path, "r") as file:

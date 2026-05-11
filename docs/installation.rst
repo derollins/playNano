@@ -11,14 +11,9 @@ as well as through GitHub.
 System requirements
 -------------------
 
-- Python **3.10 - 3.12** (3.11 recommended)
+- Python **3.10 - 3.13** (3.11 recommended)
 - Linux, macOS, or Windows
 - Internet connection for downloading packages
-
-.. note::
-
-   NumPy is currently pinned to ``<2.0`` for compatibility with some
-   scientific libraries. See the :doc:`changelog` for updates.
 
 Installation Guide
 ------------------

@@ -30,7 +30,7 @@ Please read this guide before submitting a pull request.
 ### Prerequisites
 
 - [Anaconda or Miniconda](https://docs.conda.io/en/latest/miniconda.html)
-- Python 3.10–3.12
+- Python 3.10–3.13
 
 ### Setting up a development environment
 

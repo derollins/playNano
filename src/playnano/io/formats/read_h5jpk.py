@@ -363,6 +363,15 @@ def load_h5jpk(
     -------
     AFMImageStack
         Loaded AFM image stack with metadata and per-frame info.
+
+    Notes
+    -----
+    In .h5-jpk files, the pixel size is defined at the measurement level and
+    is constant across all frames. Therefore, `frame_pixel_size_nm` is identical
+    for every frame.
+
+    This differs from .jpk and .spm folder-based data, where pixel size may vary
+    between frames and is stored per-frame.
     """
     file_path = Path(file_path)
 

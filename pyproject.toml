@@ -3,7 +3,7 @@ name = "playnano"
 dynamic = ["version"]
 description = "Python toolkit for processing, analysing and visualising high-speed AFM (Atomic Force Microscopy) video data."
 readme = "README.md"
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10,<3.14"
 authors = [
   { name = "Daniel E. Rollins", email = "d.e.rollins@leeds.ac.uk" }
 ]
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 keywords = [
   # Core domain
@@ -59,7 +60,7 @@ keywords = [
   "surface analysis",
 ]
 dependencies = [
-  "numpy>=1.23,<2.0",
+  "numpy>=1.23",
   "pandas",
   "h5py",
   "Pillow",
