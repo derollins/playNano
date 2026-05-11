@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0.post1] - 2026-05-12
+
+### Documentation
+
+- Fixed font asset paths in README (`src/playnano/fonts/` → `src/playnano/resources/fonts/`).
+- Corrected BibTeX citation key year (2025 → 2026).
+- Added `playnano.io.render_utils` to the API reference toctree.
+- Fixed underline lengths for "Video Export Options (CLI)" and "Image Sequence Export Options (CLI)" sections in `exporting.rst`.
+- Restored `html_sidebars` configuration for the version switcher in `conf.py`.
+- Restored full `nitpick_ignore` and `intersphinx_mapping` lists truncated during `conf.py` cleanup.
+- Added `autosummary_generate = True` and `exclude_patterns = []` to `conf.py`.
+- Added `whats_new/v0.4.0.md` release notes page.
+- Updated README image links to absolute raw GitHub URLs so images render correctly on PyPI.
+
+### No code changes
+
 ## [0.4.0] - 2026-05-11
 
 ### Added
@@ -458,3 +474,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.3.0]: https://github.com/derollins/playNano/releases/tag/v0.3.0
 [0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
 [0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
+[0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1

@@ -20,6 +20,7 @@ API Reference
    playnano.io.data_loaders
    playnano.io.export_data
    playnano.io.gif_export
+   playnano.io.render_utils
    playnano.io.formats
    playnano.io.formats.read_asd
    playnano.io.formats.read_h5jpk

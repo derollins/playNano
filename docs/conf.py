@@ -38,11 +38,25 @@ extensions = [
     "sphinx_multiversion",
 ]
 
+autosummary_generate = True
+exclude_patterns = []
+
 html_theme = "furo"
 templates_path = ["_templates"]
 html_static_path = ["_static"]
 html_js_files = ["version-switcher.js"]
 html_css_files = ["version-switcher.css"]
+
+html_sidebars = {
+    "**": [
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/scroll-start.html",
+        "sidebar/versions.html",
+        "sidebar/scroll-end.html",
+    ]
+}
 
 # Multiversion Selection
 smv_tag_whitelist = r"^v\d+\.\d+.*$"
@@ -62,9 +76,8 @@ def run_apidoc(_):
     module_path = os.path.join(repo_root, "src", "playnano")
 
     # -e: put each module on its own page
-    # --force: overwrite existing files
     # --no-toc: don't overwrite your custom modules.rst
-    main(["-e", "-o", output_path, module_path, "--force", "--no-toc"])
+    main(["-e", "-o", output_path, module_path, "--no-toc"])
 
 
 def _set_title_and_version(app, config):
@@ -171,5 +184,33 @@ def setup(app):
 # ------------------------------------------------------------------------------
 # Nitpick & Intersphinx (Keep your existing full lists here)
 # ------------------------------------------------------------------------------
-nitpick_ignore = [("py:class", "np.ndarray"), ("py:class", "Path")]  # etc...
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+nitpick_ignore = [
+    ("py:class", "np.ndarray"),
+    ("py:class", "numpy.ndarray"),
+    ("py:class", "json.encoder.JSONEncoder"),
+    ("py:class", "pd.DataFrame"),
+    ("py:class", "lists"),
+    ("py:class", "Axes"),
+    ("py:class", "matplotlib Axes"),
+    ("py:class", "matplotlib.axes._axes.Axes"),
+    ("py:class", "QWidget"),
+    ("py:class", "PySide6.QtWidgets.QWidget"),
+    ("py:class", "QResizeEvent"),
+    ("py:class", "PySide6.QtGui.QResizeEvent"),
+    ("py:class", "QFont"),
+    ("py:class", "PySide6.QtGui.QFont"),
+    ("py:class", "QPaintEvent"),
+    ("py:class", "h5py._hl.group.Group"),
+    ("py:class", "Path"),
+    ("py:class", "pathlib.Path"),
+    ("py:class", "optional"),
+    ("py:class", "callable"),
+    ("py:class", "AnalysisOutputs"),
+    ("py:class", "analysis_record"),
+]
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "qt": ("https://doc.qt.io/qtforpython-6/", None),
+}

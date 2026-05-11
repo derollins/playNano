@@ -95,9 +95,11 @@ For development setup see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Play a file (GUI):**
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
+  <img src="https://github.com/derollins/playNano/raw/main/docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 ```bash
 playnano play ./tests/resources/sample_0.h5-jpk # This command opens example data if run in the project root
@@ -129,18 +131,22 @@ discontinuities, while retaining the classic orange-brown AFM character. The pac
 monotone-lightness high-contrast colormap spanning the full luminance range (L* 0–100) for complex, feature-rich samples,
 and `classic_afm`, a non-linear map replicating the common brown AFM colormap for continuity with existing workflows.
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/native_colormaps.png" alt="playNano native colormaps" width="400" />
+  <img src="https://raw.githubusercontent.com/derollins/playNano/main/docs/images/native_colormaps.png" alt="playNano native colormaps" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 All three colormaps are registered globally on import as `matplotlib` cmaps, making them available across the entire
 toolkit and in your own scripts alongside built-in options such as `afmhot` and `viridis`.
 
 ## 📒 Notebooks
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
+  <img src="https://github.com/derollins/playNano/raw/main/docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 To access and use the [Notebooks](https://derollins.github.io/playNano/main/notebooks.html) you need to clone the
 repository and install the required dependencies `pip install -e .[notebooks]` see the docs page for more
@@ -200,7 +206,7 @@ If you use **playNano** in academic work, please cite it as:
 <summary>Show BibTeX</summary>
 
 ```bibtex
-@misc{rollins2025playnano,
+@misc{rollins2026playnano,
   author = {Rollins, D. E.},
   title  = {playNano: AFM Video Processing and Analysis Toolkit},
   year   = {2026},
@@ -228,5 +234,5 @@ This project bundles the following fonts:
 
 Full license texts and attribution are provided in:
 
-- `src/playnano/fonts/Steps-Mono/LICENCE.txt`
-- `src/playnano/fonts/Basic/LICENCE.txt`
+- `src/playnano/resources/fonts/Steps-Mono/LICENSE.txt`
+- `src/playnano/resources/fonts/basic/LICENSE.txt`
