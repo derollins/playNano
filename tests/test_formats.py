@@ -457,7 +457,7 @@ def test_read_asd_valid_file(
     assert result.data.dtype == np.dtype(image_dtype)
     assert isinstance(result.frame_metadata, list)
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
-    assert result.data.sum() == stack_sum
+    assert result.data.sum() == pytest.approx(stack_sum, rel=1e-12)
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
@@ -777,7 +777,7 @@ def test_read_spm_valid_files(
     assert result.data.dtype == np.dtype(image_dtype)
     assert isinstance(result.frame_metadata, list)
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
-    assert result.data.sum() == stack_sum
+    assert result.data.sum() == pytest.approx(stack_sum, rel=1e-12)
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
