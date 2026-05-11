@@ -190,7 +190,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -318,6 +318,7 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.render_utils.html">playnano.io.render_utils module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
@@ -464,9 +465,12 @@
 </li>
 </ul>
 
-</div>
-</div>
-
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div></div>
       </div>
       
     </div>
@@ -707,7 +711,7 @@ that used a similar colourmap.</p>
 <section id="programmatic">
 <h3>Programmatic<a class="headerlink" href="#programmatic" title="Link to this heading">¶</a></h3>
 <p>All three colourmaps are available as <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>
-<code class="xref py py-class docutils literal notranslate"><span class="pre">LinearSegmentedColormap</span></code> objects via
+<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v3.10.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearSegmentedColormap</span></code></a> objects via
 <a class="reference internal" href="api/playnano.utils.colormaps.html#module-playnano.utils.colormaps" title="playnano.utils.colormaps"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.utils.colormaps</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span><span class="w"> </span><span class="nn">playnano</span>  <span class="c1"># register_custom_colormaps() is called on import</span>
 

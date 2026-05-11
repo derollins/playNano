@@ -189,7 +189,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
@@ -317,6 +317,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.io.render_utils.html">playnano.io.render_utils module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
@@ -463,9 +464,12 @@
 </li>
 </ul>
 
-</div>
-</div>
-
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div></div>
       </div>
       
     </div>
@@ -808,7 +812,6 @@
 
 <span class="sd">    pre_filter_sigma : float, optional</span>
 <span class="sd">        Standard deviation of Gaussian filter applied to both reference and moving</span>
-
 <span class="sd">        frames prior to cross-correlation. Helps reduce noise. Default is None.</span>
 
 <span class="sd">    max_jump : int, optional</span>
@@ -836,8 +839,9 @@
 <span class="sd">        - &quot;pre_filter_sigma&quot;: float or None</span>
 <span class="sd">        - &quot;max_shift&quot;: int or None</span>
 <span class="sd">        - &quot;max_jump&quot;: int or None</span>
-<span class="sd">          debug_outputs : dict, optional</span>
-<span class="sd">        Returned only if `debug=True`. Contains:</span>
+
+<span class="sd">    debug_outputs : dict, optional</span>
+<span class="sd">          Returned only if `debug=True`. Contains:</span>
 <span class="sd">        - &quot;shifts&quot;: copy of the detected shifts array</span>
 <span class="sd">        - &quot;aligned_refs&quot;: deque of indices used for rolling reference</span>
 

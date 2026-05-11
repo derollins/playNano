@@ -190,7 +190,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
@@ -318,6 +318,7 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.io.export_data.html">playnano.io.export_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.io.render_utils.html">playnano.io.render_utils module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
@@ -464,9 +465,12 @@
 </li>
 </ul>
 
-</div>
-</div>
-
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div></div>
       </div>
       
     </div>
@@ -727,9 +731,8 @@ reference. Default is 5.</p></li>
 frames. Default is False.</p></li>
 <li><p><strong>max_shift</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum allowed shift in pixels along either axis. Detected shifts are clipped.
 Default is None (no clipping).</p></li>
-<li><p><strong>pre_filter_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – <p>Standard deviation of Gaussian filter applied to both reference and moving</p>
-<p>frames prior to cross-correlation. Helps reduce noise. Default is None.</p>
-</p></li>
+<li><p><strong>pre_filter_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Standard deviation of Gaussian filter applied to both reference and moving
+frames prior to cross-correlation. Helps reduce noise. Default is None.</p></li>
 <li><p><strong>max_jump</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum allowed jump in pixels between consecutive frame shifts. If exceeded,
 the shift is replaced by a linear extrapolation from the previous two shifts.
 Default is None (no jump smoothing).</p></li>
@@ -754,13 +757,12 @@ alignment.</p></li>
 <ul class="simple">
 <li><p>”pre_filter_sigma”: float or None</p></li>
 <li><p>”max_shift”: int or None</p></li>
-<li><p>”max_jump”: int or None
-debug_outputs : dict, optional</p></li>
+<li><p>”max_jump”: int or None</p></li>
 </ul>
-<p>Returned only if <cite>debug=True</cite>. Contains:
-- “shifts”: copy of the detected shifts array
-- “aligned_refs”: deque of indices used for rolling reference</p>
 </li>
+<li><p><strong>debug_outputs</strong> (<em>dict, optional</em>) –   Returned only if <cite>debug=True</cite>. Contains:
+- “shifts”: copy of the detected shifts array
+- “aligned_refs”: deque of indices used for rolling reference</p></li>
 </ul>
 </p>
 </dd>

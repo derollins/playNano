@@ -188,7 +188,7 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -316,6 +316,7 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.data_loaders.html">playnano.io.data_loaders module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.export_data.html">playnano.io.export_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.io.gif_export.html">playnano.io.gif_export module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.io.render_utils.html">playnano.io.render_utils module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.io.formats.html">playnano.io.formats package</a><input aria-label="Toggle navigation of playnano.io.formats package" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_aris.html">playnano.io.formats.read_aris module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.io.formats.read_asd.html">playnano.io.formats.read_asd module</a></li>
@@ -462,9 +463,12 @@
 </li>
 </ul>
 
-</div>
-</div>
-
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div></div>
       </div>
       
     </div>
@@ -867,6 +871,8 @@
 </li>
           <li><a href="api/playnano.io.loader.html#module-playnano.io.loader">playnano.io.loader</a>
 </li>
+          <li><a href="api/playnano.io.render_utils.html#module-playnano.io.render_utils">playnano.io.render_utils</a>
+</li>
           <li><a href="api/playnano.io.video_export.html#module-playnano.io.video_export">playnano.io.video_export</a>
 </li>
           <li><a href="api/playnano.processing.html#module-playnano.processing">playnano.processing</a>
@@ -1219,6 +1225,13 @@
 </li>
         </ul></li>
         <li>
+    playnano.io.render_utils
+
+        <ul>
+          <li><a href="api/playnano.io.render_utils.html#module-playnano.io.render_utils">module</a>
+</li>
+        </ul></li>
+        <li>
     playnano.io.video_export
 
         <ul>
@@ -1381,6 +1394,8 @@
 </li>
         <li><a href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.remove_plane_masked">remove_plane_masked() (in module playnano.processing.masked_filters)</a>
 </li>
+        <li><a href="api/playnano.io.render_utils.html#playnano.io.render_utils.render_frame">render_frame() (in module playnano.io.render_utils)</a>
+</li>
         <li><a href="api/playnano.processing.video_processing.html#playnano.processing.video_processing.replace_nan">replace_nan() (in module playnano.processing.video_processing)</a>
 </li>
         <li><a href="api/playnano.analysis.modules.dbscan_clustering.html#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.requires">requires (playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule attribute)</a>
@@ -1397,6 +1412,8 @@
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/playnano.io.render_utils.html#playnano.io.render_utils.resolve_stack_data">resolve_stack_data() (in module playnano.io.render_utils)</a>
+</li>
         <li><a href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_frame_metadata">restore_frame_metadata() (playnano.afm_stack.AFMImageStack method)</a>
 </li>
         <li><a href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_raw">restore_raw() (playnano.afm_stack.AFMImageStack method)</a>
