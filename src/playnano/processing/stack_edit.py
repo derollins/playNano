@@ -133,6 +133,39 @@ def select_frames(data: np.ndarray, keep_indices: list[int]) -> list[int]:
     return drop_indices
 
 
+@versioned_filter("0.1.0")
+def drop_final_frames(data: np.ndarray, n_frames_to_drop: int = 1) -> list[int]:
+    """
+    Generate a list of frame indices to drop from the end of the stack.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        3D array of shape (n_frames, height, width) representing the image stack.
+    n_frames_to_drop : int
+        Number of frames to drop from the end of the stack.
+
+    Returns
+    -------
+    list of int
+        List of frame indices that should be dropped. By default, this will drop
+        the last frame (n_frames_to_drop=1).
+
+    Raises
+    ------
+    ValueError
+        If `n_frames_to_drop` is negative or exceeds the number of frames.
+    """
+    if data.ndim != 3:
+        raise ValueError(f"Expected a 3D array, got {data.ndim}D.")
+
+    n_frames = data.shape[0]
+    if n_frames_to_drop < 0 or n_frames_to_drop > n_frames:
+        raise ValueError(f"Invalid number of frames to drop: {n_frames_to_drop}")
+
+    return list(range(n_frames - n_frames_to_drop, n_frames))
+
+
 def register_stack_edit_processing() -> dict[str, Callable]:
     """
     Return a dictionary of registered stack editing processing filters.
@@ -147,4 +180,5 @@ def register_stack_edit_processing() -> dict[str, Callable]:
         "drop_frames": drop_frames,
         "drop_frame_range": drop_frame_range,
         "select_frames": select_frames,
+        "drop_final_frames": drop_final_frames,
     }
