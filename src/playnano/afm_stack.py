@@ -261,7 +261,7 @@ class AFMImageStack:
             f"Available masks: {list(MASK_MAP)}; "
             f"built-in filters: {list(FILTER_MAP)}; "
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
-            f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
+            f"methods: {[m for m in dir(self) if callable(getattr(self, m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
             f"video_plugins: {[ep.name for ep in metadata.entry_points(group='playnano.video_processing')]}."  # noqa
             f"stack_edit: {list(STACK_EDIT_MAP)}; "
