@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `drop_final_frame()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
   similarly to the other funcitons in the module.
+- `zero_median` funciton in both filters and masked filters module to subtract the median value from ever pixel,
+  optionally masked.
 
 ## [0.4.0.post1] - 2026-05-12
 
