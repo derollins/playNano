@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `drop_final_frame()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
+  similarly to the other funcitons in the module.
+
 ## [0.4.0.post1] - 2026-05-12
 
 ### Documentation

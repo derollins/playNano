@@ -15,6 +15,8 @@ Functions
 - drop_frame_range : Generate a list of frame indices to drop within a given range.
 - select_frames : Generate a list of frame indices to drop, keeping only the selected
   frames.
+- drop_final_frames : Generate a list of frame indices to drop from the end of the
+  stack. Default is to drop the last frame (n_frames_to_drop=1).
 """
 
 from typing import Callable
@@ -172,9 +174,9 @@ def register_stack_edit_processing() -> dict[str, Callable]:
 
     Keys are names of the operations, values are the functions themselves.
     drop_frames is the operational function takes a 3D stack (n_frames,
-    H, W) and a list of indices and returns a ndarray. drop_frame_range and
-    select_frames are helper functions that return lists of indices to drop
-    which can be passed to drop_frames.
+    H, W) and a list of indices and returns a ndarray. drop_frame_range,
+    select_frames and drop_final_frames are helper functions that return
+    lists of indices to drop which can be passed to drop_frames.
     """
     return {
         "drop_frames": drop_frames,
