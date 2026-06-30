@@ -8,6 +8,206 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `drop_final_frame()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
+  similarly to the other funcitons in the module.
+
+## [0.4.0.post1] - 2026-05-12
+
+### Documentation
+
+- Fixed font asset paths in README (`src/playnano/fonts/` → `src/playnano/resources/fonts/`).
+- Corrected BibTeX citation key year (2025 → 2026).
+- Added `playnano.io.render_utils` to the API reference toctree.
+- Fixed underline lengths for "Video Export Options (CLI)" and "Image Sequence Export Options (CLI)" sections in `exporting.rst`.
+- Restored `html_sidebars` configuration for the version switcher in `conf.py`.
+- Restored full `nitpick_ignore` and `intersphinx_mapping` lists truncated during `conf.py` cleanup.
+- Added `autosummary_generate = True` and `exclude_patterns = []` to `conf.py`.
+- Added `whats_new/v0.4.0.md` release notes page.
+- Updated README image links to absolute raw GitHub URLs so images render correctly on PyPI.
+
+### No code changes
+
+## [0.4.0] - 2026-05-11
+
+### Added
+
+- Official support for Python 3.13
+- Compatibility with NumPy 2.x (including NumPy 2.0+)
+
+#### Processing filters
+
+- **Flip filter**
+  - Added the built-in processing filter ``vertical_flip``, which uses NumPy
+    ``flipud()`` to reverse the row order of a 2D image.
+  - No masked equivalent is provided.
+
+#### File readers
+
+- **ARIS reader**
+  - Support for loading Asylum Research **``.aris``** high-speed AFM data files.
+  - Comprehensive ARIS loader including:
+    - Channel-name extraction from HDF5 metadata.
+    - Global and per-frame pixel-size scaling with well-defined fallback behaviour.
+    - Frame sorting and stacked-image construction.
+    - Timestamp parsing and validation.
+  - Multi-suffix file loading support, enabling correct detection of formats such as
+    ``.ome.tif`` in addition to single-suffix formats.
+
+#### Visual exports
+
+- **Video and image sequence export**
+  - New export formats for animated data visualisation:
+    - **Video** (MP4, AVI, MOV, MKV)
+    - **Image sequences** (PNG, JPG)
+  - All visual exports support metadata overlays including scale bars, timestamps,
+    and data labels.
+  - Video and sequence exports are available via the API, CLI, and GUI.
+
+#### Colormaps and perceptual scaling
+
+- Introduced a unified colormap selection system for the GUI and all visual exports.
+- Added custom colormaps designed for AFM data:
+  - **afm_brown** (default): perceptually linear (R² ≈ 0.996), minimising contrast
+    compression and flicker in HS-AFM videos.
+  - **playnano_gold**: high-contrast, full-dynamic-range (L* 0–100) map for complex topography.
+  - **classic_afm**: legacy-style map for continuity with older AFM software.
+
+#### Command Line Interface (CLI)
+
+- Added global ``--version`` flag.
+- Added ``--cmap`` option to select colormaps in ``play``, ``process`` and ``wizard``.
+- Added ``--fps`` option:
+  - In ``play``:
+    - Optional argument.
+    - If not provided, the frame rate is derived from the data.
+    - If provided without a value or with a non-numeric value, a default FPS (5) is used
+      and a warning is logged.
+  - In ``process``:
+    - Requires a numeric value.
+    - Invalid values raise an error.
+- Added ``--make-sequence`` and ``--make-video`` options for exporting image sequences
+  and videos in ``process``.
+- Added ``--draw-ts`` to toggle timestamp rendering in exported media (default: off).
+- Extended the wizard REPL:
+  - After running a processing pipeline, GIF export prompts now include options for
+    timestamps and scale bars (including scale-bar length).
+  - After GIF export, the wizard can also export videos with configurable ``zmin``,
+    ``zmax``, timestamps, and scale bars.
+- Improved CLI UX and robustness:
+  - ``--fps`` in ``play`` now logs a warning when a non-numeric value is supplied
+    and falls back gracefully, instead of failing silently.
+  - Help text now explicitly documents default FPS behaviour.
+
+#### Resources and assets
+
+- Introduced ``src/playnano/resources/`` for non-code assets.
+- Moved bundled fonts into ``resources/fonts``.
+- Added ``importlib.resources`` integration for robust, cross-platform asset loading.
+
+#### Documentation and tests
+
+- Integrated ``sphinx-apidoc`` into ``conf.py`` via a ``builder-inited`` hook for
+  automatic API documentation generation.
+- Added test coverage for:
+  - ARIS HDF5 loading and edge cases.
+  - Multi-suffix file handling (e.g. ``.ome.tif``).
+  - Per-frame pixel-size overrides and fallback logic.
+  - Timestamp mismatch and missing-channel errors.
+  - Video and image-sequence export.
+  - CLI FPS parsing and help text.
+- Refined CLI test infrastructure:
+  - CLI tests now patch the ``entrypoint`` dispatch directly, ensuring full coverage
+    of argparse wiring and command dispatch.
+  - Added regression tests for CLI help output and invalid argument handling.
+
+---
+
+### Changed
+
+#### Pixel-size handling
+
+- Updated ``pixel_size_nm`` semantics:
+  - The ``AFMImageStack.pixel_size_nm`` attribute now represents the global or first-frame
+    pixel size.
+  - Per-frame overrides are stored in ``frame_metadata["frame_pixel_size_nm"]``.
+  - Most datasets will have identical values; differences occur when scan size changes
+    mid-scan (e.g. ARIS files).
+  - GUI playback and animated exports now respect per-frame pixel size.
+- Updated NPZ, OME-TIFF, and HDF5 export documentation to reflect per-frame support.
+
+#### Visualisation rendering
+
+- Introduced ``playnano.io.render_utils`` as a single source of truth for visual exports.
+  - Centralises visual constants for consistent appearance across formats.
+  - Enforces minimum output resolution to prevent pixelated annotations.
+  - Ensures scale bars are physically correct based on ``pixel_size_nm`` and that text
+    size and positioning are consistent across resolutions.
+- Rendering logic previously in ``export_gif`` has been migrated to this module.
+
+#### GUI
+
+- Added a colormap selection dropdown to the export panel.
+- The active colormap is now displayed on the z-scale histogram and updates dynamically
+  when ``zmin`` or ``zmax`` change.
+
+#### Logging and user feedback
+
+- Improved warning messages for invalid CLI arguments (e.g. non-numeric ``--fps``),
+  providing clearer runtime feedback without interrupting interactive workflows.
+
+#### Developer tooling
+
+- Updated pre-commit configuration, including Ruff, Black, isort and markdownlint
+  version alignment and formatting fixes.
+
+#### Tests
+
+- Improved numerical robustness in tests (floating-point comparisons now use tolerances for cross-platform consistency)
+- Added Python 3.13 to the test matrix
+
+---
+
+### Fixed
+
+- Fixed loader errors relating to missing file extensions and no-suffix inputs.
+- Connected FPS calculation based on ``line_rate`` to GUI playback logic.
+- Fixed `frame_metadata` construction to ensure one entry per frame (previously overwritten or
+  incomplete in some loaders, notably `.spm` and `.jpk`)
+- Standardised metadata structure across all formats:
+  - `timestamp`
+  - `frame_pixel_size_nm`
+  - `line_rate`
+- Clarified pixel size behaviour per format:
+  - Per-frame (`.jpk`, `.aris`, `.spm`)
+  - Constant (`.h5-jpk`, `.asd`)
+- Updated docstrings to document pixel size semantics and usage
+
+## [0.3.1] - 2026-03-12
+
+### Fixed
+
+- Resolved incorrect mask output in video processing pipeline.
+  Video filter functions that return (array, metadata) were previously interpreted as (array, mask),
+  causing metadata to be mis‑assigned as a mask and leading to failures in pipelines using mask‑aware steps.
+
+### Changed
+
+- Updated `ProcessingPipeline._handle_video_filter_step()` to accept mask as an explicit optional parameter,
+  ensuring its correct propagation through `run()` / `_run_single_step()` without overloading metadata as mask data.
+- Metadata from video‑filter functions is now stored only in `step_record` as a side effect and is no longer returned
+  as a mask-like object.
+- Added debug‑level logging for clearer diagnosis of mask‑related failures.
+- Updated the test suite to:
+  - reflect the new behaviour of mask passthrough in _handle_video_filter_step(),
+  - confirm that metadata is recorded correctly,
+  - ensure mask value is preserved through video filter steps.
+- Removed mask handling from filters.zero_mean() and improved robustness of masked_filter.zero_mean_masked() to make
+  each function role‑specific.
+- Incremented version numbers to reflect these changes.
+- Updated docstrings for clarity and corrected supported Python versions in the README.
+
 ## [0.3.0] - 2026-03-06
 
 ### Added
@@ -277,3 +477,6 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.2.1]: https://github.com/derollins/playNano/releases/tag/v0.2.1
 [0.2.2]: https://github.com/derollins/playNano/releases/tag/v0.2.2
 [0.3.0]: https://github.com/derollins/playNano/releases/tag/v0.3.0
+[0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
+[0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
+[0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1

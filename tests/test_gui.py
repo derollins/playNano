@@ -3,14 +3,17 @@
 import logging
 from unittest.mock import ANY, MagicMock, patch
 
+import matplotlib
 import numpy as np
 import pytest
+from matplotlib import colors
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
 from playnano.gui import main
 from playnano.gui.widgets.viewer import ViewerWidget
 from playnano.gui.window import MainWindow
+from playnano.utils.colormaps import DEFAULT_CMAP
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +57,7 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     mock_stack.analysis = {}
     mock_stack.add_analysis = MagicMock()
     mock_stack.time_for_frame = MagicMock(return_value=0.1)
+    mock_stack.scaling_for_frame = MagicMock(return_value=1.0)
     mock_load_data.return_value = mock_stack
     mock_stack.pixel_size_nm = 1.0
 
@@ -71,7 +75,7 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     assert wnd.isVisible()
 
     # FPS defaults
-    assert wnd.controls.fps_box.value() == 10
+    assert wnd.controls.fps_box.value() == 5.0
 
     # Slider config
     assert wnd.controls.slider.minimum() == 0
@@ -96,6 +100,199 @@ def test_mainwindow_loads_and_interacts(mock_load_data, qtbot):
     assert wnd._show_flat is False
     wnd.close()
     wnd.deleteLater()
+
+
+def test_get_cmap_invalid_falls_back(monkeypatch, caplog):
+    """
+    Test that _get_cmap fall back to default cmap.
+
+    Invalid colormap names should:
+    - log a warning
+    - reset _cmap_name to DEFAULT_CMAP
+    - return the DEFAULT_CMAP colormap
+    """
+
+    # Create instance without running full Qt init
+    window = MainWindow.__new__(MainWindow)
+    window._cmap_name = "definitely_not_a_real_colormap"
+
+    caplog.set_level("WARNING")
+
+    cmap = window._get_cmap()
+
+    assert cmap.name == matplotlib.colormaps.get_cmap(DEFAULT_CMAP).name
+
+    assert window._cmap_name == DEFAULT_CMAP
+
+    assert "Invalid cmap" in caplog.text
+    assert DEFAULT_CMAP in caplog.text
+
+
+def test_on_cmap_changed_invalid_name(caplog):
+    """
+    Test the behaviour of _on_cmap_change() with invalid cmap.
+
+    Invalid colormap names should:
+    - log a warning
+    - not update internal state
+    - not trigger any redraw / update methods
+    """
+
+    # Create instance without Qt init
+    window = MainWindow.__new__(MainWindow)
+    window._cmap_name = "viridis"  # existing valid state
+    window._idx = 0
+
+    # Attach spies that would fail if called
+    window._update_background_color = pytest.fail
+    window.show_frame = pytest.fail
+    window._draw_bars = pytest.fail
+    window._init_lines = pytest.fail
+
+    caplog.set_level("WARNING")
+
+    window._on_cmap_changed("this_is_not_a_real_cmap")
+
+    assert "not registered" in caplog.text
+
+    assert window._cmap_name == "viridis"
+
+
+def test_on_cmap_changed_valid_name(monkeypatch):
+    """
+    Test the behaviour of _on_cmap_change() with valid cmap.
+
+    Valid colormap names should:
+    - update _cmap_name
+    - call background update
+    - redraw the frame
+    - rebuild histogram bars and lines
+    """
+
+    window = MainWindow.__new__(MainWindow)
+    window._idx = 3
+    window._cmap_name = "plasma"
+
+    calls = []
+
+    def record(name):
+        calls.append(name)
+
+    window._update_background_color = lambda: record("update_bg")
+    window.show_frame = lambda idx: record(f"show_frame_{idx}")
+    window._draw_bars = lambda: record("draw_bars")
+    window._init_lines = lambda: record("init_lines")
+
+    window._on_cmap_changed("viridis")
+
+    assert window._cmap_name == "viridis"
+
+    assert calls == [
+        "update_bg",
+        "show_frame_3",
+        "draw_bars",
+        "init_lines",
+    ]
+
+
+def test_on_cmap_changed_valid_does_not_warn(caplog):
+    """Verify that selecting a valid colormap does not trigger a warning."""
+    window = MainWindow.__new__(MainWindow)
+    window._idx = 0
+
+    window._update_background_color = lambda: None
+    window.show_frame = lambda _: None
+    window._draw_bars = lambda: None
+    window._init_lines = lambda: None
+
+    caplog.set_level("WARNING")
+
+    window._on_cmap_changed("viridis")
+
+    assert caplog.text == ""
+
+
+def test_update_histogram_colors_no_bars_returns_early():
+    """Return early and perform no actions when histogram bars are not present."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    # Fail fast if any downstream method is called
+    window._get_cmap = pytest.fail
+    window.hist_canvas = pytest.fail
+
+    # Should simply return without error
+    window._update_histogram_colors()
+
+
+def test_update_histogram_colors_uses_flat_zrange(monkeypatch):
+    """Use flat zmin/zmax when flat view is enabled and flat data is present."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    # Required state
+    window._hist_bars = [type("Bar", (), {"set_color": lambda self, c: None})()]
+    window._hist_centers = [0.5]
+    window._show_flat = True
+    window._flat = object()
+
+    window._zmin_flat = -1.0
+    window._zmax_flat = 1.0
+    window._zmin_raw = -10.0
+    window._zmax_raw = 10.0
+
+    # Track which vmin/vmax Normalize receives
+    used = {}
+
+    def fake_normalize(vmin, vmax):
+        used["vmin"] = vmin
+        used["vmax"] = vmax
+        return lambda x: x
+
+    monkeypatch.setattr(colors, "Normalize", fake_normalize)
+
+    window._get_cmap = lambda: lambda x: [(1, 0, 0, 1)]
+    window.hist_canvas = type("Canvas", (), {"draw_idle": lambda self: None})()
+
+    window._update_histogram_colors()
+
+    assert used["vmin"] == -1.0
+    assert used["vmax"] == 1.0
+
+
+def test_update_histogram_colors_uses_raw_zrange_when_not_flat(monkeypatch):
+    """Use raw zmin/zmax when flat view is disabled or no flat data is available."""
+
+    window = MainWindow.__new__(MainWindow)
+
+    window._hist_bars = [type("Bar", (), {"set_color": lambda self, c: None})()]
+    window._hist_centers = [0.5]
+    window._show_flat = False
+    window._flat = None
+
+    window._zmin_raw = 2.0
+    window._zmax_raw = 8.0
+    window._zmin_flat = -1.0
+    window._zmax_flat = 1.0
+
+    used = {}
+
+    def fake_normalize(vmin, vmax):
+        used["vmin"] = vmin
+        used["vmax"] = vmax
+        return lambda x: x
+
+    monkeypatch.setattr(colors, "Normalize", fake_normalize)
+
+    window._get_cmap = lambda: lambda x: [(0, 1, 0, 1)]
+    window.hist_canvas = type("Canvas", (), {"draw_idle": lambda self: None})()
+
+    window._update_histogram_colors()
+
+    assert used["vmin"] == 2.0
+    assert used["vmax"] == 8.0
+    assert used["vmin"] == window._zmin_raw
+    assert used["vmax"] == window._zmax_raw
 
 
 @patch("playnano.gui.main.QApplication")
@@ -128,6 +325,8 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
         scale_bar_nm=100,
         zmin="auto",
         zmax="auto",
+        cmap="afm_brown",
+        fps=5.0,
     )
     mock_window.show.assert_called_once()
     mock_app.exec.assert_called_once()
@@ -223,7 +422,7 @@ def test_show_frame_fallback_pixel_size(qtbot):
 
 
 def test_colormap_normalize_flat_range(qtbot):
-    """Test _colormap_and_normalize when zmin == zmax returns zeros."""
+    """Test _colormap_and_normalize when zmin == zmax returns zeros for 'afmhot'."""
     mock_stack = MagicMock(width=256, height=256, data=np.ones((1, 5, 5)))
     mock_stack.pixel_size_nm = 1.0
     mock_stack.frame_metadata = []
@@ -232,6 +431,7 @@ def test_colormap_normalize_flat_range(qtbot):
     qtbot.addWidget(wnd)
 
     wnd._zmin_raw = wnd._zmax_raw  # force flat range
+    wnd._cmap_name = "afmhot"
     rgb = wnd._colormap_and_normalize(np.ones((5, 5)))
     assert np.all(rgb == 0)
     wnd.close()
@@ -311,6 +511,7 @@ def test_update_background_color_flat_branch():
     wnd._zperc_flat = 0.5
     wnd._zmin_flat = 1.0
     wnd._zmax_flat = 5.0
+    wnd._cmap_name = "afm_brown"
 
     wnd.viewer = MagicMock()
     wnd.viewer.set_background_color = MagicMock()
@@ -321,7 +522,7 @@ def test_update_background_color_flat_branch():
     # Calculate expected RGB value the same way as in code:
     from playnano.gui.window import z_to_rgb
 
-    expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afmhot")
+    expected_rgb = z_to_rgb(0.5, 1.0, 5.0, cmap_name="afm_brown")
 
     wnd.viewer.set_background_color.assert_called_once_with(expected_rgb)
     del wnd
@@ -375,8 +576,8 @@ def test_export_gif_branches(
     qtbot.addWidget(wnd)
 
     # Set radio button states
-    wnd.gif_raw_radio.setChecked(raw_checked)
-    wnd.gif_processed_radio.setChecked(not raw_checked)
+    wnd.animated_raw_radio.setChecked(raw_checked)
+    wnd.animated_processed_radio.setChecked(not raw_checked)
 
     # Set z-range values
     wnd._zmin_raw, wnd._zmax_raw = -1.0, 1.0
@@ -404,6 +605,92 @@ def test_export_gif_branches(
     # timestamp and scale bar toggles passed correctly
     assert call_args["draw_ts"] is True
     assert call_args["draw_scale"] is False
+    wnd.close()
+    wnd.deleteLater()
+
+
+@pytest.mark.parametrize(
+    "raw_present, raw_checked, expected_raw, exporters",
+    [
+        (True, True, True, {"gif": True, "video": True, "image": True}),
+        (False, True, False, {"gif": True, "video": False, "image": True}),
+        (True, False, False, {"gif": False, "video": True, "image": False}),
+    ],
+)
+@patch("playnano.io.gif_export.export_gif")
+@patch("playnano.io.video_export.export_video")
+@patch("playnano.io.image_sequence_export.export_image_sequence")
+@patch("playnano.gui.window.prepare_output_directory", return_value="mock_dir")
+def test_export_animated_branches(
+    mock_prepare,
+    mock_image_seq,
+    mock_video,
+    mock_gif,
+    raw_present,
+    raw_checked,
+    expected_raw,
+    exporters,
+    qtbot,
+):
+    """Test _export_animated handles raw branches, z-range & exporter selection."""
+    mock_stack = MagicMock(width=256, height=256, data=np.random.rand(1, 10, 10))
+    mock_stack.pixel_size_nm = 1.0
+    mock_stack.time_for_frame = MagicMock(return_value=0.1)
+    mock_stack.processed = {"raw": mock_stack.data} if raw_present else {}
+
+    wnd = MainWindow(mock_stack)
+    qtbot.addWidget(wnd)
+
+    wnd.animated_raw_radio.setChecked(raw_checked)
+    wnd.animated_processed_radio.setChecked(not raw_checked)
+
+    # Explicit exporter selection
+    wnd.export_gif_cb.setChecked(exporters["gif"])
+    wnd.export_mp4_cb.setChecked(exporters["video"])
+    wnd.export_avi_cb.setChecked(False)
+    wnd.export_png_folder_cb.setChecked(exporters["image"])
+
+    wnd._zmin_raw, wnd._zmax_raw = -1.0, 1.0
+    wnd._zmin_flat, wnd._zmax_flat = -2.0, 2.0
+
+    wnd.show_timestamp_box.setChecked(True)
+    wnd.show_scale_bar_box.setChecked(False)
+
+    # ---------------- Act ----------------
+    wnd._export_animated()
+
+    # ---------------- Assert ----------------
+    mock_prepare.assert_called_once_with(wnd.output_dir, "output")
+
+    expected_zmin = wnd._zmin_raw if expected_raw else wnd._zmin_flat
+    expected_zmax = wnd._zmax_raw if expected_raw else wnd._zmax_flat
+
+    def assert_export(mock, name):
+        kwargs = mock.call_args.kwargs
+        assert kwargs["raw"] == expected_raw
+        assert kwargs["zmin"] == expected_zmin
+        assert kwargs["zmax"] == expected_zmax
+        assert kwargs["draw_ts"] is True
+        assert kwargs["draw_scale"] is False
+
+    if exporters["gif"]:
+        assert mock_gif.called
+        assert_export(mock_gif, "gif")
+    else:
+        mock_gif.assert_not_called()
+
+    if exporters["video"]:
+        assert mock_video.called
+        assert_export(mock_video, "video")
+    else:
+        mock_video.assert_not_called()
+
+    if exporters["image"]:
+        assert mock_image_seq.called
+        assert_export(mock_image_seq, "image")
+    else:
+        mock_image_seq.assert_not_called()
+
     wnd.close()
     wnd.deleteLater()
 

@@ -6,6 +6,8 @@ import importlib.util
 import sys
 import warnings
 
+from playnano.utils.colormaps import register_custom_colormaps
+
 # --- Back-compat import shim: map 'playNano' -> 'playnano' for all subpackages ---
 # This avoids needing a parallel 'playNano' folder on case-insensitive filesystems.
 # Keep for one deprecation cycle, then remove.
@@ -73,5 +75,8 @@ try:
 except Exception:
     __version__ = "0+unknown"
 
+
+# Register our custom colormaps with Matplotlib on import
+register_custom_colormaps()
 
 __all__ = ["__version__"]

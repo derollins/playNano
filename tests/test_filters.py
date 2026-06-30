@@ -1,5 +1,7 @@
 """Tests for filters and masking functions in playnano.processing."""
 
+import logging
+
 import numpy as np
 import pytest
 from scipy.ndimage import generate_binary_structure
@@ -122,24 +124,6 @@ def test_zero_mean_no_mask():
     assert abs(np.mean(zeroed)) < 1e-12
 
 
-def test_zero_mean_with_mask():
-    """Test the zero_mean function with a mask."""
-    data = np.array([[1, 2], [3, 4]], dtype=float)
-    mask = np.array([[False, True], [False, False]])
-    zeroed = filters.zero_mean(data, mask=mask)
-    # mean of unmasked pixels should be ~0
-    assert np.allclose(np.mean(zeroed[~mask]), 0)
-    # masked pixels unaffected by mean calc
-
-
-def test_zero_mean_mask_all_masked():
-    """Test the error for zero_mean when all pixels are masked."""
-    data = np.ones((3, 3))
-    mask = np.ones_like(data, dtype=bool)  # all True, exclude all pixels
-    with pytest.raises(ValueError):
-        filters.zero_mean(data, mask=mask)
-
-
 def test_gaussian_filter_smooths():
     """Test the smoothing of the gaussian filter."""
     np.random.seed(0)
@@ -168,6 +152,14 @@ def test_remove_plane_removes_slope():
     assert abs(model.coef_[1]) < 0.05  # slope in y
 
 
+def test_vertical_flip():
+    """Test that vertical_flip correctly flips a 2 by 2 array vertically."""
+    data = np.array([[1, 2], [3, 4]], dtype=float)
+    flipped = filters.vertical_flip(data)
+    expected = np.array([[3, 4], [1, 2]], dtype=float)
+    assert np.array_equal(flipped, expected)
+
+
 def test_register_filters_keys():
     """Test that filters are registered correctly."""
     keys = filters.register_filters().keys()
@@ -177,6 +169,7 @@ def test_register_filters_keys():
         "zero_mean",
         "polynomial_flatten",
         "gaussian_filter",
+        "vertical_flip",
     }
     assert set(keys) == expected
 
@@ -424,13 +417,31 @@ def test_zero_mean_masked_basic():
 
     result = zero_mean_masked(data, mask)
     np.testing.assert_allclose(result, expected)
+    # mean of unmasked pixels should be ~0
+    assert np.allclose(np.mean(result[~mask]), 0)
+
+
+def test_zero_mean_masked_no_mask(caplog):
+    """Test warning is logged zero_mean output returned when no mask is supplied."""
+    # Simple 3x3 image
+    caplog.set_level(logging.WARNING, logger="playnano.processing.masked_filters")
+
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
+    mask = None
+    result = zero_mean_masked(data, mask)
+    assert np.mean(result) == 0
+    assert any(
+        "Masked zero_mean filter selected but no mask found. Applying unmasked."
+        in rec.message
+        for rec in caplog.records
+    )
 
 
 def test_zero_mean_masked_all_foreground():
     """Test that error is raised if whole image is masked."""
     data = np.ones((2, 2))
     mask = np.ones_like(data, dtype=bool)  # all foreground
-    with pytest.raises(ValueError, match="No background pixels"):
+    with pytest.raises(ValueError, match="Mask excludes all pixels"):
         zero_mean_masked(data, mask)
 
 

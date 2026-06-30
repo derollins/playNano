@@ -13,8 +13,10 @@ dependencies:
   - matplotlib
   - scipy
   - scikit-learn
+  - scikit-image
   - pyyaml>=6.0
   - pyside6>=6.5
+  - opencv-python-headless
   - pip
   - pip:
       - afmreader

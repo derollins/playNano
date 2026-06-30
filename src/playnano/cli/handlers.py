@@ -32,6 +32,7 @@ def handle_play(args: argparse.Namespace) -> None:
         ('auto` for 1st percentile)
         - zmax (float or str), maximum Z-value for normalization
         ('auto` for 99th percentile)
+        - cmap (str), name of colormap to use for visualisation (default=afm_brown)
 
     Returns
     -------
@@ -69,6 +70,8 @@ def handle_play(args: argparse.Namespace) -> None:
             scale_bar_nm=args.scale_bar_nm,
             zmin=args.zmin,
             zmax=args.zmax,
+            cmap=args.cmap,
+            fps=args.fps,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
@@ -92,6 +95,12 @@ def handle_process(args: argparse.Namespace) -> None:
         - output_folder (str or None)
         - output_name (str or None)
         - scale_bar_nm (int or None), 0 turns off scale bar
+        - zmin (float or str), minimum Z-value for normalization
+        ('auto` for 1st percentile)
+        - zmax (float or str), maximum Z-value for normalization
+        ('auto` for 99th percentile)
+        - cmap (str), name of colormap to use for animated visualisation export
+        (default=afm_brown)
 
     Returns
     -------
@@ -105,11 +114,16 @@ def handle_process(args: argparse.Namespace) -> None:
             processing_file=args.processing_file,
             export=args.export,
             make_gif=args.make_gif,
+            make_video=args.make_video,
+            make_sequence=args.make_sequence,
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
             zmin=args.zmin,
             zmax=args.zmax,
+            draw_ts=args.draw_ts,
+            cmap=args.cmap,
+            fps=args.fps,
         )
     except Exception as e:
         logging.getLogger(__name__).error(e)
@@ -140,6 +154,7 @@ def handle_wizard(args: argparse.Namespace) -> None:
         - output_folder (str or None)
         - output_name (str or None)
         - scale_bar_nm (int or None), 0 disables scale bar
+        - cmap (str), name of colormap to use for visualisation (default=afm_brown)
 
     Returns
     -------
@@ -152,6 +167,7 @@ def handle_wizard(args: argparse.Namespace) -> None:
             output_folder=args.output_folder,
             output_name=args.output_name,
             scale_bar_nm=args.scale_bar_nm,
+            cmap=args.cmap,
         ).run()
     except Exception as e:
         logging.getLogger(__name__).error(e)

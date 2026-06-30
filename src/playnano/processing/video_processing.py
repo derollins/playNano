@@ -64,6 +64,7 @@ def align_frames(
         - "pad": keep all frames with NaN padding (default)
         - "crop": crop to intersection of all frames
         - "crop_square": crop to largest centered square
+
     debug : bool, optional
         If True, returns additional diagnostic outputs.
     max_shift : int, optional
@@ -92,6 +93,7 @@ def align_frames(
         - "pre_filter_sigma": float or None
         - "max_shift": int or None
         - "max_jump": int or None
+
     debug_outputs : dict, optional
         Returned only if ``debug=True``. Contains:
         - "shifts": copy of the shifts array.
@@ -284,23 +286,29 @@ def rolling_frame_align(
     ----------
     stack : np.ndarray[float]
         3D array of shape (n_frames, height, width) containing the image frames.
+
     window : int, optional
         Number of previous aligned frames to average when building the rolling
         reference. Default is 5.
+
     mode : {"pad", "crop", "crop_square"}, optional
         How to handle borders after shifting:
         - "pad": keep all frames with NaN padding (default)
         - "crop": crop to intersection of all frames
         - "crop_square": crop to largest centered square
+
     debug : bool, optional
         If True, returns additional diagnostic outputs such as the rolling reference
         frames. Default is False.
+
     max_shift : int, optional
         Maximum allowed shift in pixels along either axis. Detected shifts are clipped.
         Default is None (no clipping).
+
     pre_filter_sigma : float, optional
         Standard deviation of Gaussian filter applied to both reference and moving
         frames prior to cross-correlation. Helps reduce noise. Default is None.
+
     max_jump : int, optional
         Maximum allowed jump in pixels between consecutive frame shifts. If exceeded,
         the shift is replaced by a linear extrapolation from the previous two shifts.
@@ -312,6 +320,7 @@ def rolling_frame_align(
         3D array of shape (n_frames, canvas_height, canvas_width) containing the
         aligned frames. NaN values indicate areas outside the original frames after
         alignment.
+
     metadata : dict
         Dictionary containing alignment information:
         - "window": int, rolling reference window used
@@ -325,8 +334,9 @@ def rolling_frame_align(
         - "pre_filter_sigma": float or None
         - "max_shift": int or None
         - "max_jump": int or None
+
     debug_outputs : dict, optional
-        Returned only if `debug=True`. Contains:
+          Returned only if `debug=True`. Contains:
         - "shifts": copy of the detected shifts array
         - "aligned_refs": deque of indices used for rolling reference
 

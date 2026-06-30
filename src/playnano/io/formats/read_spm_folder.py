@@ -109,24 +109,23 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     frame_interval = 1.0 / frame_rate  # time taken per frame
     timestamps = np.arange(num_frames) * frame_interval
 
+    frame_metadata = []
+
     # Load all images
     for i, fpath in enumerate(spm_files):
+        ts = timestamps[i]
         logger.debug(f"Loading {fpath.name}")
         img, px_size_nm = spm.load_spm(fpath, channel)
         if img.shape != (height_px, width_px):
             raise ValueError(f"Inconsistent image shape in {fpath}")
-        if not np.isclose(px_size_nm, first_pixel_size_nm):
-            raise ValueError(f"Inconsistent pixel size in {fpath}")
         image_stack[i] = img
 
-    # Compose per-frame metadata list
-    frame_metadata = []
-    for ts in timestamps:
-        frame_metadata.append({"timestamp": ts, "line_rate": line_rate})
+        # Compose per-frame metadata list
+        frame_metadata.append(
+            {"timestamp": ts, "frame_pixel_size_nm": px_size_nm, "line_rate": line_rate}
+        )
 
-    logger.debug(
-        f"Loaded {num_frames} frames with shape {image_stack.shape} and pixel size"
-    )
+    logger.debug(f"Loaded {num_frames} frames with shape {image_stack.shape}.")
 
     return AFMImageStack(
         data=image_stack,

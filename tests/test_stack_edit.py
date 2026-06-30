@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from playnano.processing.stack_edit import (
+    drop_final_frames,
     drop_frame_range,
     drop_frames,
     register_stack_edit_processing,
@@ -125,6 +126,36 @@ def test_select_frames_negative_index(sample_stack):
 
 
 # ---------------------------------------------------------------------
+# drop_final_frames
+# ---------------------------------------------------------------------
+
+
+def test_drop_final_frames_returns_final_indices(sample_stack):
+    """Test that drop_final_frames returns the correct final indices."""
+    drop_indices = drop_final_frames(sample_stack, 2)
+    assert drop_indices == [3, 4]
+
+
+def test_drop_final_frames_invalid_input(sample_stack):
+    """Test that drop_final_frames raises ValueError for invalid input."""
+    with pytest.raises(ValueError, match="Invalid number of frames to drop"):
+        drop_final_frames(sample_stack, 6)
+
+
+def test_drop_final_frames_invalid_dimensions():
+    """Test that drop_final_frames raises ValueError for non-3D input arrays."""
+    arr = np.zeros((4, 4))
+    with pytest.raises(ValueError, match="Expected a 3D array"):
+        drop_final_frames(arr, 2)
+
+
+def test_drop_final_frames_negative_index(sample_stack):
+    """Test that drop_final_frames raises ValueError for negative indices."""
+    with pytest.raises(ValueError, match="Invalid number of frames to drop"):
+        drop_final_frames(sample_stack, -1)
+
+
+# ---------------------------------------------------------------------
 # register_stack_edit_processing
 # ---------------------------------------------------------------------
 
@@ -132,7 +163,12 @@ def test_select_frames_negative_index(sample_stack):
 def test_register_stack_edit_processing_contains_expected_keys():
     """Test that register_stack_edit_processing returns expected keys and functions."""
     registry = register_stack_edit_processing()
-    assert set(registry.keys()) == {"drop_frames", "drop_frame_range", "select_frames"}
+    assert set(registry.keys()) == {
+        "drop_frames",
+        "drop_frame_range",
+        "select_frames",
+        "drop_final_frames",
+    }
     assert registry["drop_frames"] is drop_frames
     assert registry["drop_frame_range"] is drop_frame_range
     assert registry["select_frames"] is select_frames

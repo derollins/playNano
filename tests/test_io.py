@@ -3,15 +3,18 @@
 import json
 import re
 import tempfile
+import types
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import cv2
 import h5py
 import jsonschema
 import numpy as np
 import pytest
 import tifffile
+from matplotlib import colormaps as cm
 from PIL import Image, ImageSequence
 from tifffile import TiffWriter
 
@@ -38,17 +41,25 @@ from playnano.io.formats.read_asd import load_asd_file
 from playnano.io.formats.read_h5jpk import load_h5jpk
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder
-from playnano.io.gif_export import (
-    create_gif_with_scale_and_timestamp,
-    export_gif,
-    normalize_to_uint8,
+from playnano.io.gif_export import create_gif_with_scale_and_timestamp, export_gif
+from playnano.io.image_sequence_export import (
+    create_image_sequence,
+    export_image_sequence,
 )
 from playnano.io.loader import (
     get_loader_for_file,
     get_loader_for_folder,
     load_afm_stack,
 )
+from playnano.io.render_utils import (
+    DEFAULT_FONT_SCALE,
+    MIN_FRAME_HEIGHT,
+    render_frame,
+    resolve_stack_data,
+)
+from playnano.io.video_export import create_video_with_scale_and_timestamp, export_video
 from playnano.processing.pipeline import ProcessingPipeline
+from playnano.utils.io_utils import normalize_to_uint8
 
 
 class DummyAFM:
@@ -372,15 +383,16 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
     # Create a 3-frame dummy image stack
     stack = np.random.rand(3, 10, 10)
     timestamps = [0.0, 1.0, 2.0]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
     output_path = tmp_path / "test_output.gif"
 
     create_gif_with_scale_and_timestamp(
         image_stack=stack,
-        pixel_size_nm=1.0,
+        pixel_sizes_nm=pixel_sizes_nm,
         timestamps=timestamps,
         scale_bar_length_nm=5,
         output_path=output_path,
-        duration=0.2,
+        fps=6,
         cmap_name="afmhot",
     )
 
@@ -390,20 +402,99 @@ def test_create_gif_with_scale_and_timestamp_outputs_gif(tmp_path):
     with Image.open(output_path) as img:
         frames = [frame.copy() for frame in ImageSequence.Iterator(img)]
         assert len(frames) == 3
-        assert all(f.size == (10, 10) for f in frames)
+        assert all(f.size == (512, 512) for f in frames)  # default size from code
         assert all(f.mode in ("P", "RGB", "RGBA") for f in frames)  # Flexible for GIFs
+
+
+@pytest.mark.parametrize("fmt", ["mp4", "avi", "mov", "mkv"])
+def test_create_video_with_scale_and_timestamp_outputs_video(tmp_path, fmt):
+    """
+    Test create_video_with_scale_and_timestamp creates a valid video file.
+
+    This verifies that:
+    - A video file is created at the given path.
+    - The number of frames in the video matches the number of input frames.
+    - The frame dimensions match the expected output size (min 512px height).
+    """
+    stack = np.random.rand(3, 10, 10)
+    timestamps = [0.0, 1.0, 2.0]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
+    output_path = tmp_path / f"test_output.{fmt}"
+
+    create_video_with_scale_and_timestamp(
+        image_stack=stack,
+        pixel_sizes_nm=pixel_sizes_nm,
+        timestamps=timestamps,
+        scale_bar_length_nm=5,
+        output_path=output_path,
+        fps=10.0,
+        cmap_name="playnano_gold",
+    )
+
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+    cap = cv2.VideoCapture(str(output_path))
+    assert cap.isOpened(), f"cv2 could not open the output video: {output_path}"
+
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap.release()
+
+    assert frame_count == 3
+    assert height == 512  # 10px input upscaled to minimum 512
+    assert width == 512
+
+
+@pytest.mark.parametrize("fmt", ["png", "jpg"])
+def test_create_image_sequence_outputs_frames(tmp_path, fmt):
+    """
+    Test create_image_sequence creates valid individual image files.
+
+    This verifies that:
+    - The correct number of files is created.
+    - Each file has the expected format and non-zero size.
+    - Each frame has the expected output dimensions (min 512px height).
+    """
+    stack = np.random.rand(3, 10, 10)
+    timestamps = [0.0, 1.0, 2.0]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
+    output_folder = tmp_path / "frames"
+
+    create_image_sequence(
+        image_stack=stack,
+        pixel_sizes_nm=pixel_sizes_nm,
+        timestamps=timestamps,
+        scale_bar_length_nm=5,
+        output_folder=output_folder,
+        fmt=fmt,
+        cmap_name="playnano_gold",
+    )
+
+    ext = "jpg" if fmt == "jpg" else "png"
+    files = sorted(output_folder.glob(f"*.{ext}"))
+
+    assert len(files) == 3
+    assert all(f.stat().st_size > 0 for f in files)
+
+    for f in files:
+        with Image.open(f) as img:
+            assert img.size == (512, 512)  # 10px input upscaled to minimum 512
+            assert img.mode == "RGB"
 
 
 def test_create_gif_with_flat_data(tmp_path):
     """Test that GIF creation handles flat data without crashing."""
     image_stack = np.zeros((3, 4, 4))  # flat stack
     timestamps = [0, 1, 2]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
     output_path = tmp_path / "test.gif"
 
     with patch("PIL.Image.Image.save") as mock_save:
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=timestamps,
             output_path=str(output_path),
             zmin=None,
@@ -412,6 +503,47 @@ def test_create_gif_with_flat_data(tmp_path):
 
         # Verify save was called, but file wasn't actually written
         mock_save.assert_called_once()
+
+
+def test_create_video_with_flat_data(tmp_path):
+    """Test that video creation handles flat data without crashing."""
+    image_stack = np.zeros((3, 4, 4))
+    timestamps = [0, 1, 2]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
+    output_path = tmp_path / "test.mp4"
+
+    create_video_with_scale_and_timestamp(
+        image_stack=image_stack,
+        pixel_sizes_nm=pixel_sizes_nm,
+        timestamps=timestamps,
+        output_path=output_path,
+        zmin=None,
+        zmax=None,
+    )
+
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+
+def test_create_image_sequence_with_flat_data(tmp_path):
+    """Test that image sequence creation handles flat data without crashing."""
+    image_stack = np.zeros((3, 4, 4))
+    timestamps = [0, 1, 2]
+    pixel_sizes_nm = [1.0, 1.0, 1.0]
+    output_folder = tmp_path / "frames"
+
+    create_image_sequence(
+        image_stack=image_stack,
+        pixel_sizes_nm=pixel_sizes_nm,
+        timestamps=timestamps,
+        output_folder=output_folder,
+        zmin=None,
+        zmax=None,
+    )
+
+    files = list(output_folder.glob("*.png"))
+    assert len(files) == 3
+    assert all(f.stat().st_size > 0 for f in files)
 
 
 @pytest.mark.parametrize(
@@ -434,17 +566,18 @@ def test_create_gif_with_various_zscales(zmin, zmax):
     )
 
     timestamps = [0.0, 1.0]
+    pixel_sizes_nm = [1.0, 1.0]
 
     with TemporaryDirectory() as tmp:
         out_path = Path(tmp) / "test.gif"
 
         create_gif_with_scale_and_timestamp(
             image_stack=stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=timestamps,
             scale_bar_length_nm=50,
             output_path=str(out_path),
-            duration=0.1,
+            fps=3,
             cmap_name="viridis",
             zmin=zmin,
             zmax=zmax,
@@ -452,6 +585,90 @@ def test_create_gif_with_various_zscales(zmin, zmax):
 
         assert out_path.exists()
         assert out_path.stat().st_size > 0
+
+
+@pytest.mark.parametrize(
+    "zmin,zmax",
+    [
+        (0.0, 2.0),  # normal case
+        ("auto", "auto"),  # auto percentiles
+        (1.0, 1.0),  # flat image: triggers black frame
+        (None, None),  # fallback path (normalize_to_uint8)
+    ],
+)
+def test_create_video_with_various_zscales(zmin, zmax):
+    """Test video creation with various zmin/zmax values."""
+    # Setup: tiny stack of 2x2 images
+    stack = np.stack(
+        [
+            np.array([[0.0, 0.5], [0.5, 1.0]]),
+            np.array([[0.2, 0.2], [0.2, 0.2]]),  # flat if zmin == zmax == 0.2
+        ]
+    )
+
+    timestamps = [0.0, 1.0]
+    pixel_sizes_nm = [1.0, 1.0]
+
+    with TemporaryDirectory() as tmp:
+        out_path = Path(tmp) / "test.mp4"
+
+        create_video_with_scale_and_timestamp(
+            image_stack=stack,
+            pixel_sizes_nm=pixel_sizes_nm,
+            timestamps=timestamps,
+            scale_bar_length_nm=50,
+            output_path=str(out_path),
+            fps=10.0,
+            cmap_name="afm_brown",
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+        assert out_path.exists()
+        assert out_path.stat().st_size > 0
+
+
+@pytest.mark.parametrize(
+    "zmin,zmax",
+    [
+        (0.0, 2.0),  # normal case
+        ("auto", "auto"),  # auto percentiles
+        (1.0, 1.0),  # flat image: triggers black frame
+        (None, None),  # fallback path (normalize_to_uint8)
+    ],
+)
+def test_create_sequence_with_various_zscales(zmin, zmax):
+    """Test image sequence creation with various zmin/zmax values."""
+    # Setup: tiny stack of 2x2 images
+    stack = np.stack(
+        [
+            np.array([[0.0, 0.5], [0.5, 1.0]]),
+            np.array([[0.2, 0.2], [0.2, 0.2]]),  # flat if zmin == zmax == 0.2
+        ]
+    )
+
+    timestamps = [0.0, 1.0]
+    pixel_sizes_nm = [1.0, 1.0]
+
+    with TemporaryDirectory() as tmp:
+        out_path = Path(tmp) / "output_frames"
+
+        create_image_sequence(
+            image_stack=stack,
+            pixel_sizes_nm=pixel_sizes_nm,
+            timestamps=timestamps,
+            scale_bar_length_nm=50,
+            output_folder=str(out_path),
+            fmt="png",
+            cmap_name="classic_afm",
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+        assert out_path.exists()
+        files = list(out_path.glob("*.png"))
+        assert len(files) == 2  # one per frame
+        assert all(f.stat().st_size > 0 for f in files)
 
 
 class DummyStack:
@@ -517,12 +734,12 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
 
     output_path = tmp_path / "test.gif"
 
-    with patch("playnano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+    with patch("playnano.io.render_utils.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
 
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=[1.0, 1.0],
             timestamps=ts,
             output_path=output_path,
             scale_bar_length_nm=50,
@@ -534,19 +751,244 @@ def test_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
         assert timestamps_used == [0, 1]
 
 
+@pytest.mark.parametrize(
+    "bad_timestamps",
+    [
+        [{}, 1.0],
+        ["bad", 1.0],
+    ],
+)
+def test_video_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
+    """Test that video timestamps fallback to frame index on bad input."""
+    image_stack = np.ones((2, 4, 4), dtype=float)
+    ts = list(bad_timestamps)
+
+    with patch("playnano.io.render_utils.draw_scale_and_timestamp") as mock_draw:
+        mock_draw.side_effect = lambda img, timestamp, **kwargs: img
+        create_video_with_scale_and_timestamp(
+            image_stack=image_stack,
+            pixel_sizes_nm=[1.0, 1.0],
+            timestamps=ts,
+            output_path=tmp_path / "test.mp4",
+            scale_bar_length_nm=50,
+        )
+        timestamps_used = [
+            call.kwargs["timestamp"] for call in mock_draw.call_args_list
+        ]
+        assert timestamps_used == [0, 1]
+
+
+@pytest.mark.parametrize(
+    "bad_timestamps",
+    [
+        [{}, 1.0],
+        ["bad", 1.0],
+    ],
+)
+def test_image_sequence_fallback_to_index_on_bad_timestamp(bad_timestamps, tmp_path):
+    """Test that image sequence timestamps fallback to frame index on bad input."""
+    image_stack = np.ones((2, 4, 4), dtype=float)
+    ts = list(bad_timestamps)
+
+    with patch("playnano.io.render_utils.draw_scale_and_timestamp") as mock_draw:
+        mock_draw.side_effect = lambda img, timestamp, **kwargs: img
+        create_image_sequence(
+            image_stack=image_stack,
+            pixel_sizes_nm=[1.0, 1.0],
+            timestamps=ts,
+            output_folder=tmp_path / "frames",
+            scale_bar_length_nm=50,
+        )
+        timestamps_used = [
+            call.kwargs["timestamp"] for call in mock_draw.call_args_list
+        ]
+        assert timestamps_used == [0, 1]
+
+
+def test_export_video_returns_early_when_make_video_false(tmp_path):
+    """export_video should return immediately without writing anything."""
+    with patch(
+        "playnano.io.video_export.create_video_with_scale_and_timestamp"
+    ) as mock_create:
+        export_video(
+            afm_stack=make_stack(),
+            make_video=False,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=100,
+        )
+        mock_create.assert_not_called()
+
+
+def test_export_video_raises_on_invalid_format(tmp_path):
+    """export_video should raise ValueError for unsupported format strings."""
+    with pytest.raises(ValueError, match="Unsupported video format"):
+        export_video(
+            afm_stack=make_stack(),
+            make_video=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=100,
+            fmt="wmv",
+        )
+
+
+def test_export_image_sequence_returns_early_when_make_sequence_false(tmp_path):
+    """export_image_sequence should return immediately without writing anything."""
+    with patch(
+        "playnano.io.image_sequence_export.create_image_sequence"
+    ) as mock_create:
+        export_image_sequence(
+            afm_stack=make_stack(),
+            make_sequence=False,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=100,
+        )
+        mock_create.assert_not_called()
+
+
+def test_export_image_sequence_raises_on_invalid_format(tmp_path):
+    """export_image_sequence should raise ValueError for unsupported format strings."""
+    with pytest.raises(ValueError, match="Unsupported image format"):
+        export_image_sequence(
+            afm_stack=make_stack(),
+            make_sequence=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=100,
+            fmt="bmp",
+        )
+
+
+def test_video_export_uses_raw_data_when_raw_true(tmp_path):
+    """export_video should pass processed['raw'] to create_* when raw=True."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.video_export.create_video_with_scale_and_timestamp"
+    ) as mock_create:
+        export_video(
+            afm_stack=stack,
+            make_video=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=True,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.processed["raw"])
+
+
+def test_gif_export_uses_raw_data_when_raw_true(tmp_path):
+    """export_gif should pass processed['raw'] to create_* when raw=True."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.gif_export.create_gif_with_scale_and_timestamp"
+    ) as mock_create:
+        export_gif(
+            afm_stack=stack,
+            make_gif=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=True,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.processed["raw"])
+
+
+def test_gif_export_uses_stack_data_when_raw_false(tmp_path):
+    """export_gif should pass stack.data to create_* when raw=False."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.gif_export.create_gif_with_scale_and_timestamp"
+    ) as mock_create:
+        export_gif(
+            afm_stack=stack,
+            make_gif=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=False,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.data)
+
+
+def test_image_sequence_export_uses_raw_data_when_raw_true(tmp_path):
+    """export_image_sequence should pass processed['raw'] to create_* when raw=True."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.image_sequence_export.create_image_sequence"
+    ) as mock_create:
+        export_image_sequence(
+            afm_stack=stack,
+            make_sequence=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=True,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.processed["raw"])
+
+
+def test_image_sequence_export_uses_stack_data_when_raw_false(tmp_path):
+    """export_image_sequence should pass stack.data to create_* when raw=False."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.image_sequence_export.create_image_sequence"
+    ) as mock_create:
+        export_image_sequence(
+            afm_stack=stack,
+            make_sequence=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=False,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.data)
+
+
+def test_video_export_uses_stack_data_when_raw_false(tmp_path):
+    """export_video should pass stack.data to create_* when raw=False."""
+    stack = make_stack(has_raw=True)
+
+    with patch(
+        "playnano.io.video_export.create_video_with_scale_and_timestamp"
+    ) as mock_create:
+        export_video(
+            afm_stack=stack,
+            make_video=True,
+            output_folder=str(tmp_path),
+            output_name="test",
+            scale_bar_nm=50,
+            raw=False,
+        )
+        args, kwargs = mock_create.call_args
+        assert np.array_equal(args[0], stack.data)
+
+
 def test_fallback_to_index_if_no_timestamps(tmp_path):
     """Test that gif_export falls back to frame index if there are no timestamps."""
     image_stack = np.ones((2, 2, 2), dtype=float)
     bad_timestamps = "invalid type"
+    pixel_sizes_nm = [1.0, 1.0]
 
     output_path = tmp_path / "test.gif"
 
-    with patch("playnano.io.gif_export.draw_scale_and_timestamp") as mock_draw:
+    with patch("playnano.io.render_utils.draw_scale_and_timestamp") as mock_draw:
         mock_draw.side_effect = lambda img, timestamp, **kwargs: img
 
         create_gif_with_scale_and_timestamp(
             image_stack=image_stack,
-            pixel_size_nm=1.0,
+            pixel_sizes_nm=pixel_sizes_nm,
             timestamps=bad_timestamps,
             output_path=output_path,
             scale_bar_length_nm=50,
@@ -616,22 +1058,343 @@ def test_export_gif_calls_create(mock_gif):
     assert mock_gif.called
 
 
+# --- Test rendering ---
+
+
+CMAP = cm.get_cmap("playnano_gold")  # Custom colormap to test registration
+
+
+def make_frame(h=10, w=10):
+    """Create a dummy frame with random float values."""
+    rng = np.random.default_rng(0)
+    return rng.random((h, w)).astype(np.float32)
+
+
+def test_render_frame_returns_uint8_rgb():
+    """Test that render_frame returns a uint8 RGB image."""
+    result = render_frame(
+        frame=make_frame(),
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=True,
+        draw_scale=True,
+    )
+    assert result.dtype == np.uint8
+    assert result.ndim == 3
+    assert result.shape[2] == 3
+
+
+def test_render_frame_upscales_small_input():
+    """Frames smaller than MIN_FRAME_HEIGHT should be upscaled."""
+    result = render_frame(
+        frame=make_frame(10, 10),
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+    )
+    assert result.shape[0] >= MIN_FRAME_HEIGHT
+
+
+def test_render_frame_does_not_downscale_large_input():
+    """Frames larger than MIN_FRAME_HEIGHT should not be shrunk."""
+    large = make_frame(1024, 1024)
+    result = render_frame(
+        frame=large,
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+    )
+    assert result.shape[0] == 1024
+
+
+def test_render_frame_global_normalisation():
+    """Providing zmin_val/zmax_val should not raise and return valid output."""
+    result = render_frame(
+        frame=make_frame(),
+        cmap=CMAP,
+        timestamp=1.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+        zmin_val=0.0,
+        zmax_val=1.0,
+    )
+    assert result.dtype == np.uint8
+
+
+def test_render_frame_flat_frame_is_black():
+    """When zmin_val == zmax_val the frame should normalise to black (zeros)."""
+    flat = np.ones((10, 10), dtype=np.float32) * 5.0
+    result = render_frame(
+        frame=flat,
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+        zmin_val=5.0,
+        zmax_val=5.0,
+    )
+    # Colormap applied to zeros → first colormap colour, which for afmhot is black
+    assert result.dtype == np.uint8
+
+
+def test_render_frame_handles_nan_inf():
+    """Test that NaN and inf values in the frame should not raise."""
+    frame = make_frame()
+    frame[0, 0] = np.nan
+    frame[1, 1] = np.inf
+    frame[2, 2] = -np.inf
+    result = render_frame(
+        frame=frame,
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+        zmin_val=0.0,
+        zmax_val=1.0,
+    )
+    assert result.dtype == np.uint8
+    assert not np.any(np.isnan(result.astype(float)))
+
+
+def test_render_frame_annotations_disabled():
+    """draw_ts=False, draw_scale=False should still return a valid frame."""
+    result = render_frame(
+        frame=make_frame(),
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=5,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=False,
+    )
+    assert result.shape[2] == 3
+
+
+def get_scale_bar_width_px(result: np.ndarray, color: tuple = (255, 255, 255)) -> int:
+    """
+    Measure the width of the drawn scale bar.
+
+    Scan the bottom portion of the image for a contiguous horizontal run of the
+    annotation colour.
+
+    Returns the length of the longest contiguous horizontal run of `color`
+    pixels found in the bottom 20% of the image.
+    """
+    h, w = result.shape[:2]
+    bottom_region = result[int(h * 0.8) :, :, :]
+
+    max_run = 0
+    for row in bottom_region:
+        # Find pixels matching the annotation color
+        matches = np.all(row == np.array(color), axis=1)
+        # Count longest contiguous run
+        run = 0
+        for m in matches:
+            if m:
+                run += 1
+                max_run = max(max_run, run)
+            else:
+                run = 0
+    return max_run
+
+
+def expected_bar_width(bar_length_nm, pixel_size_nm, resize_scale) -> int:
+    """Mirror the formula in draw_scale_and_timestamp."""
+    return int(bar_length_nm / pixel_size_nm * resize_scale)
+
+
+@pytest.mark.parametrize(
+    "frame_h, bar_length_nm, pixel_size_nm",
+    [
+        (
+            10,
+            5,
+            1.0,
+        ),  # frame is 10nm wide, 5nm bar fits — bar_w = int(5 * 51.2) = 256px
+        (512, 100, 1.0),  # reference height — resize_scale = 1.0
+        (1024, 100, 1.0),  # large frame, no resize — resize_scale = 1.0
+        (512, 50, 0.5),  # smaller bar, smaller pixel size
+        (512, 200, 2.0),  # larger pixel size
+    ],
+)
+def test_scale_bar_width_is_physically_accurate(frame_h, bar_length_nm, pixel_size_nm):
+    """
+    Test that the drawn scale bar width in pixels matches the expected physical length.
+
+    The drawn scale bar width must exactly match bar_length_nm / pixel_size_nm
+    scaled by the resize factor, regardless of frame size.
+    """
+    frame = make_frame(frame_h, frame_h)
+    target_height = max(MIN_FRAME_HEIGHT, frame_h)
+    resize_scale = target_height / frame_h
+
+    result = render_frame(
+        frame=frame,
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=pixel_size_nm,
+        scale_bar_length_nm=bar_length_nm,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=True,
+        zmin_val=0.0,
+        zmax_val=1.0,
+    )
+
+    measured = get_scale_bar_width_px(result)
+    expected = expected_bar_width(bar_length_nm, pixel_size_nm, resize_scale)
+
+    assert measured == expected, (
+        f"Scale bar width {measured}px does not match expected {expected}px "
+        f"for bar_length_nm={bar_length_nm}, pixel_size_nm={pixel_size_nm}, "
+        f"frame_h={frame_h}, resize_scale={resize_scale:.3f}"
+    )
+
+
+def test_scale_bar_width_independent_of_annotation_scale():
+    """
+    Test scale bar width is consistent across frames with the same physical parameters.
+
+    Changing frame size (which changes annotation_scale) must not affect
+    the physical accuracy of the scale bar length.
+    Two frames with the same pixel_size_nm and bar_length_nm but different
+    resolutions should produce the same bar_w when resize_scale is the same.
+    Both are above MIN_FRAME_HEIGHT so resize_scale=1.0 in both cases.
+    """
+    shared_kwargs = dict(
+        cmap=CMAP,
+        timestamp=0.0,
+        pixel_size_nm=1.0,
+        scale_bar_length_nm=100,
+        font_scale=DEFAULT_FONT_SCALE,
+        draw_ts=False,
+        draw_scale=True,
+        zmin_val=0.0,
+        zmax_val=1.0,
+    )
+
+    result_512 = render_frame(frame=make_frame(512, 512), **shared_kwargs)
+    result_1024 = render_frame(frame=make_frame(1024, 1024), **shared_kwargs)
+
+    bar_512 = get_scale_bar_width_px(result_512)
+    bar_1024 = get_scale_bar_width_px(result_1024)
+
+    assert bar_512 == bar_1024, (
+        f"Scale bar width differs between 512px ({bar_512}px) and "
+        f"1024px ({bar_1024}px) frames despite identical physical parameters"
+    )
+
+
+def make_stack(has_raw=False, has_filtered=False, has_state_backups=False):
+    """Build a minimal fake AFMImageStack using SimpleNamespace."""
+    stack = types.SimpleNamespace()
+    stack.data = np.zeros((3, 10, 10), dtype=np.float32)
+    stack.frame_metadata = [
+        {"timestamp": i, "frame_pixel_size_nm": 1.0} for i in range(3)
+    ]
+    stack.processed = {}
+    stack.state_backups = {}
+    stack.file_path = "dummy.jpk"
+    stack.pixel_size_nm = 1.0
+    if has_raw:
+        stack.processed["raw"] = np.ones((3, 10, 10), dtype=np.float32)
+    if has_filtered:
+        stack.processed["gaussian"] = np.ones((3, 10, 10), dtype=np.float32) * 2
+    if has_state_backups:
+        stack.state_backups["frame_metadata_before_edit"] = [
+            {"timestamp": i * 2, "frame_pixel_size_nm": 1.0} for i in range(3)
+        ]
+
+    return stack
+
+
+def test_resolve_stack_data_default_uses_data():
+    """Test that resolve_stack_data returns stack.data and metadata by default."""
+    stack = make_stack()
+    data, meta, is_filtered = resolve_stack_data(stack, raw=False)
+    assert data is stack.data
+    assert meta is stack.frame_metadata
+    assert is_filtered is False
+
+
+def test_resolve_stack_data_filtered_flag_set_when_processed_exists():
+    """is_filtered should be True when non-raw processed data exists."""
+    stack = make_stack(has_raw=True, has_filtered=True)
+    data, meta, is_filtered = resolve_stack_data(stack, raw=False)
+    assert data is stack.data
+    assert is_filtered is True
+
+
+def test_resolve_stack_data_raw_mode_uses_raw_array():
+    """Test that resolve_stack_data returns processed['raw'] when raw=True."""
+    stack = make_stack(has_raw=True)
+    data, meta, is_filtered = resolve_stack_data(stack, raw=True)
+    assert data is stack.processed["raw"]
+    assert is_filtered is False
+
+
+def test_resolve_stack_data_raw_mode_uses_state_backup_metadata():
+    """Test that resolve_stack_data returns state backup metadata when raw=True."""
+    stack = make_stack(has_raw=True, has_state_backups=True)
+    data, meta, is_filtered = resolve_stack_data(stack, raw=True)
+    assert meta is stack.state_backups["frame_metadata_before_edit"]
+
+
+def test_resolve_stack_data_raw_mode_falls_back_when_no_raw():
+    """raw=True but no processed['raw'] → should fall back to stack.data."""
+    stack = make_stack(has_raw=False)
+    data, meta, is_filtered = resolve_stack_data(stack, raw=True)
+    assert data is stack.data
+    assert is_filtered is False
+
+
+def test_resolve_stack_data_only_raw_in_processed_not_filtered():
+    """Test that when the only processed entry is 'raw' is_filtered should be False."""
+    stack = make_stack(has_raw=True, has_filtered=False)
+    data, meta, is_filtered = resolve_stack_data(stack, raw=False)
+    assert is_filtered is False
+
+
 @pytest.fixture
 def dummy_stack():
     """Create a dummy image stack."""
     data = np.random.rand(3, 4, 4).astype(np.float32)
     timestamps = [0.0, 1.0, 2.0]
     metadata = [{"timestamp": t} for t in timestamps]
-    return data, timestamps, metadata
+    for frame in metadata:
+        frame["frame_pixel_size_nm"] = 1.0
+    px2nm = 1.0
+    return data, timestamps, metadata, px2nm
 
 
 @pytest.fixture
 def afm_stack_obj(dummy_stack):
     """Generate a dummy AFMImageStack object."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         frame_metadata=metadata,
         file_path="dummy_path.h5-jpk",
         channel="height_trace",
@@ -643,10 +1406,10 @@ def afm_stack_obj(dummy_stack):
 
 def test_save_ome_tiff_stack_creates_file(dummy_stack):
     """Test that save_tiff_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         file_path="dummy_path.h5-jpk",
         frame_metadata=metadata,
         channel="height_trace",
@@ -661,11 +1424,11 @@ def test_save_ome_tiff_stack_creates_file(dummy_stack):
 
 def test_save_npz_bundle_creates_file(dummy_stack):
     """Test that save_npz_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
         file_path="dummy_path.h5-jpk",
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         frame_metadata=metadata,
         channel="height_trace",
     )
@@ -682,10 +1445,10 @@ def test_save_npz_bundle_creates_file(dummy_stack):
 
 def test_save_h5_bundle_creates_file(dummy_stack):
     """Test that save_h5_bundle creates a file."""
-    data, timestamps, metadata = dummy_stack
+    data, timestamps, metadata, px2nm = dummy_stack
     stack = AFMImageStack(
         data=data,
-        pixel_size_nm=1.0,
+        pixel_size_nm=px2nm,
         file_path="dummy_path.h5-jpk",
         frame_metadata=metadata,
         channel="height_trace",
@@ -1073,6 +1836,8 @@ def test_ome_tif_export_and_reload_synthetic(tmp_path):
     raw_data = np.random.rand(n_frames, H, W).astype(np.float32)
     processed_data = raw_data + 1.0
     meta = [{"timestamp": i} for i in range(n_frames)]
+    for frame in meta:
+        frame["frame_pixel_size_nm"] = 2.0
 
     stack = AFMImageStack(
         data=processed_data,

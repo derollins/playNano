@@ -45,7 +45,7 @@ class AFMImageStack:
         data.
 
     pixel_size_nm : float
-        Physical pixel size in nanometers.
+        Physical pixel size in nanometers of the first frame (fallback).
 
     channel : str
         Channel name.
@@ -54,7 +54,8 @@ class AFMImageStack:
         Path to the source file or folder.
 
     frame_metadata : list[dict[str, Any]]
-        Per-frame metadata dicts; each will include a normalized 'timestamp' key.
+        Per-frame metadata dicts; each will include a normalized 'timestamp' key and
+        per frame 'frame_pixel_size_nm'.
 
     processed : dict[str, np.ndarray]
         Snapshots of processed data arrays from filters. Keys like
@@ -95,7 +96,7 @@ class AFMImageStack:
             stack.
 
         pixel_size_nm : float
-            Pixel size in nanometers; must be positive.
+            Pixel size in nanometers for the first frame; must be positive.
 
         channel : str
             Channel name (e.g., 'height_trace').
@@ -106,7 +107,9 @@ class AFMImageStack:
         frame_metadata : list of dict, optional
             List of per-frame metadata dicts. Will be padded or trimmed to length
             n_frames. After initialization, each entry is normalized to include a
-            numeric 'timestamp' (fallback to frame index if missing).
+            numeric 'timestamp' (fallback to frame index if missing). A pixel scaling
+            value for each frame `frame_pixel_size_nm` is also recorded when data is
+            loaded from a raw or processed file.
 
         Raises
         ------
@@ -258,7 +261,7 @@ class AFMImageStack:
             f"Available masks: {list(MASK_MAP)}; "
             f"built-in filters: {list(FILTER_MAP)}; "
             f"video filters: {list(VIDEO_FILTER_MAP)}; "
-            f"methods: {[m for m in dir(self) if callable(getattr(self,m))]}; "
+            f"methods: {[m for m in dir(self) if callable(getattr(self, m))]}; "
             f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
             f"video_plugins: {[ep.name for ep in metadata.entry_points(group='playnano.video_processing')]}."  # noqa
             f"stack_edit: {list(STACK_EDIT_MAP)}; "
@@ -343,6 +346,7 @@ class AFMImageStack:
         new_arr = np.zeros_like(arr)
 
         if mask is not None and step_name in MASK_FILTERS_MAP:
+            logger.debug(f"Mask present and masked {step_name} filter selected.")
             masked_fn = MASK_FILTERS_MAP[step_name]
             for i in range(n_frames):
                 try:
@@ -361,6 +365,7 @@ class AFMImageStack:
                     )
                     new_arr[i] = arr[i]
         else:
+            logger.debug(f"{step_name} filter applied without mask.")
             for i in range(n_frames):
                 try:
                     new_arr[i] = filter_fn(arr[i], **kwargs)
@@ -927,6 +932,49 @@ class AFMImageStack:
         """
         ts = self.frame_metadata[idx].get("timestamp", None)
         return float(idx) if ts is None else ts
+
+    def scaling_for_frame(self, idx: int) -> float:
+        """
+        Get the frame_pixel_size_nm for a given frame index.
+
+        If the frame_metadata dictionaries or frame_pixel_size_nm values are missing
+        fallback to the pixel_size_nm attribute.
+
+        Parameters
+        ----------
+        idx : int
+            Frame index.
+
+        Returns
+        -------
+        float
+            Pixel to nanometer scaling factor.
+
+        Raises
+        ------
+        IndexError
+            If idx is out of range.
+
+        Notes
+        -----
+        The fallback to pixel_size_nm is valid for stacks with a constant size.
+
+        Examples
+        --------
+        >>> stack.pixel_size_nm = 1.0   # fallback value
+        >>> stack.frame_metadata = [
+        ...     {"frame_pixel_size_nm": 1.0},
+        ...     {},
+        ...     {"frame_pixel_size_nm": 2.0},
+        ... ]
+        >>> stack.scaling_for_frame(0)
+        1.0
+        >>> stack.scaling_for_frame(1)
+        1.0          # falls back to stack.pixel_size_nm
+        >>> stack.scaling_for_frame(2)
+        2.0
+        """
+        return self.frame_metadata[idx].get("frame_pixel_size_nm", self.pixel_size_nm)
 
     def get_frame_times(self) -> list[float]:
         """

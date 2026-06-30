@@ -1,6 +1,7 @@
 """Tests for the utility functions."""
 
 import importlib.metadata
+import logging
 import platform
 import re
 import sys
@@ -11,6 +12,13 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
+from playnano.utils.colormaps import (
+    DEFAULT_CMAP,
+    get_available_cmaps,
+    is_valid_cmap,
+    register_custom_colormaps,
+    resolve_cmap,
+)
 from playnano.utils.io_utils import (
     compute_zscale_range,
     convert_height_units_to_nm,
@@ -20,6 +28,8 @@ from playnano.utils.io_utils import (
 )
 from playnano.utils.system_info import gather_environment_info
 from playnano.utils.time_utils import utc_now_iso
+
+logger = logging.getLogger(__name__)
 
 
 def test_pad_to_square():
@@ -218,3 +228,55 @@ def test_compute_zscale_valid_manual_values():
     zmin, zmax = compute_zscale_range(data, zmin=1.0, zmax=4.0)
     assert zmin == 1.0
     assert zmax == 4.0
+
+
+# --- Test colormap ---
+
+
+def test_resolve_cmap_returns_default_and_logs_bad_input(caplog):
+    """Test the resolve_camp() returns the default cmap and lofs the warning."""
+    bad_cmap = "not_a_camp"
+    with caplog.at_level(logging.WARNING):
+        cmap = resolve_cmap(bad_cmap)
+        assert cmap == DEFAULT_CMAP
+
+
+def test_colormap_load_failure_logs_error(monkeypatch, caplog):
+    """Log an error if a custom colormap fails to load."""
+
+    def mock_loadtxt(*args, **kwargs):
+        """Mock loadtext."""
+        raise ValueError("boom")
+
+    monkeypatch.setattr(np, "loadtxt", mock_loadtxt)
+
+    with caplog.at_level("ERROR"):
+        register_custom_colormaps()
+
+    assert any(
+        "Failed to load colormap playnano_gold" in record.message
+        for record in caplog.records
+    )
+
+
+@pytest.mark.parametrize(
+    "cmap",
+    [
+        123,  # non-string
+        None,  # non-string
+        object(),  # non-string
+        "definitely_not_a_cmap",  # non-existent colormap
+    ],
+)
+def test_invalid_cmap_returns_false(cmap):
+    """Return False for non-string or unregistered colormap inputs."""
+    assert is_valid_cmap(cmap) is False
+
+
+def test_get_available_cmaps_returns_sorted_list_of_strings():
+    """Return a sorted list of available Matplotlib colormap names."""
+    cmaps = get_available_cmaps()
+
+    assert isinstance(cmaps, list)
+    assert cmaps == sorted(cmaps)
+    assert all(isinstance(cmap, str) for cmap in cmaps)

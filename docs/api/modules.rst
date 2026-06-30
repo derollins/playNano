@@ -2,44 +2,35 @@ API Reference
 =============
 
 .. toctree::
-   :caption: Core
    :maxdepth: 2
+   :caption: Core
+   :name: core_api
 
    playnano
-
-
-.. toctree::
-   :caption: Analysis
-   :maxdepth: 2
-
-   playnano.analysis
-   playnano.analysis.base
-   playnano.analysis.export
-   playnano.analysis.pipeline
-   playnano.analysis.utils
-   playnano.analysis.utils.common
-   playnano.analysis.utils.frames
-   playnano.analysis.utils.loader
-   playnano.analysis.utils.particles
-
+   playnano.afm_stack
+   playnano.errors
 
 .. toctree::
-   :caption: Analysis Modules
    :maxdepth: 2
+   :caption: IO & Data Formats
+   :name: io_api
 
-   playnano.analysis.modules
-   playnano.analysis.modules.count_nonzero
-   playnano.analysis.modules.dbscan_clustering
-   playnano.analysis.modules.feature_detection
-   playnano.analysis.modules.k_means_clustering
-   playnano.analysis.modules.log_blob_detection
-   playnano.analysis.modules.particle_tracking
-   playnano.analysis.modules.x_means_clustering
-
+   playnano.io
+   playnano.io.loader
+   playnano.io.data_loaders
+   playnano.io.export_data
+   playnano.io.gif_export
+   playnano.io.render_utils
+   playnano.io.formats
+   playnano.io.formats.read_asd
+   playnano.io.formats.read_h5jpk
+   playnano.io.formats.read_jpk_folder
+   playnano.io.formats.read_spm_folder
 
 .. toctree::
-   :caption: Processing
    :maxdepth: 2
+   :caption: Processing Pipeline
+   :name: processing_api
 
    playnano.processing
    playnano.processing.core
@@ -50,26 +41,47 @@ API Reference
    playnano.processing.stack_edit
    playnano.processing.video_processing
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Analysis & Modules
+   :name: analysis_api
+
+   playnano.analysis
+   playnano.analysis.base
+   playnano.analysis.pipeline
+   playnano.analysis.export
+   playnano.analysis.modules
+   playnano.analysis.modules.count_nonzero
+   playnano.analysis.modules.dbscan_clustering
+   playnano.analysis.modules.feature_detection
+   playnano.analysis.modules.k_means_clustering
+   playnano.analysis.modules.log_blob_detection
+   playnano.analysis.modules.particle_tracking
+   playnano.analysis.modules.x_means_clustering
+   playnano.analysis.utils
+   playnano.analysis.utils.common
+   playnano.analysis.utils.frames
+   playnano.analysis.utils.loader
+   playnano.analysis.utils.particles
 
 .. toctree::
-   :caption: IO
    :maxdepth: 2
+   :caption: General Utilities
+   :name: utils_api
 
-   playnano.io
-   playnano.io.data_loaders
-   playnano.io.export_data
-   playnano.io.formats
-   playnano.io.formats.read_asd
-   playnano.io.formats.read_h5jpk
-   playnano.io.formats.read_jpk_folder
-   playnano.io.formats.read_spm_folder
-   playnano.io.gif_export
-   playnano.io.loader
-
+   playnano.utils
+   playnano.utils.colormaps
+   playnano.utils.constants
+   playnano.utils.io_utils
+   playnano.utils.param_utils
+   playnano.utils.system_info
+   playnano.utils.time_utils
+   playnano.utils.versioning
 
 .. toctree::
-   :caption: CLI
    :maxdepth: 2
+   :caption: CLI & App Utils
+   :name: cli_api
 
    playnano.cli
    playnano.cli.actions
@@ -77,14 +89,14 @@ API Reference
    playnano.cli.handlers
    playnano.cli.utils
 
-
 .. toctree::
-   :caption: GUI
    :maxdepth: 2
+   :caption: Graphical Interface
+   :name: gui_api
 
    playnano.gui
    playnano.gui.main
+   playnano.gui.window
    playnano.gui.widgets
    playnano.gui.widgets.controls
    playnano.gui.widgets.viewer
-   playnano.gui.window
