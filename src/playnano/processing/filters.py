@@ -162,7 +162,7 @@ def zero_median(data: np.ndarray) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        Zero-mean image.
+        Zero-median image.
     """
     img = data.astype(np.float64).copy()
     mean_val = np.median(img)

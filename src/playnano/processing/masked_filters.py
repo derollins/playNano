@@ -219,17 +219,20 @@ def zero_median_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
     img = data.astype(np.float64).copy()
     if mask is None:
+        logger.warning(
+            "Masked zero_median filter selected but no mask found. Applying unmasked."
+        )
         mean_val = np.median(img)
     else:
         if mask.shape != img.shape:
             raise ValueError("Mask must have same shape as data.")
-        # Compute mean over background (where mask is False)
+        # Compute median over background (where mask is False)
         unmasked = img[~mask]
         if unmasked.size == 0:
             mean_val = np.median(img)
             raise ValueError(
-                "Mask excludes all pixels — cannot compute mean. "
-                "zero_mean applied without mask."
+                "Mask excludes all pixels, cannot compute median. "
+                "zero_median applied without mask."
             )
         mean_val = np.median(unmasked)
     return img - mean_val

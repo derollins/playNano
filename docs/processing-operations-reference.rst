@@ -32,16 +32,19 @@ module :mod:`playnano.processing.masked_filters` that contains masked variants o
      - Description
      - Parameters
    * - :func:`~playnano.processing.filters.remove_plane`
-     - Removes a best-fit plane from the frame using least squares. Can be masked.
+     - Removes a best-fit plane from the frame using least squares. Can be masked (:func:`~playnano.processing.masked_filters.remove_plane`).
      - None
    * - :func:`~playnano.processing.filters.polynomial_flatten`
-     - Fit and subtract a 2D plane (tilt removal). Can be masked.
+     - Fit and subtract a 2D plane (tilt removal). Can be masked (:func:`~playnano.processing.masked_filters.polynomial_flatten`).
      - order (int), default: 2
    * - :func:`~playnano.processing.filters.row_median_align`
-     - Subtract row-wise median to remove horizontal banding. Can be masked.
+     - Subtract row-wise median to remove horizontal banding. Can be masked (:func:`~playnano.processing.masked_filters.row_median_align`).
      - None
    * - :func:`~playnano.processing.filters.zero_mean`
-     - Subtract global mean (optionally masked). Can be masked.
+     - Subtract global mean (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_mean`).
+     - None
+   * - :func:`~playnano.processing.filters.zero_median`
+     - Subtract global median (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_median`).
      - None
    * - :func:`~playnano.processing.filters.gaussian_filter`
      - Apply Gaussian smoothing.
