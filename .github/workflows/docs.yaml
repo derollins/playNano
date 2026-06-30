@@ -126,6 +126,12 @@ jobs:
           name: site
           path: docs/_build/html
 
+      - name: Remove Sphinx doctree caches before publish
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          find docs/_build/html -type d -name ".doctrees" -exec rm -rf {} +
+
       - name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         uses: peaceiris/actions-gh-pages@v3
