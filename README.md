@@ -6,7 +6,6 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=green)](https://github.com/derollins/playNano/releases)
-[![GitHub release downloads](https://img.shields.io/github/downloads/derollins/playNano/latest/total?color=green)](https://github.com/derollins/playNano/releases)
 [![PyPI version](https://img.shields.io/pypi/v/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
@@ -39,7 +38,7 @@ Learn more about the motivation, design, and structure of playNano in the [Intro
 
 </div>
 
-This project requires Python 3.10 - 3.12 and is in development. If you find any issues, please open an issue at:
+This project requires Python 3.10 - 3.13 and is in development. If you find any issues, please open an issue at:
 <https://github.com/derollins/playNano/issues>
 
 Questions? Email: <d.e.rollins@leeds.ac.uk>
@@ -68,7 +67,7 @@ Full documentation: <https://derollins.github.io/playNano/>
 
 ## 📦 Installation and Dependencies
 
-**Python compatibility:** 3.10 – 3.12
+**Python compatibility:** 3.10 – 3.13
 
 It is recommended to use a virtual environment such as conda to isolate the installation. There
 are instructions on how to do this in the docs: [Installation](https://derollins.github.io/playNano/main/installation.html)
@@ -96,9 +95,11 @@ For development setup see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Play a file (GUI):**
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
+  <img src="https://github.com/derollins/playNano/raw/main/docs/images/GUI_window.png" alt="playNano GUI main window" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 ```bash
 playnano play ./tests/resources/sample_0.h5-jpk # This command opens example data if run in the project root
@@ -130,18 +131,22 @@ discontinuities, while retaining the classic orange-brown AFM character. The pac
 monotone-lightness high-contrast colormap spanning the full luminance range (L* 0–100) for complex, feature-rich samples,
 and `classic_afm`, a non-linear map replicating the common brown AFM colormap for continuity with existing workflows.
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/native_colormaps.png" alt="playNano native colormaps" width="400" />
+  <img src="https://raw.githubusercontent.com/derollins/playNano/main/docs/images/native_colormaps.png" alt="playNano native colormaps" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 All three colormaps are registered globally on import as `matplotlib` cmaps, making them available across the entire
 toolkit and in your own scripts alongside built-in options such as `afmhot` and `viridis`.
 
 ## 📒 Notebooks
 
+<!-- markdownlint-disable MD013 -->
 <p align="center">
-  <img src="docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
+  <img src="https://github.com/derollins/playNano/raw/main/docs/images/notebook_capture.png" alt="playNano demonstration notebook" width="400" />
 </p>
+<!-- markdownlint-enable MD013 -->
 
 To access and use the [Notebooks](https://derollins.github.io/playNano/main/notebooks.html) you need to clone the
 repository and install the required dependencies `pip install -e .[notebooks]` see the docs page for more
@@ -201,7 +206,7 @@ If you use **playNano** in academic work, please cite it as:
 <summary>Show BibTeX</summary>
 
 ```bibtex
-@misc{rollins2025playnano,
+@misc{rollins2026playnano,
   author = {Rollins, D. E.},
   title  = {playNano: AFM Video Processing and Analysis Toolkit},
   year   = {2026},
@@ -229,5 +234,5 @@ This project bundles the following fonts:
 
 Full license texts and attribution are provided in:
 
-- `src/playnano/fonts/Steps-Mono/LICENCE.txt`
-- `src/playnano/fonts/Basic/LICENCE.txt`
+- `src/playnano/resources/fonts/Steps-Mono/LICENSE.txt`
+- `src/playnano/resources/fonts/basic/LICENSE.txt`

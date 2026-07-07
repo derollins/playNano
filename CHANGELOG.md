@@ -10,6 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `drop_final_frame()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
+  similarly to the other funcitons in the module.
+- `zero_median` funciton in both filters and masked filters module to subtract the median value from ever pixel,
+  optionally masked.
+
+## [0.4.0.post1] - 2026-05-12
+
+### Documentation
+
+- Fixed font asset paths in README (`src/playnano/fonts/` → `src/playnano/resources/fonts/`).
+- Corrected BibTeX citation key year (2025 → 2026).
+- Added `playnano.io.render_utils` to the API reference toctree.
+- Fixed underline lengths for "Video Export Options (CLI)" and "Image Sequence Export Options (CLI)" sections in `exporting.rst`.
+- Restored `html_sidebars` configuration for the version switcher in `conf.py`.
+- Restored full `nitpick_ignore` and `intersphinx_mapping` lists truncated during `conf.py` cleanup.
+- Added `autosummary_generate = True` and `exclude_patterns = []` to `conf.py`.
+- Added `whats_new/v0.4.0.md` release notes page.
+- Updated README image links to absolute raw GitHub URLs so images render correctly on PyPI.
+
+### No code changes
+
+## [0.4.0] - 2026-05-11
+
+### Added
+
+- Official support for Python 3.13
+- Compatibility with NumPy 2.x (including NumPy 2.0+)
+
 #### Processing filters
 
 - **Flip filter**
@@ -20,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### File readers
 
 - **ARIS reader**
-  - Support for loading Asylum Research **`.aris`** high-speed AFM data files.
+  - Support for loading Asylum Research **``.aris``** high-speed AFM data files.
   - Comprehensive ARIS loader including:
     - Channel-name extraction from HDF5 metadata.
     - Global and per-frame pixel-size scaling with well-defined fallback behaviour.
@@ -136,12 +164,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated pre-commit configuration, including Ruff, Black, isort and markdownlint
   version alignment and formatting fixes.
 
+#### Tests
+
+- Improved numerical robustness in tests (floating-point comparisons now use tolerances for cross-platform consistency)
+- Added Python 3.13 to the test matrix
+
 ---
 
 ### Fixed
 
 - Fixed loader errors relating to missing file extensions and no-suffix inputs.
-- Connected FPS calculation based on ``line_rate`` into the GUI playback logic.
+- Connected FPS calculation based on ``line_rate`` to GUI playback logic.
+- Fixed `frame_metadata` construction to ensure one entry per frame (previously overwritten or
+  incomplete in some loaders, notably `.spm` and `.jpk`)
+- Standardised metadata structure across all formats:
+  - `timestamp`
+  - `frame_pixel_size_nm`
+  - `line_rate`
+- Clarified pixel size behaviour per format:
+  - Per-frame (`.jpk`, `.aris`, `.spm`)
+  - Constant (`.h5-jpk`, `.asd`)
+- Updated docstrings to document pixel size semantics and usage
 
 ## [0.3.1] - 2026-03-12
 
@@ -437,3 +480,5 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.2.2]: https://github.com/derollins/playNano/releases/tag/v0.2.2
 [0.3.0]: https://github.com/derollins/playNano/releases/tag/v0.3.0
 [0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
+[0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
+[0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1

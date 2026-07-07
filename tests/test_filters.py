@@ -15,6 +15,7 @@ from playnano.processing.masked_filters import (
     remove_plane_masked,
     row_median_align_masked,
     zero_mean_masked,
+    zero_median_masked,
 )
 
 structure = generate_binary_structure(rank=2, connectivity=2)  # 8-connectivity
@@ -124,6 +125,14 @@ def test_zero_mean_no_mask():
     assert abs(np.mean(zeroed)) < 1e-12
 
 
+def test_zero_median_no_mask():
+    """Test the zero_median function without a mask."""
+    data = np.array([[1, 2], [3, 4]], dtype=float)
+    zeroed = filters.zero_median(data)
+    # median of output should be zero
+    assert abs(np.median(zeroed)) < 1e-12
+
+
 def test_gaussian_filter_smooths():
     """Test the smoothing of the gaussian filter."""
     np.random.seed(0)
@@ -167,6 +176,7 @@ def test_register_filters_keys():
         "remove_plane",
         "row_median_align",
         "zero_mean",
+        "zero_median",
         "polynomial_flatten",
         "gaussian_filter",
         "vertical_flip",
@@ -451,3 +461,54 @@ def test_zero_mean_masked_shape_mismatch():
     mask = np.ones((3, 3), dtype=bool)
     with pytest.raises(ValueError, match="Mask must have same shape"):
         zero_mean_masked(data, mask)
+
+
+def test_zero_median_masked_basic():
+    """Test zero median on a simple image with a single pixel mask."""
+    # Simple 3x3 image
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
+    mask = np.array(
+        [[False, False, False], [False, True, False], [False, False, False]]
+    )
+
+    # Background pixels are all except center
+    expected_bg = np.array([1, 2, 3, 4, 6, 7, 8, 9], dtype=float)
+    expected_median = np.median(expected_bg)
+    expected = data - expected_median
+
+    result = zero_median_masked(data, mask)
+    np.testing.assert_allclose(result, expected)
+    # median of unmasked pixels should be ~0
+    assert np.allclose(np.median(result[~mask]), 0)
+
+
+def test_zero_median_masked_no_mask(caplog):
+    """Test warning is logged zero_median output returned when no mask is supplied."""
+    # Simple 3x3 image
+    caplog.set_level(logging.WARNING, logger="playnano.processing.masked_filters")
+
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=float)
+    mask = None
+    result = zero_median_masked(data, mask)
+    assert np.median(result) == 0
+    assert any(
+        "Masked zero_median filter selected but no mask found. Applying unmasked."
+        in rec.message
+        for rec in caplog.records
+    )
+
+
+def test_zero_median_masked_all_foreground():
+    """Test that error is raised if whole image is masked."""
+    data = np.ones((2, 2))
+    mask = np.ones_like(data, dtype=bool)  # all foreground
+    with pytest.raises(ValueError, match="Mask excludes all pixels"):
+        zero_median_masked(data, mask)
+
+
+def test_zero_median_masked_shape_mismatch():
+    """Test that error is raised if mask and data are different shapes."""
+    data = np.ones((2, 2))
+    mask = np.ones((3, 3), dtype=bool)
+    with pytest.raises(ValueError, match="Mask must have same shape"):
+        zero_median_masked(data, mask)

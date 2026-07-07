@@ -307,7 +307,6 @@ def rolling_frame_align(
 
     pre_filter_sigma : float, optional
         Standard deviation of Gaussian filter applied to both reference and moving
-
         frames prior to cross-correlation. Helps reduce noise. Default is None.
 
     max_jump : int, optional
@@ -335,8 +334,9 @@ def rolling_frame_align(
         - "pre_filter_sigma": float or None
         - "max_shift": int or None
         - "max_jump": int or None
-          debug_outputs : dict, optional
-        Returned only if `debug=True`. Contains:
+
+    debug_outputs : dict, optional
+          Returned only if `debug=True`. Contains:
         - "shifts": copy of the detected shifts array
         - "aligned_refs": deque of indices used for rolling reference
 

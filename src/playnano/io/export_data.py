@@ -375,11 +375,11 @@ def save_h5_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
         provenance_clean = make_json_safe(stack.provenance)
         provenance_json = json.dumps(provenance_clean).encode("utf-8")
 
-        f.create_dataset("frame_metadata_json", data=np.string_(json.dumps(meta_src)))
-        f.create_dataset("provenance_json", data=np.string_(provenance_json))
+        f.create_dataset("frame_metadata_json", data=np.bytes_(json.dumps(meta_src)))
+        f.create_dataset("provenance_json", data=np.bytes_(provenance_json))
         if getattr(stack, "state_backups", None):
             f.create_dataset(
-                "state_backups_json", data=np.string_(json.dumps(stack.state_backups))
+                "state_backups_json", data=np.bytes_(json.dumps(stack.state_backups))
             )
 
         # --- Root attributes ---

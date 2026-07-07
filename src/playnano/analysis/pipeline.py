@@ -155,7 +155,7 @@ class AnalysisPipeline:
 
         # 2) Entry points (plugin mechanism)
         if cls is None:
-            # Modern API available on Python 3.10–3.12
+            # Modern API available on Python 3.10–3.13
             eps = metadata.entry_points().select(
                 group="playnano.analysis", name=module_name
             )
