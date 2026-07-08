@@ -1,6 +1,6 @@
 # mypy: disable-error-code=type-arg
 """
-Particle region media export module for the playNano analysis pipeline.
+Particle region export module for the playNano analysis pipeline.
 
 This module exports per-particle GIFs, video files, and/or image sequences
 using the cropped image regions produced by ``ParticleRegionExtractionModule``.
@@ -134,6 +134,78 @@ def _assemble_track_stack(
     return np.stack(frames, axis=0)  # (T, H, W)
 
 
+def _filter_and_sort_tracks(
+    tracks: List[Dict[str, Any]],
+    track_ids: Optional[List[int]],
+    sort_by: str,
+    max_tracks: Optional[int],
+) -> List[Dict[str, Any]]:
+    """
+    Filter and sort a list of per-track dicts from ``particle_region_extraction``.
+
+    Parameters
+    ----------
+    tracks : list of dict
+        The ``per_track`` list from the extraction module output.
+    track_ids : list of int or None
+        Explicit whitelist of track IDs to retain.  ``None`` keeps all tracks.
+    sort_by : {"track_id", "n_frames", "n_detections"}
+        Sort key applied after ID filtering and before the ``max_tracks`` cap.
+
+        - ``"track_id"`` : ascending by track ID (default, stable ordering).
+        - ``"n_frames"`` : descending by total frame count (longest tracks
+          first).
+        - ``"n_detections"`` : descending by the number of frames that have a
+          non-``None`` region (most consistently detected tracks first).
+
+    max_tracks : int or None
+        Maximum number of tracks to retain after sorting.  ``None`` keeps all.
+
+    Returns
+    -------
+    list of dict
+        Filtered, sorted, and optionally capped subset of *tracks*.
+
+    Raises
+    ------
+    ValueError
+        If ``sort_by`` is not one of the recognised sort keys.
+    """
+    _VALID_SORT_KEYS = {"track_id", "n_frames", "n_detections"}
+    if sort_by not in _VALID_SORT_KEYS:
+        raise ValueError(
+            f"sort_by={sort_by!r} is not recognised. "
+            f"Choose from {sorted(_VALID_SORT_KEYS)}."
+        )
+
+    # --- ID whitelist filter ---------------------------------------------
+    if track_ids is not None:
+        id_set = set(track_ids)
+        tracks = [t for t in tracks if int(t["track_id"]) in id_set]
+
+    # --- Sort ------------------------------------------------------------
+    if sort_by == "track_id":
+        tracks = sorted(tracks, key=lambda t: int(t["track_id"]))
+    elif sort_by == "n_frames":
+        tracks = sorted(
+            tracks,
+            key=lambda t: len(t.get("regions", [])),
+            reverse=True,
+        )
+    elif sort_by == "n_detections":
+        tracks = sorted(
+            tracks,
+            key=lambda t: sum(1 for r in t.get("regions", []) if r is not None),
+            reverse=True,
+        )
+
+    # --- Cap -------------------------------------------------------------
+    if max_tracks is not None:
+        tracks = tracks[:max_tracks]
+
+    return tracks
+
+
 # ---------------------------------------------------------------------------
 # Module
 # ---------------------------------------------------------------------------
@@ -141,12 +213,13 @@ def _assemble_track_stack(
 
 class ParticleRegionMediaExportModule(AnalysisModule):
     """
-    Export per-track videos and/or image sequences from pre-extracted particle
-    image regions.
+    Export per-track GIFs, videos, and/or image sequences from pre-extracted
+    particle image regions, with optional track filtering and sorting.
 
     One output is produced per tracked particle per enabled export type.
-    Both types share the same padded ``(T, H, W)`` stack assembly step, so
-    enabling both incurs no redundant work beyond the two separate write calls.
+    All enabled types share the same padded ``(T, H, W)`` stack assembly step,
+    so enabling multiple formats incurs no redundant work beyond the extra write
+    calls.
 
     The module requires:
     - output from ``ParticleRegionExtractionModule`` (``"particle_region_extraction"``)
@@ -154,6 +227,18 @@ class ParticleRegionMediaExportModule(AnalysisModule):
 
     Parameters accepted in :meth:`run`
     ------------------------------------
+    track_ids : list of int or None
+        Explicit whitelist of track IDs to export.  ``None`` exports all
+        tracks.  Applied before ``sort_by`` and ``max_tracks``.
+    max_tracks : int or None
+        Maximum number of tracks to export.  Applied after ``track_ids``
+        filtering and ``sort_by`` ordering.  ``None`` exports all remaining
+        tracks.
+    sort_by : {"track_id", "n_frames", "n_detections"}
+        Sort order used before applying ``max_tracks``.  ``"track_id"``
+        (default) gives stable ascending order; ``"n_frames"`` and
+        ``"n_detections"`` sort descending so the most complete tracks are
+        exported first.
     export_gif : bool
         Whether to write an animated GIF per track.  Default ``False``.
     export_video : bool
@@ -200,7 +285,7 @@ class ParticleRegionMediaExportModule(AnalysisModule):
 
     @property
     def name(self) -> str:
-        return "particle_region_media_export"
+        return "particle_region_export"
 
     requires = ["particle_region_extraction"]
 
@@ -212,6 +297,9 @@ class ParticleRegionMediaExportModule(AnalysisModule):
         extraction_module: str = "particle_region_extraction",
         output_folder: Optional[str] = None,
         output_name: Optional[str] = None,
+        track_ids: Optional[List[int]] = None,
+        max_tracks: Optional[int] = None,
+        sort_by: str = "track_id",
         export_gif: bool = False,
         export_video: bool = True,
         video_fmt: str = "mp4",
@@ -244,6 +332,24 @@ class ParticleRegionMediaExportModule(AnalysisModule):
             Directory to write output.  Defaults to ``"output"``.
         output_name : str or None
             Base file name stem.  Track ID is appended automatically.
+        track_ids : list of int or None, default None
+            Explicit whitelist of track IDs to export.  ``None`` exports all
+            tracks.  IDs not present in the extraction output are silently
+            ignored.
+        max_tracks : int or None, default None
+            Maximum number of tracks to export after filtering and sorting.
+            Useful for QC runs: e.g. ``sort_by="n_frames", max_tracks=10``
+            exports the ten longest-lived particles.  ``None`` exports all
+            remaining tracks.
+        sort_by : str, default ``"track_id"``
+            Sort key applied after ``track_ids`` filtering and before
+            ``max_tracks``.  Options:
+
+            - ``"track_id"`` : ascending by track ID (stable default).
+            - ``"n_frames"`` : descending by total frame count.
+            - ``"n_detections"`` : descending by number of frames with a
+              non-missing detection.
+
         export_gif : bool, default False
             Write an animated GIF (``<base>_track_<id>.gif``) per track.
         export_video : bool, default True
@@ -302,10 +408,11 @@ class ParticleRegionMediaExportModule(AnalysisModule):
         Raises
         ------
         RuntimeError
-            If neither ``export_video`` nor ``export_sequence`` is enabled,
-            or if required upstream outputs are missing or misconfigured.
+            If none of the export flags are enabled, or if required upstream
+            outputs are missing or misconfigured.
         ValueError
-            If ``video_fmt`` or ``sequence_fmt`` is not a supported format.
+            If ``sort_by``, ``video_fmt``, or ``sequence_fmt`` is not a
+            supported value.
         """
         if previous_results is None:
             raise RuntimeError(f"{self.name!r} requires previous results to run.")
@@ -337,13 +444,27 @@ class ParticleRegionMediaExportModule(AnalysisModule):
         base = sanitize_output_name(output_name, Path(stack.file_path).stem)
         pixel_size_nm: float = float(getattr(stack, "pixel_size_nm", 1.0))
 
+        all_tracks = ext_out.get("per_track", [])
+        selected_tracks = _filter_and_sort_tracks(
+            all_tracks,
+            track_ids=track_ids,
+            sort_by=sort_by,
+            max_tracks=max_tracks,
+        )
+        n_filtered_out = len(all_tracks) - len(selected_tracks)
+        if n_filtered_out:
+            logger.info(
+                f"[{self.name}] {n_filtered_out} track(s) excluded by "
+                f"track_ids/max_tracks filter; exporting {len(selected_tracks)}."
+            )
+
         gif_paths: List[str] = []
         video_paths: List[str] = []
         sequence_folders: List[str] = []
         per_track_manifest: List[Dict[str, Any]] = []
         n_skipped_tracks = 0
 
-        for trk in ext_out.get("per_track", []):
+        for trk in selected_tracks:
             track_id = int(trk["track_id"])
             regions: List[Optional[Dict[str, Any]]] = trk.get("regions", [])
             timestamps: List[float] = trk.get("timestamps", [])
@@ -441,8 +562,14 @@ class ParticleRegionMediaExportModule(AnalysisModule):
             "sequence_folders": sequence_folders,
             "per_track": per_track_manifest,
             "summary": {
+                "n_tracks_total": len(all_tracks),
+                "n_tracks_selected": len(selected_tracks),
                 "n_tracks_written": len(per_track_manifest),
                 "n_tracks_skipped": n_skipped_tracks,
+                "n_tracks_filtered_out": n_filtered_out,
+                "track_ids": track_ids,
+                "max_tracks": max_tracks,
+                "sort_by": sort_by,
                 "output_folder": str(out_dir),
                 "export_gif": export_gif,
                 "export_video": export_video,
