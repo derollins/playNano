@@ -7,12 +7,17 @@ from a detection module (e.g. ``feature_detection``) and particle associations
 from a tracking module (e.g. ``particle_tracking``).
 
 For each tracked particle and each frame, the module locates the labeled region
-associated with that particle and extracts:
+and extracts:
 
 - the tight bounding-box coordinates of the region,
-- an optionally padded bounding box (clipped to image bounds),
+- an optionally padded / squared / fixed-size bounding box,
 - a crop of the raw image stack frame (optional),
 - a crop of the binary object mask (optional).
+
+This module is a data-organisation step: it assembles per-track, per-frame
+region data into a consistent structure for downstream analysis and export.
+Per-frame statistics (mean, max, etc.) are already produced by the detection
+module; time-series statistics belong in a dedicated downstream module.
 
 All outputs are ``None`` / ``np.nan`` for frames where the particle is absent
 (dense tracks with missing detections) or where indices are out of range.
@@ -24,7 +29,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from playnano.analysis.base import AnalysisModule
 from skimage.measure import label as sk_label, regionprops
-
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -74,24 +78,7 @@ def _pad_bbox(
     padding: int,
     image_shape: Tuple[int, int],
 ) -> Tuple[int, int, int, int]:
-    """
-    Expand a bounding box by ``padding`` pixels on each side, clipped to
-    ``image_shape``.
-
-    Parameters
-    ----------
-    bbox : (minr, minc, maxr, maxc)
-        Tight bounding box to expand.
-    padding : int
-        Number of pixels to add on each side.
-    image_shape : (height, width)
-        Shape of the image used for clipping.
-
-    Returns
-    -------
-    (minr, minc, maxr, maxc)
-        Padded and clipped bounding box.
-    """
+    """Expand a bounding box by ``padding`` pixels on each side, clipped to image bounds."""
     minr, minc, maxr, maxc = bbox
     h, w = image_shape
     return (
@@ -107,9 +94,7 @@ def _centered_fixed_bbox(
     size: int,
     image_shape: Tuple[int, int],
 ) -> Tuple[int, int, int, int]:
-    """
-    Return a fixed-size, centered bounding box clipped to image bounds.
-    """
+    """Return a fixed-size bounding box centred on ``bbox``, clipped to image bounds."""
     minr, minc, maxr, maxc = bbox
     h, w = image_shape
 
@@ -123,9 +108,9 @@ def _centered_fixed_bbox(
     maxc = min(w, minc + size)
 
     # Re-shift if clipping occurred
+
     minr = max(0, maxr - size)
     minc = max(0, maxc - size)
-
     return minr, minc, maxr, maxc
 
 
@@ -133,13 +118,10 @@ def _square_bbox(
     bbox: Tuple[int, int, int, int],
     image_shape: Tuple[int, int],
 ) -> Tuple[int, int, int, int]:
+    """Expand a bounding box to be square, centred on the original box."""
     minr, minc, maxr, maxc = bbox
     h, w = image_shape
-
-    height = maxr - minr
-    width = maxc - minc
-    size = max(height, width)
-
+    size = max(maxr - minr, maxc - minc)
     cr = (minr + maxr) // 2
     cc = (minc + maxc) // 2
     half = size // 2
@@ -165,37 +147,40 @@ class ParticleRegionExtractionModule(AnalysisModule):
     Extract per-particle image regions over time from tracked, labeled detections.
 
     For each tracked particle and frame the module resolves the labeled region
-    from the detection output, computes a tight bounding box, optionally pads
-    it, and (optionally) crops the raw image frame and/or binary mask.
+    from the detection output, computes a bounding box, and optionally crops
+    the raw image frame and/or binary mask.
+
+    This is a data-organisation step.  Per-frame statistics are available from
+    the detection module output; time-series analysis belongs in a downstream
+    module.
 
     The module requires:
     - output from a particle tracking module (e.g. ``particle_tracking``)
     - output from a labeled detection module providing:
-        * ``features_per_frame`` — list of per-frame feature dicts, each
-          containing a region label under ``label_key``.
+        * ``features_per_frame`` — list of per-frame feature dicts with a
+          region label under ``label_key``.
         * ``labeled_masks`` — list of 2-D integer-labeled NumPy arrays.
 
     Parameters accepted in :meth:`run`
     ------------------------------------
     padding : int, default 0
         Pixels to add around the tight bounding box (clipped to image bounds).
+    fixed_box_size : int or None, default None
+        Enforce a fixed-size crop centred on the detection, in pixels.
+    square : bool, default False
+        Force the bounding box to be square (ignored when ``fixed_box_size``
+        is set).
+    fixed_size_mode : {"global", "per_track"}, default ``"global"``
+        ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``
+        computes the size per track as the largest detection plus
+        ``2 * padding``.
     include_image : bool, default True
-        Whether to include a crop of the raw image frame.
+        Include ``"image_crop"`` (raw frame crop) in each region dict.
     include_mask : bool, default True
-        Whether to include a crop of the binary object mask.
+        Include ``"mask_crop"`` (binary foreground crop) in each region dict.
     include_bbox : bool, default True
-        Whether to include tight and padded bounding-box coordinates.
-
-    Notes
-    -----
-    - Out-of-range frame or point indices produce ``None`` region records and
-      increment ``n_skipped_index_errors`` in the summary.
-    - Missing detections in dense tracks (``point_index is None``) produce
-      ``None`` region records without counting as errors.
-    - If a feature dict is missing the ``label_key``, a ``RuntimeError`` is
-      raised.
-    - Raw image frames are retrieved via ``stack[frame_idx]``; if ``stack``
-      does not support integer indexing a ``RuntimeError`` is raised.
+        Include ``"bbox_tight"`` and ``"bbox_padded"`` in each region dict
+        and in the flat table.
     """
 
     version = "0.1.0"
@@ -248,9 +233,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
         fixed_size_mode: str,
         n_frames: int,
     ) -> Optional[int]:
-        """
-        Determine fixed crop size for a track.
-        """
+        """Return fixed crop size for this track (per_track mode only)."""
         if fixed_box_size is None or fixed_size_mode != "per_track":
             return fixed_box_size
 
@@ -282,9 +265,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
         square: bool,
         track_fixed_size: Optional[int],
     ) -> Tuple[int, int, int, int]:
-        """
-        Resolve the final bounding box according to padding, square and fixed-size rules.
-        """
+        """Apply padding, square, and fixed-size rules to produce the final bbox."""
         bbox = (
             _pad_bbox(bbox_tight, padding, image_shape) if padding > 0 else bbox_tight
         )
@@ -314,6 +295,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
         include_image: bool,
         include_mask: bool,
     ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Crop image and binary mask to ``bbox`` for ``frame_idx``."""
         pr0, pc0, pr1, pc1 = bbox
 
         mask_crop = lm[pr0:pr1, pc0:pc1] == label_val if include_mask else None
@@ -378,71 +360,58 @@ class ParticleRegionExtractionModule(AnalysisModule):
         label_key: str = "label",
     ) -> Dict[str, Any]:
         """
-        Execute the region extraction analysis.
+        Execute the region extraction.
 
         Parameters
         ----------
         stack : AFMImageStack
-            Input image stack.  Must support ``stack[frame_idx]`` to retrieve
-            raw 2-D image arrays when ``include_image=True``.
+            Input image stack.  Must support ``stack[frame_idx]`` integer
+            indexing when ``include_image=True``.
         previous_results : dict, optional
-            Outputs from earlier pipeline modules.  Must contain results for
-            both ``tracking_module`` and ``detection_module``.
+            Outputs from earlier pipeline modules.
         tracking_module : str, default ``"particle_tracking"``
-            Key identifying the tracking module output in ``previous_results``.
+            Key of the tracking module in ``previous_results``.
         detection_module : str, default ``"feature_detection"``
-            Key identifying the labeled detection module output in
-            ``previous_results``.
+            Key of the labeled detection module in ``previous_results``.
         padding : int, default 0
-            Number of pixels to add around the tight bounding box on each
-            side.  The padded box is clipped to the image boundary.
+            Pixels to add around the tight bounding box on each side.
         fixed_box_size : int or None, default None
-            If given, enforce a fixed-size crop (in pixels). The box is centered on
-            the detected region and clipped to image bounds.
+            Enforce a fixed crop size in pixels, centred on the detection.
         square : bool, default False
-            If True and no fixed box size is used, force the bounding box to be square.
-        fixed_size_mode : {"global", "per_track"}, default "global"
-            If "global", use fixed_box_size directly.
-            If "per_track", compute one fixed size per track (max over frames).
+            Force the bounding box to be square (ignored when
+            ``fixed_box_size`` is set).
+        fixed_size_mode : {"global", "per_track"}, default ``"global"``
+            ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``
+            computes the size per track as the largest detection plus
+            ``2 * padding``.
         include_image : bool, default True
-            If ``True``, the output region dict contains ``"image_crop"`` — a
-            NumPy array cropped from the raw frame using the padded bounding box.
+            Include ``"image_crop"`` in each region dict.
         include_mask : bool, default True
-            If ``True``, the output region dict contains ``"mask_crop"`` — a
-            boolean NumPy array cropped from the binary object mask using the
-            padded bounding box.
+            Include ``"mask_crop"`` in each region dict.
         include_bbox : bool, default True
-            If ``True``, the output region dict contains ``"bbox_tight"`` and
-            ``"bbox_padded"`` — tuples ``(minr, minc, maxr, maxc)``.
+            Include ``"bbox_tight"`` / ``"bbox_padded"`` in each region dict
+            and in ``flat_table``.
         label_key : str, default ``"label"``
-            Key used to look up the region integer label in each feature dict.
+            Key used to look up the region label in each feature dict.
 
         Returns
         -------
         dict
-            Keys:
-
             ``per_track`` : list of dict
-                One entry per track.  Each entry has:
+                One entry per track with ``"track_id"``, ``"frames"``,
+                ``"timestamps"``, ``"fixed_box_size"``, and ``"regions"``.
+                Each region entry is ``None`` (missing detection) or a dict
+                containing:
 
-                - ``"track_id"`` : int
-                - ``"frames"`` : list of int
-                - ``"timestamps"`` : list of float
-                - ``"regions"`` : list of dict or None
-                    One entry per frame.  ``None`` indicates a missing
-                    detection.  Otherwise a dict with any subset of:
-
-                    - ``"frame"`` : int
-                    - ``"timestamp"`` : float
-                    - ``"label"`` : int or nan
-                    - ``"bbox_tight"`` : (minr, minc, maxr, maxc) or None
-                    - ``"bbox_padded"`` : (minr, minc, maxr, maxc) or None
-                    - ``"image_crop"`` : ndarray or None
-                    - ``"mask_crop"`` : ndarray or None
+                - ``"frame"``, ``"timestamp"``, ``"label"``
+                - ``"bbox_tight"``, ``"bbox_padded"`` *(if include_bbox)*
+                - ``"image_crop"`` *(if include_image)*
+                - ``"mask_crop"`` *(if include_mask)*
 
             ``flat_table`` : list of dict
-                Row-per-frame representation (excludes array crops) suitable
-                for conversion to a ``pandas.DataFrame``.
+                Row-per-frame table suitable for ``pandas.DataFrame``.
+                Array crops are excluded; bbox columns are included when
+                ``include_bbox=True``.
 
             ``summary`` : dict
                 Bookkeeping counters and configuration echo.
@@ -511,14 +480,14 @@ class ParticleRegionExtractionModule(AnalysisModule):
             track_timestamps: List[float] = []
             track_regions: List[Optional[Dict[str, Any]]] = []
 
-            for frame_idx, pt_idx in zip(frames, pt_indices, strict=True):
+            for frame_idx, pt_idx in zip(frames, pt_indices, strict=False):
                 frame_idx = int(frame_idx)
                 ts = self._get_timestamp(stack, frame_idx)
 
                 track_frames.append(frame_idx)
                 track_timestamps.append(ts)
 
-                # ---- missing detection in dense track --------------------
+                # ---- missing detection ----------------------------------
                 if pt_idx is None:
                     track_regions.append(None)
                     flat_table.append(
@@ -537,7 +506,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
 
                 pt_idx = int(pt_idx)
 
-                # ---- out-of-range frame ----------------------------------
+                # ---- out-of-range frame ---------------------------------
                 if frame_idx < 0 or frame_idx >= n_frames:
                     warnings.warn(
                         f"[{self.name}] track_id={track_id}: frame {frame_idx} "
@@ -561,7 +530,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
 
                 feats_this = features_per_frame[frame_idx]
 
-                # ---- out-of-range point index ----------------------------
+                # ---- out-of-range point index ---------------------------
                 if pt_idx < 0 or pt_idx >= len(feats_this):
                     warnings.warn(
                         f"[{self.name}] track_id={track_id}, frame={frame_idx}: "
@@ -612,7 +581,6 @@ class ParticleRegionExtractionModule(AnalysisModule):
                         square=square,
                         track_fixed_size=track_fixed_size,
                     )
-
                     image_crop, mask_crop = self._extract_crops(
                         stack=stack,
                         lm=lm,
@@ -694,7 +662,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
         bbox_padded: Optional[Tuple[int, int, int, int]],
         include_bbox: bool,
     ) -> Dict[str, Any]:
-        """Build a flat table row (array crops are excluded by design)."""
+        """Build a flat table row (array crops excluded by design)."""
         row: Dict[str, Any] = {
             "track_id": track_id,
             "frame": frame_idx,
