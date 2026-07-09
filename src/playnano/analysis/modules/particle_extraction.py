@@ -27,8 +27,10 @@ import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from skimage.measure import label as sk_label
+from skimage.measure import regionprops
+
 from playnano.analysis.base import AnalysisModule
-from skimage.measure import label as sk_label, regionprops
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -40,6 +42,8 @@ def _tight_bbox_for_label(
     label_val: int,
 ) -> Optional[Tuple[int, int, int, int]]:
     """
+    Compute the tight bounding box for a labeled region.
+
     Return the tight bounding box ``(minr, minc, maxr, maxc)`` for a labeled
     region, or ``None`` if the label is absent from the mask.
 
@@ -78,7 +82,7 @@ def _pad_bbox(
     padding: int,
     image_shape: Tuple[int, int],
 ) -> Tuple[int, int, int, int]:
-    """Expand a bounding box by ``padding`` pixels on each side, clipped to image bounds."""
+    """Expand bounding box by ``padding`` pixels on each side, clipped to bounds."""
     minr, minc, maxr, maxc = bbox
     h, w = image_shape
     return (
@@ -187,6 +191,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
 
     @property
     def name(self) -> str:
+        """Module name for registration in the analysis pipeline."""
         return "particle_region_extraction"
 
     requires = ["particle_tracking"]
@@ -239,7 +244,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
 
         sizes: List[int] = []
 
-        for frame_idx, pt_idx in zip(frames, pt_indices):
+        for frame_idx, pt_idx in zip(frames, pt_indices, strict=False):
             if pt_idx is None or frame_idx < 0 or frame_idx >= n_frames:
                 continue
 
@@ -314,6 +319,8 @@ class ParticleRegionExtractionModule(AnalysisModule):
         detection_module: str,
     ) -> Tuple[List[np.ndarray], List[List[Dict[str, Any]]]]:
         """
+        Extract detection outputs.
+
         Extract ``labeled_masks`` and ``features_per_frame`` from
         ``previous_results[detection_module]``.
 
@@ -428,7 +435,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
         track_out = previous_results[tracking_module]
         if "tracks" not in track_out:
             raise RuntimeError(
-                f"{self.name!r} expected '{tracking_module}' output to contain 'tracks'."
+                f"{self.name!r} expected '{tracking_module}' output to contain 'tracks'."  # noqa: E501
             )
 
         labeled_masks, features_per_frame = self._extract_detection_outputs(
@@ -472,7 +479,7 @@ class ParticleRegionExtractionModule(AnalysisModule):
             if len(frames) != len(pt_indices):
                 warnings.warn(
                     f"[{self.name}] track_id={track_id}: frames length ({len(frames)}) "
-                    f"!= point_indices length ({len(pt_indices)}). Truncating to shortest.",
+                    f"!= point_indices length ({len(pt_indices)}). Truncating to shortest.",  # noqa: E501
                     stacklevel=2,
                 )
 

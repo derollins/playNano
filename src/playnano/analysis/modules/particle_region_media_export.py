@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+
 from playnano.analysis.base import AnalysisModule
 from playnano.io.gif_export import create_gif_with_scale_and_timestamp
 from playnano.io.image_sequence_export import create_image_sequence
@@ -213,6 +214,8 @@ def _filter_and_sort_tracks(
 
 class ParticleRegionMediaExportModule(AnalysisModule):
     """
+    Analysis module to export GIFs, videos and image sequences of extracted particles.
+
     Export per-track GIFs, videos, and/or image sequences from pre-extracted
     particle image regions, with optional track filtering and sorting.
 
@@ -285,7 +288,8 @@ class ParticleRegionMediaExportModule(AnalysisModule):
 
     @property
     def name(self) -> str:
-        return "particle_region_export"
+        """Module name for registration in the analysis pipeline."""
+        return "particle_region_media_export"
 
     requires = ["particle_region_extraction"]
 
