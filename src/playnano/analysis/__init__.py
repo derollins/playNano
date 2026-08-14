@@ -6,7 +6,7 @@ from .modules.dbscan_clustering import DBSCANClusteringModule
 from .modules.feature_detection import FeatureDetectionModule
 from .modules.k_means_clustering import KMeansClusteringModule
 from .modules.log_blob_detection import LoGBlobDetectionModule
-from .modules.particle_extraction import ParticleRegionExtractionModule
+from .modules.particle_region_extraction import ParticleRegionExtractionModule
 from .modules.particle_region_media_export import ParticleRegionMediaExportModule
 from .modules.particle_tracking import ParticleTrackingModule
 from .modules.tracked_particle_boundary_size import BoundarySizeModule
