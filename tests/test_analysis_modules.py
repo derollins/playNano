@@ -17,7 +17,7 @@ from playnano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
 from playnano.analysis.modules.feature_detection import MASK_MAP, FeatureDetectionModule
 from playnano.analysis.modules.k_means_clustering import KMeansClusteringModule
 from playnano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
-from playnano.analysis.modules.particle_extraction import (
+from playnano.analysis.modules.particle_region_extraction import (
     ParticleRegionExtractionModule,
     _centered_fixed_bbox,
     _pad_bbox,
