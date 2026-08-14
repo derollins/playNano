@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   similarly to the other funcitons in the module.
 - `zero_median` funciton in both filters and masked filters module to subtract the median value from ever pixel,
   optionally masked.
+- `particle_region_extraction` analysis module (`ParticleRegionExtractionModule`) that extracts per-particle,
+  per-frame image regions from tracked detections — producing tight, padded, squared, or fixed-size bounding
+  boxes plus optional raw-image and mask crops. Requires a preceding `particle_tracking` step.
+- `particle_region_media_export` analysis module (`ParticleRegionMediaExportModule`) that exports per-particle
+  GIFs, video, and/or image sequences from the extracted crops, with optional colormap, timestamp, and
+  scale-bar overlays. Requires a preceding `particle_region_extraction` step.
+- `tracked_particle_boundary_size` analysis module (`BoundarySizeModule`) that computes a per-particle
+  boundary-size metric over time (max bounding-box dimension), with an optional threshold for a binary state
+  variable. Requires a preceding `particle_region_extraction` step (run with `include_bbox=True`).
 
 ## [0.4.0.post1] - 2026-05-12
 
