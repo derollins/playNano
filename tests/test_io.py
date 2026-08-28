@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 import tifffile
 from matplotlib import colormaps as cm
+from ome_types import from_tiff
 from PIL import Image, ImageSequence
 from tifffile import TiffWriter
 
@@ -1931,6 +1932,43 @@ def test_ome_tiff_invalid_custom_tag(tmp_path):
         )
     stack = load_ome_tiff_stack(path)
     assert isinstance(stack, AFMImageStack)
+
+
+def test_ome_tif_export_writes_units_and_timing(tmp_path):
+    """
+    Tests that the exported OME-TIFF includes correct spatial and temporal units.
+
+    The exported OME-TIFF must carry explicit spatial/temporal units
+    so external readers (napari, Fiji) display calibrated axes.
+    """
+    n_frames = 3
+    data = np.random.rand(n_frames, 8, 8).astype(np.float32)
+    meta = [
+        {"timestamp": i * 1.28, "frame_pixel_size_nm": 2.0} for i in range(n_frames)
+    ]
+    stack = AFMImageStack(
+        data=data,
+        pixel_size_nm=2.0,
+        channel="height_trace",
+        file_path=Path("synthetic.h5-jpk"),
+        frame_metadata=meta,
+    )
+
+    out_path = tmp_path / "units.ome.tif"
+    save_ome_tiff_stack(out_path, stack, raw=False)
+
+    px = from_tiff(out_path.with_suffix(".tif")).images[0].pixels
+    # units are present and correct — the regression guard
+    assert px.physical_size_x_unit.value == "µm"
+    assert px.physical_size_y_unit.value == "µm"
+    assert px.time_increment_unit.value == "s"
+    # values are right and consistent with pixel_size_nm
+    assert px.physical_size_x == pytest.approx(2.0e-3)
+    assert px.time_increment == pytest.approx(1.28)
+    # per-plane timing survives and defaults to seconds
+    assert len(px.planes) == n_frames
+    assert px.planes[1].delta_t == pytest.approx(1.28)
+    assert px.planes[0].delta_t_unit.value == "s"
 
 
 def validate_analysis_record(record):
