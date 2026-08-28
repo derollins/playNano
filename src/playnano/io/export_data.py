@@ -88,6 +88,7 @@ def save_ome_tiff_stack(
       Only a single channel (C=1) and a single Z-slice (Z=1) are used.
     - Physical calibration is stored in micrometres (µm) under
       ``PhysicalSizeX`` and ``PhysicalSizeY``.
+    - Time increment is stored in seconds under ``TimeIncrement``.
     - Provenance and processed-layer keys are stored as binary JSON
       under private TIFF tags ``65000`` and ``65001``.
 
@@ -156,11 +157,15 @@ def save_ome_tiff_stack(
     ome_metadata = {
         "axes": "TCZYX",
         "PhysicalSizeX": afm_stack.pixel_size_nm * 1e-3,
+        "PhysicalSizeXUnit": "µm",
         "PhysicalSizeY": afm_stack.pixel_size_nm * 1e-3,
+        "PhysicalSizeYUnit": "µm",
         "PhysicalSizeZ": 1.0,
+        "PhysicalSizeZUnit": "µm",
         "TimeIncrement": (
             (timestamps[1] - timestamps[0]) if len(timestamps) > 1 else 0.0
         ),
+        "TimeIncrementUnit": "s",
         "Plane": planes,
         "Channel": [{"Name": channel}],
     }
