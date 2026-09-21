@@ -6,6 +6,7 @@ Converts the height data into nm from another metric unit (e.g. m).
 """
 
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 import h5py
@@ -54,6 +55,13 @@ def _discover_available_channels(f: h5py.File) -> dict[str, str]:
     -------
     dict[str, str]
         Mapping of channel names (e.g. 'height_trace') to their full HDF5 path.
+
+    Notes
+    -----
+    Assumes a single ``Measurement_*`` group per file (frames are the columns of each
+    channel dataset, not separate measurements). If several measurements are present,
+    only the first occurrence of each channel key is kept, so downstream only ever
+    reads that one measurement — see the guard in :func:`load_h5jpk`.
     """
     channel_map = {}
     for m_key, m_group in f.items():
@@ -72,43 +80,56 @@ def _discover_available_channels(f: h5py.File) -> dict[str, str]:
             tr_rt = "retrace" if retrace else "trace"
             full_key = f"{decode_hdf5_attr(name).strip().lower()}_{tr_rt}"
             full_path = f"{m_key}/{c_key}"
+            # NOTE: first-wins. With multiple Measurement_* groups this silently
+            # ignores all but the first; load_h5jpk asserts there's only one.
             if full_key not in channel_map:
                 channel_map[full_key] = full_path
     return channel_map
 
 
-def _get_channel_info(f: h5py.File, channel: str):
+def _get_channel_info(f: h5py.File, channel: str) -> tuple[h5py.Group, h5py.Group, str]:
     """
-    Retrieve channel-related HDF5 groups and dataset name.
+    Get the measurement group, channel group, and dataset name for a given channel.
 
     Parameters
     ----------
     f : h5py.File
-        The open HDF5 file object.
+        The open HDF5 file.
     channel : str
-        The name of the channel to retrieve.
+        The channel name to look for (e.g. 'height_trace').
 
     Returns
     -------
     tuple[h5py.Group, h5py.Group, str]
-        The measurement group, channel group, and dataset name.
-
-    Raises
-    ------
-    ValueError
-        If the channel is not found.
+        A tuple containing the measurement group, channel group, and dataset name.
     """
     channel_map = _discover_available_channels(f)
     if channel not in channel_map:
         raise ValueError(
-            f"Channel '{channel}' not found in file."
+            f"Channel '{channel}' not found in file. "
             f"Available channels: {list(channel_map)}"
         )
     channel_path = channel_map[channel]
     channel_group = f[channel_path]
     measurement_key = channel_path.split("/")[0]
     measurement_group = f[measurement_key]
-    dataset_name = channel.split("_")[0].capitalize()
+
+    # Read the actual dataset name from the group (robust to camelCase like
+    # 'MeasuredHeight') rather than reconstructing it from the channel string.
+    data_keys = [k for k in channel_group if k != "thumbnail"]
+    if not data_keys:
+        raise ValueError(f"No data dataset found in channel group '{channel_path}'.")
+
+    if len(data_keys) != 1:
+        logger.warning(
+            "Channel '%s' has %d non-thumbnail datasets %s; using the first.",
+            channel,
+            len(data_keys),
+            data_keys,
+        )
+
+    dataset_name = data_keys[0]
+
     return measurement_group, channel_group, dataset_name
 
 
@@ -153,7 +174,7 @@ def _get_z_scaling_h5(channel_group: h5py.Group) -> tuple[float, float]:
     return multiplier, offset
 
 
-def _get_z_unit_h5(channel_group: h5py.Group) -> str:
+def _get_z_unit_h5(channel_group: h5py.Group) -> str | None:
     """
     Extract the Z unit from an HDF5 channel group.
 
@@ -166,21 +187,26 @@ def _get_z_unit_h5(channel_group: h5py.Group) -> str:
     Returns
     -------
     string
-        The unit of the z data values.
+        The unit of the z data values (e.g. 'm', 'V', 'deg') or None if absent.
 
     Notes
     -----
     Defaults to None if attribute is not present.
     """
     try:
-        z_unit = str(channel_group.attrs.get("net-encoder.scaling.unit.unit", 1.0))
+        raw = channel_group.attrs.get("net-encoder.scaling.unit.unit")
+        if raw is None:
+            logger.warning(
+                "Missing attribute 'net-encoder.scaling.unit.unit'; unit unknown."
+            )
+            return None
+        return decode_hdf5_attr(raw).strip()
     except Exception as e:
-        z_unit = None
-        logger.warning(f"Failed to read unit, returning None: {e}")
-    return z_unit
+        logger.warning(f"Failed to read z unit, returning None: {e}")
+        return None
 
 
-def _get_image_shape(measurement_group: h5py.Group) -> float:
+def _get_image_shape(measurement_group: h5py.Group) -> tuple[int, int]:
     """
     Extract pixel width and height from an HDF5 JPK measurement group.
 
@@ -195,7 +221,6 @@ def _get_image_shape(measurement_group: h5py.Group) -> float:
     -------
     tuple[int, int]
         A tuple representing the image shape as (height_px, width_px).
-
 
     Raises
     ------
@@ -261,6 +286,42 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
         ) from e
 
 
+def _epoch_ms_to_iso(ms: int | None) -> str | None:
+    """UNIX Epoch milliseconds -> ISO-8601 UTC string (None passes through)."""
+    return (
+        datetime.fromtimestamp(ms / 1000, tz=timezone.utc).isoformat()
+        if ms is not None
+        else None
+    )
+
+
+def _is_interlaced_h5(measurement_group: h5py.Group) -> bool:
+    """Bidirectional (interlaced) scanning, read directly from measurement attrs."""
+    return _attr_to_bool(
+        measurement_group.attrs.get(
+            "environment.fast-imaging.feed-forward-parameters.yaxis.interlace", False
+        )
+    )
+
+
+def _get_motion_h5(measurement_group: h5py.Group) -> str | None:
+    """Slow-axis frame direction ('topDown' / 'bottomUp')."""
+    motion = measurement_group.attrs.get("motion")
+    return decode_hdf5_attr(motion).strip() if motion is not None else None
+
+
+def _frame_times_h5(measurement_group: h5py.Group) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Per-frame start/end times as epoch-millisecond int64 arrays.
+
+    From the ``meta-data/start-times`` and ``meta-data/end-times`` datasets, which
+    carry one entry per frame (aligned with the channel dataset's frame axis).
+    """
+    start_time = measurement_group["meta-data/start-times"][:].ravel().astype("int64")
+    end_time = measurement_group["meta-data/end-times"][:].ravel().astype("int64")
+    return start_time, end_time
+
+
 def _get_line_rate(measurement_group: h5py.Group) -> float:
     """
     Extract image line rate from an HDF5 JPK measurement group.
@@ -297,6 +358,50 @@ def _get_line_rate(measurement_group: h5py.Group) -> float:
         ) from e
 
 
+def _frame_timing_h5(
+    measurement_group: h5py.Group, num_frames: int, height_px: int
+) -> tuple[np.ndarray, np.ndarray, list[int | None]]:
+    """
+    Per-frame timestamps (s from first frame), durations (s), and start epoch-ms.
+
+    Primary: real ``meta-data/start-times``/``end-times`` (ms precision; captures
+    real inter-frame jitter and uneven frame lengths).
+
+    Fallback (only if those are missing or mis-sized): scan-rate timing, halved when
+    interlaced.
+    """
+    try:
+        start_time, end_time = _frame_times_h5(measurement_group)
+        if len(start_time) != num_frames or len(end_time) != num_frames:
+            raise ValueError(
+                f"timing entries ({len(start_time)}) != frame count ({num_frames})"
+            )
+        timestamps = (start_time - start_time[0]) / 1000.0  # seconds from first frame
+        durations = (end_time - start_time) / 1000.0  # duration in seconds
+        start_ms = [int(s) for s in start_time]  # UNIX epoch ms for each frame
+    except (KeyError, ValueError) as exc:
+        logger.warning(
+            "Per-frame start/end times unavailable (%s); "
+            "using scan-rate timing for the entire stack.",
+            exc,
+        )
+        try:
+            rate = _get_line_rate(measurement_group)
+        except KeyError:
+            rate = None
+        if not rate:
+            raise ValueError(
+                "No per-frame times and no scan rate; cannot time frames."
+            ) from exc
+        interval = height_px / rate  # slow lines / line rate
+        if _is_interlaced_h5(measurement_group):
+            interval /= 2.0  # interlaced images at ~2x
+        timestamps = np.arange(num_frames) * interval
+        durations = np.full(num_frames, float(interval))
+        start_ms = [None] * num_frames
+    return timestamps, durations, start_ms
+
+
 def _guess_and_standardize_units_to_nm(image_stack: np.ndarray) -> np.ndarray:
     """
     Convert height data to nanometers for metric data.
@@ -310,7 +415,8 @@ def _guess_and_standardize_units_to_nm(image_stack: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    None
+    np.ndarray
+        Height data converted to nanometers.
     """
     try:
         height_unit = guess_height_data_units(image_stack)
@@ -329,7 +435,7 @@ def apply_z_unit_conversion(
     try:
         z_unit = _get_z_unit_h5(channel_group)
     except Exception as e:
-        logging.warning(f"Could not read unit for channel '{channel}': {e}")
+        logger.warning(f"Could not read unit for channel '{channel}': {e}")
         z_unit = None
 
     if z_unit is not None and z_unit in height_units:
@@ -348,7 +454,10 @@ def load_h5jpk(
     """
     Load image stack from a JPK .h5-jpk file, scaled to nanometers.
 
-    The images are loaded, reshaped into frames, and have timestamps generated.
+    Frames are read from the channel's frame axis, z-scaled, converted to nm, and
+    given real per-frame timestamps from the file's start/end-time datasets (with an
+    interlace-aware scan-rate fallback). Interlace (bidirectional) and motion are read
+    from the measurement attributes.
 
     Parameters
     ----------
@@ -366,9 +475,9 @@ def load_h5jpk(
 
     Notes
     -----
-    In .h5-jpk files, the pixel size is defined at the measurement level and
-    is constant across all frames. Therefore, `frame_pixel_size_nm` is identical
-    for every frame.
+    In .h5-jpk files the pixel size, interlace mode and motion are defined at the
+    measurement level and are constant across all frames, so those metadata values are
+    identical for every frame. Timestamps and frame durations are per-frame.
 
     This differs from .jpk and .spm folder-based data, where pixel size may vary
     between frames and is stored per-frame.
@@ -376,6 +485,19 @@ def load_h5jpk(
     file_path = Path(file_path)
 
     with h5py.File(file_path, "r") as f:
+        # This reader assumes ONE measurement per file, with frames stored as the
+        # columns of each channel dataset. Multi-measurement files (frames split
+        # across Measurement_000/001/...) are not yet supported and so only their
+        # first measurement is read.
+        measurements = [k for k in f if k.startswith("Measurement_")]
+        if len(measurements) > 1:
+            logger.warning(
+                "%s: %d measurements found; reading only '%s'.",
+                file_path.name,
+                len(measurements),
+                measurements[0],
+            )
+
         measurement_group, channel_group, dataset_name = _get_channel_info(f, channel)
 
         # Load raw image data: shape (pixels, frames)
@@ -400,29 +522,36 @@ def load_h5jpk(
                 frame = np.flipud(frame)
             image_stack[i] = frame
 
-        # Generate timestamps per frame from line_rate
-        line_rate = _get_line_rate(measurement_group)
-        frame_interval = (
-            height_px / line_rate
-        )  # seconds per frame (height lines / lines per second)
-        timestamps = np.arange(num_frames) * frame_interval
+        # --- timing + scan mode (measurement-level, constant across frames) ---
+        timestamps, frame_durations, start_ms = _frame_timing_h5(
+            measurement_group, num_frames, height_px
+        )
+        interlaced = _is_interlaced_h5(measurement_group)
+        motion = _get_motion_h5(measurement_group)
+        pixel_size_nm = _jpk_pixel_to_nm_scaling_h5(measurement_group)
+        try:
+            line_rate = _get_line_rate(measurement_group)
+        except KeyError:
+            line_rate = None
 
         # Compose per-frame metadata list
-        frame_metadata = []
-        for ts in timestamps:
-            frame_metadata.append(
-                {
-                    "timestamp": ts,
-                    "frame_pixel_size_nm": _jpk_pixel_to_nm_scaling_h5(
-                        measurement_group
-                    ),
-                    "line_rate": line_rate,
-                }
-            )
+        frame_metadata = [
+            {
+                "timestamp": float(timestamps[i]),
+                "frame_duration_s": float(frame_durations[i]),
+                "start_time": _epoch_ms_to_iso(start_ms[i]),
+                "start_epoch_ms": start_ms[i],
+                "frame_pixel_size_nm": pixel_size_nm,
+                "bidirectional": interlaced,
+                "motion": motion,
+                "line_rate": line_rate,
+            }
+            for i in range(num_frames)
+        ]
 
         return AFMImageStack(
             data=image_stack,
-            pixel_size_nm=_jpk_pixel_to_nm_scaling_h5(measurement_group),
+            pixel_size_nm=pixel_size_nm,
             channel=channel,
             file_path=str(file_path),
             frame_metadata=frame_metadata,

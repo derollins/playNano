@@ -6,10 +6,10 @@ Files read with the height data in nm.
 """
 
 import logging
-from pathlib import Path
 import re
-
 from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import tifffile
 from AFMReader.jpk import load_jpk
@@ -139,15 +139,18 @@ def _frame_timing(
     a consistent timestamp source across all frames.
     """
     try:
-        starts, ends = zip(*(_frame_times(fp) for fp in jpk_files))
+        starts, ends = zip(*(_frame_times(fp) for fp in jpk_files), strict=False)
         t0 = starts[0]
         timestamps = np.array([(s - t0).total_seconds() for s in starts])
-        durations = np.array([(e - s).total_seconds() for s, e in zip(starts, ends)])
+        durations = np.array(
+            [(e - s).total_seconds() for s, e in zip(starts, ends, strict=False)]
+        )
     except (KeyError, ValueError) as exc:
         rate = _extract_scan_rate(jpk_files[0])  # lines per second
         if not rate:
             raise ValueError(
-                f"No StartDate/EndDate and no scan rate in {jpk_files[0].name}; cannot time frames."
+                f"No StartDate/EndDate and no scan rate in {jpk_files[0].name}; "
+                f"cannot time frames."
             ) from exc
         logger.warning(
             "One or more JPK StartDate/EndDate tags were unreadable (%s); "
