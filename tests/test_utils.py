@@ -24,21 +24,11 @@ from playnano.utils.io_utils import (
     convert_height_units_to_nm,
     guess_height_data_units,
     normalize_to_uint8,
-    pad_to_square,
 )
 from playnano.utils.system_info import gather_environment_info
 from playnano.utils.time_utils import utc_now_iso
 
 logger = logging.getLogger(__name__)
-
-
-def test_pad_to_square():
-    """Test for pad to square function."""
-    img = np.ones((50, 100), dtype=np.uint8) * 128
-    square = pad_to_square(img)
-    assert square.shape[0] == square.shape[1]
-    assert square.shape[0] == 100
-    assert np.all(square[25:75, :] == 128)
 
 
 def test_normalize_to_uint8():

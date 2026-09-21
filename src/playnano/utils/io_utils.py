@@ -3,26 +3,98 @@
 import logging
 from pathlib import Path
 
+from datetime import datetime, timezone
 import numpy as np
+
+logger = logging.getLogger(__name__)
+
+### --- CONSTANTS --- ###
 
 INVALID_CHARS = r'\/:*?"<>|'
 INVALID_FOLDER_CHARS = r'*?"<>|'
 
-logger = logging.getLogger(__name__)
+
+FRAME_METADATA_KEYS = (
+    "timestamp",
+    "frame_pixel_size_nm",
+    "line_rate",
+    "frame_duration_s",
+    "start_time",
+    "start_epoch_ms",
+    "bidirectional",
+    "scan_direction",
+)
+
+HEIGHT_UNITS = ["m", "cm", "mm", "um", "nm", "pm"]
+
+# --- FRAME METADATA ------------------------------------------------
 
 
-height_units = ["m", "cm", "mm", "um", "nm", "pm"]
+def build_frame_metadata(
+    *,
+    timestamp: float,
+    frame_pixel_size_nm: float,
+    line_rate: float | None = None,
+    frame_duration_s: float | None = None,
+    start_epoch_ms: int | None = None,
+    bidirectional: bool | None = None,
+    scan_direction: str | None = None,
+) -> dict:
+    """
+    Build a canonical per-frame metadata dict shared by all playNano readers.
+
+    Every format reader constructs its ``frame_metadata`` entries through this
+    function, so all formats produce the same keys (see ``FRAME_METADATA_KEYS``).
+    Fields a format cannot provide are stored as ``None``. ``start_time`` is derived
+    here from ``start_epoch_ms`` so its representation is identical across readers.
+
+    All values are cast to plain Python types so the result is JSON-serialisable
+    (frame_metadata is saved via ``json.dumps`` on export).
+
+    Parameters
+    ----------
+    timestamp : float
+        Frame time in seconds, relative to the first frame. Required.
+    frame_pixel_size_nm : float
+        Physical size of one pixel in nanometres for this frame. Required.
+    line_rate : float, optional
+        Fast-scan line rate (lines per second), or ``None`` if unknown.
+    frame_duration_s : float, optional
+        Frame acquisition duration in seconds, or ``None`` if unknown.
+    start_epoch_ms : int, optional
+        Frame start as Unix epoch milliseconds (UTC); used to derive ``start_time``.
+        ``None`` if the format has no absolute timestamp.
+    bidirectional : bool, optional
+        Whether the scan is bidirectional (y-interlaced), or ``None`` if not reported.
+    scan_direction : str, optional
+        Slow-axis frame direction, e.g. ``'topDown'`` / ``'bottomUp'``; ``None`` if
+        not reported.
+
+    Returns
+    -------
+    dict
+        Metadata dict containing exactly the keys in ``FRAME_METADATA_KEYS``.
+    """
+    start_time = (
+        datetime.fromtimestamp(start_epoch_ms / 1000, tz=timezone.utc).isoformat()
+        if start_epoch_ms is not None
+        else None
+    )
+    return {
+        "timestamp": float(timestamp),
+        "frame_pixel_size_nm": float(frame_pixel_size_nm),
+        "line_rate": None if line_rate is None else float(line_rate),
+        "frame_duration_s": (
+            None if frame_duration_s is None else float(frame_duration_s)
+        ),
+        "start_time": start_time,
+        "start_epoch_ms": None if start_epoch_ms is None else int(start_epoch_ms),
+        "bidirectional": None if bidirectional is None else bool(bidirectional),
+        "scan_direction": None if scan_direction is None else str(scan_direction),
+    }
 
 
-def pad_to_square(img: np.ndarray, border_color: int = 0) -> np.ndarray:
-    """Pad a 2D grayscale image to a square canvas by centring it."""
-    h, w = img.shape[:2]
-    size = max(h, w)
-    canvas = np.full((size, size), border_color, dtype=img.dtype)
-    y = (size - h) // 2
-    x = (size - w) // 2
-    canvas[y : y + h, x : x + w] = img  # noqa
-    return canvas
+# --- HEIGHT UNIT HANDLING ------------------------------------------------
 
 
 def guess_height_data_units(stack: np.ndarray) -> str:
@@ -118,6 +190,9 @@ def convert_height_units_to_nm(data: np.ndarray, unit: str) -> np.ndarray:
     return data * unit_to_multiplier[unit]
 
 
+# --- IMAGE UTILITIES ------------------------------------------------
+
+
 def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     """
     Normalize a float image to the uint8 [0, 255] range, handling NaNs and Infs.
@@ -146,6 +221,75 @@ def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     # Normalize to [0, 255]
     norm = (image - min_val) / (max_val - min_val) * 255
     return norm.astype(np.uint8)
+
+
+def compute_zscale_range(
+    data: np.ndarray,
+    zmin: float | str = "auto",
+    zmax: float | str = "auto",
+    lower_percentile: int = 1,
+    upper_percentile: int = 99,
+) -> tuple[float, float]:
+    """
+    Compute robust Z-scale bounds (height or intensity range) for normalization.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        2D or 3D array of AFM image data.
+    zmin : float, "auto", or None
+        Lower bound: "auto" uses percentile, None uses data min, float uses value.
+    zmax : float or "auto"
+        Upper bound: "auto" uses percentile, None uses data max, float uses value.
+    lower_percentile : int, optional
+        Percentile to use for lower bound when zmin == "auto". Default is 1.
+    upper_percentile : int, optional
+        Percentile to use for upper bound when zmax == "auto". Default is 99.
+
+    Returns
+    -------
+    (float, float)
+        zmin and zmax values suitable for normalization.
+
+    Raises
+    ------
+    ValueError
+        If zmin > zmax after processing or invalid input types.
+    """
+    flat = data.ravel()
+    flat = flat[np.isfinite(flat)]
+
+    # Process zmin
+    if zmin == "auto":
+        zmin_val = np.percentile(flat, lower_percentile)
+    elif zmin is None:
+        zmin_val = np.min(flat)
+    else:
+        try:
+            zmin_val = float(zmin)
+        except (TypeError, ValueError):
+            raise ValueError("zmin must be a float, 'auto', or None.") from None
+
+    # Process zmax
+    if zmax == "auto":
+        zmax_val = np.percentile(flat, upper_percentile)
+    elif zmax is None:
+        zmax_val = np.max(flat)
+    else:
+        try:
+            zmax_val = float(zmax)
+        except (TypeError, ValueError):
+            raise ValueError("zmax must be a float, 'auto', or None.") from None
+
+    # Validation
+    if zmin_val > zmax_val:
+        raise ValueError("zmin must be less than or equal to zmax.") from None
+
+    logger.debug(f"[Z-scaling] zmin={zmin_val:.3f} nm, zmax={zmax_val:.3f} nm")
+    return zmin_val, zmax_val
+
+
+# --- OUTPUT FILE AND FOLDER UTILS ------------------------------------------------
 
 
 def sanitize_output_name(name: str, default: str) -> str:
@@ -218,70 +362,7 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
     return folder_path
 
 
-def compute_zscale_range(
-    data: np.ndarray,
-    zmin: float | str = "auto",
-    zmax: float | str = "auto",
-    lower_percentile: int = 1,
-    upper_percentile: int = 99,
-) -> tuple[float, float]:
-    """
-    Compute robust Z-scale bounds (height or intensity range) for normalization.
-
-    Parameters
-    ----------
-    data : np.ndarray
-        2D or 3D array of AFM image data.
-    zmin : float, "auto", or None
-        Lower bound: "auto" uses percentile, None uses data min, float uses value.
-    zmax : float or "auto"
-        Upper bound: "auto" uses percentile, None uses data max, float uses value.
-    lower_percentile : int, optional
-        Percentile to use for lower bound when zmin == "auto". Default is 1.
-    upper_percentile : int, optional
-        Percentile to use for upper bound when zmax == "auto". Default is 99.
-
-    Returns
-    -------
-    (float, float)
-        zmin and zmax values suitable for normalization.
-
-    Raises
-    ------
-    ValueError
-        If zmin > zmax after processing or invalid input types.
-    """
-    flat = data.ravel()
-    flat = flat[np.isfinite(flat)]
-
-    # Process zmin
-    if zmin == "auto":
-        zmin_val = np.percentile(flat, lower_percentile)
-    elif zmin is None:
-        zmin_val = np.min(flat)
-    else:
-        try:
-            zmin_val = float(zmin)
-        except (TypeError, ValueError):
-            raise ValueError("zmin must be a float, 'auto', or None.") from None
-
-    # Process zmax
-    if zmax == "auto":
-        zmax_val = np.percentile(flat, upper_percentile)
-    elif zmax is None:
-        zmax_val = np.max(flat)
-    else:
-        try:
-            zmax_val = float(zmax)
-        except (TypeError, ValueError):
-            raise ValueError("zmax must be a float, 'auto', or None.") from None
-
-    # Validation
-    if zmin_val > zmax_val:
-        raise ValueError("zmin must be less than or equal to zmax.") from None
-
-    logger.debug(f"[Z-scaling] zmin={zmin_val:.3f} nm, zmax={zmax_val:.3f} nm")
-    return zmin_val, zmax_val
+# --- SERIALIZATION AND TYPE CONVERSION ------------------------------------------------
 
 
 def make_json_safe(obj):
@@ -302,6 +383,9 @@ def make_json_safe(obj):
         return obj.__name__
     else:
         return obj
+
+
+# --- ATTRIBUTE DECODING ------------------------------------------------
 
 
 def decode_hdf5_attr(attr: bytes | str) -> str:
