@@ -18,6 +18,7 @@ from playnano.processing import (
     stack_edit,
     video_processing,
 )
+from playnano.utils.io_utils import FRAME_METADATA_KEYS
 from playnano.utils.time_utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
@@ -151,6 +152,13 @@ class AFMImageStack:
 
         # Normalize all timestamps
         self.frame_metadata = normalize_timestamps(frame_metadata)
+
+        # Check only known keys are present in frame_metadata
+        _known = set(FRAME_METADATA_KEYS)
+        for i, md in enumerate(self.frame_metadata):
+            unknown = set(md) - _known
+            if unknown:
+                logger.warning("frame_metadata[%d] has unknown keys: %s", i, unknown)
 
         # Stores processed data arrays from filters, keyed by step
         # name (e.g. 'gaussian_filter', 'remove_plane')
@@ -748,8 +756,8 @@ class AFMImageStack:
         from playnano.analysis.utils.common import NumpyEncoder
 
         record = {
-            "environment": self.stack.provenance.get("environment", {}),
-            "processing": self.stack.provenance.get("processing", {}),
+            "environment": self.provenance.get("environment", {}),
+            "processing": self.provenance.get("processing", {}),
         }
 
         dir = os.path.dirname(path)
