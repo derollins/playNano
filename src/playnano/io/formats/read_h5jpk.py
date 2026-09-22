@@ -6,7 +6,6 @@ Converts the height data into nm from another metric unit (e.g. m).
 """
 
 import logging
-from datetime import datetime, timezone
 from pathlib import Path
 
 import h5py
@@ -14,10 +13,11 @@ import numpy as np
 
 from playnano.afm_stack import AFMImageStack
 from playnano.utils.io_utils import (
+    HEIGHT_UNITS,
+    build_frame_metadata,
     convert_height_units_to_nm,
     decode_hdf5_attr,
     guess_height_data_units,
-    height_units,
 )
 
 logger = logging.getLogger(__name__)
@@ -286,16 +286,7 @@ def _jpk_pixel_to_nm_scaling_h5(measurement_group: h5py.Group) -> float:
         ) from e
 
 
-def _epoch_ms_to_iso(ms: int | None) -> str | None:
-    """UNIX Epoch milliseconds -> ISO-8601 UTC string (None passes through)."""
-    return (
-        datetime.fromtimestamp(ms / 1000, tz=timezone.utc).isoformat()
-        if ms is not None
-        else None
-    )
-
-
-def _is_interlaced_h5(measurement_group: h5py.Group) -> bool:
+def _is_bidirectional_h5(measurement_group: h5py.Group) -> bool:
     """Bidirectional (interlaced) scanning, read directly from measurement attrs."""
     return _attr_to_bool(
         measurement_group.attrs.get(
@@ -386,7 +377,7 @@ def _frame_timing_h5(
             exc,
         )
         try:
-            rate = _get_line_rate(measurement_group)
+            rate = float(_get_line_rate(measurement_group))
         except KeyError:
             rate = None
         if not rate:
@@ -394,8 +385,8 @@ def _frame_timing_h5(
                 "No per-frame times and no scan rate; cannot time frames."
             ) from exc
         interval = height_px / rate  # slow lines / line rate
-        if _is_interlaced_h5(measurement_group):
-            interval /= 2.0  # interlaced images at ~2x
+        if _is_bidirectional_h5(measurement_group):
+            interval /= 2.0  # bidirectional images at ~2x
         timestamps = np.arange(num_frames) * interval
         durations = np.full(num_frames, float(interval))
         start_ms = [None] * num_frames
@@ -438,7 +429,7 @@ def apply_z_unit_conversion(
         logger.warning(f"Could not read unit for channel '{channel}': {e}")
         z_unit = None
 
-    if z_unit is not None and z_unit in height_units:
+    if z_unit is not None and z_unit in HEIGHT_UNITS:
         images = convert_height_units_to_nm(images, z_unit)
     elif z_unit is not None and z_unit in ["V", "v", "deg"]:
         pass  # No conversion needed
@@ -492,7 +483,8 @@ def load_h5jpk(
         measurements = [k for k in f if k.startswith("Measurement_")]
         if len(measurements) > 1:
             logger.warning(
-                "%s: %d measurements found; reading only '%s'.",
+                "%s: %d measurements found; reading only '%s', "
+                "frames in later measurements will be ignored.",
                 file_path.name,
                 len(measurements),
                 measurements[0],
@@ -526,8 +518,8 @@ def load_h5jpk(
         timestamps, frame_durations, start_ms = _frame_timing_h5(
             measurement_group, num_frames, height_px
         )
-        interlaced = _is_interlaced_h5(measurement_group)
-        motion = _get_motion_h5(measurement_group)
+        bidirectional = _is_bidirectional_h5(measurement_group)
+        scan_direction = _get_motion_h5(measurement_group)
         pixel_size_nm = _jpk_pixel_to_nm_scaling_h5(measurement_group)
         try:
             line_rate = _get_line_rate(measurement_group)
@@ -536,23 +528,25 @@ def load_h5jpk(
 
         # Compose per-frame metadata list
         frame_metadata = [
-            {
-                "timestamp": float(timestamps[i]),
-                "frame_duration_s": float(frame_durations[i]),
-                "start_time": _epoch_ms_to_iso(start_ms[i]),
-                "start_epoch_ms": start_ms[i],
-                "frame_pixel_size_nm": pixel_size_nm,
-                "bidirectional": interlaced,
-                "motion": motion,
-                "line_rate": line_rate,
-            }
+            build_frame_metadata(
+                timestamp=timestamps[i],
+                frame_pixel_size_nm=pixel_size_nm,
+                line_rate=line_rate,
+                frame_duration_s=frame_durations[i],
+                start_epoch_ms=start_ms[i],
+                scan_direction=scan_direction,
+            )
             for i in range(num_frames)
         ]
 
-        return AFMImageStack(
+        afm = AFMImageStack(
             data=image_stack,
             pixel_size_nm=pixel_size_nm,
             channel=channel,
             file_path=str(file_path),
             frame_metadata=frame_metadata,
         )
+        afm.acquisition["bidirectional"] = (
+            None if bidirectional is None else bool(bidirectional)
+        )
+    return afm

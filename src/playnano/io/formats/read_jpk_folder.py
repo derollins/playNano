@@ -7,7 +7,7 @@ Files read with the height data in nm.
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +15,7 @@ import tifffile
 from AFMReader.jpk import load_jpk
 
 from playnano.afm_stack import AFMImageStack
+from playnano.utils.io_utils import build_frame_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,13 @@ def _frame_times(jpk_file: Path) -> tuple[datetime, datetime]:
         return _parse_jpk_date(tg[TAG_START_DATE].value), _parse_jpk_date(
             tg[TAG_END_DATE].value
         )
+
+
+def _to_epoch_ms(dt: datetime | None) -> int | None:
+    """Naive JPK datetime -> Unix epoch ms (naive assumed UTC)."""
+    return (
+        None if dt is None else int(dt.replace(tzinfo=timezone.utc).timestamp() * 1000)
+    )
 
 
 def _bidirectional_from_timing(
@@ -159,7 +167,7 @@ def _frame_timing(
         )
         interval = lines_per_frame / rate
         if _bidirectional_from_blob(jpk_files[0]):
-            interval /= 2.0  # interlaced images at ~2x
+            interval /= 2.0  # bidirectional images at ~2x
         timestamps = np.arange(len(jpk_files)) * interval
         durations = np.full(len(jpk_files), interval)
         starts = [None] * len(jpk_files)
@@ -249,21 +257,25 @@ def load_jpk_folder(
 
         # Compose per-frame metadata list
         frame_metadata.append(
-            {
-                "timestamp": float(timestamps[i]),
-                "frame_duration_s": float(frame_durations[i]),
-                "start_time": starts[i].isoformat() if starts[i] is not None else None,
-                "frame_pixel_size_nm": px_size_nm,
-                "bidirectional": bidirectional,
-                "line_rate": scan_rate,  # lines per second
-                "scan_direction": scan_direction,
-            }
+            build_frame_metadata(
+                timestamp=float(timestamps[i]),
+                frame_pixel_size_nm=px_size_nm,
+                line_rate=scan_rate,
+                frame_duration_s=float(frame_durations[i]),
+                start_epoch_ms=_to_epoch_ms(starts[i]),
+                scan_direction=scan_direction,
+            )
         )
 
-    return AFMImageStack(
+    afm = AFMImageStack(
         data=image_stack,
         pixel_size_nm=first_pixel_size_nm,  # stack-level fallback/reference value
         channel=channel,
         file_path=str(folder),
         frame_metadata=frame_metadata,
     )
+    afm.acquisition["bidirectional"] = (
+        None if bidirectional is None else bool(bidirectional)
+    )
+
+    return afm

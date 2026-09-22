@@ -3,7 +3,6 @@
 import logging
 from pathlib import Path
 
-from datetime import datetime, timezone
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -17,12 +16,10 @@ INVALID_FOLDER_CHARS = r'*?"<>|'
 FRAME_METADATA_KEYS = (
     "timestamp",
     "frame_pixel_size_nm",
-    "line_rate",
     "frame_duration_s",
-    "start_time",
     "start_epoch_ms",
-    "bidirectional",
     "scan_direction",
+    "line_rate",
 )
 
 HEIGHT_UNITS = ["m", "cm", "mm", "um", "nm", "pm"]
@@ -34,63 +31,55 @@ def build_frame_metadata(
     *,
     timestamp: float,
     frame_pixel_size_nm: float,
-    line_rate: float | None = None,
     frame_duration_s: float | None = None,
     start_epoch_ms: int | None = None,
-    bidirectional: bool | None = None,
     scan_direction: str | None = None,
+    line_rate: float | None = None,
 ) -> dict:
     """
     Build a canonical per-frame metadata dict shared by all playNano readers.
 
-    Every format reader constructs its ``frame_metadata`` entries through this
-    function, so all formats produce the same keys (see ``FRAME_METADATA_KEYS``).
-    Fields a format cannot provide are stored as ``None``. ``start_time`` is derived
-    here from ``start_epoch_ms`` so its representation is identical across readers.
+    Every value is cast to a native Python type so the dict is JSON-serialisable
+    (frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise
+    raise TypeError).
 
-    All values are cast to plain Python types so the result is JSON-serialisable
-    (frame_metadata is saved via ``json.dumps`` on export).
+    Fields a format cannot provide are stored as ``None``.
+
+    Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not
+    here. ``start_time`` (human-readable ISO) is derived from the first frame's
+    ``start_epoch_ms`` at the stack level; don't duplicate it per frame.
 
     Parameters
     ----------
     timestamp : float
-        Frame time in seconds, relative to the first frame. Required.
+        Frame time in seconds relative to frame 0. Required.
     frame_pixel_size_nm : float
         Physical size of one pixel in nanometres for this frame. Required.
-    line_rate : float, optional
-        Fast-scan line rate (lines per second), or ``None`` if unknown.
     frame_duration_s : float, optional
-        Frame acquisition duration in seconds, or ``None`` if unknown.
+        Frame acquisition duration in seconds; ``None`` if unknown.
     start_epoch_ms : int, optional
-        Frame start as Unix epoch milliseconds (UTC); used to derive ``start_time``.
-        ``None`` if the format has no absolute timestamp.
-    bidirectional : bool, optional
-        Whether the scan is bidirectional (y-interlaced), or ``None`` if not reported.
+        Frame start as Unix epoch milliseconds (UTC); ``None`` for formats
+        without absolute timing.
     scan_direction : str, optional
-        Slow-axis frame direction, e.g. ``'topDown'`` / ``'bottomUp'``; ``None`` if
-        not reported.
+        Slow-axis frame direction (e.g. ``'topDown'``/``'bottomUp'``). Per-frame
+        because NanoScope spm sequences can alternate.
+    line_rate : float, optional
+        Fast-scan line rate (lines per second); ``None`` if unknown.
 
     Returns
     -------
     dict
-        Metadata dict containing exactly the keys in ``FRAME_METADATA_KEYS``.
+        Exactly the keys in ``FRAME_METADATA_KEYS``.
     """
-    start_time = (
-        datetime.fromtimestamp(start_epoch_ms / 1000, tz=timezone.utc).isoformat()
-        if start_epoch_ms is not None
-        else None
-    )
     return {
         "timestamp": float(timestamp),
         "frame_pixel_size_nm": float(frame_pixel_size_nm),
-        "line_rate": None if line_rate is None else float(line_rate),
         "frame_duration_s": (
             None if frame_duration_s is None else float(frame_duration_s)
         ),
-        "start_time": start_time,
         "start_epoch_ms": None if start_epoch_ms is None else int(start_epoch_ms),
-        "bidirectional": None if bidirectional is None else bool(bidirectional),
         "scan_direction": None if scan_direction is None else str(scan_direction),
+        "line_rate": None if line_rate is None else float(line_rate),
     }
 
 
