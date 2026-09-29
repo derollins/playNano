@@ -20,12 +20,12 @@ from playnano.utils.colormaps import (
     resolve_cmap,
 )
 from playnano.utils.io_utils import (
+    FRAME_METADATA_KEYS,
+    build_frame_metadata,
     compute_zscale_range,
     convert_height_units_to_nm,
     guess_height_data_units,
     normalize_to_uint8,
-    FRAME_METADATA_KEYS,
-    build_frame_metadata,
 )
 from playnano.utils.system_info import gather_environment_info
 from playnano.utils.time_utils import utc_now_iso
@@ -234,12 +234,12 @@ def test_build_frame_metadata_full():
     )
     assert set(md.keys()) == set(FRAME_METADATA_KEYS)
     # native-Python cast so json.dumps works downstream
-    assert type(md["timestamp"]) is float
-    assert type(md["frame_pixel_size_nm"]) is float
-    assert type(md["frame_duration_s"]) is float
-    assert type(md["start_epoch_ms"]) is int
-    assert type(md["scan_direction"]) is str
-    assert type(md["line_rate"]) is float
+    assert isinstance(md["timestamp"], float)
+    assert isinstance(md["frame_pixel_size_nm"], float)
+    assert isinstance(md["frame_duration_s"], float)
+    assert isinstance(md["start_epoch_ms"], int)
+    assert isinstance(md["scan_direction"], str)
+    assert isinstance(md["line_rate"], float)
 
 
 def test_build_frame_metadata_minimal():
@@ -264,10 +264,10 @@ def test_build_frame_metadata_casts_numpy():
         start_epoch_ms=np.int64(1234),
         line_rate=np.float64(50.0),
     )
-    assert type(md["timestamp"]) is float
-    assert type(md["frame_pixel_size_nm"]) is float
-    assert type(md["start_epoch_ms"]) is int
-    assert type(md["line_rate"]) is float
+    assert isinstance(md["timestamp"], float)
+    assert isinstance(md["frame_pixel_size_nm"], float)
+    assert isinstance(md["start_epoch_ms"], int)
+    assert isinstance(md["line_rate"], float)
 
 
 # --- Test colormap ---

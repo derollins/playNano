@@ -57,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- OME-TIFF export now records explicit `PhysicalSize` (X, Y in nm) and
+  `TimeIncrement` metadata, so timing and calibration survive round-trips
+  through ImageJ/Fiji and other OME consumers such as napari.
 - `AFMImageStack.export_processing_log` referenced `self.stack.provenance`,
   which does not exist on the class, every call raised `AttributeError`.
   Corrected to `self.provenance`. Two tests that mocked the same broken shape

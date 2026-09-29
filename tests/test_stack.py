@@ -259,7 +259,7 @@ def test_channel_for_frame_with_and_without_override():
 
 
 def test_acquisition_property_exposes_provenance_slot(dummy_stack):
-    """acquisition returns provenance['acquisition'] and is writable."""
+    """Test that acquisition returns provenance['acquisition'] and is writable."""
     dummy_stack.acquisition["bidirectional"] = True
     dummy_stack.acquisition["some_reader_field"] = 42
 
