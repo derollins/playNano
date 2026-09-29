@@ -20,25 +20,17 @@ from playnano.utils.colormaps import (
     resolve_cmap,
 )
 from playnano.utils.io_utils import (
+    FRAME_METADATA_KEYS,
+    build_frame_metadata,
     compute_zscale_range,
     convert_height_units_to_nm,
     guess_height_data_units,
     normalize_to_uint8,
-    pad_to_square,
 )
 from playnano.utils.system_info import gather_environment_info
 from playnano.utils.time_utils import utc_now_iso
 
 logger = logging.getLogger(__name__)
-
-
-def test_pad_to_square():
-    """Test for pad to square function."""
-    img = np.ones((50, 100), dtype=np.uint8) * 128
-    square = pad_to_square(img)
-    assert square.shape[0] == square.shape[1]
-    assert square.shape[0] == 100
-    assert np.all(square[25:75, :] == 128)
 
 
 def test_normalize_to_uint8():
@@ -228,6 +220,54 @@ def test_compute_zscale_valid_manual_values():
     zmin, zmax = compute_zscale_range(data, zmin=1.0, zmax=4.0)
     assert zmin == 1.0
     assert zmax == 4.0
+
+
+def test_build_frame_metadata_full():
+    """Test that all keys are populated and all cast to native Python types."""
+    md = build_frame_metadata(
+        timestamp=1.5,
+        frame_pixel_size_nm=0.5,
+        frame_duration_s=0.9,
+        start_epoch_ms=1_700_000_000_000,
+        scan_direction="bottomUp",
+        line_rate=100.0,
+    )
+    assert set(md.keys()) == set(FRAME_METADATA_KEYS)
+    # native-Python cast so json.dumps works downstream
+    assert isinstance(md["timestamp"], float)
+    assert isinstance(md["frame_pixel_size_nm"], float)
+    assert isinstance(md["frame_duration_s"], float)
+    assert isinstance(md["start_epoch_ms"], int)
+    assert isinstance(md["scan_direction"], str)
+    assert isinstance(md["line_rate"], float)
+
+
+def test_build_frame_metadata_minimal():
+    """Test that with only required kwargs a minimal metadata dict is created."""
+    md = build_frame_metadata(timestamp=0.0, frame_pixel_size_nm=1.0)
+    assert set(md.keys()) == set(FRAME_METADATA_KEYS)
+    assert md["timestamp"] == 0.0
+    assert md["frame_pixel_size_nm"] == 1.0
+    assert md["frame_duration_s"] is None
+    assert md["start_epoch_ms"] is None
+    assert md["scan_direction"] is None
+    assert md["line_rate"] is None
+
+
+def test_build_frame_metadata_casts_numpy():
+    """Test that numpy scalars are coerced to native Python types (JSON-safe)."""
+    import numpy as np
+
+    md = build_frame_metadata(
+        timestamp=np.float64(2.0),
+        frame_pixel_size_nm=np.float32(0.5),
+        start_epoch_ms=np.int64(1234),
+        line_rate=np.float64(50.0),
+    )
+    assert isinstance(md["timestamp"], float)
+    assert isinstance(md["frame_pixel_size_nm"], float)
+    assert isinstance(md["start_epoch_ms"], int)
+    assert isinstance(md["line_rate"], float)
 
 
 # --- Test colormap ---

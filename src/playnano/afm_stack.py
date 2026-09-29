@@ -18,6 +18,7 @@ from playnano.processing import (
     stack_edit,
     video_processing,
 )
+from playnano.utils.io_utils import FRAME_METADATA_KEYS
 from playnano.utils.time_utils import normalize_timestamps
 
 # Built-in filters and mask dictionaries
@@ -152,6 +153,13 @@ class AFMImageStack:
         # Normalize all timestamps
         self.frame_metadata = normalize_timestamps(frame_metadata)
 
+        # Check only known keys are present in frame_metadata
+        _known = set(FRAME_METADATA_KEYS)
+        for i, md in enumerate(self.frame_metadata):
+            unknown = set(md) - _known
+            if unknown:
+                logger.warning("frame_metadata[%d] has unknown keys: %s", i, unknown)
+
         # Stores processed data arrays from filters, keyed by step
         # name (e.g. 'gaussian_filter', 'remove_plane')
         self.processed: dict[str, np.ndarray] = {}
@@ -163,6 +171,7 @@ class AFMImageStack:
         # Stores provenance information for the processing and analysis
         # environments and pipelines.
         self.provenance: dict[str, Any] = {
+            "acquisition": {},
             "environment": {},  # to be filled when pipelines run
             "processing": {"steps": [], "keys_by_name": {}},
             "analysis": {"frame_times": None, "steps": [], "results_by_name": {}},
@@ -747,8 +756,8 @@ class AFMImageStack:
         from playnano.analysis.utils.common import NumpyEncoder
 
         record = {
-            "environment": self.stack.provenance.get("environment", {}),
-            "processing": self.stack.provenance.get("processing", {}),
+            "environment": self.provenance.get("environment", {}),
+            "processing": self.provenance.get("processing", {}),
         }
 
         dir = os.path.dirname(path)
@@ -1019,6 +1028,19 @@ class AFMImageStack:
             Channel name for the frame.
         """
         return self.frame_metadata[idx].get("channel", self.channel)
+
+    @property
+    def acquisition(self) -> dict[str, Any]:
+        """
+        File-level acquisition metadata.
+
+        May include bidirectional, motion setting, absolute start time, etc. Populated
+        by the format reader; empty when unavailable.
+
+        Survives frame edits, these are properties of the acquisition, not the frame
+        set.
+        """
+        return self.provenance.setdefault("acquisition", {})
 
     def restore_raw(self) -> np.ndarray:
         """
