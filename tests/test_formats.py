@@ -1,5 +1,6 @@
 """Test for loading various file types."""
 
+import logging
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,13 +20,17 @@ from playnano.io.formats.read_aris import (
 )
 from playnano.io.formats.read_asd import _standardize_units_to_nm, load_asd_file
 from playnano.io.formats.read_h5jpk import (
+    _frame_timing_h5,
     _get_z_scaling_h5,
     _get_z_unit_h5,
     _guess_and_standardize_units_to_nm,
     apply_z_unit_conversion,
     load_h5jpk,
 )
-from playnano.io.formats.read_jpk_folder import load_jpk_folder
+from playnano.io.formats.read_jpk_folder import (
+    _bidirectional_from_timing,
+    load_jpk_folder,
+)
 from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
 from playnano.io.loader import get_loader_for_file, get_loader_for_folder
 from playnano.utils.io_utils import FRAME_METADATA_KEYS
@@ -433,6 +438,25 @@ def test_read_h5jpk_valid_file(
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
+def test_frame_timing_h5_fallback_uses_scan_rate(monkeypatch, caplog):
+    """When start-times/end-times are absent, fall back to scan-rate timing."""
+
+    class FakeGroup:
+        attrs = {"timing-settings.scanRate": 60.0}
+
+        def __getitem__(self, key):
+            raise KeyError(key)  # start-times / end-times absent
+
+    with caplog.at_level(logging.WARNING):
+        timestamps, _, start_ms = _frame_timing_h5(FakeGroup(), 5, 256)
+
+    assert len(timestamps) == 5
+    # 256 lines / 60 lines-per-second = 4.267 s per frame (unidirectional)
+    assert timestamps[1] == pytest.approx(256 / 60)
+    assert all(s is None for s in start_ms)
+    assert "unavailable" in caplog.text.lower()
+
+
 def test_get_loader_for_folder_no_valid_files(tmp_path):
     """Test to raise FileNotFoundError when no supported files are present."""
     (tmp_path / "file.txt").touch()
@@ -572,6 +596,293 @@ def test_read_jpk_valid_files(
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
     assert result.data.sum() == stack_sum
     assert len(result.frame_metadata) == result.data.shape[0]
+
+
+def test_frame_timing_jpk_fallback_uses_scan_rate(monkeypatch, tmp_path, caplog):
+    """Test when StartDate/EndDate tags unreadable, fallback to scan-rate timing."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import _frame_timing
+
+    # Fake three .jpk files on disk , the paths need to exist for
+    # _bidirectional_from_blob to open them, but their contents
+    # don't matter because we patch what reads them.
+    jpk_files = []
+    for i in range(3):
+        fp = tmp_path / f"frame_{i}.jpk"
+        fp.write_bytes(b"")  # empty; never actually read
+        jpk_files.append(fp)
+
+    # _frame_times raises KeyError when the date tags are missing.
+    # Trigger the fallback path in _frame_timing.
+    def fake_frame_times(_path):
+        raise KeyError("32771")  # TAG_START_DATE
+
+    # Fallback needs a scan rate. Return 60 lines/s.
+    def fake_extract_scan_rate(_path):
+        return 60.0
+
+    # Fallback also asks whether the acquisition is bidirectional. Return False.
+    def fake_bidirectional_from_blob(_path):
+        return False
+
+    monkeypatch.setattr(read_jpk_folder, "_frame_times", fake_frame_times)
+    monkeypatch.setattr(read_jpk_folder, "_extract_scan_rate", fake_extract_scan_rate)
+    monkeypatch.setattr(
+        read_jpk_folder, "_bidirectional_from_blob", fake_bidirectional_from_blob
+    )
+
+    lines_per_frame = 256
+    with caplog.at_level(logging.WARNING):
+        timestamps, durations, starts = _frame_timing(jpk_files, lines_per_frame)
+
+    # Unidirectional interval: 256 lines / 60 lines/sec = 4.267 s per frame.
+    expected_interval = lines_per_frame / 60.0
+    assert len(timestamps) == 3
+    assert timestamps[0] == pytest.approx(0.0)
+    assert timestamps[1] == pytest.approx(expected_interval)
+    assert timestamps[2] == pytest.approx(2 * expected_interval)
+    assert all(d == pytest.approx(expected_interval) for d in durations)
+    assert all(s is None for s in starts)
+    assert "unreadable" in caplog.text.lower()
+
+
+def test_frame_timing_jpk_fallback_bidirectional_halves_interval(monkeypatch, tmp_path):
+    """Fallback halves the interval when the blob says bidirectional."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import _frame_timing
+
+    jpk_files = []
+    for i in range(3):
+        fp = tmp_path / f"frame_{i}.jpk"
+        fp.write_bytes(b"")
+        jpk_files.append(fp)
+
+    monkeypatch.setattr(
+        read_jpk_folder,
+        "_frame_times",
+        lambda _p: (_ for _ in ()).throw(KeyError("32771")),
+    )
+    monkeypatch.setattr(read_jpk_folder, "_extract_scan_rate", lambda _p: 60.0)
+    monkeypatch.setattr(read_jpk_folder, "_bidirectional_from_blob", lambda _p: True)
+
+    lines_per_frame = 256
+    timestamps, durations, _ = _frame_timing(jpk_files, lines_per_frame)
+
+    # Bidirectional: interval is halved.
+    expected_interval = lines_per_frame / 60.0 / 2.0
+    assert timestamps[1] == pytest.approx(expected_interval)
+    assert durations[0] == pytest.approx(expected_interval)
+
+
+def test_frame_timing_jpk_no_dates_no_rate_raises(monkeypatch, tmp_path):
+    """Test if both StartDate/EndDate AND scan rate are unreadable, raise."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import _frame_timing
+
+    jpk_files = [tmp_path / "frame_0.jpk"]
+    jpk_files[0].write_bytes(b"")
+
+    monkeypatch.setattr(
+        read_jpk_folder, "_frame_times", lambda _p: (_ for _ in ()).throw(KeyError("x"))
+    )
+    monkeypatch.setattr(read_jpk_folder, "_extract_scan_rate", lambda _p: None)
+
+    with pytest.raises(ValueError, match="cannot time frames"):
+        _frame_timing(jpk_files, 256)
+
+
+def test_bidirectional_from_timing_threshold():
+    """Test the threshold for bidirectional detection from timing."""
+    # ratio = duration * scanrate / slow_lines
+    # bidirectional: True when ratio < 0.7
+    is_bi, ratio = _bidirectional_from_timing(
+        duration_s=0.6, scanrate_hz=60, slow_lines=100
+    )
+    assert ratio == pytest.approx(0.36)
+    assert is_bi is True
+
+    is_bi, ratio = _bidirectional_from_timing(
+        duration_s=1.5, scanrate_hz=60, slow_lines=100
+    )
+    assert ratio == pytest.approx(0.9)
+    assert is_bi is False
+
+
+def test_bidirectional_from_blob_true(monkeypatch, tmp_path):
+    """Reads yaxis.interlace = true from the settings blob."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import (
+        TAG_SETTINGS,
+        _bidirectional_from_blob,
+    )
+
+    jpk_file = tmp_path / "frame.jpk"
+    jpk_file.write_bytes(b"")
+
+    blob = (
+        "fast-imaging.something-else : false\n"
+        "fast-imaging.feed-forward-parameters.yaxis.interlace : true\n"
+        "another.setting : 42\n"
+    )
+
+    class FakeTag:
+        def __init__(self, value):
+            self.value = value
+
+    class FakeTags:
+        def __init__(self, mapping):
+            self._m = mapping
+
+        def __contains__(self, k):
+            return k in self._m
+
+        def __getitem__(self, k):
+            return FakeTag(self._m[k])
+
+    class FakePage:
+        tags = FakeTags({TAG_SETTINGS: blob})
+
+    class FakeTiff:
+        pages = [FakePage()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(read_jpk_folder.tifffile, "TiffFile", lambda _p: FakeTiff())
+
+    assert _bidirectional_from_blob(jpk_file) is True
+
+
+def test_bidirectional_from_blob_false(monkeypatch, tmp_path):
+    """Reads yaxis.interlace = false and returns False."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import (
+        TAG_SETTINGS,
+        _bidirectional_from_blob,
+    )
+
+    jpk_file = tmp_path / "frame.jpk"
+    jpk_file.write_bytes(b"")
+
+    blob = "fast-imaging.feed-forward-parameters.yaxis.interlace : false\n"
+
+    class FakeTag:
+        def __init__(self, value):
+            self.value = value
+
+    class FakeTags:
+        def __init__(self, m):
+            self._m = m
+
+        def __contains__(self, k):
+            return k in self._m
+
+        def __getitem__(self, k):
+            return FakeTag(self._m[k])
+
+    class FakePage:
+        tags = FakeTags({TAG_SETTINGS: blob})
+
+    class FakeTiff:
+        pages = [FakePage()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(read_jpk_folder.tifffile, "TiffFile", lambda _p: FakeTiff())
+
+    assert _bidirectional_from_blob(jpk_file) is False
+
+
+def test_bidirectional_from_blob_missing_setting_warns(monkeypatch, tmp_path, caplog):
+    """Test when the interlace key isn't in the blob, warn and return False."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import (
+        TAG_SETTINGS,
+        _bidirectional_from_blob,
+    )
+
+    jpk_file = tmp_path / "frame.jpk"
+    jpk_file.write_bytes(b"")
+
+    # A settings blob that doesn't contain the interlace key.
+    blob = "some.other.setting : true\n"
+
+    class FakeTag:
+        def __init__(self, value):
+            self.value = value
+
+    class FakeTags:
+        def __init__(self, m):
+            self._m = m
+
+        def __contains__(self, k):
+            return k in self._m
+
+        def __getitem__(self, k):
+            return FakeTag(self._m[k])
+
+    class FakePage:
+        tags = FakeTags({TAG_SETTINGS: blob})
+
+    class FakeTiff:
+        pages = [FakePage()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(read_jpk_folder.tifffile, "TiffFile", lambda _p: FakeTiff())
+
+    with caplog.at_level("WARNING"):
+        result = _bidirectional_from_blob(jpk_file)
+
+    assert result is False
+    assert "interlace setting not found" in caplog.text.lower()
+
+
+def test_bidirectional_from_blob_no_settings_tag(monkeypatch, tmp_path, caplog):
+    """Test when settings tag is absent, blob is empty and it warns/returns False."""
+    from playnano.io.formats import read_jpk_folder
+    from playnano.io.formats.read_jpk_folder import _bidirectional_from_blob
+
+    jpk_file = tmp_path / "frame.jpk"
+    jpk_file.write_bytes(b"")
+
+    class FakeTags:
+        def __contains__(self, _k):
+            return False  # TAG_SETTINGS absent
+
+        def __getitem__(self, k):
+            raise KeyError(k)
+
+    class FakePage:
+        tags = FakeTags()
+
+    class FakeTiff:
+        pages = [FakePage()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(read_jpk_folder.tifffile, "TiffFile", lambda _p: FakeTiff())
+
+    with caplog.at_level("WARNING"):
+        result = _bidirectional_from_blob(jpk_file)
+
+    assert result is False
+    assert "interlace setting not found" in caplog.text.lower()
 
 
 class TestGetZUnitH5(unittest.TestCase):
