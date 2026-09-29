@@ -2,7 +2,6 @@
 
 import json
 import logging
-import types
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -1068,23 +1067,16 @@ def test_export_processing_log(tmp_path, monkeypatch):
 
 
 def test_export_processing_log_creates_json_file(tmp_path, stack_with_times):
-    """Test export_processing_log makes correct JSON output from mocked provenance."""
+    """Test export_processing_log writes populated provenance to JSON."""
     dummy_env = {"python_version": "3.10"}
     dummy_processing = {
         "steps": ["filter", "segment"],
         "keys_by_name": {"filter": "gauss"},
     }
 
-    # Create a mock object to act as `stack_with_times.stack` with a provenance dict
-    mock_stack = types.SimpleNamespace(
-        provenance={
-            "environment": dummy_env,
-            "processing": dummy_processing,
-        }
-    )
-
-    # Attach this mock_stack as .stack attribute on stack_with_times
-    stack_with_times.stack = mock_stack
+    # export_processing_log reads self.provenance directly — populate it.
+    stack_with_times.provenance["environment"] = dummy_env
+    stack_with_times.provenance["processing"] = dummy_processing
 
     log_file = tmp_path / "logs" / "processing_log.json"
     stack_with_times.export_processing_log(str(log_file))
@@ -1118,7 +1110,6 @@ def test_export_processing_log_creates_file_and_dir(tmp_path, dummy_stack):
 
     # Create nested path
     log_path = tmp_path / "logs" / "proc.json"
-    dummy_stack.stack = dummy_stack  # simulate self.stack access inside method
     dummy_stack.export_processing_log(str(log_path))
 
     assert log_path.exists()
