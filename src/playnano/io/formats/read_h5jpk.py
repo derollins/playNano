@@ -296,7 +296,7 @@ def _is_bidirectional_h5(measurement_group: h5py.Group) -> bool:
 
 
 def _get_motion_h5(measurement_group: h5py.Group) -> str | None:
-    """Slow-axis frame direction ('topDown' / 'bottomUp')."""
+    """Slow-axis frame direction, usually either 'topDown' or 'bottomUp'."""
     motion = measurement_group.attrs.get("motion")
     return decode_hdf5_attr(motion).strip() if motion is not None else None
 
@@ -546,7 +546,5 @@ def load_h5jpk(
             file_path=str(file_path),
             frame_metadata=frame_metadata,
         )
-        afm.acquisition["bidirectional"] = (
-            None if bidirectional is None else bool(bidirectional)
-        )
+        afm.acquisition["bidirectional"] = bool(bidirectional)
     return afm

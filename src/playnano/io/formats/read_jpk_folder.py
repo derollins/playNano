@@ -236,7 +236,9 @@ def load_jpk_folder(
 
     if starts[0] is not None:  # dates present -> documented-tag inference
         bidirectional, _ = _bidirectional_from_timing(
-            float(np.median(frame_durations)), scan_rate, height_px
+            float(np.median(frame_durations)),
+            scan_rate,
+            height_px,  # height_px = slow_lines per frame
         )
     else:  # dates missing -> we already fell back; blob
         bidirectional = _bidirectional_from_blob(jpk_files[0])
@@ -274,8 +276,5 @@ def load_jpk_folder(
         file_path=str(folder),
         frame_metadata=frame_metadata,
     )
-    afm.acquisition["bidirectional"] = (
-        None if bidirectional is None else bool(bidirectional)
-    )
-
+    afm.acquisition["bidirectional"] = bool(bidirectional)
     return afm
