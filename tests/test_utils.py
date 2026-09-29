@@ -255,7 +255,7 @@ def test_build_frame_metadata_minimal():
 
 
 def test_build_frame_metadata_casts_numpy():
-    """numpy scalars are coerced to native Python types (JSON-safe)."""
+    """Test that numpy scalars are coerced to native Python types (JSON-safe)."""
     import numpy as np
 
     md = build_frame_metadata(

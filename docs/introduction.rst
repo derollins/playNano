@@ -33,7 +33,10 @@ Core Components
 **playNano** is organised around four main stages:
 
 1. **Loading** - Imports a sequence of AFM frames into an
-   :class:`~playnano.afm_stack.AFMImageStack`, preserving timestamps and metadata.
+   :class:`~playnano.afm_stack.AFMImageStack`, capturing per-frame
+   timestamps, durations, absolute start times, scan direction and pixel
+   size where the source format records them, and whole-video acquisition
+   settings (bidirectional scanning, etc.) alongside.
    The following AFM file formats are supported:
    ``.jpk``, ``.asd``, ``.aris``, ``.h5-jpk``, and ``.spm``.
    Additionally files exported from playNano can be re-loaded back into the programme.
@@ -45,6 +48,29 @@ Core Components
    create custom workflows. See more: :doc:`analysis`.
 4. **Export** - Saves processed data and analysis results in multiple open
    formats for reuse, sharing, and publication. See more: :doc:`exporting`.
+
+----
+
+Loading and Metadata
+--------------------
+
+All loaders emit a common per-frame metadata schema, regardless of
+source format. Every frame carries a ``timestamp`` (seconds from frame
+zero), a ``frame_pixel_size_nm`` (physical pixel size for that frame),
+and (where the source format encodes them) a ``frame_duration_s``,
+an absolute ``start_epoch_ms``, a ``scan_direction`` (``'topDown'`` /
+``'bottomUp'``), and a ``line_rate``. Fields a format cannot provide
+are stored as ``None`` rather than filled with a synthetic value.
+
+Whole-video acquisition settings that do not change between frames
+(such as whether the acquisition alternates slow-axis direction) are
+recorded on the stack under ``stack.acquisition``, distinct from the
+per-frame dicts.
+
+This unified layout means downstream code in processing, analysis,
+export modules, can read from ``stack.frame_metadata[i]["timestamp"]``,
+``stack.acquisition["bidirectional"]``, and so on without branching on
+format.
 
 ----
 
