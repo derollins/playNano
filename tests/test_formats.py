@@ -28,6 +28,7 @@ from playnano.io.formats.read_h5jpk import (
 from playnano.io.formats.read_jpk_folder import load_jpk_folder
 from playnano.io.formats.read_spm_folder import load_spm_folder, parse_spm_header
 from playnano.io.loader import get_loader_for_file, get_loader_for_folder
+from playnano.utils.io_utils import FRAME_METADATA_KEYS
 
 
 def test_load_afm_stack_file_calls_correct_loader(tmp_path):
@@ -245,6 +246,32 @@ def test_raises_for_missing_extension():
         get_loader_for_file(Path("noextension"), file_loaders, folder_loaders)
 
     assert "has no extension" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "loader,fixture,channel",
+    [
+        (load_asd_file, "asd_sample_0.asd", "TP"),
+        (load_spm_folder, "spm_folder_0", "Height"),
+        (load_jpk_folder, "jpk_folder_0", "height_trace"),
+        (load_h5jpk, "sample_0.h5-jpk", "height_trace"),
+    ],
+)
+def test_frame_metadata_schema(loader, fixture, channel, resource_path):
+    """Every reader emits exactly FRAME_METADATA_KEYS on every frame."""
+    stack = loader(resource_path / fixture, channel)
+
+    expected = set(FRAME_METADATA_KEYS)
+    for i, md in enumerate(stack.frame_metadata):
+        assert set(md.keys()) == expected, (
+            f"{loader.__name__} frame {i}: "
+            f"missing {expected - set(md)}, extra {set(md) - expected}"
+        )
+
+    # Required-key contract: never None on any frame
+    for md in stack.frame_metadata:
+        assert md["timestamp"] is not None
+        assert md["frame_pixel_size_nm"] is not None
 
 
 @pytest.mark.parametrize(

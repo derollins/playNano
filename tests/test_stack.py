@@ -12,6 +12,7 @@ import pytest
 
 import playnano.afm_stack as afm_stack_module
 from playnano.afm_stack import AFMImageStack, normalize_timestamps
+from playnano.utils.io_utils import build_frame_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,40 @@ def test_metadata_error_when_longer():
             file_path=".",
             frame_metadata=long_meta,
         )
+
+
+def test_unknown_frame_metadata_keys_logged(caplog):
+    """AFMImageStack.__init__ warns on frame_metadata keys outside the schema."""
+    data = np.zeros((2, 4, 4), dtype=np.float32)
+    frame_metadata = [
+        {"timestamp": 0.0, "motion": "bottomUp"},  # 'motion' is not in schema
+        {"timestamp": 1.0},
+    ]
+    with caplog.at_level(logging.WARNING, logger="playnano.afm_stack"):
+        AFMImageStack(
+            data=data,
+            pixel_size_nm=1.0,
+            channel="Height",
+            file_path=".",
+            frame_metadata=frame_metadata,
+        )
+    warnings = [r.message for r in caplog.records if "unknown keys" in r.message]
+    assert any("motion" in w for w in warnings)
+
+
+def test_known_frame_metadata_keys_silent(caplog):
+    """Schema-conformant frame_metadata triggers no drift warning."""
+    data = np.zeros((1, 4, 4), dtype=np.float32)
+    frame_metadata = [build_frame_metadata(timestamp=0.0, frame_pixel_size_nm=1.0)]
+    with caplog.at_level(logging.WARNING, logger="playnano.afm_stack"):
+        AFMImageStack(
+            data=data,
+            pixel_size_nm=1.0,
+            channel="Height",
+            file_path=".",
+            frame_metadata=frame_metadata,
+        )
+    assert not any("unknown keys" in r.message for r in caplog.records)
 
 
 def test_get_frames_returns_all_frames(stack_with_times):
@@ -221,6 +256,23 @@ def test_channel_for_frame_with_and_without_override():
 
     assert stack.channel_for_frame(0) == "frame-specific"
     assert stack.channel_for_frame(1) == "global-channel"
+
+
+def test_acquisition_property_exposes_provenance_slot(dummy_stack):
+    """acquisition returns provenance['acquisition'] and is writable."""
+    dummy_stack.acquisition["bidirectional"] = True
+    dummy_stack.acquisition["some_reader_field"] = 42
+
+    # Round-trips through provenance
+    assert dummy_stack.provenance["acquisition"]["bidirectional"] is True
+    assert dummy_stack.provenance["acquisition"]["some_reader_field"] == 42
+
+
+def test_acquisition_survives_repeated_reads(dummy_stack):
+    """Reading acquisition twice returns the same dict (setdefault semantics)."""
+    a = dummy_stack.acquisition
+    a["marker"] = "sentinel"
+    assert dummy_stack.acquisition["marker"] == "sentinel"
 
 
 def test_flatten_images_uses_apply(monkeypatch):
