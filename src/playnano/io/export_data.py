@@ -160,8 +160,6 @@ def save_ome_tiff_stack(
         "PhysicalSizeXUnit": "µm",
         "PhysicalSizeY": afm_stack.pixel_size_nm * 1e-3,
         "PhysicalSizeYUnit": "µm",
-        "PhysicalSizeZ": 1.0,
-        "PhysicalSizeZUnit": "µm",
         "TimeIncrement": (
             (timestamps[1] - timestamps[0]) if len(timestamps) > 1 else 0.0
         ),
