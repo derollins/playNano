@@ -8,15 +8,39 @@ resolution. The global pixel size (from the first frame) is stored in
 """
 
 import logging
+from datetime import datetime
 from pathlib import Path
 
 import h5py
 import numpy as np
 
 from playnano.afm_stack import AFMImageStack
-from playnano.utils.io_utils import decode_hdf5_attr
+from playnano.utils.io_utils import build_frame_metadata, decode_hdf5_attr
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_aris_start(value: str) -> datetime | None:
+    """
+    Parse ARIS StartTime ('YYYY-MM-DD HH:MM:SS.ffffff... +HHMM') to aware datetime.
+
+    ARIS stamps go to sub-microseconds; Python's %f is 6 digits, so trim any excess
+    (e.g. '.638777400' -> '.638777').
+    """
+    if value is None:
+        return None
+    s = str(value).strip()
+    # trim fractional seconds to 6 digits so %f parses
+    if "." in s:
+        head, tail = s.split(".", 1)
+        frac, _, rest = tail.partition(" ")
+        s = f"{head}.{frac[:6]} {rest}" if rest else f"{head}.{frac[:6]}"
+    for fmt in ("%Y-%m-%d %H:%M:%S.%f %z", "%Y-%m-%d %H:%M:%S %z"):
+        try:
+            return datetime.strptime(s, fmt)
+        except ValueError:
+            continue
+    return None
 
 
 def _get_channel_names(info: h5py.Group) -> list[str]:
@@ -216,17 +240,34 @@ def load_aris(
             raise ValueError(
                 f"Timestamp count ({len(timestamps)}) does not match frame count ({image_stack.shape[0]})."  # noqa
             )
-        line_rate = info["Global/Parameters/Scan"].attrs["ScanRate"]
+        line_rate = info["Global/Parameters/Scan"].attrs[
+            "ScanRate"
+        ]  # TODO: honour per-frame ScanRate overrides (it can change between frames)
+
+        # Absolute time (aware, sub-ms): base epoch + per-frame Series/Time offset
+        start_dt = _parse_aris_start(
+            decode_hdf5_attr(info["Global"].attrs.get("StartTime"))
+        )
+        base_ms = int(start_dt.timestamp() * 1000) if start_dt is not None else None
+
+        def _epoch_ms(i):
+            return (
+                None
+                if base_ms is None
+                else base_ms + int(round(float(timestamps[i]) * 1000))
+            )
 
         # Compose per-frame metadata list
         frame_metadata = []
         for frame in range(image_stack.shape[0]):
             frame_metadata.append(
-                {
-                    "timestamp": float(timestamps[frame]),
-                    "frame_pixel_size_nm": float(pixel_sizes_nm[frame]),
-                    "line_rate": float(line_rate),
-                }
+                build_frame_metadata(
+                    timestamp=float(timestamps[frame])
+                    - float(timestamps[0]),  # seconds from frame 0
+                    frame_pixel_size_nm=pixel_sizes_nm[frame],
+                    line_rate=float(line_rate),
+                    start_epoch_ms=_epoch_ms(frame),
+                )
             )
 
         return AFMImageStack(
