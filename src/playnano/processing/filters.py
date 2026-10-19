@@ -165,8 +165,8 @@ def zero_median(data: np.ndarray) -> np.ndarray:
         Zero-median image.
     """
     img = data.astype(np.float64).copy()
-    mean_val = np.median(img)
-    return img - mean_val
+    median_val = np.median(img)
+    return img - median_val
 
 
 @versioned_filter("0.1.0")
