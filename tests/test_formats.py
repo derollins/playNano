@@ -1119,6 +1119,90 @@ def test_read_spm_valid_files(
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
+def test_load_spm_folder_real_timing_captures_jitter(monkeypatch, tmp_path):
+    """When every .spm file has 'Relative frame time', use real per-frame gaps."""
+    from playnano.io.formats import read_spm_folder
+    from playnano.io.formats.read_spm_folder import load_spm_folder
+
+    # Four empty .spm files on disk — paths are real, contents don't matter
+    # because the readers that touch them are patched below.
+    spm_files = []
+    for i in range(4):
+        fp = tmp_path / f"frame_{i:03d}.spm"
+        fp.write_bytes(b"")
+        spm_files.append(fp)
+
+    # AFMReader.spm.load_spm returns a tiny dummy frame + pixel size.
+    def fake_load_spm(_path, _channel):
+        return np.zeros((8, 8), dtype=np.float32), 1.0
+
+    monkeypatch.setattr(read_spm_folder.spm, "load_spm", fake_load_spm)
+
+    # parse_spm_header is called on the first file to get the fallback Scan Rate.
+    monkeypatch.setattr(
+        read_spm_folder,
+        "parse_spm_header",
+        lambda _fp, max_bytes=65536: {"Scan Rate": "100"},
+    )
+
+    # Uneven real timing: 120 s, 150 s, 130 s gaps. These are the kind of
+    # inter-frame jitter the synth 'lines / scan_rate' estimate would miss.
+    rel_ts_by_name = {
+        "frame_000.spm": 1000.0,
+        "frame_001.spm": 1120.0,
+        "frame_002.spm": 1270.0,
+        "frame_003.spm": 1400.0,
+    }
+    monkeypatch.setattr(
+        read_spm_folder,
+        "_read_spm_header_fields",
+        lambda fp: (rel_ts_by_name[fp.name], None, None),
+    )
+
+    stack = load_spm_folder(tmp_path, "Height")
+
+    # Timestamps normalised to frame zero.
+    ts = [m["timestamp"] for m in stack.frame_metadata]
+    assert ts == pytest.approx([0.0, 120.0, 270.0, 400.0])
+
+    # Each frame's duration is the gap to the next frame; the last frame
+    # has no 'next' and is None (NaN sentinel converted in the loader).
+    durations = [m["frame_duration_s"] for m in stack.frame_metadata]
+    assert durations[:3] == pytest.approx([120.0, 150.0, 130.0])
+    assert durations[3] is None
+
+
+def test_load_spm_folder_real_timing_single_frame(monkeypatch, tmp_path):
+    """Single-frame real-timing: timestamp 0, duration None (no next frame)."""
+    from playnano.io.formats import read_spm_folder
+    from playnano.io.formats.read_spm_folder import load_spm_folder
+
+    fp = tmp_path / "frame_000.spm"
+    fp.write_bytes(b"")
+
+    monkeypatch.setattr(
+        read_spm_folder.spm,
+        "load_spm",
+        lambda _p, _c: (np.zeros((8, 8), dtype=np.float32), 1.0),
+    )
+    monkeypatch.setattr(
+        read_spm_folder,
+        "parse_spm_header",
+        lambda _fp, max_bytes=65536: {"Scan Rate": "100"},
+    )
+    monkeypatch.setattr(
+        read_spm_folder,
+        "_read_spm_header_fields",
+        lambda _fp: (500.0, None, None),
+    )
+
+    stack = load_spm_folder(tmp_path, "Height")
+
+    assert len(stack.frame_metadata) == 1
+    assert stack.frame_metadata[0]["timestamp"] == pytest.approx(0.0)
+    assert stack.frame_metadata[0]["frame_duration_s"] is None
+
+
 # --- ARIS loader tests ---
 
 
