@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Quickstart" href="quickstart.html"><link rel="prev" title="playNano Documentation" href="index.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Introduction - playnano v0.4.0.post1 documentation</title>
+        <title>Introduction - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -183,7 +183,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -534,7 +534,10 @@ reconstruction of results at any stage.</p>
 <p><strong>playNano</strong> is organised around four main stages:</p>
 <ol class="arabic simple">
 <li><p><strong>Loading</strong> - Imports a sequence of AFM frames into an
-<a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>, preserving timestamps and metadata.
+<a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>, capturing per-frame
+timestamps, durations, absolute start times, scan direction and pixel
+size where the source format records them, and whole-video acquisition
+settings (bidirectional scanning, etc.) alongside.
 The following AFM file formats are supported:
 <code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code>, <code class="docutils literal notranslate"><span class="pre">.aris</span></code>, <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>, and <code class="docutils literal notranslate"><span class="pre">.spm</span></code>.
 Additionally files exported from playNano can be re-loaded back into the programme.</p></li>
@@ -547,6 +550,25 @@ create custom workflows. See more: <a class="reference internal" href="analysis.
 <li><p><strong>Export</strong> - Saves processed data and analysis results in multiple open
 formats for reuse, sharing, and publication. See more: <a class="reference internal" href="exporting.html"><span class="doc">Exporting Data</span></a>.</p></li>
 </ol>
+</section>
+<hr class="docutils" />
+<section id="loading-and-metadata">
+<h2>Loading and Metadata<a class="headerlink" href="#loading-and-metadata" title="Link to this heading">¶</a></h2>
+<p>All loaders emit a common per-frame metadata schema, regardless of
+source format. Every frame carries a <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (seconds from frame
+zero), a <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code> (physical pixel size for that frame),
+and (where the source format encodes them) a <code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code>,
+an absolute <code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code>, a <code class="docutils literal notranslate"><span class="pre">scan_direction</span></code> (<code class="docutils literal notranslate"><span class="pre">'topDown'</span></code> /
+<code class="docutils literal notranslate"><span class="pre">'bottomUp'</span></code>), and a <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>. Fields a format cannot provide
+are stored as <code class="docutils literal notranslate"><span class="pre">None</span></code> rather than filled with a synthetic value.</p>
+<p>Whole-video acquisition settings that do not change between frames
+(such as whether the acquisition alternates slow-axis direction) are
+recorded on the stack under <code class="docutils literal notranslate"><span class="pre">stack.acquisition</span></code>, distinct from the
+per-frame dicts.</p>
+<p>This unified layout means downstream code in processing, analysis,
+export modules, can read from <code class="docutils literal notranslate"><span class="pre">stack.frame_metadata[i][&quot;timestamp&quot;]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">stack.acquisition[&quot;bidirectional&quot;]</span></code>, and so on without branching on
+format.</p>
 </section>
 <hr class="docutils" />
 <section id="next-steps">
@@ -615,6 +637,7 @@ processing workflow.</p>
 <li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#motivation-and-design">Motivation and Design</a></li>
 <li><a class="reference internal" href="#core-components">Core Components</a></li>
+<li><a class="reference internal" href="#loading-and-metadata">Loading and Metadata</a></li>
 <li><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -627,7 +650,7 @@ processing workflow.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="_static/documentation_options.js?v=e663822d"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

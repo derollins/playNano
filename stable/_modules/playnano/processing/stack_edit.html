@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.stack_edit - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.processing.stack_edit - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -515,6 +515,8 @@
 <span class="sd">- drop_frame_range : Generate a list of frame indices to drop within a given range.</span>
 <span class="sd">- select_frames : Generate a list of frame indices to drop, keeping only the selected</span>
 <span class="sd">  frames.</span>
+<span class="sd">- drop_final_frames : Generate a list of frame indices to drop from the end of the</span>
+<span class="sd">  stack. Default is to drop the last frame (n_frames_to_drop=1).</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
@@ -642,6 +644,42 @@
 
 
 
+<div class="viewcode-block" id="drop_final_frames">
+<a class="viewcode-back" href="../../../api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_final_frames">[docs]</a>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">drop_final_frames</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_frames_to_drop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Generate a list of frame indices to drop from the end of the stack.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        3D array of shape (n_frames, height, width) representing the image stack.</span>
+<span class="sd">    n_frames_to_drop : int</span>
+<span class="sd">        Number of frames to drop from the end of the stack.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of int</span>
+<span class="sd">        List of frame indices that should be dropped. By default, this will drop</span>
+<span class="sd">        the last frame (n_frames_to_drop=1).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `n_frames_to_drop` is negative or exceeds the number of frames.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected a 3D array, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D."</span><span class="p">)</span>
+
+    <span class="n">n_frames</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n_frames_to_drop</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">n_frames_to_drop</span> <span class="o">&gt;</span> <span class="n">n_frames</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid number of frames to drop: </span><span class="si">{</span><span class="n">n_frames_to_drop</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_frames</span> <span class="o">-</span> <span class="n">n_frames_to_drop</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">))</span></div>
+
+
+
 <div class="viewcode-block" id="register_stack_edit_processing">
 <a class="viewcode-back" href="../../../api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.register_stack_edit_processing">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_stack_edit_processing</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
@@ -650,14 +688,15 @@
 
 <span class="sd">    Keys are names of the operations, values are the functions themselves.</span>
 <span class="sd">    drop_frames is the operational function takes a 3D stack (n_frames,</span>
-<span class="sd">    H, W) and a list of indices and returns a ndarray. drop_frame_range and</span>
-<span class="sd">    select_frames are helper functions that return lists of indices to drop</span>
-<span class="sd">    which can be passed to drop_frames.</span>
+<span class="sd">    H, W) and a list of indices and returns a ndarray. drop_frame_range,</span>
+<span class="sd">    select_frames and drop_final_frames are helper functions that return</span>
+<span class="sd">    lists of indices to drop which can be passed to drop_frames.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">"drop_frames"</span><span class="p">:</span> <span class="n">drop_frames</span><span class="p">,</span>
         <span class="s2">"drop_frame_range"</span><span class="p">:</span> <span class="n">drop_frame_range</span><span class="p">,</span>
         <span class="s2">"select_frames"</span><span class="p">:</span> <span class="n">select_frames</span><span class="p">,</span>
+        <span class="s2">"drop_final_frames"</span><span class="p">:</span> <span class="n">drop_final_frames</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 </pre></div>
@@ -692,7 +731,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../../../_static/documentation_options.js?v=e663822d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

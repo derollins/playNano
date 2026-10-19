@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.utils.io_utils - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.utils.io_utils - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -505,27 +505,88 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">### --- CONSTANTS --- ###</span>
+
 <span class="n">INVALID_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'\/:*?"&lt;&gt;|'</span>
 <span class="n">INVALID_FOLDER_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'*?"&lt;&gt;|'</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">FRAME_METADATA_KEYS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"timestamp"</span><span class="p">,</span>
+    <span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span>
+    <span class="s2">"frame_duration_s"</span><span class="p">,</span>
+    <span class="s2">"start_epoch_ms"</span><span class="p">,</span>
+    <span class="s2">"scan_direction"</span><span class="p">,</span>
+    <span class="s2">"line_rate"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">HEIGHT_UNITS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"m"</span><span class="p">,</span> <span class="s2">"cm"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"um"</span><span class="p">,</span> <span class="s2">"nm"</span><span class="p">,</span> <span class="s2">"pm"</span><span class="p">]</span>
+
+<span class="c1"># --- FRAME METADATA ------------------------------------------------</span>
 
 
-<span class="n">height_units</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"m"</span><span class="p">,</span> <span class="s2">"cm"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"um"</span><span class="p">,</span> <span class="s2">"nm"</span><span class="p">,</span> <span class="s2">"pm"</span><span class="p">]</span>
+<div class="viewcode-block" id="build_frame_metadata">
+<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.build_frame_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_frame_metadata</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">frame_pixel_size_nm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">frame_duration_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start_epoch_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scan_direction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">line_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build a canonical per-frame metadata dict shared by all playNano readers.</span>
+
+<span class="sd">    Every value is cast to a native Python type so the dict is JSON-serialisable</span>
+<span class="sd">    (frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise</span>
+<span class="sd">    raise TypeError).</span>
+
+<span class="sd">    Fields a format cannot provide are stored as ``None``.</span>
+
+<span class="sd">    Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not</span>
+<span class="sd">    here. ``start_time`` (human-readable ISO) is derived from the first frame's</span>
+<span class="sd">    ``start_epoch_ms`` at the stack level; don't duplicate it per frame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    timestamp : float</span>
+<span class="sd">        Frame time in seconds relative to frame 0. Required.</span>
+<span class="sd">    frame_pixel_size_nm : float</span>
+<span class="sd">        Physical size of one pixel in nanometres for this frame. Required.</span>
+<span class="sd">    frame_duration_s : float, optional</span>
+<span class="sd">        Frame acquisition duration in seconds; ``None`` if unknown.</span>
+<span class="sd">    start_epoch_ms : int, optional</span>
+<span class="sd">        Frame start as Unix epoch milliseconds (UTC); ``None`` for formats</span>
+<span class="sd">        without absolute timing.</span>
+<span class="sd">    scan_direction : str, optional</span>
+<span class="sd">        Slow-axis frame direction (e.g. ``'topDown'``/``'bottomUp'``). Per-frame</span>
+<span class="sd">        because NanoScope spm sequences can alternate.</span>
+<span class="sd">    line_rate : float, optional</span>
+<span class="sd">        Fast-scan line rate (lines per second); ``None`` if unknown.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Exactly the keys in ``FRAME_METADATA_KEYS``.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"timestamp"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">timestamp</span><span class="p">),</span>
+        <span class="s2">"frame_pixel_size_nm"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">frame_pixel_size_nm</span><span class="p">),</span>
+        <span class="s2">"frame_duration_s"</span><span class="p">:</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">frame_duration_s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">frame_duration_s</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="s2">"start_epoch_ms"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">start_epoch_ms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_epoch_ms</span><span class="p">),</span>
+        <span class="s2">"scan_direction"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">scan_direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">scan_direction</span><span class="p">),</span>
+        <span class="s2">"line_rate"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">line_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">line_rate</span><span class="p">),</span>
+    <span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="pad_to_square">
-<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.pad_to_square">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pad_to_square</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">border_color</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Pad a 2D grayscale image to a square canvas by centring it."""</span>
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-    <span class="n">canvas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span> <span class="n">border_color</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="n">h</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">canvas</span><span class="p">[</span><span class="n">y</span> <span class="p">:</span> <span class="n">y</span> <span class="o">+</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>  <span class="c1"># noqa</span>
-    <span class="k">return</span> <span class="n">canvas</span></div>
 
+<span class="c1"># --- HEIGHT UNIT HANDLING ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="guess_height_data_units">
@@ -627,6 +688,9 @@
 
 
 
+<span class="c1"># --- IMAGE UTILITIES ------------------------------------------------</span>
+
+
 <div class="viewcode-block" id="normalize_to_uint8">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.normalize_to_uint8">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_to_uint8</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -658,6 +722,78 @@
     <span class="n">norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
     <span class="k">return</span> <span class="n">norm</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="compute_zscale_range">
+<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.compute_zscale_range">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_zscale_range</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">lower_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">upper_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute robust Z-scale bounds (height or intensity range) for normalization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        2D or 3D array of AFM image data.</span>
+<span class="sd">    zmin : float, "auto", or None</span>
+<span class="sd">        Lower bound: "auto" uses percentile, None uses data min, float uses value.</span>
+<span class="sd">    zmax : float or "auto"</span>
+<span class="sd">        Upper bound: "auto" uses percentile, None uses data max, float uses value.</span>
+<span class="sd">    lower_percentile : int, optional</span>
+<span class="sd">        Percentile to use for lower bound when zmin == "auto". Default is 1.</span>
+<span class="sd">    upper_percentile : int, optional</span>
+<span class="sd">        Percentile to use for upper bound when zmax == "auto". Default is 99.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (float, float)</span>
+<span class="sd">        zmin and zmax values suitable for normalization.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If zmin &gt; zmax after processing or invalid input types.</span>
+<span class="sd">    """</span>
+    <span class="n">flat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">flat</span><span class="p">)]</span>
+
+    <span class="c1"># Process zmin</span>
+    <span class="k">if</span> <span class="n">zmin</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">lower_percentile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zmin_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="c1"># Process zmax</span>
+    <span class="k">if</span> <span class="n">zmax</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">upper_percentile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zmax_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmax</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmax must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="c1"># Validation</span>
+    <span class="k">if</span> <span class="n">zmin_val</span> <span class="o">&gt;</span> <span class="n">zmax_val</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be less than or equal to zmax."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[Z-scaling] zmin=</span><span class="si">{</span><span class="n">zmin_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm, zmax=</span><span class="si">{</span><span class="n">zmax_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span></div>
+
+
+
+<span class="c1"># --- OUTPUT FILE AND FOLDER UTILS ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="sanitize_output_name">
@@ -736,73 +872,7 @@
 
 
 
-<div class="viewcode-block" id="compute_zscale_range">
-<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.compute_zscale_range">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">compute_zscale_range</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
-    <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
-    <span class="n">lower_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">upper_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Compute robust Z-scale bounds (height or intensity range) for normalization.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        2D or 3D array of AFM image data.</span>
-<span class="sd">    zmin : float, "auto", or None</span>
-<span class="sd">        Lower bound: "auto" uses percentile, None uses data min, float uses value.</span>
-<span class="sd">    zmax : float or "auto"</span>
-<span class="sd">        Upper bound: "auto" uses percentile, None uses data max, float uses value.</span>
-<span class="sd">    lower_percentile : int, optional</span>
-<span class="sd">        Percentile to use for lower bound when zmin == "auto". Default is 1.</span>
-<span class="sd">    upper_percentile : int, optional</span>
-<span class="sd">        Percentile to use for upper bound when zmax == "auto". Default is 99.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    (float, float)</span>
-<span class="sd">        zmin and zmax values suitable for normalization.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If zmin &gt; zmax after processing or invalid input types.</span>
-<span class="sd">    """</span>
-    <span class="n">flat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">flat</span><span class="p">)]</span>
-
-    <span class="c1"># Process zmin</span>
-    <span class="k">if</span> <span class="n">zmin</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
-        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">lower_percentile</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmin_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="c1"># Process zmax</span>
-    <span class="k">if</span> <span class="n">zmax</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
-        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">upper_percentile</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmax_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmax</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmax must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="c1"># Validation</span>
-    <span class="k">if</span> <span class="n">zmin_val</span> <span class="o">&gt;</span> <span class="n">zmax_val</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be less than or equal to zmax."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[Z-scaling] zmin=</span><span class="si">{</span><span class="n">zmin_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm, zmax=</span><span class="si">{</span><span class="n">zmax_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span></div>
-
+<span class="c1"># --- SERIALIZATION AND TYPE CONVERSION ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="make_json_safe">
@@ -826,6 +896,9 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">obj</span></div>
 
+
+
+<span class="c1"># --- ATTRIBUTE DECODING ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="decode_hdf5_attr">
@@ -880,7 +953,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../../../_static/documentation_options.js?v=e663822d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.afm_stack - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.afm_stack - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -518,6 +518,7 @@
     <span class="n">stack_edit</span><span class="p">,</span>
     <span class="n">video_processing</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">FRAME_METADATA_KEYS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.time_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_timestamps</span>
 
 <span class="c1"># Built-in filters and mask dictionaries</span>
@@ -574,6 +575,7 @@
 
 <span class="sd">            {</span>
 <span class="sd">                "environment": {...},</span>
+<span class="sd">                "acquisition": {...},</span>
 <span class="sd">                "processing": {"steps": [...], "keys_by_name": {...}},</span>
 <span class="sd">                "analysis": {"frame_times": [...], "steps": [...],</span>
 <span class="sd">                "results_by_name": {...}},</span>
@@ -654,6 +656,13 @@
         <span class="c1"># Normalize all timestamps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">normalize_timestamps</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">)</span>
 
+        <span class="c1"># Check only known keys are present in frame_metadata</span>
+        <span class="n">_known</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">FRAME_METADATA_KEYS</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">md</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">):</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">md</span><span class="p">)</span> <span class="o">-</span> <span class="n">_known</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"frame_metadata[</span><span class="si">%d</span><span class="s2">] has unknown keys: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">unknown</span><span class="p">)</span>
+
         <span class="c1"># Stores processed data arrays from filters, keyed by step</span>
         <span class="c1"># name (e.g. 'gaussian_filter', 'remove_plane')</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -665,6 +674,7 @@
         <span class="c1"># Stores provenance information for the processing and analysis</span>
         <span class="c1"># environments and pipelines.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"acquisition"</span><span class="p">:</span> <span class="p">{},</span>
             <span class="s2">"environment"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># to be filled when pipelines run</span>
             <span class="s2">"processing"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"steps"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"keys_by_name"</span><span class="p">:</span> <span class="p">{}},</span>
             <span class="s2">"analysis"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"frame_times"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"steps"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"results_by_name"</span><span class="p">:</span> <span class="p">{}},</span>
@@ -763,7 +773,7 @@
             <span class="sa">f</span><span class="s2">"Available masks: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"built-in filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"video filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">VIDEO_FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"methods: </span><span class="si">{</span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">m</span><span class="p">))]</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"methods: </span><span class="si">{</span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">))]</span><span class="si">}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.filters'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
             <span class="sa">f</span><span class="s2">"video_plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.video_processing'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
             <span class="sa">f</span><span class="s2">"stack_edit: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">STACK_EDIT_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
@@ -1269,8 +1279,8 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyEncoder</span>
 
         <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"environment"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"environment"</span><span class="p">,</span> <span class="p">{}),</span>
-            <span class="s2">"processing"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s2">"environment"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"environment"</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s2">"processing"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">,</span> <span class="p">{}),</span>
         <span class="p">}</span>
 
         <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -1561,6 +1571,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span></div>
 
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">acquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        File-level acquisition metadata.</span>
+
+<span class="sd">        May include bidirectional, motion setting, absolute start time, etc. Populated</span>
+<span class="sd">        by the format reader; empty when unavailable.</span>
+
+<span class="sd">        Survives frame edits, these are properties of the acquisition, not the frame</span>
+<span class="sd">        set.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"acquisition"</span><span class="p">,</span> <span class="p">{})</span>
+
 <div class="viewcode-block" id="AFMImageStack.restore_raw">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restore_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -1622,7 +1645,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../../_static/documentation_options.js?v=e663822d"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

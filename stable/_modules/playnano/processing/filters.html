@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.filters - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.processing.filters - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -661,6 +661,29 @@
 
 
 
+<div class="viewcode-block" id="zero_median">
+<a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.zero_median">[docs]</a>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">zero_median</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Subtract the overall median height to center the background around zero.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        2D AFM image data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Zero-median image.</span>
+<span class="sd">    """</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">median_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img</span> <span class="o">-</span> <span class="n">median_val</span></div>
+
+
+
 <div class="viewcode-block" id="gaussian_filter">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.gaussian_filter">[docs]</a>
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
@@ -713,6 +736,7 @@
         <span class="s2">"remove_plane"</span><span class="p">:</span> <span class="n">remove_plane</span><span class="p">,</span>
         <span class="s2">"row_median_align"</span><span class="p">:</span> <span class="n">row_median_align</span><span class="p">,</span>
         <span class="s2">"zero_mean"</span><span class="p">:</span> <span class="n">zero_mean</span><span class="p">,</span>
+        <span class="s2">"zero_median"</span><span class="p">:</span> <span class="n">zero_median</span><span class="p">,</span>
         <span class="s2">"polynomial_flatten"</span><span class="p">:</span> <span class="n">polynomial_flatten</span><span class="p">,</span>
         <span class="s2">"gaussian_filter"</span><span class="p">:</span> <span class="n">gaussian_filter</span><span class="p">,</span>
         <span class="s2">"vertical_flip"</span><span class="p">:</span> <span class="n">vertical_flip</span><span class="p">,</span>
@@ -750,7 +774,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../../../_static/documentation_options.js?v=e663822d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="playnano.errors module" href="playnano.errors.html"><link rel="prev" title="playnano.utils.versioning module" href="playnano.utils.versioning.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.afm_stack module - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.afm_stack module - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -183,7 +183,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -612,6 +612,7 @@ per frame ‘frame_pixel_size_nm’.</p>
 <dd><p>Records environment info and provenance of processing and analysis pipelines:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">"environment"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+    <span class="s2">"acquisition"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
     <span class="s2">"processing"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"steps"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s2">"keys_by_name"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}},</span>
     <span class="s2">"analysis"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"frame_times"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s2">"steps"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
     <span class="s2">"results_by_name"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}},</span>
@@ -623,6 +624,16 @@ per frame ‘frame_pixel_size_nm’.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Any]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="playnano.afm_stack.AFMImageStack.acquisition">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">acquisition</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#playnano.afm_stack.AFMImageStack.acquisition" title="Link to this definition">¶</a></dt>
+<dd><p>File-level acquisition metadata.</p>
+<p>May include bidirectional, motion setting, absolute start time, etc. Populated
+by the format reader; empty when unavailable.</p>
+<p>Survives frame edits, these are properties of the acquisition, not the frame
+set.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1075,6 +1086,7 @@ and is useful for stacks without explicit time metadata.</p>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.masks"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.masks</span></code></a></li>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.analysis"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.analysis</span></code></a></li>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.provenance"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.provenance</span></code></a></li>
+<li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.acquisition"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.acquisition</span></code></a></li>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.apply"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.apply()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.channel_for_frame"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.channel_for_frame()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.afm_stack.AFMImageStack.export_analysis_log"><code class="docutils literal notranslate"><span class="pre">AFMImageStack.export_analysis_log()</span></code></a></li>
@@ -1106,7 +1118,7 @@ and is useful for stacks without explicit time metadata.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../_static/documentation_options.js?v=e663822d"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

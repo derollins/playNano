@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="playnano.processing.mask_generators module" href="playnano.processing.mask_generators.html"><link rel="prev" title="playnano.processing.core module" href="playnano.processing.core.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.filters module - playnano v0.4.0.post1 documentation</title>
+        <title>playnano.processing.filters module - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -183,7 +183,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -628,6 +628,23 @@
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.processing.filters.zero_median">
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.filters.</span></span><span class="sig-name descname"><span class="pre">zero_median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/filters.html#zero_median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.filters.zero_median" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the overall median height to center the background around zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Zero-median image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -693,6 +710,7 @@
 <li><a class="reference internal" href="#playnano.processing.filters.row_median_align"><code class="docutils literal notranslate"><span class="pre">row_median_align()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.processing.filters.vertical_flip"><code class="docutils literal notranslate"><span class="pre">vertical_flip()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.processing.filters.zero_mean"><code class="docutils literal notranslate"><span class="pre">zero_mean()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.processing.filters.zero_median"><code class="docutils literal notranslate"><span class="pre">zero_median()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -704,7 +722,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="../_static/documentation_options.js?v=e663822d"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

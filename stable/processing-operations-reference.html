@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Exporting Data" href="exporting.html"><link rel="prev" title="Processing" href="processing.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Processing Operations Reference - playnano v0.4.0.post1 documentation</title>
+        <title>Processing Operations Reference - playnano v0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.4.0.post1 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -183,7 +183,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">playnano v0.4.0.post1 documentation</span>
+  <span class="sidebar-brand-text">playnano v0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -538,26 +538,30 @@ module <a class="reference internal" href="api/playnano.processing.masked_filter
 </thead>
 <tbody>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.remove_plane" title="playnano.processing.filters.remove_plane"><code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane()</span></code></a></p></td>
-<td><p>Removes a best-fit plane from the frame using least squares. Can be masked.</p></td>
+<td><p>Removes a best-fit plane from the frame using least squares. Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane()</span></code>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.polynomial_flatten" title="playnano.processing.filters.polynomial_flatten"><code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_flatten()</span></code></a></p></td>
-<td><p>Fit and subtract a 2D plane (tilt removal). Can be masked.</p></td>
+<td><p>Fit and subtract a 2D plane (tilt removal). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_flatten()</span></code>).</p></td>
 <td><p>order (int), default: 2</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.row_median_align" title="playnano.processing.filters.row_median_align"><code class="xref py py-func docutils literal notranslate"><span class="pre">row_median_align()</span></code></a></p></td>
-<td><p>Subtract row-wise median to remove horizontal banding. Can be masked.</p></td>
+<td><p>Subtract row-wise median to remove horizontal banding. Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">row_median_align()</span></code>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.zero_mean" title="playnano.processing.filters.zero_mean"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_mean()</span></code></a></p></td>
-<td><p>Subtract global mean (optionally masked). Can be masked.</p></td>
+<td><p>Subtract global mean (optionally masked). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">zero_mean()</span></code>).</p></td>
 <td><p>None</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.gaussian_filter" title="playnano.processing.filters.gaussian_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian_filter()</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.zero_median" title="playnano.processing.filters.zero_median"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_median()</span></code></a></p></td>
+<td><p>Subtract global median (optionally masked). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">zero_median()</span></code>).</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.gaussian_filter" title="playnano.processing.filters.gaussian_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian_filter()</span></code></a></p></td>
 <td><p>Apply Gaussian smoothing.</p></td>
 <td><p>sigma (float), default: 1.0</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.vertical_flip" title="playnano.processing.filters.vertical_flip"><code class="xref py py-func docutils literal notranslate"><span class="pre">vertical_flip()</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.vertical_flip" title="playnano.processing.filters.vertical_flip"><code class="xref py py-func docutils literal notranslate"><span class="pre">vertical_flip()</span></code></a></p></td>
 <td><p>Vertically flip an image.</p></td>
 <td><p>None</p></td>
 </tr>
@@ -678,15 +682,19 @@ method.</p>
 <tbody>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_frames" title="playnano.processing.stack_edit.drop_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frames()</span></code></a></p></td>
 <td><p>Remove specific frames from a 3D array. Does not modify the input array.</p></td>
-<td><p>data (ndarray, 3D), indices_to_drop (list of int)</p></td>
+<td><p>data (ndarray, 3D), indices_to_drop (list of int).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_frame_range" title="playnano.processing.stack_edit.drop_frame_range"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frame_range()</span></code></a></p></td>
 <td><p>Generate a list of frame indices to drop within a specified start (inclusive) to end (exclusive) range.</p></td>
-<td><p>data (ndarray, 3D), start (int, inclusive), end (int, exclusive)</p></td>
+<td><p>data (ndarray, 3D), start (int, inclusive), end (int, exclusive).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.select_frames" title="playnano.processing.stack_edit.select_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">select_frames()</span></code></a></p></td>
 <td><p>Generate a list of frame indices to drop, keeping only the selected frames.</p></td>
-<td><p>data (ndarray, 3D), keep_indices (list of int, frames to retain)</p></td>
+<td><p>data (ndarray, 3D), keep_indices (list of int, frames to retain).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_final_frames" title="playnano.processing.stack_edit.drop_final_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_final_frames()</span></code></a></p></td>
+<td><p>Generate a list of frame indices to drop, removing the last N frames.</p></td>
+<td><p>data (ndarray, 3D), n_frames_to_drop (int, number of final frames to remove, default is 1).</p></td>
 </tr>
 </tbody>
 </table>
@@ -765,7 +773,7 @@ method.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=8009f68f"></script>
+</div><script src="_static/documentation_options.js?v=e663822d"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -32,16 +32,19 @@ module :mod:`playnano.processing.masked_filters` that contains masked variants o
      - Description
      - Parameters
    * - :func:`~playnano.processing.filters.remove_plane`
-     - Removes a best-fit plane from the frame using least squares. Can be masked.
+     - Removes a best-fit plane from the frame using least squares. Can be masked (:func:`~playnano.processing.masked_filters.remove_plane`).
      - None
    * - :func:`~playnano.processing.filters.polynomial_flatten`
-     - Fit and subtract a 2D plane (tilt removal). Can be masked.
+     - Fit and subtract a 2D plane (tilt removal). Can be masked (:func:`~playnano.processing.masked_filters.polynomial_flatten`).
      - order (int), default: 2
    * - :func:`~playnano.processing.filters.row_median_align`
-     - Subtract row-wise median to remove horizontal banding. Can be masked.
+     - Subtract row-wise median to remove horizontal banding. Can be masked (:func:`~playnano.processing.masked_filters.row_median_align`).
      - None
    * - :func:`~playnano.processing.filters.zero_mean`
-     - Subtract global mean (optionally masked). Can be masked.
+     - Subtract global mean (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_mean`).
+     - None
+   * - :func:`~playnano.processing.filters.zero_median`
+     - Subtract global median (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_median`).
      - None
    * - :func:`~playnano.processing.filters.gaussian_filter`
      - Apply Gaussian smoothing.
@@ -136,10 +139,13 @@ method.
      - Parameters
    * - :func:`~playnano.processing.stack_edit.drop_frames`
      - Remove specific frames from a 3D array. Does not modify the input array.
-     - data (ndarray, 3D), indices_to_drop (list of int)
+     - data (ndarray, 3D), indices_to_drop (list of int).
    * - :func:`~playnano.processing.stack_edit.drop_frame_range`
      - Generate a list of frame indices to drop within a specified start (inclusive) to end (exclusive) range.
-     - data (ndarray, 3D), start (int, inclusive), end (int, exclusive)
+     - data (ndarray, 3D), start (int, inclusive), end (int, exclusive).
    * - :func:`~playnano.processing.stack_edit.select_frames`
      - Generate a list of frame indices to drop, keeping only the selected frames.
-     - data (ndarray, 3D), keep_indices (list of int, frames to retain)
+     - data (ndarray, 3D), keep_indices (list of int, frames to retain).
+   * - :func:`~playnano.processing.stack_edit.drop_final_frames`
+     - Generate a list of frame indices to drop, removing the last N frames.
+     - data (ndarray, 3D), n_frames_to_drop (int, number of final frames to remove, default is 1).
