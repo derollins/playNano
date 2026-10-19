@@ -8,6 +8,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-19
+
+### Added
+
+- `drop_final_frames()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
+  similarly to the other functions in the module.
+- `zero_median` function in both filters and masked filters module to subtract the median value from every pixel,
+  optionally masked.
+- `particle_region_extraction` analysis module (`ParticleRegionExtractionModule`) that extracts per-particle,
+  per-frame image regions from tracked detections — producing tight, padded, squared, or fixed-size bounding
+  boxes plus optional raw-image and mask crops. Requires a preceding `particle_tracking` step.
+- `particle_region_media_export` analysis module (`ParticleRegionMediaExportModule`) that exports per-particle
+  GIFs, video, and/or image sequences from the extracted crops, with optional colormap, timestamp, and
+  scale-bar overlays. Requires a preceding `particle_region_extraction` step.
+- `tracked_particle_boundary_size` analysis module (`BoundarySizeModule`) that computes a per-particle
+  boundary-size metric over time (max bounding-box dimension), with an optional threshold for a binary state
+  variable. Requires a preceding `particle_region_extraction` step (run with `include_bbox=True`).
+- Unified per-frame metadata schema across all readers (`.jpk` folder, `.h5-jpk`,
+  `.spm` folder, `.aris`, `.asd`). Every reader now emits exactly six keys per
+  frame: `timestamp`, `frame_pixel_size_nm`, `frame_duration_s`, `start_epoch_ms`,
+  `scan_direction`, `line_rate`. Fields the source format cannot provide are
+  stored as `None` rather than a synthetic fallback. A new `build_frame_metadata`
+  factory in `playnano.utils.io_utils` builds the dict and casts values to native
+  Python types for JSON safety; `FRAME_METADATA_KEYS` is the authoritative tuple.
+- Real per-frame timing where the source format encodes it:
+  - `.spm` folders: from each file's `Relative frame time` header field, giving
+    real inter-frame gaps (falls back to synthetic `lines / Scan Rate` if any
+    file is missing the field).
+  - `.jpk` folders: from per-file `StartDate` / `EndDate` TIFF tags with
+    millisecond precision (falls back to interlace-aware scan-rate timing).
+  - `.h5-jpk`: from `meta-data/start-times` / `meta-data/end-times` datasets,
+    capturing real inter-frame jitter.
+  - `.aris`: from per-frame `Series/Time` offsets, plus absolute `start_epoch_ms`
+    derived from `Global/StartTime`.
+- `AFMImageStack.acquisition` property and `provenance["acquisition"]` slot,
+  a home for whole-video acquisition metadata that doesn't belong per-frame.
+  Currently populated with:
+  - `bidirectional` (bool) by the `.jpk` folder and `.h5-jpk` readers.
+  - `asd_file_version`, `asd_scan_direction_raw`, `asd_channels` by the `.asd`
+    reader.
+- Schema drift check: `AFMImageStack.__init__` now logs a warning when
+  `frame_metadata` carries keys outside `FRAME_METADATA_KEYS`, catching reader
+  regressions early. Missing keys are still tolerated for loader round-trips.
+
+### Changed
+
+- Reader docstrings expanded to document per-frame populated fields, whole-video
+  acquisition fields, timing sources and fallbacks.
+- `playnano.utils.io_utils.height_units` renamed to `HEIGHT_UNITS`.
+- Developer tooling: `pre-commit-hooks` bumped to v6.0.0; `ome-types` added
+  to `dev` extras (used by the OME-TIFF units test).
+
+### Fixed
+
+- Bidirectional (interlaced) `.jpk` folder and `.h5-jpk` scans were timed as
+  unidirectional, so timestamps drifted from real acquisition time. Real
+  per-frame start/end times are now used, with interlace-aware scan-rate
+  timing as fallback.
+- `.h5-jpk`: dataset name is now read from the channel group rather than
+  reconstructed from the channel string, fixing a `KeyError` on camelCase
+  datasets (e.g. `MeasuredHeight`).
+- `.h5-jpk`: z-unit attribute is now decoded properly. Previously `str(bytes)`
+  produced `"b'm'"`, so the explicit unit-conversion path never matched.
+- OME-TIFF export now records explicit `PhysicalSize` (X, Y in µm) and
+  `TimeIncrement` metadata, so timing and calibration survive round-trips
+  through ImageJ/Fiji and other OME consumers such as napari.
+- `AFMImageStack.export_processing_log` referenced `self.stack.provenance`,
+  which does not exist on the class, every call raised `AttributeError`.
+  Corrected to `self.provenance`. Two tests that mocked the same broken shape
+  (and so passed against the bug) were updated to populate real provenance.
+
+### Removed
+
+- `pad_to_square` utility removed from `playnano.utils.io_utils`, no remaining
+  callers. Related test in `tests/test_utils.py` removed.
+
+### Documentation
+
+- Loading and metadata section added to `introduction.rst` describing the
+  unified per-frame schema and the `stack.acquisition` slot.
+- Updated `processing-operations-reference.rst` with `zero_median` and
+  `drop_final_frames`
+
 ## [0.4.0.post1] - 2026-05-12
 
 ### Documentation
@@ -465,7 +548,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.0...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -475,3 +558,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
 [0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
+[0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0

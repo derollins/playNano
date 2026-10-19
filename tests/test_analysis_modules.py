@@ -4,6 +4,7 @@ import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -16,10 +17,26 @@ from playnano.analysis.modules.dbscan_clustering import DBSCANClusteringModule
 from playnano.analysis.modules.feature_detection import MASK_MAP, FeatureDetectionModule
 from playnano.analysis.modules.k_means_clustering import KMeansClusteringModule
 from playnano.analysis.modules.log_blob_detection import LoGBlobDetectionModule
+from playnano.analysis.modules.particle_region_extraction import (
+    ParticleRegionExtractionModule,
+    _centered_fixed_bbox,
+    _pad_bbox,
+    _square_bbox,
+    _tight_bbox_for_label,
+)
+from playnano.analysis.modules.particle_region_media_export import (
+    ParticleRegionMediaExportModule,
+    _assemble_track_stack,
+    _filter_and_sort_tracks,
+    _pad_crop_to_size,
+)
 from playnano.analysis.modules.particle_tracking import ParticleTrackingModule
+from playnano.analysis.modules.tracked_particle_boundary_size import BoundarySizeModule
 from playnano.analysis.modules.x_means_clustering import XMeansClusteringModule
 
-# --- Test for abstract base class ---
+# ==============================================================================
+# Abstract base class
+# ==============================================================================
 
 
 def test_unimplemented_analysismodule_raises():
@@ -83,7 +100,7 @@ def test_incomplete_subclass_instantiation_fails():
 
 
 class DummyModule(AnalysisModule):
-    """Dummy module for testing analysis module initialisation."""
+    """Provide a dummy module for testing analysis module initialisation."""
 
     @property
     def name(self):
@@ -107,7 +124,9 @@ def test_abstract_methods_raise():
         dummy.run(None)
 
 
-# --- Tests for feature_detection ---
+# ==============================================================================
+# FeatureDetectionModule
+# ==============================================================================
 
 
 class DummyStackNoData:
@@ -467,7 +486,7 @@ def test_full_mask_keep_when_remove_edge_false(stack_1frame_with_timestamps):
     module = FeatureDetectionModule()
     stack = stack_1frame_with_timestamps
     out = module.run(stack, mask_fn=full_mask, min_size=1, remove_edge=False)
-    # One feature with area 3×3=9
+    # One feature with area 3x3=9
     feats = out["features_per_frame"][0]
     assert len(feats) == 1
     feat = feats[0]
@@ -854,11 +873,13 @@ def test_separate_touching_max_area_loss_zero_always_fallback(fd):
     assert (result > 0).sum() == orig_area
 
 
-# --- Tests for particle_tracking ---
+# ==============================================================================
+# ParticleTrackingModule
+# ==============================================================================
 
 
 class MockAFMImageStack:
-    """Mock AFMImageStack for testing."""
+    """Simulate an AFMImageStack for testing particle tracking."""
 
     def __init__(self, n_frames):
         """
@@ -1271,7 +1292,9 @@ def test_tracking_overlapping_centroids(mock_stack):
         assert isinstance(trk["point_indices"], list)
 
 
-# Log Blob Detection Tests
+# ==============================================================================
+# LoGBlobDetectionModule
+# ==============================================================================
 
 
 class DummyStack2:
@@ -1459,7 +1482,9 @@ def test_time_for_frame_out_of_range(single_blob_stack):
         mod.run(single_blob_stack)
 
 
-# --- Fixtures and dummy stacks for particle clustering  ---
+# ==============================================================================
+# Particle clustering — shared fixtures and helpers
+# ==============================================================================
 
 
 @pytest.fixture(autouse=True)
@@ -1474,7 +1499,7 @@ def patch_numpy_warnings():
 
 # A minimal “stack” stub:
 class DummyStack:
-    """Minimal AFMImageStack stub with only .time_for_frame support."""
+    """Provide a minimal AFMImageStack stub with only .time_for_frame support."""
 
     def __init__(self, times):
         """
@@ -1522,7 +1547,9 @@ def make_prev(simple_per_frame, key="features_per_frame"):
     return {"feature_detection": {key: simple_per_frame}}
 
 
-# --- Tests for x_mean_clustering ---
+# ==============================================================================
+# XMeansClusteringModule
+# ==============================================================================
 
 
 def test_missing_dependency():
@@ -1864,7 +1891,9 @@ def test_missing_coord_keys_raises_keyerror():
         mod.run(stack, prev, coord_columns=("x", "y"), use_time=False)
 
 
-# --- Tests for k_means_clustering ---
+# ==============================================================================
+# KMeansClusteringModule
+# ==============================================================================
 
 
 @pytest.mark.parametrize(
@@ -1935,7 +1964,9 @@ def test_kmeans_missing_keys():
         mod.run(stack, prev, k=1, normalise=False)
 
 
-# --- Tests for dbscan_clustering ---
+# ==============================================================================
+# DBSCANClusteringModule
+# ==============================================================================
 
 
 @pytest.mark.parametrize(
@@ -2042,11 +2073,13 @@ def test_dbscan_time_weight_effect(time_weight, expected_n):
         assert np.all((times >= 0.0) & (times <= 2.0))
 
 
-# --- Tests for count non zero pixels ---
+# ==============================================================================
+# CountNonzeroModule
+# ==============================================================================
 
 
 class MockStack:
-    """Minimal AFMImageStack mock with .data attribute."""
+    """Provide a minimal AFMImageStack mock exposing a .data attribute."""
 
     def __init__(self, data):
         """Initialise the MockStack class with data."""
@@ -2099,7 +2132,9 @@ def test_count_nonzero_module_metadata():
     assert mod.name == "count_nonzero"
 
 
-# --- Test the previous results detection ---
+# ==============================================================================
+# Previous-results fallback detection
+# ==============================================================================
 
 
 @pytest.mark.parametrize(
@@ -2138,3 +2173,1936 @@ def test_fallback_logic(ModuleClass):
 
     result = mod.run(stack, previous_results=previous_results, **extra_kwargs)
     assert isinstance(result, dict)
+
+
+# ==============================================================================
+# ParticleRegionExtractionModule
+# ==============================================================================
+# ---------------------------------------------------------------------------
+# Shared stack stub and helpers
+# ---------------------------------------------------------------------------
+
+_H, _W = 4, 4  # frame dimensions used throughout
+
+
+class _RegionStack:
+    """Provide a minimal stack stub supporting integer indexing and time_for_frame."""
+
+    def __init__(self, data: np.ndarray, timestamps=None, pixel_size_nm: float = 1.0):
+        self._data = data  # shape (N, H, W)
+        self._timestamps = (
+            timestamps if timestamps is not None else list(range(len(data)))
+        )
+        self.pixel_size_nm = pixel_size_nm
+        self.file_path = "dummy.nhf"
+
+    def __getitem__(self, idx: int) -> np.ndarray:
+        return self._data[idx]
+
+    def time_for_frame(self, idx: int) -> float:
+        return float(self._timestamps[idx])
+
+
+def _make_stack(n_frames: int = 2, value: float = 5.0) -> _RegionStack:
+    """Return a 4x4 stack with a 2x2 particle at rows 1–2, cols 1–2 in every frame."""
+    data = np.zeros((n_frames, _H, _W))
+    data[:, 1:3, 1:3] = value
+    return _RegionStack(data, timestamps=[i * 0.5 for i in range(n_frames)])
+
+
+def _make_labeled_mask() -> np.ndarray:
+    """Return a 4x4 labeled mask with a single particle labeled as 1 in the center."""
+    lm = np.zeros((_H, _W), dtype=int)
+    lm[1:3, 1:3] = 1
+    return lm
+
+
+def _make_feature() -> dict:
+    return {"label": 1, "centroid": (1.5, 1.5), "area": 4, "mean": 5.0}
+
+
+# ---------------------------------------------------------------------------
+# Fixtures : extraction module
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def exmod():
+    """Return a ParticleRegionExtractionModule instance."""
+    return ParticleRegionExtractionModule()
+
+
+@pytest.fixture
+def small_stack():
+    """Return a small two-frame 4x4 test stack."""
+    return _make_stack()
+
+
+@pytest.fixture
+def detection_out():
+    """Return a minimal feature detection output dict for testing."""
+    lm = _make_labeled_mask()
+    feat = _make_feature()
+    return {
+        "labeled_masks": [lm.copy(), lm.copy()],
+        "features_per_frame": [[feat], [feat]],
+    }
+
+
+@pytest.fixture
+def tracking_out():
+    """Return a minimal particle tracking output dict for testing."""
+    return {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0, 1],
+                "point_indices": [0, 0],
+                "coords": [(1.5, 1.5), (1.5, 1.5)],
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def prev(detection_out, tracking_out):
+    """Return a previous_results dict containing detection and tracking outputs."""
+    return {
+        "feature_detection": detection_out,
+        "particle_tracking": tracking_out,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Property tests
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_name(exmod):
+    """Check the name of the extraction module."""
+    assert exmod.name == "particle_region_extraction"
+
+
+def test_extraction_version(exmod):
+    """Check the version property of the extraction module."""
+    assert exmod.version == "0.1.0"
+
+
+def test_extraction_requires_particle_tracking(exmod):
+    """Test that extraction module requires tracking."""
+    assert "particle_tracking" in exmod.requires
+
+
+# ---------------------------------------------------------------------------
+# Error cases
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_none_previous_results_raises(exmod, small_stack):
+    """Test that passing None for previous_results raises a RuntimeError."""
+    with pytest.raises(RuntimeError, match="requires previous results"):
+        exmod.run(small_stack, previous_results=None)
+
+
+def test_extraction_missing_tracking_module_raises(exmod, small_stack, detection_out):
+    """Test missing tracking_module in previous_results raises a RuntimeError."""
+    with pytest.raises(RuntimeError, match="tracking_module"):
+        exmod.run(small_stack, {"feature_detection": detection_out})
+
+
+def test_extraction_missing_tracks_key_raises(exmod, small_stack, detection_out):
+    """Test missing 'tracks' key in particle_tracking raises a RuntimeError."""
+    with pytest.raises(RuntimeError, match="'tracks'"):
+        exmod.run(
+            small_stack,
+            {
+                "feature_detection": detection_out,
+                "particle_tracking": {"not_tracks": []},
+            },
+        )
+
+
+def test_extraction_missing_detection_module_raises(exmod, small_stack, tracking_out):
+    """Test that missing detections raises a RuntimeError."""
+    with pytest.raises(RuntimeError, match="detection_module"):
+        exmod.run(small_stack, {"particle_tracking": tracking_out})
+
+
+def test_extraction_missing_labeled_masks_raises(exmod, small_stack, tracking_out):
+    """Test that a RuntimeError is raised when labeled masks are missing."""
+    with pytest.raises(RuntimeError, match="labeled_masks"):
+        exmod.run(
+            small_stack,
+            {
+                "feature_detection": {"features_per_frame": []},
+                "particle_tracking": tracking_out,
+            },
+        )
+
+
+def test_extraction_invalid_fixed_size_mode_raises(exmod, small_stack, prev):
+    """Tets that invalid fixed_size_mode raises ValueError."""
+    with pytest.raises(ValueError, match="fixed_size_mode"):
+        exmod.run(small_stack, prev, fixed_size_mode="not_valid")
+
+
+def test_extraction_missing_label_key_raises(exmod, small_stack):
+    """Test that missing 'label' key in feature dict raises RuntimeError."""
+    lm = _make_labeled_mask()
+    bad_det = {
+        "labeled_masks": [lm],
+        "features_per_frame": [[{"no_label_here": 1}]],
+    }
+    track = {
+        "tracks": [
+            {"id": 0, "frames": [0], "point_indices": [0], "coords": [(1.5, 1.5)]}
+        ]
+    }
+    with pytest.raises(RuntimeError, match="'label'"):
+        exmod.run(
+            small_stack, {"feature_detection": bad_det, "particle_tracking": track}
+        )
+
+
+def test_extraction_bad_stack_indexing_raises(exmod):
+    """Stack that doesn't support integer indexing raises RuntimeError."""
+
+    class _BadStack:
+        pixel_size_nm = 1.0
+
+        def __getitem__(self, idx):
+            raise TypeError("not subscriptable")
+
+        def time_for_frame(self, idx):
+            return 0.0
+
+    lm = _make_labeled_mask()
+    det = {"labeled_masks": [lm], "features_per_frame": [[_make_feature()]]}
+    track = {
+        "tracks": [
+            {"id": 0, "frames": [0], "point_indices": [0], "coords": [(1.5, 1.5)]}
+        ]
+    }
+    with pytest.raises(RuntimeError, match=r"stack\[frame_idx\]"):
+        exmod.run(_BadStack(), {"feature_detection": det, "particle_tracking": track})
+
+
+# ---------------------------------------------------------------------------
+# Empty and zero-frame cases
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_zero_frames_returns_empty(exmod, small_stack, tracking_out):
+    """Test that running with zero frames produces empty per_track and summary."""
+    out = exmod.run(
+        small_stack,
+        {
+            "feature_detection": {"labeled_masks": [], "features_per_frame": []},
+            "particle_tracking": tracking_out,
+        },
+    )
+    assert out["per_track"] == []
+    assert out["flat_table"] == []
+    assert out["summary"]["n_tracks"] == 0
+
+
+def test_extraction_no_tracks_returns_empty(exmod, small_stack, detection_out):
+    """Test that no tracks in tracking output produces empty per_track and summary."""
+    out = exmod.run(
+        small_stack,
+        {
+            "feature_detection": detection_out,
+            "particle_tracking": {"tracks": []},
+        },
+    )
+    assert out["per_track"] == []
+    assert out["summary"]["n_tracks"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Core functionality
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_bbox_tight(exmod, small_stack, prev):
+    """Test that bbox_tight is correctly computed from the labeled mask."""
+    out = exmod.run(small_stack, prev)
+    region = out["per_track"][0]["regions"][0]
+    assert region["bbox_tight"] == (1, 1, 3, 3)
+
+
+def test_extraction_bbox_padded_equals_tight_when_no_padding(exmod, small_stack, prev):
+    """Test that bbox_padded equals bbox_tight when padding is zero."""
+    out = exmod.run(small_stack, prev)
+    region = out["per_track"][0]["regions"][0]
+    assert region["bbox_padded"] == region["bbox_tight"]
+
+
+def test_extraction_image_crop_shape(exmod, small_stack, prev):
+    """Test that the image_crop shape matches the tight bbox."""
+    # tight bbox (1,1,3,3) → 2x2 crop
+    out = exmod.run(small_stack, prev)
+    crop = out["per_track"][0]["regions"][0]["image_crop"]
+    assert crop.shape == (2, 2)
+
+
+def test_extraction_image_crop_values(exmod, small_stack, prev):
+    """Test image_crop values match expected constant value in the small test stack."""
+    out = exmod.run(small_stack, prev)
+    crop = out["per_track"][0]["regions"][0]["image_crop"]
+    np.testing.assert_array_equal(crop, 5.0 * np.ones((2, 2)))
+
+
+def test_extraction_mask_crop_all_true(exmod, small_stack, prev):
+    """Test that the mask_crop is all True for the small test stack region."""
+    out = exmod.run(small_stack, prev)
+    mask = out["per_track"][0]["regions"][0]["mask_crop"]
+    assert mask.shape == (2, 2)
+    assert mask.all()
+
+
+def test_extraction_region_label(exmod, small_stack, prev):
+    """Test that the region label matches the feature label."""
+    out = exmod.run(small_stack, prev)
+    assert out["per_track"][0]["regions"][0]["label"] == 1
+
+
+def test_extraction_timestamps(exmod, small_stack, prev):
+    """Test that timestamps are correctly extracted from the stack."""
+    out = exmod.run(small_stack, prev)
+    assert out["per_track"][0]["timestamps"] == pytest.approx([0.0, 0.5])
+
+
+def test_extraction_two_frames_two_regions(exmod, small_stack, prev):
+    """Test that a track with two frames produces two regions in the output."""
+    out = exmod.run(small_stack, prev)
+    regions = out["per_track"][0]["regions"]
+    assert len(regions) == 2
+    assert all(r is not None for r in regions)
+
+
+# ---------------------------------------------------------------------------
+# include_* flags
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_include_image_false(exmod, small_stack, prev):
+    """Test that include_image=False removes image_crop from region dict."""
+    out = exmod.run(small_stack, prev, include_image=False)
+    region = out["per_track"][0]["regions"][0]
+    assert "image_crop" not in region
+
+
+def test_extraction_include_mask_false(exmod, small_stack, prev):
+    """Test that include_mask=False removes mask_crop from region dict."""
+    out = exmod.run(small_stack, prev, include_mask=False)
+    region = out["per_track"][0]["regions"][0]
+    assert "mask_crop" not in region
+
+
+def test_extraction_include_bbox_false_removes_region_keys(exmod, small_stack, prev):
+    """Test that include_bbox=False removes bbox keys from region dict."""
+    out = exmod.run(small_stack, prev, include_bbox=False)
+    region = out["per_track"][0]["regions"][0]
+    assert "bbox_tight" not in region
+    assert "bbox_padded" not in region
+
+
+def test_extraction_include_bbox_false_removes_flat_table_columns(
+    exmod, small_stack, prev
+):
+    """Test that include_bbox=False removes bbox columns from flat_table."""
+    out = exmod.run(small_stack, prev, include_bbox=False)
+    row = out["flat_table"][0]
+    assert "bbox_tight_minr" not in row
+    assert "bbox_padded_minr" not in row
+
+
+# ---------------------------------------------------------------------------
+# Missing detections (dense tracks)
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_none_pt_idx_produces_none(exmod, small_stack, detection_out):
+    """Test that point_indices=None produces None region and counts as missing."""
+    track_with_gap = {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0, 1],
+                "point_indices": [None, 0],
+                "coords": [None, (1.5, 1.5)],
+            }
+        ]
+    }
+    out = exmod.run(
+        small_stack,
+        {"feature_detection": detection_out, "particle_tracking": track_with_gap},
+    )
+    regions = out["per_track"][0]["regions"]
+    assert regions[0] is None
+    assert regions[1] is not None
+
+
+def test_extraction_none_pt_idx_increments_missing(exmod, small_stack, detection_out):
+    """Test a track with None point_indices increments the missing count in summary."""
+    track_with_gap = {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0, 1],
+                "point_indices": [None, 0],
+                "coords": [None, (1.5, 1.5)],
+            }
+        ]
+    }
+    out = exmod.run(
+        small_stack,
+        {"feature_detection": detection_out, "particle_tracking": track_with_gap},
+    )
+    assert out["summary"]["n_missing_region_measurements"] == 1
+
+
+def test_extraction_none_pt_idx_flat_table_has_nan_bbox(
+    exmod, small_stack, detection_out
+):
+    """Test that flat_table has NaN for bbox values when point_indices is None."""
+    track_with_gap = {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0],
+                "point_indices": [None],
+                "coords": [None],
+            }
+        ]
+    }
+    out = exmod.run(
+        small_stack,
+        {"feature_detection": detection_out, "particle_tracking": track_with_gap},
+    )
+    row = out["flat_table"][0]
+    assert np.isnan(row["bbox_tight_minr"])
+
+
+# ---------------------------------------------------------------------------
+# Out-of-range guards
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_out_of_range_frame_warns_and_nones(
+    exmod, small_stack, detection_out
+):
+    """Test track with a frame index out of range produces  warning and None region."""
+    bad_track = {
+        "tracks": [{"id": 0, "frames": [99], "point_indices": [0], "coords": [(0, 0)]}]
+    }
+    with pytest.warns(UserWarning, match="out of range"):
+        out = exmod.run(
+            small_stack,
+            {"feature_detection": detection_out, "particle_tracking": bad_track},
+        )
+    assert out["per_track"][0]["regions"][0] is None
+    assert out["summary"]["n_skipped_index_errors"] == 1
+
+
+def test_extraction_out_of_range_point_warns_and_nones(
+    exmod, small_stack, detection_out
+):
+    """Test out-of-range point_indices in tracks produce None regions and a warning."""
+    bad_track = {
+        "tracks": [{"id": 0, "frames": [0], "point_indices": [99], "coords": [(0, 0)]}]
+    }
+    with pytest.warns(UserWarning, match="out of range"):
+        out = exmod.run(
+            small_stack,
+            {"feature_detection": detection_out, "particle_tracking": bad_track},
+        )
+    assert out["per_track"][0]["regions"][0] is None
+    assert out["summary"]["n_skipped_index_errors"] == 1
+
+
+def test_extraction_mismatched_lengths_truncates_not_raises(
+    exmod, small_stack, detection_out
+):
+    """strict=False fix: mismatched frames/point_indices should truncate, not raise."""
+    mismatched = {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0, 1],
+                "point_indices": [0],
+                "coords": [(1.5, 1.5)],
+            }
+        ]
+    }
+    with pytest.warns(UserWarning, match="Truncating to shortest"):
+        out = exmod.run(
+            small_stack,
+            {"feature_detection": detection_out, "particle_tracking": mismatched},
+        )
+    # Should produce 1 region (truncated to shortest), not raise ValueError
+    assert len(out["per_track"][0]["regions"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# Padding
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_padding_expands_padded_bbox(exmod, small_stack, prev):
+    """Test that adding padding expands bbox."""
+    out = exmod.run(small_stack, prev, padding=1)
+    region = out["per_track"][0]["regions"][0]
+    # tight (1,1,3,3) + pad 1, clipped to 4x4 → (0,0,4,4)
+    assert region["bbox_padded"] == (0, 0, 4, 4)
+    assert region["bbox_tight"] == (1, 1, 3, 3)
+
+
+def test_extraction_padding_crop_covers_padded_region(exmod, small_stack, prev):
+    """Test that image_crop shape matches padded bbox when padding is applied."""
+    out = exmod.run(small_stack, prev, padding=1)
+    crop = out["per_track"][0]["regions"][0]["image_crop"]
+    assert crop.shape == (4, 4)  # full 4x4 frame after padding
+
+
+def test_extraction_padding_clipped_at_image_boundary(exmod, prev):
+    """A particle at the image edge: padded bbox must not exceed image bounds."""
+    data = np.zeros((2, 4, 4))
+    data[:, 0:2, 0:2] = 5.0  # corner particle
+    stack = _RegionStack(data, timestamps=[0.0, 0.5])
+    lm = np.zeros((4, 4), dtype=int)
+    lm[0:2, 0:2] = 1
+    feat = {"label": 1, "centroid": (0.5, 0.5), "area": 4}
+    corner_det = {
+        "labeled_masks": [lm.copy(), lm.copy()],
+        "features_per_frame": [[feat], [feat]],
+    }
+    out = exmod.run(
+        stack,
+        {
+            "feature_detection": corner_det,
+            "particle_tracking": prev["particle_tracking"],
+        },
+        padding=5,
+    )
+    bbox = out["per_track"][0]["regions"][0]["bbox_padded"]
+    assert bbox[0] >= 0 and bbox[1] >= 0
+    assert bbox[2] <= 4 and bbox[3] <= 4
+
+
+# ---------------------------------------------------------------------------
+# Square and fixed box size
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_square_produces_square_bbox(exmod):
+    """A non-square particle bbox should become square when square=True."""
+    data = np.zeros((1, 6, 6))
+    data[0, 2, 2:5] = 5.0  # 1-row x 3-col particle
+    stack = _RegionStack(data, timestamps=[0.0])
+    lm = np.zeros((6, 6), dtype=int)
+    lm[2, 2:5] = 1
+    det = {
+        "labeled_masks": [lm],
+        "features_per_frame": [[{"label": 1, "centroid": (2, 3), "area": 3}]],
+    }
+    track = {
+        "tracks": [{"id": 0, "frames": [0], "point_indices": [0], "coords": [(2, 3)]}]
+    }
+    out = exmod.run(
+        stack, {"feature_detection": det, "particle_tracking": track}, square=True
+    )
+    bbox = out["per_track"][0]["regions"][0]["bbox_padded"]
+    assert (bbox[2] - bbox[0]) == (bbox[3] - bbox[1])
+
+
+def test_extraction_fixed_box_size_global(exmod, small_stack, prev):
+    """Test fixed_box_size in global mode: bbox size = fixed_box_size."""
+    out = exmod.run(small_stack, prev, fixed_box_size=4)
+    bbox = out["per_track"][0]["regions"][0]["bbox_padded"]
+    assert (bbox[2] - bbox[0]) == 4
+    assert (bbox[3] - bbox[1]) == 4
+
+
+def test_extraction_fixed_box_size_per_track_uses_max_detection(
+    exmod, small_stack, prev
+):
+    """Test per_track mode: fixed size = max detection dim + 2*padding."""
+    out = exmod.run(
+        small_stack, prev, fixed_box_size=100, fixed_size_mode="per_track", padding=0
+    )
+    bbox = out["per_track"][0]["regions"][0]["bbox_padded"]
+    # max detection dim across both frames = 2, padding=0 → size should be 2
+    assert (bbox[2] - bbox[0]) == 2
+    assert (bbox[3] - bbox[1]) == 2
+
+
+def test_extraction_fixed_box_size_per_track_with_padding(exmod, small_stack, prev):
+    """Test per_track with padding: size = max_dim + 2*padding."""
+    out = exmod.run(
+        small_stack, prev, fixed_box_size=100, fixed_size_mode="per_track", padding=1
+    )
+    bbox = out["per_track"][0]["regions"][0]["bbox_padded"]
+    # max_dim=2, padding=1 → size = 2 + 2*1 = 4 (clipped to 4x4 image)
+    assert (bbox[2] - bbox[0]) <= 4 and (bbox[3] - bbox[1]) <= 4
+
+
+# ---------------------------------------------------------------------------
+# flat_table and summary
+# ---------------------------------------------------------------------------
+
+
+def test_extraction_flat_table_required_columns(exmod, small_stack, prev):
+    """Test flat_table contains all expected required columns."""
+    out = exmod.run(small_stack, prev)
+    row = out["flat_table"][0]
+    for col in ("track_id", "frame", "timestamp", "label"):
+        assert col in row, f"Missing column: {col}"
+
+
+def test_extraction_flat_table_bbox_columns_present(exmod, small_stack, prev):
+    """Test flat_table contains all expected bbox columns when include_bbox=True."""
+    out = exmod.run(small_stack, prev)
+    row = out["flat_table"][0]
+    for col in (
+        "bbox_tight_minr",
+        "bbox_tight_minc",
+        "bbox_tight_maxr",
+        "bbox_tight_maxc",
+        "bbox_padded_minr",
+        "bbox_padded_minc",
+        "bbox_padded_maxr",
+        "bbox_padded_maxc",
+    ):
+        assert col in row, f"Missing column: {col}"
+
+
+def test_extraction_flat_table_bbox_values(exmod, small_stack, prev):
+    """Test the flat_table bbox values match expected tight bbox for small stack."""
+    out = exmod.run(small_stack, prev)
+    row = out["flat_table"][0]
+    assert row["bbox_tight_minr"] == 1
+    assert row["bbox_tight_minc"] == 1
+    assert row["bbox_tight_maxr"] == 3
+    assert row["bbox_tight_maxc"] == 3
+
+
+def test_extraction_flat_table_row_count(exmod, small_stack, prev):
+    """Test that the flat_table has one row per frame in the track."""
+    out = exmod.run(small_stack, prev)
+    assert len(out["flat_table"]) == 2  # one row per frame
+
+
+def test_extraction_summary_keys(exmod, small_stack, prev):
+    """Check the summary dictionary contains all expected keys."""
+    out = exmod.run(small_stack, prev)
+    for key in (
+        "n_tracks",
+        "n_rows",
+        "n_skipped_index_errors",
+        "n_missing_region_measurements",
+        "padding",
+        "fixed_box_size",
+        "fixed_size_mode",
+        "square",
+        "include_image",
+        "include_mask",
+        "include_bbox",
+    ):
+        assert key in out["summary"], f"Missing summary key: {key}"
+
+
+def test_extraction_summary_counts(exmod, small_stack, prev):
+    """Test that summary counts match the expected values for the small stack."""
+    out = exmod.run(small_stack, prev)
+    assert out["summary"]["n_tracks"] == 1
+    assert out["summary"]["n_rows"] == 2
+    assert out["summary"]["n_skipped_index_errors"] == 0
+    assert out["summary"]["n_missing_region_measurements"] == 0
+
+
+# ==============================================================================
+# Extraction Geometry helpers
+# ==============================================================================
+
+
+class TestTightBboxForLabel:
+    """Test the _tight_bbox_for_label geometry helper."""
+
+    def test_absent_label_returns_none(self):
+        """Label not present in mask → None."""
+        lm = np.zeros((5, 5), dtype=int)
+        assert _tight_bbox_for_label(lm, label_val=1) is None
+
+    def test_all_zeros_returns_none(self):
+        """Label not present in an all-zeros mask → None."""
+        lm = np.zeros((4, 4), dtype=int)
+        assert _tight_bbox_for_label(lm, label_val=1) is None
+
+    def test_single_pixel(self):
+        """Single foreground pixel at (2, 2) → bbox (2, 2, 3, 3)."""
+        lm = np.zeros((5, 5), dtype=int)
+        lm[2, 2] = 1
+        assert _tight_bbox_for_label(lm, 1) == (2, 2, 3, 3)
+
+    def test_rectangular_region(self):
+        """2-row x 3-col region at rows 1-2, cols 2-4 → (1, 2, 3, 5)."""
+        lm = np.zeros((6, 6), dtype=int)
+        lm[1:3, 2:5] = 1
+        assert _tight_bbox_for_label(lm, 1) == (1, 2, 3, 5)
+
+    def test_full_frame_region(self):
+        """Region covering the entire frame → (0, 0, H, W)."""
+        H, W = 4, 6
+        lm = np.ones((H, W), dtype=int)
+        assert _tight_bbox_for_label(lm, 1) == (0, 0, H, W)
+
+    def test_correct_label_chosen(self):
+        """Only the requested label is returned, not a different one."""
+        lm = np.zeros((6, 6), dtype=int)
+        lm[0:2, 0:2] = 1  # label 1: rows 0-1, cols 0-1
+        lm[4:6, 4:6] = 2  # label 2: rows 4-5, cols 4-5
+        assert _tight_bbox_for_label(lm, 1) == (0, 0, 2, 2)
+        assert _tight_bbox_for_label(lm, 2) == (4, 4, 6, 6)
+
+    def test_disconnected_components_returns_largest(self):
+        """Two disconnected blobs sharing a label → bbox of the largest component."""
+        lm = np.zeros((6, 6), dtype=int)
+        lm[0, 0] = 1  # small: 1 px
+        lm[2:5, 2:5] = 1  # large: 9 px → bbox (2, 2, 5, 5)
+        assert _tight_bbox_for_label(lm, 1) == (2, 2, 5, 5)
+
+    def test_returns_integer_tuple(self):
+        """All four bbox values must be plain Python ints."""
+        lm = np.zeros((4, 4), dtype=int)
+        lm[1:3, 1:3] = 1
+        bbox = _tight_bbox_for_label(lm, 1)
+        assert all(isinstance(v, int) for v in bbox)
+
+    def test_non_integer_mask_coerced(self):
+        """Float mask is coerced to bool; non-zero pixels treated as foreground."""
+        lm = np.zeros((4, 4), dtype=float)
+        lm[1, 1] = 3.7
+        # label_val=1: binary=(lm==1) is False everywhere → None
+        assert _tight_bbox_for_label(lm, 1) is None
+
+
+# ---------------------------------------------------------------------------
+# _pad_bbox
+# ---------------------------------------------------------------------------
+
+
+class TestPadBbox:
+    """Test the _pad_bbox bounding-box expansion helper."""
+
+    def test_zero_padding_unchanged(self):
+        """Test that zero padding returns original bbox."""
+        assert _pad_bbox((1, 1, 3, 3), 0, (4, 4)) == (1, 1, 3, 3)
+
+    def test_padding_within_bounds(self):
+        """Padding that does not hit the image boundary."""
+        # (2,2,4,4) + pad 1 in 8x8 → (1,1,5,5)
+        assert _pad_bbox((2, 2, 4, 4), 1, (8, 8)) == (1, 1, 5, 5)
+
+    def test_padding_clips_to_zero(self):
+        """Padding that would go negative is clipped to 0."""
+        # (0,0,2,2) + pad 2 → top-left would be (-2,-2), clips to (0,0)
+        result = _pad_bbox((0, 0, 2, 2), 2, (6, 6))
+        assert result[0] == 0
+        assert result[1] == 0
+
+    def test_padding_clips_to_image_boundary(self):
+        """Padding that would exceed image dims is clipped."""
+        # (2,2,4,4) + pad 5 in 4x4 → clipped at (4,4)
+        result = _pad_bbox((2, 2, 4, 4), 5, (4, 4))
+        assert result[2] == 4
+        assert result[3] == 4
+
+    def test_full_clip_all_sides(self):
+        """Corner bbox padded far beyond image → entire image."""
+        assert _pad_bbox((1, 1, 3, 3), 10, (4, 4)) == (0, 0, 4, 4)
+
+    def test_result_dimensions_grow_symmetrically(self):
+        """With no clipping, each side expands by exactly padding."""
+        bbox = (3, 3, 5, 5)
+        p = 2
+        r0, c0, r1, c1 = _pad_bbox(bbox, p, (10, 10))
+        assert r0 == bbox[0] - p
+        assert c0 == bbox[1] - p
+        assert r1 == bbox[2] + p
+        assert c1 == bbox[3] + p
+
+    def test_non_square_image(self):
+        """Works correctly for non-square images (H ≠ W)."""
+        result = _pad_bbox((1, 1, 3, 3), 2, (5, 8))
+        assert result[2] <= 5  # height clipped to H
+        assert result[3] <= 8  # width clipped to W
+
+
+# ---------------------------------------------------------------------------
+# _centered_fixed_bbox
+# ---------------------------------------------------------------------------
+
+
+class TestCenteredFixedBbox:
+    """Test the _centered_fixed_bbox fixed-size centring helper."""
+
+    def test_output_dimensions_equal_size(self):
+        """Returned bbox must have height == width == size when not clipped."""
+        bbox = (1, 1, 3, 3)  # centre at (2, 2) in a 6x6 image
+        r0, c0, r1, c1 = _centered_fixed_bbox(bbox, 4, (6, 6))
+        assert r1 - r0 == 4
+        assert c1 - c0 == 4
+
+    def test_centered_on_input_bbox_center(self):
+        """Output is centred on the centre of the input bbox."""
+        # Input centre at row=(1+3)//2=2, col=(1+3)//2=2; size=4, half=2
+        # expected: (0,0,4,4) in a 6x6 image
+        assert _centered_fixed_bbox((1, 1, 3, 3), 4, (6, 6)) == (0, 0, 4, 4)
+
+    def test_clipped_near_top_left(self):
+        """Bbox near top-left corner is shifted to maintain size."""
+        # Centre of (0,0,2,2) is (1,1); size=4, half=2 → would be (-1,-1,3,3);
+        # clipped to (0,0,4,4)
+        r0, c0, r1, c1 = _centered_fixed_bbox((0, 0, 2, 2), 4, (4, 4))
+        assert r0 == 0 and c0 == 0
+        assert r1 - r0 == 4 and c1 - c0 == 4
+
+    def test_clipped_near_bottom_right(self):
+        """Bbox near bottom-right corner is shifted to maintain size."""
+        # Centre of (4,4,6,6) in 6x6 is (5,5); size=4 → clips, re-shifted
+        r0, c0, r1, c1 = _centered_fixed_bbox((4, 4, 6, 6), 4, (6, 6))
+        assert r1 == 6 and c1 == 6
+        assert r1 - r0 == 4 and c1 - c0 == 4
+
+    def test_odd_size(self):
+        """Odd size is handled by floor division; output still has correct size."""
+        r0, c0, r1, c1 = _centered_fixed_bbox((1, 1, 3, 3), 3, (6, 6))
+        assert r1 - r0 == 3
+        assert c1 - c0 == 3
+
+    def test_size_equals_image(self):
+        """Size equal to image dimensions → full image returned."""
+        H, W = 5, 5
+        r0, c0, r1, c1 = _centered_fixed_bbox((1, 1, 4, 4), H, (H, W))
+        assert (r0, c0, r1, c1) == (0, 0, H, W)
+
+    def test_output_within_image_bounds(self):
+        """Output coords must always be within image boundaries."""
+        for centre in [(0, 0, 1, 1), (4, 4, 6, 6), (2, 2, 4, 4)]:
+            r0, c0, r1, c1 = _centered_fixed_bbox(centre, 4, (6, 6))
+            assert r0 >= 0 and c0 >= 0
+            assert r1 <= 6 and c1 <= 6
+
+
+# ---------------------------------------------------------------------------
+# _square_bbox
+# ---------------------------------------------------------------------------
+
+
+class TestSquareBbox:
+    """Test the _square_bbox squaring helper."""
+
+    def test_already_square_unchanged(self):
+        """A square bbox is returned unchanged (same coords)."""
+        bbox = (1, 1, 3, 3)
+        assert _square_bbox(bbox, (6, 6)) == bbox
+
+    def test_wide_bbox_becomes_square(self):
+        """A wider-than-tall bbox: height is extended to match width."""
+        # (1,1,2,4) → height=1, width=3 → size=3
+        r0, c0, r1, c1 = _square_bbox((1, 1, 2, 4), (8, 8))
+        assert r1 - r0 == c1 - c0
+
+    def test_tall_bbox_becomes_square(self):
+        """A taller-than-wide bbox: width is extended to match height."""
+        # (1,1,4,2) → height=3, width=1 → size=3
+        r0, c0, r1, c1 = _square_bbox((1, 1, 4, 2), (8, 8))
+        assert r1 - r0 == c1 - c0
+
+    def test_square_side_equals_max_dim(self):
+        """Side of the output square equals max(height, width) of the input."""
+        r0, c0, r1, c1 = _square_bbox((0, 0, 2, 5), (10, 10))
+        assert r1 - r0 == 5
+        assert c1 - c0 == 5
+
+    def test_output_centred_on_input(self):
+        """Output is centred on the centre of the input bbox (when not clipped)."""
+        # (2,2,4,6) → centre row=(2+4)//2=3, col=(2+6)//2=4; size=4, half=2
+        # expected row: (3-2, 3+2) = (1,5); col: (4-2, 4+2) = (2,6)
+        r0, c0, r1, c1 = _square_bbox((2, 2, 4, 6), (10, 10))
+        assert r0 == 1 and r1 == 5
+        assert c0 == 2 and c1 == 6
+
+    def test_clips_to_image_boundary(self):
+        """Expansion near the image edge is clipped and re-shifted."""
+        # wide bbox near top edge: (0,0,1,6) in 8x8 → size=6, clips top
+        r0, c0, r1, c1 = _square_bbox((0, 0, 1, 6), (8, 8))
+        assert r0 >= 0 and c0 >= 0
+        assert r1 <= 8 and c1 <= 8
+        # output is still square (may be slightly smaller if double-clipped)
+        assert r1 - r0 == c1 - c0
+
+    def test_single_pixel_becomes_1x1_square(self):
+        """A 1x1 bbox (single pixel) is already square and stays 1x1."""
+        r0, c0, r1, c1 = _square_bbox((2, 3, 3, 4), (6, 6))
+        assert r1 - r0 == 1
+        assert c1 - c0 == 1
+
+    def test_output_within_image_bounds(self):
+        """Output coords must always lie within image boundaries."""
+        for bbox in [(0, 0, 1, 4), (3, 0, 4, 6), (0, 3, 6, 4)]:
+            r0, c0, r1, c1 = _square_bbox(bbox, (6, 6))
+            assert r0 >= 0 and c0 >= 0, f"underflow for {bbox}"
+            assert r1 <= 6 and c1 <= 6, f"overflow for {bbox}"
+
+
+# ==============================================================================
+# BoundarySizeModule
+# ==============================================================================
+
+# ---------------------------------------------------------------------------
+# Fixtures : BoundarySizeModule
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def bsmod():
+    """Create and return a BoundarySizeModule instance."""
+    return BoundarySizeModule()
+
+
+def _make_extraction_out(
+    bbox_tight: tuple = (1, 1, 3, 3),
+    n_frames: int = 2,
+    include_none: bool = False,
+) -> dict:
+    """Build a minimal particle_region_extraction output for BoundarySizeModule."""
+    regions = []
+    for i in range(n_frames):
+        if include_none and i == 0:
+            regions.append(None)
+        else:
+            regions.append(
+                {
+                    "frame": i,
+                    "timestamp": float(i) * 0.5,
+                    "label": 1,
+                    "bbox_tight": bbox_tight,
+                    "bbox_padded": bbox_tight,
+                }
+            )
+    return {
+        "summary": {"include_bbox": True},
+        "per_track": [
+            {
+                "track_id": 0,
+                "frames": list(range(n_frames)),
+                "timestamps": [float(i) * 0.5 for i in range(n_frames)],
+                "regions": regions,
+            }
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Property tests
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_name(bsmod):
+    """Check that the name string is correct and matches the module's __name__."""
+    assert bsmod.name == "tracked_particle_boundary_size"
+
+
+def test_boundary_version(bsmod):
+    """Check that the version string is correct and matches the module's __version__."""
+    assert bsmod.version == "0.1.0"
+
+
+def test_boundary_requires_particle_region_extraction(bsmod):
+    """Test boundary_size requires particle_region_extraction in previous results."""
+    assert "particle_region_extraction" in bsmod.requires
+
+
+# ---------------------------------------------------------------------------
+# Error cases
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_none_previous_results_raises(bsmod, small_stack):
+    """Test that None previous_results raises RuntimeError."""
+    with pytest.raises(RuntimeError, match="requires previous results"):
+        bsmod.run(small_stack, previous_results=None)
+
+
+def test_boundary_include_bbox_false_raises(bsmod, small_stack):
+    """Test that include_bbox=False in previous results raises RuntimeError."""
+    ext_out = {"summary": {"include_bbox": False}, "per_track": []}
+    with pytest.raises(RuntimeError, match="include_bbox=True"):
+        bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+
+
+def test_boundary_unsupported_measure_raises(bsmod, small_stack):
+    """Test that an unsupported measure argument raises ValueError."""
+    ext_out = _make_extraction_out()
+    with pytest.raises(ValueError, match="bbox_max_dim"):
+        bsmod.run(
+            small_stack, {"particle_region_extraction": ext_out}, measure="perimeter"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Empty input
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_empty_per_track(bsmod, small_stack):
+    """Test an empty per_track list produces empty flat_table and summary counts."""
+    ext_out = {"summary": {"include_bbox": True}, "per_track": []}
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["per_track"] == []
+    assert out["flat_table"] == []
+    assert out["summary"]["n_tracks"] == 0
+    assert out["summary"]["n_rows"] == 0
+
+
+# ---------------------------------------------------------------------------
+# max_dim computation
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_square_particle_max_dim(bsmod, small_stack):
+    """Test that a square particle's max_dim is equal to its height (or width)."""
+    # bbox (1,1,3,3) → height=2, width=2 → max_dim=2.0
+    ext_out = _make_extraction_out(bbox_tight=(1, 1, 3, 3))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["per_track"][0]["max_dim"] == pytest.approx([2.0, 2.0])
+
+
+def test_boundary_non_square_particle_uses_larger_dim(bsmod, small_stack):
+    """Test that a non-square particle's max_dim is the larger of height or width."""
+    # bbox (0,0,3,5) → height=3, width=5 → max_dim=5.0
+    ext_out = _make_extraction_out(bbox_tight=(0, 0, 3, 5))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["per_track"][0]["max_dim"] == pytest.approx([5.0, 5.0])
+
+
+def test_boundary_tall_particle_uses_height(bsmod, small_stack):
+    """Test that a tall particle's max_dim is the height of the bbox."""
+    # bbox (0,0,6,2) → height=6, width=2 → max_dim=6.0
+    ext_out = _make_extraction_out(bbox_tight=(0, 0, 6, 2))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["per_track"][0]["max_dim"] == pytest.approx([6.0, 6.0])
+
+
+def test_boundary_none_region_produces_nan_max_dim(bsmod, small_stack):
+    """Test that max_dim is NaN when the region is None (missing)."""
+    ext_out = _make_extraction_out(include_none=True)  # frame 0 is None
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    max_dims = out["per_track"][0]["max_dim"]
+    assert np.isnan(max_dims[0])
+    assert not np.isnan(max_dims[1])
+
+
+def test_boundary_none_region_increments_missing(bsmod, small_stack):
+    """Test that summary counts missing region measurements when a region is None."""
+    ext_out = _make_extraction_out(include_none=True)
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["summary"]["n_missing_region_measurements"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Threshold and state classification
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_no_threshold_no_state_key(bsmod, small_stack):
+    """Test that state is not included when threshold=None."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(
+        small_stack, {"particle_region_extraction": ext_out}, threshold=None
+    )
+    assert "state" not in out["per_track"][0]
+    assert "state" not in out["flat_table"][0]
+
+
+def test_boundary_threshold_extended_state(bsmod, small_stack):
+    """Test that max_dim > threshold produces state=1."""
+    # max_dim=2.0 > threshold=1.5 → state=1 (extended)
+    ext_out = _make_extraction_out(bbox_tight=(1, 1, 3, 3))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out}, threshold=1.5)
+    assert out["per_track"][0]["state"] == [1, 1]
+
+
+def test_boundary_threshold_compact_state(bsmod, small_stack):
+    """Test that max_dim < threshold produces state=0."""
+    # max_dim=2.0 < threshold=3.0 → state=0 (compact)
+    ext_out = _make_extraction_out(bbox_tight=(1, 1, 3, 3))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out}, threshold=3.0)
+    assert out["per_track"][0]["state"] == [0, 0]
+
+
+def test_boundary_threshold_nan_region_state_is_nan(bsmod, small_stack):
+    """Test that boundary state is NaN when the region is None (missing)."""
+    ext_out = _make_extraction_out(include_none=True)
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out}, threshold=1.5)
+    states = out["per_track"][0]["state"]
+    assert np.isnan(states[0])
+    assert states[1] == 1
+
+
+def test_boundary_threshold_state_in_flat_table(bsmod, small_stack):
+    """Test that flat_table contains state column when threshold is set."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out}, threshold=1.5)
+    assert "state" in out["flat_table"][0]
+
+
+# ---------------------------------------------------------------------------
+# flat_table and summary
+# ---------------------------------------------------------------------------
+
+
+def test_boundary_flat_table_required_columns(bsmod, small_stack):
+    """Test that flat_table contains required columns."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    row = out["flat_table"][0]
+    for col in ("track_id", "label", "frame", "timestamp", "max_dim"):
+        assert col in row, f"Missing column: {col}"
+
+
+def test_boundary_flat_table_max_dim_values(bsmod, small_stack):
+    """Test that flat_table contains correct max_dim values."""
+    ext_out = _make_extraction_out(bbox_tight=(1, 1, 3, 3))
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["flat_table"][0]["max_dim"] == pytest.approx(2.0)
+
+
+def test_boundary_flat_table_row_count(bsmod, small_stack):
+    """Test that flat_table has one row per frame in the track."""
+    ext_out = _make_extraction_out(n_frames=3)
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert len(out["flat_table"]) == 3
+
+
+def test_boundary_summary_keys(bsmod, small_stack):
+    """Test that boundary summary contains expected keys."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    for key in (
+        "n_tracks",
+        "n_rows",
+        "n_missing_region_measurements",
+        "state_included",
+    ):
+        assert key in out["summary"], f"Missing summary key: {key}"
+
+
+def test_boundary_summary_state_included_false(bsmod, small_stack):
+    """Test boundary summary reports state_included=False when threshold is None."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert not out["summary"]["state_included"]
+
+
+def test_boundary_summary_state_included_true(bsmod, small_stack):
+    """Test that boundary summary reports state_included=True when threshold is set."""
+    ext_out = _make_extraction_out()
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out}, threshold=1.5)
+    assert out["summary"]["state_included"]
+
+
+def test_boundary_summary_counts(bsmod, small_stack):
+    """Test that boundary summary counds tracks and rows."""
+    ext_out = _make_extraction_out(n_frames=2)
+    out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert out["summary"]["n_tracks"] == 1
+    assert out["summary"]["n_rows"] == 2
+
+
+# ==============================================================================
+# Integration tests — ParticleRegionExtractionModule → BoundarySizeModule
+# ==============================================================================
+
+
+def test_extraction_output_structure_for_boundary(exmod, bsmod, small_stack, prev):
+    """Extraction output directly feeds BoundarySizeModule without transformation."""
+    ext_out = exmod.run(small_stack, prev)
+    bound_out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+
+    assert bound_out["per_track"][0]["max_dim"] == pytest.approx([2.0, 2.0])
+    assert bound_out["summary"]["n_rows"] == 2
+    assert bound_out["summary"]["n_tracks"] == 1
+
+
+def test_integration_extraction_boundary_with_threshold(
+    exmod, bsmod, small_stack, prev
+):
+    """End-to-end: extraction → boundary with threshold classifies correctly."""
+    ext_out = exmod.run(small_stack, prev)
+    # max_dim=2.0; threshold=1.5 → state=1; threshold=3.0 → state=0
+    out_extended = bsmod.run(
+        small_stack, {"particle_region_extraction": ext_out}, threshold=1.5
+    )
+    out_compact = bsmod.run(
+        small_stack, {"particle_region_extraction": ext_out}, threshold=3.0
+    )
+
+    assert all(s == 1 for s in out_extended["per_track"][0]["state"])
+    assert all(s == 0 for s in out_compact["per_track"][0]["state"])
+
+
+def test_integration_extraction_boundary_with_padding(exmod, bsmod, small_stack, prev):
+    """
+    Padding expands the crop window but not bbox_tight.
+
+    BoundarySizeModule reads bbox_tight, so max_dim reflects the particle's
+    actual extent (2.0) regardless of the padding used during extraction.
+    """
+    ext_out = exmod.run(small_stack, prev, padding=1)
+    # padded bbox is (0,0,4,4) but bbox_tight is still (1,1,3,3) → max_dim=2.0
+    bound_out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+    assert bound_out["per_track"][0]["max_dim"] == pytest.approx([2.0, 2.0])
+
+
+def test_integration_extraction_boundary_with_missing_detection(
+    exmod, bsmod, small_stack, detection_out
+):
+    """Missing detection in extraction produces NaN max_dim in boundary not an error."""
+    track_with_gap = {
+        "tracks": [
+            {
+                "id": 0,
+                "frames": [0, 1],
+                "point_indices": [None, 0],
+                "coords": [None, (1.5, 1.5)],
+            }
+        ]
+    }
+    ext_out = exmod.run(
+        small_stack,
+        {"feature_detection": detection_out, "particle_tracking": track_with_gap},
+    )
+    bound_out = bsmod.run(small_stack, {"particle_region_extraction": ext_out})
+
+    max_dims = bound_out["per_track"][0]["max_dim"]
+    assert np.isnan(max_dims[0])
+    assert max_dims[1] == pytest.approx(2.0)
+    assert bound_out["summary"]["n_missing_region_measurements"] == 1
+
+
+# ==============================================================================
+# ParticleRegionMediaExportModule
+# ==============================================================================
+
+# ---------------------------------------------------------------------------
+# Shared stubs and builders
+# ---------------------------------------------------------------------------
+
+_MODULE = "playnano.analysis.modules.particle_region_media_export"
+
+
+class _ExportStack:
+    """Provide a minimal stack stub for export module tests."""
+
+    pixel_size_nm = 1.0
+    file_path = "my_stack.nhf"
+
+
+def _region(frame_idx: int, crop_shape=(2, 2)) -> dict:
+    """Build a region dict with a float32 image_crop."""
+    return {
+        "frame": frame_idx,
+        "timestamp": float(frame_idx) * 0.5,
+        "label": 1,
+        "image_crop": np.full(crop_shape, float(frame_idx + 1), dtype=np.float32),
+    }
+
+
+def _make_track(
+    track_id: int,
+    n_frames: int = 2,
+    crop_shape=(2, 2),
+    with_none: bool = False,
+    no_crops: bool = False,
+) -> dict:
+    """Build a per_track entry as produced by ParticleRegionExtractionModule."""
+    regions = []
+    for i in range(n_frames):
+        if no_crops:
+            regions.append({"frame": i, "timestamp": float(i) * 0.5, "label": 1})
+        elif with_none and i == 0:
+            regions.append(None)
+        else:
+            regions.append(_region(i, crop_shape=crop_shape))
+    return {
+        "track_id": track_id,
+        "frames": list(range(n_frames)),
+        "timestamps": [float(i) * 0.5 for i in range(n_frames)],
+        "regions": regions,
+    }
+
+
+def _extraction_out(
+    n_tracks: int = 1,
+    n_frames: int = 2,
+    include_image: bool = True,
+    **track_kwargs,
+) -> dict:
+    """Build a minimal particle_region_extraction output for export module tests."""
+    return {
+        "summary": {"include_image": include_image},
+        "per_track": [
+            _make_track(i, n_frames=n_frames, **track_kwargs) for i in range(n_tracks)
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def parexmod():
+    """Return a bare ParticleRegionMediaExportModule instance."""
+    return ParticleRegionMediaExportModule()
+
+
+@pytest.fixture
+def stack():
+    """Return a minimal stack stub with pixel_size_nm and file_path."""
+    return _ExportStack()
+
+
+@pytest.fixture
+def mock_exports(monkeypatch, tmp_path):
+    """Patch all file-writing functions and path helpers in the export module.
+
+    Returns a dict with 'tmp_path' and MagicMocks for 'gif', 'video', 'seq'.
+    """
+    monkeypatch.setattr(
+        f"{_MODULE}.prepare_output_directory", lambda *a, **kw: tmp_path
+    )
+    monkeypatch.setattr(f"{_MODULE}.sanitize_output_name", lambda *a, **kw: "test")
+
+    gif_mock = MagicMock()
+    video_mock = MagicMock()
+    seq_mock = MagicMock()
+    monkeypatch.setattr(f"{_MODULE}.create_gif_with_scale_and_timestamp", gif_mock)
+    monkeypatch.setattr(f"{_MODULE}.create_video_with_scale_and_timestamp", video_mock)
+    monkeypatch.setattr(f"{_MODULE}.create_image_sequence", seq_mock)
+
+    return {"tmp_path": tmp_path, "gif": gif_mock, "video": video_mock, "seq": seq_mock}
+
+
+# ---------------------------------------------------------------------------
+# _pad_crop_to_size
+# ---------------------------------------------------------------------------
+
+
+class TestPadCropToSize:
+    """Test the _pad_crop_to_size centre-padding helper."""
+
+    def test_already_target_size_unchanged(self):
+        """Crop matching target dimensions is returned without modification."""
+        crop = np.ones((3, 3))
+        result = _pad_crop_to_size(crop, 3, 3)
+        np.testing.assert_array_equal(result, crop)
+
+    def test_output_shape_correct(self):
+        """Output array has exactly the requested (target_h, target_w) shape."""
+        crop = np.ones((2, 2))
+        result = _pad_crop_to_size(crop, 4, 4)
+        assert result.shape == (4, 4)
+
+    def test_original_data_centred(self):
+        """The original pixel values appear in the centre of the padded array."""
+        crop = np.ones((2, 2)) * 5.0
+        result = _pad_crop_to_size(crop, 4, 4)
+        np.testing.assert_array_equal(result[1:3, 1:3], 5.0)
+        assert result[0, 0] == 0.0
+
+    def test_fill_value_used_for_padding(self):
+        """Padding pixels take the specified fill_value, not zero."""
+        crop = np.ones((2, 2))
+        result = _pad_crop_to_size(crop, 4, 4, fill_value=-1.0)
+        assert result[0, 0] == pytest.approx(-1.0)
+
+    def test_odd_size_difference_distributes_correctly(self):
+        """(1,3)→(3,3): top pad=1, bottom pad=1 via floor-then-remainder split."""
+        crop = np.ones((1, 3)) * 9.0
+        result = _pad_crop_to_size(crop, 3, 3)
+        assert result.shape == (3, 3)
+        assert result[1, 0] == pytest.approx(9.0)
+        assert result[0, 0] == pytest.approx(0.0)
+
+    def test_3d_array_channel_dim_preserved(self):
+        """A (H, W, C) crop is padded in the spatial dims only."""
+        crop = np.ones((2, 2, 3))
+        result = _pad_crop_to_size(crop, 4, 4)
+        assert result.shape == (4, 4, 3)
+
+    def test_asymmetric_target(self):
+        """Different target height and width are both applied correctly."""
+        crop = np.ones((1, 1))
+        result = _pad_crop_to_size(crop, 3, 5)
+        assert result.shape == (3, 5)
+
+    def test_output_dtype_matches_input(self):
+        """Output array dtype matches the input crop dtype."""
+        crop = np.ones((2, 2), dtype=np.float64)
+        result = _pad_crop_to_size(crop, 4, 4)
+        assert result.dtype == np.float64
+
+
+# ---------------------------------------------------------------------------
+# _assemble_track_stack
+# ---------------------------------------------------------------------------
+
+
+class TestAssembleTrackStack:
+    """Test the _assemble_track_stack track assembly helper."""
+
+    def test_all_none_regions_returns_none(self):
+        """All-None region list yields None (no valid crops to stack)."""
+        regions = [None, None, None]
+        assert _assemble_track_stack(regions, fill_value=0.0) is None
+
+    def test_regions_with_no_image_crop_returns_none(self):
+        """Region dicts without 'image_crop' key are treated as absent."""
+        regions = [{"frame": 0, "label": 1}]
+        assert _assemble_track_stack(regions, fill_value=0.0) is None
+
+    def test_single_valid_crop_shape(self):
+        """A single crop produces a (1, H, W) output array."""
+        regions = [_region(0, crop_shape=(3, 4))]
+        result = _assemble_track_stack(regions, fill_value=0.0)
+        assert result is not None
+        assert result.shape == (1, 3, 4)
+
+    def test_multiple_same_size_crops_stacked(self):
+        """Multiple same-size crops are stacked into a (T, H, W) array."""
+        regions = [_region(i) for i in range(3)]
+        result = _assemble_track_stack(regions, fill_value=0.0)
+        assert result.shape == (3, 2, 2)
+
+    def test_frame_values_in_correct_temporal_order(self):
+        """Frame i has pixel value (i+1); verify the stack preserves order."""
+        regions = [_region(i) for i in range(3)]
+        result = _assemble_track_stack(regions, fill_value=0.0)
+        for i in range(3):
+            assert result[i, 0, 0] == pytest.approx(float(i + 1))
+
+    def test_none_region_filled_with_fill_value(self):
+        """A None region produces a fill_value plane in the output stack."""
+        regions = [None, _region(1)]
+        result = _assemble_track_stack(regions, fill_value=-99.0)
+        assert result is not None
+        assert result[0, 0, 0] == pytest.approx(-99.0)
+
+    def test_mixed_sizes_padded_to_largest(self):
+        """Smaller crops are centre-padded to the largest crop in the track."""
+        regions = [
+            _region(0, crop_shape=(2, 2)),
+            _region(1, crop_shape=(4, 4)),
+        ]
+        result = _assemble_track_stack(regions, fill_value=0.0)
+        assert result.shape == (2, 4, 4)
+        np.testing.assert_array_equal(result[0, 1:3, 1:3], 1.0)
+        assert result[0, 0, 0] == 0.0
+
+    def test_output_dtype_is_float32(self):
+        """Assembled stack is always float32 regardless of input dtype."""
+        regions = [_region(0)]
+        result = _assemble_track_stack(regions, fill_value=0.0)
+        assert result.dtype == np.float32
+
+
+# ---------------------------------------------------------------------------
+# _filter_and_sort_tracks
+# ---------------------------------------------------------------------------
+
+
+class TestFilterAndSortTracks:
+    """Test the _filter_and_sort_tracks filter, sort, and cap helper."""
+
+    def _tracks(self, ids, n_regions_each=None, n_none_each=None):
+        """Build minimal track dicts suitable for filter/sort tests."""
+        tracks = []
+        for i, tid in enumerate(ids):
+            n = n_regions_each[i] if n_regions_each else 3
+            n_none = n_none_each[i] if n_none_each else 0
+            regions = [None] * n_none + [{"frame": j} for j in range(n - n_none)]
+            tracks.append({"track_id": tid, "regions": regions})
+        return tracks
+
+    def test_invalid_sort_by_raises(self):
+        """Unrecognised sort_by value raises ValueError."""
+        with pytest.raises(ValueError, match="sort_by"):
+            _filter_and_sort_tracks(
+                [], track_ids=None, sort_by="bad_key", max_tracks=None
+            )
+
+    def test_empty_input_returns_empty(self):
+        """Empty track list passes through all stages and returns empty list."""
+        assert _filter_and_sort_tracks([], None, "track_id", None) == []
+
+    def test_no_filter_returns_all(self):
+        """track_ids=None and max_tracks=None preserve all input tracks."""
+        tracks = self._tracks([2, 0, 1])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="track_id", max_tracks=None
+        )
+        assert len(result) == 3
+
+    def test_track_ids_whitelist(self):
+        """Only tracks whose IDs appear in track_ids are retained."""
+        tracks = self._tracks([0, 1, 2, 3])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=[1, 3], sort_by="track_id", max_tracks=None
+        )
+        assert [t["track_id"] for t in result] == [1, 3]
+
+    def test_unknown_track_ids_silently_ignored(self):
+        """Test IDs in track_ids that don't exist in tracks are silently skipped."""
+        tracks = self._tracks([0, 1])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=[1, 99], sort_by="track_id", max_tracks=None
+        )
+        assert len(result) == 1
+        assert result[0]["track_id"] == 1
+
+    def test_sort_by_track_id_ascending(self):
+        """sort_by='track_id' returns tracks in ascending ID order."""
+        tracks = self._tracks([3, 1, 2])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="track_id", max_tracks=None
+        )
+        assert [t["track_id"] for t in result] == [1, 2, 3]
+
+    def test_sort_by_n_frames_descending(self):
+        """sort_by='n_frames' returns longest tracks first."""
+        tracks = self._tracks([0, 1, 2], n_regions_each=[1, 3, 2])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="n_frames", max_tracks=None
+        )
+        assert [t["track_id"] for t in result] == [1, 2, 0]
+
+    def test_sort_by_n_detections_descending(self):
+        """sort_by='n_detections' ranks by non-None region count, descending."""
+        tracks = self._tracks(
+            [0, 1, 2], n_regions_each=[3, 3, 3], n_none_each=[1, 0, 2]
+        )
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="n_detections", max_tracks=None
+        )
+        assert [t["track_id"] for t in result] == [1, 0, 2]
+
+    def test_max_tracks_caps_output(self):
+        """max_tracks limits the output to at most N tracks."""
+        tracks = self._tracks([0, 1, 2, 3])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="track_id", max_tracks=2
+        )
+        assert len(result) == 2
+
+    def test_max_tracks_applied_after_sort(self):
+        """max_tracks takes the first N after sorting → the N with most frames."""
+        tracks = self._tracks([0, 1, 2], n_regions_each=[1, 5, 3])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="n_frames", max_tracks=2
+        )
+        assert [t["track_id"] for t in result] == [1, 2]
+
+    def test_filter_then_sort_then_cap(self):
+        """All three stages run in order: whitelist → sort → cap."""
+        tracks = self._tracks([0, 1, 2, 3], n_regions_each=[1, 4, 2, 3])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=[1, 2, 3], sort_by="n_frames", max_tracks=2
+        )
+        assert [t["track_id"] for t in result] == [1, 3]
+
+    def test_max_tracks_larger_than_available(self):
+        """max_tracks exceeding available track count returns all tracks."""
+        tracks = self._tracks([0, 1])
+        result = _filter_and_sort_tracks(
+            tracks, track_ids=None, sort_by="track_id", max_tracks=100
+        )
+        assert len(result) == 2
+
+
+# ---------------------------------------------------------------------------
+# ParticleRegionMediaExportModule — properties and errors
+# ---------------------------------------------------------------------------
+
+
+def test_export_module_name(parexmod):
+    """Module name is 'particle_region_media_export'."""
+    assert parexmod.name == "particle_region_media_export"
+
+
+def test_export_module_version(parexmod):
+    """Module version string is present and non-empty."""
+    assert parexmod.version == "0.1.0"
+
+
+def test_export_module_requires(parexmod):
+    """Module declares particle_region_extraction as a dependency."""
+    assert "particle_region_extraction" in parexmod.requires
+
+
+def test_export_none_previous_results_raises(parexmod, stack):
+    """None previous_results raises RuntimeError before any processing."""
+    with pytest.raises(RuntimeError, match="requires previous results"):
+        parexmod.run(stack, previous_results=None)
+
+
+def test_export_all_flags_false_raises(parexmod, stack):
+    """At least one export flag must be True or a RuntimeError is raised."""
+    ext_out = _extraction_out()
+    with pytest.raises(RuntimeError, match="at least one"):
+        parexmod.run(
+            stack,
+            {"particle_region_extraction": ext_out},
+            export_gif=False,
+            export_video=False,
+            export_sequence=False,
+        )
+
+
+def test_export_missing_extraction_module_raises(parexmod, stack):
+    """Missing extraction module key in previous_results raises RuntimeError."""
+    with pytest.raises(RuntimeError, match="extraction_module"):
+        parexmod.run(stack, previous_results={}, export_video=True)
+
+
+def test_export_include_image_false_raises(parexmod, stack):
+    """Upstream extraction run without include_image=True raises RuntimeError."""
+    ext_out = _extraction_out(include_image=False)
+    with pytest.raises(RuntimeError, match="include_image=True"):
+        parexmod.run(stack, {"particle_region_extraction": ext_out})
+
+
+def test_export_invalid_sort_by_raises(parexmod, stack, mock_exports):
+    """Unrecognised sort_by value propagates as ValueError."""
+    ext_out = _extraction_out()
+    with pytest.raises(ValueError, match="sort_by"):
+        parexmod.run(
+            stack,
+            {"particle_region_extraction": ext_out},
+            sort_by="invalid_key",
+            export_video=True,
+        )
+
+
+# ---------------------------------------------------------------------------
+# run() — export function routing
+# ---------------------------------------------------------------------------
+
+
+def test_export_gif_calls_gif_function(parexmod, stack, mock_exports):
+    """export_gif=True calls create_gif_with_scale_and_timestamp exactly once."""
+    ext_out = _extraction_out()
+    parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_gif=True,
+        export_video=False,
+    )
+    assert mock_exports["gif"].call_count == 1
+    assert mock_exports["video"].call_count == 0
+    assert mock_exports["seq"].call_count == 0
+
+
+def test_export_video_calls_video_function(parexmod, stack, mock_exports):
+    """export_video=True calls create_video_with_scale_and_timestamp exactly once."""
+    ext_out = _extraction_out()
+    parexmod.run(stack, {"particle_region_extraction": ext_out}, export_video=True)
+    assert mock_exports["video"].call_count == 1
+    assert mock_exports["gif"].call_count == 0
+
+
+def test_export_sequence_calls_sequence_function(parexmod, stack, mock_exports):
+    """export_sequence=True calls create_image_sequence exactly once."""
+    ext_out = _extraction_out()
+    parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_video=False,
+        export_sequence=True,
+    )
+    assert mock_exports["seq"].call_count == 1
+
+
+def test_all_three_exports_all_called(parexmod, stack, mock_exports):
+    """All three export functions are each called once when all flags are True."""
+    ext_out = _extraction_out()
+    parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_gif=True,
+        export_video=True,
+        export_sequence=True,
+    )
+    assert mock_exports["gif"].call_count == 1
+    assert mock_exports["video"].call_count == 1
+    assert mock_exports["seq"].call_count == 1
+
+
+def test_multiple_tracks_each_gets_own_export_call(parexmod, stack, mock_exports):
+    """Each track produces its own export call (one call per track)."""
+    ext_out = _extraction_out(n_tracks=3)
+    parexmod.run(stack, {"particle_region_extraction": ext_out}, export_video=True)
+    assert mock_exports["video"].call_count == 3
+
+
+def test_video_export_path_contains_track_id(parexmod, stack, mock_exports):
+    """Output path passed to video export includes the track ID stem."""
+    ext_out = _extraction_out(n_tracks=1)
+    parexmod.run(stack, {"particle_region_extraction": ext_out}, export_video=True)
+    call_kwargs = mock_exports["video"].call_args
+    output_path = call_kwargs[1].get("output_path") or call_kwargs[0][3]
+    assert "track_0" in str(output_path)
+
+
+def test_gif_export_path_contains_track_id(parexmod, stack, mock_exports):
+    """Output path passed to GIF export includes the track ID stem."""
+    ext_out = _extraction_out(n_tracks=1)
+    parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_gif=True,
+        export_video=False,
+    )
+    call_kwargs = mock_exports["gif"].call_args
+    output_path = call_kwargs[1].get("output_path") or call_kwargs[0][3]
+    assert "track_0" in str(output_path)
+
+
+def test_sequence_folder_contains_track_id(parexmod, stack, mock_exports):
+    """Output folder passed to image-sequence export includes the track ID stem."""
+    ext_out = _extraction_out(n_tracks=1)
+    parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_video=False,
+        export_sequence=True,
+    )
+    call_kwargs = mock_exports["seq"].call_args
+    folder = call_kwargs[1].get("output_folder") or call_kwargs[0][3]
+    assert "track_0" in str(folder)
+
+
+# ---------------------------------------------------------------------------
+# run() — skipped tracks
+# ---------------------------------------------------------------------------
+
+
+def test_track_with_no_image_crops_skipped(parexmod, stack, mock_exports):
+    """A track with no image_crop on any region is skipped, not exported."""
+    ext_out = _extraction_out(no_crops=True)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert mock_exports["video"].call_count == 0
+    assert out["summary"]["n_tracks_skipped"] == 1
+
+
+def test_track_with_no_image_crops_not_in_manifest(parexmod, stack, mock_exports):
+    """A skipped track does not appear in per_track manifest or video_paths."""
+    ext_out = _extraction_out(no_crops=True)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert out["per_track"] == []
+    assert out["video_paths"] == []
+
+
+def test_none_regions_do_not_skip_track(parexmod, stack, mock_exports):
+    """A track with some None regions but at least one valid crop is NOT skipped."""
+    ext_out = _extraction_out(with_none=True)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert mock_exports["video"].call_count == 1
+    assert out["summary"]["n_tracks_skipped"] == 0
+
+
+# ---------------------------------------------------------------------------
+# run() — track filtering
+# ---------------------------------------------------------------------------
+
+
+def test_track_ids_filters_exports(parexmod, stack, mock_exports):
+    """Only the track IDs in track_ids are exported; others are skipped."""
+    ext_out = _extraction_out(n_tracks=3)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True, track_ids=[1]
+    )
+    assert mock_exports["video"].call_count == 1
+    assert out["per_track"][0]["track_id"] == 1
+
+
+def test_max_tracks_limits_exports(parexmod, stack, mock_exports):
+    """max_tracks caps the number of exported tracks after sorting."""
+    ext_out = _extraction_out(n_tracks=5)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True, max_tracks=2
+    )
+    assert mock_exports["video"].call_count == 2
+    assert len(out["per_track"]) == 2
+
+
+def test_sort_by_n_frames_exports_longest_first(parexmod, stack, mock_exports):
+    """With sort_by='n_frames' + max_tracks=1, the longest track is exported."""
+    tracks = [
+        _make_track(0, n_frames=1),
+        _make_track(1, n_frames=4),
+        _make_track(2, n_frames=2),
+    ]
+    ext_out = {"summary": {"include_image": True}, "per_track": tracks}
+    out = parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_video=True,
+        sort_by="n_frames",
+        max_tracks=1,
+    )
+    assert out["per_track"][0]["track_id"] == 1
+
+
+# ---------------------------------------------------------------------------
+# run() — manifest and summary
+# ---------------------------------------------------------------------------
+
+
+def test_manifest_gif_path_present(parexmod, stack, mock_exports):
+    """Per-track manifest contains 'gif_path' and gif_paths list is populated."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_gif=True,
+        export_video=False,
+    )
+    assert "gif_path" in out["per_track"][0]
+    assert len(out["gif_paths"]) == 1
+
+
+def test_manifest_video_path_present(parexmod, stack, mock_exports):
+    """Per-track manifest contains 'video_path' and video_paths list is populated."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert "video_path" in out["per_track"][0]
+    assert len(out["video_paths"]) == 1
+
+
+def test_manifest_sequence_folder_present(parexmod, stack, mock_exports):
+    """Per-track manifest contains 'sequence_folder' and folders list is populated."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_video=False,
+        export_sequence=True,
+    )
+    assert "sequence_folder" in out["per_track"][0]
+    assert len(out["sequence_folders"]) == 1
+
+
+def test_manifest_keys_absent_when_not_exported(parexmod, stack, mock_exports):
+    """Keys for disabled export types must not appear in the per_track entry."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    record = out["per_track"][0]
+    assert "gif_path" not in record
+    assert "sequence_folder" not in record
+
+
+def test_manifest_frame_size(parexmod, stack, mock_exports):
+    """Per-track manifest records the (height, width) of the assembled crop."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert out["per_track"][0]["frame_size"] == (2, 2)
+
+
+def test_summary_keys_present(parexmod, stack, mock_exports):
+    """Summary dict contains all expected bookkeeping and configuration keys."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    for key in (
+        "n_tracks_total",
+        "n_tracks_selected",
+        "n_tracks_written",
+        "n_tracks_skipped",
+        "n_tracks_filtered_out",
+        "track_ids",
+        "max_tracks",
+        "sort_by",
+        "export_gif",
+        "export_video",
+        "export_sequence",
+    ):
+        assert key in out["summary"], f"Missing summary key: {key}"
+
+
+def test_summary_counts_all_exported(parexmod, stack, mock_exports):
+    """All track counters are correct when every track is exported successfully."""
+    ext_out = _extraction_out(n_tracks=3)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    s = out["summary"]
+    assert s["n_tracks_total"] == 3
+    assert s["n_tracks_selected"] == 3
+    assert s["n_tracks_written"] == 3
+    assert s["n_tracks_skipped"] == 0
+    assert s["n_tracks_filtered_out"] == 0
+
+
+def test_summary_filtered_out_count(parexmod, stack, mock_exports):
+    """n_tracks_filtered_out reflects tracks excluded by max_tracks."""
+    ext_out = _extraction_out(n_tracks=4)
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True, max_tracks=2
+    )
+    assert out["summary"]["n_tracks_filtered_out"] == 2
+    assert out["summary"]["n_tracks_selected"] == 2
+
+
+def test_summary_export_flags_echoed(parexmod, stack, mock_exports):
+    """Summary echoes the export_gif, export_video, export_sequence flags."""
+    ext_out = _extraction_out()
+    out = parexmod.run(
+        stack,
+        {"particle_region_extraction": ext_out},
+        export_gif=True,
+        export_video=False,
+        export_sequence=True,
+    )
+    assert out["summary"]["export_gif"] is True
+    assert out["summary"]["export_video"] is False
+    assert out["summary"]["export_sequence"] is True
+
+
+def test_empty_extraction_output_returns_empty_manifest(parexmod, stack, mock_exports):
+    """Empty per_track input produces empty manifest with n_tracks_total=0."""
+    ext_out = {"summary": {"include_image": True}, "per_track": []}
+    out = parexmod.run(
+        stack, {"particle_region_extraction": ext_out}, export_video=True
+    )
+    assert out["per_track"] == []
+    assert out["video_paths"] == []
+    assert out["summary"]["n_tracks_total"] == 0

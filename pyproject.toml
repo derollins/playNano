@@ -87,6 +87,7 @@ dev = [
     "ruff",
     "black",
     "jsonschema",
+    "ome-types",
 ]
 
 docs = [
