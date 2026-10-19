@@ -360,7 +360,7 @@ directories with these options:</p>
 <p>For full syntax, see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>.
 Files can also be exported from the GUI window, see <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> for details.</p>
 <p><strong>Example</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span>--export<span class="w"> </span>tif<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span>--export<span class="w"> </span>tif<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
 </pre></div>
 </div>
 <p>This processes an AFM stack using the <code class="docutils literal notranslate"><span class="pre">remove_plane</span></code> filter and exports OME-TIFF, NPZ, and HDF5 bundles to <a href="#id2"><span class="problematic" id="id3">`</span></a>exports/.</p>
@@ -402,8 +402,8 @@ image analysis tools.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_ome_tiff_stack</span>
 
-<span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.ome.tif&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
-<span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_raw.ome.tif&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_filtered.ome.tif"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
+<span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_raw.ome.tif"</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -444,13 +444,13 @@ channel
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_npz_bundle</span>
 
-<span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.npz&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
-<span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_raw.npz&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_filtered.npz"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
+<span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_raw.npz"</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Reloading</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playNano.io.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_npz_bundle</span>
-<span class="n">stack</span> <span class="o">=</span> <span class="n">load_npz_bundle</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.npz&quot;</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">load_npz_bundle</span><span class="p">(</span><span class="s2">"exports/stack_filtered.npz"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>—</p>
@@ -489,13 +489,13 @@ channel
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_h5_bundle</span>
 
-<span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.h5&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
-<span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports/stack_raw.h5&quot;</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_filtered.h5"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
+<span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports/stack_raw.h5"</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Reloading</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playNano.io.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_h5_bundle</span>
-<span class="n">stack</span> <span class="o">=</span> <span class="n">load_h5_bundle</span><span class="p">(</span><span class="s2">&quot;exports/stack_filtered.h5&quot;</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">load_h5_bundle</span><span class="p">(</span><span class="s2">"exports/stack_filtered.h5"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>—</p>
@@ -535,7 +535,7 @@ stack, with optional annotations.</p>
 <li><p>GIFs can be combined with the usual <code class="docutils literal notranslate"><span class="pre">--export</span></code> options to produce NPZ, HDF5, or TIFF bundles simultaneously.</p></li>
 </ul>
 <p><strong>Example</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>test_stack<span class="w"> </span>--scale-bar-nm<span class="w"> </span><span class="m">150</span><span class="w"> </span>--zmin<span class="w"> </span><span class="m">0</span><span class="w"> </span>--zmax<span class="w"> </span><span class="m">20</span>
 </pre></div>
 </div>
@@ -546,11 +546,11 @@ stack, with optional annotations.</p>
 <span class="n">export_gif</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">,</span>
     <span class="n">make_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
-    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="s2">"exports"</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="o">=</span><span class="s2">"sample"</span><span class="p">,</span>
     <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">zmin</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">zmax</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">zmin</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -568,9 +568,9 @@ stack, with optional annotations.</p>
 
 <span class="n">export_bundles</span><span class="p">(</span>
     <span class="n">afm_stack</span><span class="o">=</span><span class="n">stack</span><span class="p">,</span>
-    <span class="n">output_folder</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;exports&quot;</span><span class="p">),</span>
-    <span class="n">base_name</span><span class="o">=</span><span class="s2">&quot;my_stack&quot;</span><span class="p">,</span>
-    <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tif&quot;</span><span class="p">,</span> <span class="s2">&quot;npz&quot;</span><span class="p">,</span> <span class="s2">&quot;h5&quot;</span><span class="p">],</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"exports"</span><span class="p">),</span>
+    <span class="n">base_name</span><span class="o">=</span><span class="s2">"my_stack"</span><span class="p">,</span>
+    <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s2">"tif"</span><span class="p">,</span> <span class="s2">"npz"</span><span class="p">,</span> <span class="s2">"h5"</span><span class="p">],</span>
     <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>

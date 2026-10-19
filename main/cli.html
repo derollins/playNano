@@ -529,7 +529,7 @@ and an interactive wizard for building pipelines.</p>
 <section id="quick-examples">
 <h3>Quick examples<a class="headerlink" href="#quick-examples" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>data.h5-jpk
-playnano<span class="w"> </span>process<span class="w"> </span>data.ARIS<span class="w"> </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane&quot;</span><span class="w"> </span>--make-gif
+playnano<span class="w"> </span>process<span class="w"> </span>data.ARIS<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span>--make-gif
 playnano<span class="w"> </span>analyze<span class="w"> </span>processed.h5<span class="w"> </span>--analysis-file<span class="w"> </span>analysis.yaml
 </pre></div>
 </div>
@@ -579,7 +579,7 @@ playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span 
 <p>Apply filters and export without user interaction.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>/path/to/sample.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">[</span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;row_median_align&quot;</span><span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">[</span>--processing<span class="w"> </span><span class="s2">"remove_plane;row_median_align"</span><span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--processing-file<span class="w"> </span>pipeline.yaml<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--export<span class="w"> </span>tif,npz,h5<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--make-gif<span class="o">]</span><span class="w"> </span><span class="se">\</span>
@@ -636,7 +636,7 @@ Use one or the other (or neither to run with no processing).</p>
 <p>Run an analysis pipeline on a loaded AFM stack and export the results.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>/path/to/processed_sample.h5<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">&quot;detect_particles:threshold=5;track_particles:max_distance=3.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">"detect_particles:threshold=5;track_particles:max_distance=3.0"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>analysis.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
@@ -651,7 +651,7 @@ Use one or the other (or neither to run with no processing).</p>
 </ul>
 <p>Inline example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>sample_flat.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;detect_particles:threshold=4.5;track_particles:max_distance=2.5&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"detect_particles:threshold=4.5;track_particles:max_distance=2.5"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-folder<span class="w"> </span>./analysis_results<span class="w"> </span>--output-name<span class="w"> </span>run1
 </pre></div>
 </div>
@@ -721,7 +721,7 @@ configurations.</p>
 <p>Open the PySide6 GUI viewer:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>/path/to/sample.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">[</span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;row_median_align&quot;</span><span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">[</span>--processing<span class="w"> </span><span class="s2">"remove_plane;row_median_align"</span><span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--processing-file<span class="w"> </span>pipeline.yaml<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span><span class="w"> </span><span class="se">\</span>

@@ -498,12 +498,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_asd</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module to decode and load .asd high speed AFM data files into Python NumPy arrays.</span>
 
 <span class="sd">Files containing multiple image frames are read together.</span>
 <span class="sd">Converts the height data into nm from another metric unit (e.g. m).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -518,30 +518,30 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert height data to nanometers if the channel is topography (&quot;TP&quot;).</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert height data to nanometers if the channel is topography ("TP").</span>
 
-<span class="sd">    Attempts to guess the unit from data range; defaults to &#39;nm&#39; on failure.</span>
+<span class="sd">    Attempts to guess the unit from data range; defaults to 'nm' on failure.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    image_stack : np.ndarray</span>
 <span class="sd">        AFM height data array (2D or 3D).</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel name; must be &quot;TP&quot; to trigger conversion.</span>
+<span class="sd">        Channel name; must be "TP" to trigger conversion.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">height_unit</span> <span class="o">=</span> <span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">image_stack</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">&quot;nm&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to guess height unit, defaulting to &#39;nm&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">"nm"</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to guess height unit, defaulting to 'nm': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s2">&quot;TP&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s2">"TP"</span><span class="p">:</span>
         <span class="n">image_stack</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">height_unit</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">image_stack</span>
 
@@ -549,7 +549,7 @@
 <div class="viewcode-block" id="load_asd_file">
 <a class="viewcode-back" href="../../../../api/playnano.io.formats.read_asd.html#playnano.io.formats.read_asd.load_asd_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_asd_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load image stack from an .asd file scaled to nanometers.</span>
 
 <span class="sd">    Parameters</span>
@@ -563,7 +563,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 
     <span class="c1"># Read .asd data and header</span>
@@ -571,9 +571,9 @@
 
     <span class="n">image_stack</span> <span class="o">=</span> <span class="n">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
 
-    <span class="n">frame_time</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;frame_time&quot;</span><span class="p">]</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;y_pixels&quot;</span><span class="p">]</span>
-    <span class="n">num_frames</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;num_frames&quot;</span><span class="p">]</span>
+    <span class="n">frame_time</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"frame_time"</span><span class="p">]</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"y_pixels"</span><span class="p">]</span>
+    <span class="n">num_frames</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"num_frames"</span><span class="p">]</span>
 
     <span class="n">line_rate</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="p">(</span><span class="n">frame_time</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># lines per second</span>
     <span class="n">frame_interval</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="n">line_rate</span>  <span class="c1"># seconds per frame (lines / lines per second)</span>
@@ -586,9 +586,9 @@
     <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
         <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
-                <span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">:</span> <span class="n">pixel_size_nm</span><span class="p">,</span>
-                <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">,</span>
+                <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
+                <span class="s2">"frame_pixel_size_nm"</span><span class="p">:</span> <span class="n">pixel_size_nm</span><span class="p">,</span>
+                <span class="s2">"line_rate"</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
 

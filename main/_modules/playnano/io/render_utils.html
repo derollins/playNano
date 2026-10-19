@@ -498,7 +498,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.render_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Shared frame-rendering utilities for all rendered AFM exports.</span>
 
 <span class="sd">This module provides the single source of truth for how frames are</span>
@@ -517,7 +517,7 @@
 <span class="sd">    Default RGB colour for all annotations.</span>
 <span class="sd">DEFAULT_FONT_SCALE : float</span>
 <span class="sd">    Base font scale passed to draw_scale_and_timestamp at REFERENCE_HEIGHT.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -550,7 +550,7 @@
     <span class="n">zmin_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">zmax_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalise, colourise, resize, and annotate a single AFM frame.</span>
 
 <span class="sd">    This is the shared rendering pipeline used by all rendered exports</span>
@@ -588,7 +588,7 @@
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Annotated RGB frame as a uint8 array of shape (H, W, 3).</span>
 <span class="sd">        Height is at least ``MIN_FRAME_HEIGHT``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># --- Normalise ---</span>
     <span class="k">if</span> <span class="n">zmin_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">zmax_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">zmin_val</span> <span class="o">==</span> <span class="n">zmax_val</span><span class="p">:</span>
@@ -642,7 +642,7 @@
 <div class="viewcode-block" id="resolve_stack_data">
 <a class="viewcode-back" href="../../../api/playnano.io.render_utils.html#playnano.io.render_utils.resolve_stack_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_stack_data</span><span class="p">(</span><span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select the correct data source and metadata for a rendered export.</span>
 
 <span class="sd">    Centralises the raw-vs-processed selection logic shared by all</span>
@@ -663,21 +663,21 @@
 <span class="sd">        Per-frame metadata (timestamps, pixel sizes).</span>
 <span class="sd">    is_filtered : bool</span>
 <span class="sd">        ``True`` when processed (filtered) data is being exported.</span>
-<span class="sd">        Callers should append ``&quot;_filtered&quot;`` to the output name.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-        <span class="n">stack_data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span>
+<span class="sd">        Callers should append ``"_filtered"`` to the output name.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+        <span class="n">stack_data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span>
         <span class="n">meta_src</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
+            <span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
         <span class="p">)</span>
         <span class="n">is_filtered</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Requested raw export on unprocessed data; using loaded data.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Requested raw export on unprocessed data; using loaded data."</span><span class="p">)</span>
         <span class="n">stack_data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">data</span>
         <span class="n">meta_src</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
-        <span class="n">is_filtered</span> <span class="o">=</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;raw&quot;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span>
+        <span class="n">is_filtered</span> <span class="o">=</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">key</span> <span class="o">!=</span> <span class="s2">"raw"</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">stack_data</span><span class="p">,</span> <span class="n">meta_src</span><span class="p">,</span> <span class="n">is_filtered</span></div>
 

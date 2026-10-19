@@ -497,7 +497,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.gif_export</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">GIF export utilities for AFM image stacks.</span>
 
 <span class="sd">This module provides functions for generating animated GIFs from AFM image stacks,</span>
@@ -509,7 +509,7 @@
 <span class="sd">- matplotlib</span>
 <span class="sd">- numpy</span>
 <span class="sd">- Pillow (PIL)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -539,7 +539,7 @@
     <span class="n">pixel_sizes_nm</span><span class="p">,</span>
     <span class="n">timestamps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">scale_bar_length_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s2">"output"</span><span class="p">,</span>
     <span class="n">fps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
     <span class="n">cmap_name</span><span class="o">=</span><span class="n">DEFAULT_CMAP</span><span class="p">,</span>
     <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -548,7 +548,7 @@
     <span class="n">draw_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create an animated GIF from an AFM image stack with optional overlays.</span>
 
 <span class="sd">    Frames are normalized, colorized using a matplotlib colormap, and annotated</span>
@@ -570,7 +570,7 @@
 <span class="sd">        Length of the scale bar in nanometers. Default is 100.</span>
 
 <span class="sd">    output_path : str</span>
-<span class="sd">        Path where the GIF will be saved. Default is &#39;output&#39;.</span>
+<span class="sd">        Path where the GIF will be saved. Default is 'output'.</span>
 
 <span class="sd">    fps : float</span>
 <span class="sd">        Playback frame rate in frames per second. Default is 5.0.</span>
@@ -578,15 +578,15 @@
 <span class="sd">        delay is rounded to the nearest millisecond.</span>
 
 <span class="sd">    cmap_name : str</span>
-<span class="sd">        Name of the matplotlib colormap to apply. Default is &#39;afmhot&#39;.</span>
+<span class="sd">        Name of the matplotlib colormap to apply. Default is 'afmhot'.</span>
 
 <span class="sd">    zmin : float or str or None, optional</span>
 <span class="sd">        Minimum z-value mapped to colormap low end.</span>
-<span class="sd">        The string literal ``&quot;auto&quot;`` uses the 1st percentile.</span>
+<span class="sd">        The string literal ``"auto"`` uses the 1st percentile.</span>
 
 <span class="sd">    zmax : float or str or None, optional</span>
 <span class="sd">        Maximum z-value mapped to colormap high end.</span>
-<span class="sd">        The string literal ``&quot;auto&quot;`` uses the 99th percentile.</span>
+<span class="sd">        The string literal ``"auto"`` uses the 99th percentile.</span>
 
 <span class="sd">    draw_ts : bool</span>
 <span class="sd">        Whether to draw timestamps. Default is True.</span>
@@ -612,7 +612,7 @@
 <span class="sd">    - Frames are normalized globally if ``zmin`` and ``zmax`` are provided;</span>
 <span class="sd">      otherwise, per-frame.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap_name</span><span class="p">)</span>
 
@@ -626,7 +626,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">has_valid_timestamps</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid timestamps provided; frame indices will be used instead.&quot;</span>
+            <span class="s2">"Invalid timestamps provided; frame indices will be used instead."</span>
         <span class="p">)</span>
 
     <span class="c1"># Validate pixel sizes</span>
@@ -636,7 +636,7 @@
         <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pixel_sizes_nm</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_stack</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="n">draw_scale</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid pixel_sizes_nm list; scale bar will be omitted.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Invalid pixel_sizes_nm list; scale bar will be omitted."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">compute_zscale_range</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">zmin</span><span class="p">,</span> <span class="n">zmax</span><span class="p">)</span>
@@ -652,7 +652,7 @@
                 <span class="n">timestamp</span> <span class="o">=</span> <span class="n">i</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid timestamps provided, using frame index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> as timestamp.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid timestamps provided, using frame index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> as timestamp."</span>
             <span class="p">)</span>
             <span class="n">timestamp</span> <span class="o">=</span> <span class="n">i</span>
 
@@ -681,7 +681,7 @@
         <span class="n">duration</span><span class="o">=</span><span class="n">duration_ms</span><span class="p">,</span>
         <span class="n">loop</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GIF saved to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"GIF saved to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -702,7 +702,7 @@
     <span class="n">draw_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Export an AFM image stack as an annotated GIF.</span>
 
 <span class="sd">    Parameters</span>
@@ -714,7 +714,7 @@
 <span class="sd">        Whether to generate the GIF. If ``False``, the function exits immediately.</span>
 
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory to save the GIF. Defaults to ``&quot;output&quot;`` if ``None``.</span>
+<span class="sd">        Directory to save the GIF. Defaults to ``"output"`` if ``None``.</span>
 
 <span class="sd">    output_name : str or None</span>
 <span class="sd">        Base name for the GIF file. If ``None``, derived from the stack file name.</span>
@@ -730,12 +730,12 @@
 <span class="sd">        Frame rate for the GIF in frames per second. Default is 5.0.</span>
 
 <span class="sd">    zmin : float or None, optional</span>
-<span class="sd">        Minimum z-value mapped to colormap low end. The string literal ``&quot;auto&quot;``</span>
+<span class="sd">        Minimum z-value mapped to colormap low end. The string literal ``"auto"``</span>
 <span class="sd">        can also be used to automatically set the 1st percentile. ``None`` uses</span>
 <span class="sd">        the minimum value of the data.</span>
 
 <span class="sd">    zmax : float or None, optional</span>
-<span class="sd">        Maximum z-value mapped to colormap high end. The string literal ``&quot;auto&quot;``</span>
+<span class="sd">        Maximum z-value mapped to colormap high end. The string literal ``"auto"``</span>
 <span class="sd">        can also be used to automatically set the 99th percentile. ``None`` uses</span>
 <span class="sd">        the maximum value of the data.</span>
 
@@ -756,28 +756,28 @@
 <span class="sd">    - Uses processed data if available; otherwise falls back to raw data.</span>
 <span class="sd">    - Timestamps and pixel size are read from ``afm_stack`` metadata although if raw</span>
 <span class="sd">      data is exported after an edit_stack processing step then the timestamps in</span>
-<span class="sd">      ``afm_stack.state_backups[&#39;frame_metadata_before_edit&#39;]`` are retrieved and used.</span>
-<span class="sd">    - Output file name includes ``&quot;_filtered&quot;`` if processed data is exported.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">      ``afm_stack.state_backups['frame_metadata_before_edit']`` are retrieved and used.</span>
+<span class="sd">    - Output file name includes ``"_filtered"`` if processed data is exported.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">make_gif</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"output"</span><span class="p">)</span>
     <span class="n">base</span> <span class="o">=</span> <span class="n">sanitize_output_name</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
 
     <span class="n">stack_data</span><span class="p">,</span> <span class="n">meta_src</span><span class="p">,</span> <span class="n">is_filtered</span> <span class="o">=</span> <span class="n">resolve_stack_data</span><span class="p">(</span><span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">is_filtered</span><span class="p">:</span>
-        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_filtered&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_filtered"</span>
 
-    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
     <span class="n">pixels_to_nm</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span>
     <span class="p">]</span>
 
-    <span class="n">gif_path</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">.gif&quot;</span>
+    <span class="n">gif_path</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">.gif"</span>
     <span class="n">bar_nm</span> <span class="o">=</span> <span class="n">scale_bar_nm</span> <span class="k">if</span> <span class="n">scale_bar_nm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">100</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[export] Writing GIF → </span><span class="si">{</span><span class="n">gif_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[export] Writing GIF → </span><span class="si">{</span><span class="n">gif_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">create_gif_with_scale_and_timestamp</span><span class="p">(</span>
         <span class="n">stack_data</span><span class="p">,</span>
@@ -793,7 +793,7 @@
         <span class="n">font_scale</span><span class="o">=</span><span class="n">font_scale</span><span class="p">,</span>
         <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[export] GIF written to </span><span class="si">{</span><span class="n">gif_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[export] GIF written to </span><span class="si">{</span><span class="n">gif_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 </pre></div>
         </article>

@@ -312,7 +312,7 @@ a semicolon-separated string or a YAML file.</p>
 is either a data operation, a mask generator, with optional parameters passed via
 colon-separated key-value pairs or <code class="docutils literal notranslate"><span class="pre">clear</span></code> that resets masks. For example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;threshold_mask:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--processing<span class="w"> </span><span class="s2">"remove_plane;threshold_mask:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--export<span class="w"> </span>tif,npz<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--make-gif<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output-folder<span class="w"> </span>./results<span class="w"> </span><span class="se">\</span>
@@ -401,13 +401,13 @@ parameters, returning either a processed float array (filters) or binary mask ar
 <p>Custom filters can be added via entry points under <code class="docutils literal notranslate"><span class="pre">playNano.filters</span></code>. Any callable
 that accepts a 2D NumPy array and returns a processed array can be registered.</p>
 <p>Example <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> snippet:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;playNano.filters&quot;</span><span class="k">]</span>
-<span class="n">my_plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_pkg.module:my_filter&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">"playNano.filters"</span><span class="k">]</span>
+<span class="n">my_plugin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"my_pkg.module:my_filter"</span>
 </pre></div>
 </div>
 <p>Example plugin function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_filter</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a 2D array and return a filtered version.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Process a 2D array and return a filtered version."""</span>
 </pre></div>
 </div>
 <p>When the plugin is installed, it appears in the same CLI/API list as the
@@ -448,12 +448,12 @@ custom pipelines:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playNano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.processing.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessingPipeline</span>
 
-<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">&quot;data/sample.h5-jpk&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">&quot;height_trace&quot;</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">"data/sample.h5-jpk"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">ProcessingPipeline</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
-<span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">&quot;remove_plane&quot;</span><span class="p">)</span>
-<span class="n">pipeline</span><span class="o">.</span><span class="n">add_mask</span><span class="p">(</span><span class="s2">&quot;mask_threshold&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">&quot;gaussian_filter&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">"remove_plane"</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">add_mask</span><span class="p">(</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">"gaussian_filter"</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>   <span class="c1"># updates stack.processed and stack.data</span>
 </pre></div>
 </div>
@@ -490,15 +490,15 @@ You can use the following commands to explore what was generated:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
-<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;step_type&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">"index"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"step_type"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span>
 
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;keys_by_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;polynomial_flatten&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"keys_by_name"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"polynomial_flatten"</span><span class="p">,</span> <span class="p">[]):</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[&#39;step_1_remove_plane&#39;, &#39;step_2_polynomial_flatten&#39;]
-[&#39;step_3_threshold_mask&#39;]
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['step_1_remove_plane', 'step_2_polynomial_flatten']
+['step_3_threshold_mask']
 1 filter remove_plane
 2 filter polynomial_flatten
 3 mask threshold_mask

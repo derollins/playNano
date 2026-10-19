@@ -268,12 +268,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playNano.io.formats.read_h5jpk</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.</span>
 
 <span class="sd">Files containing multiple image frames are read together.</span>
 <span class="sd">Converts the height data into nm from another metric unit (e.g. m).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -292,7 +292,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_decode_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decode an attribute that may be bytes or a string.</span>
 
 <span class="sd">    Parameters</span>
@@ -304,14 +304,14 @@
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        The decoded string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">attr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_attr_to_bool</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert an attribute to a boolean value.</span>
 
 <span class="sd">    Parameters</span>
@@ -323,14 +323,14 @@
 <span class="sd">    -------</span>
 <span class="sd">    bool</span>
 <span class="sd">        The boolean interpretation of the value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
-        <span class="k">return</span> <span class="n">_decode_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+        <span class="k">return</span> <span class="n">_decode_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_discover_available_channels</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Discover all available scan channels in the HDF5 file.</span>
 
 <span class="sd">    Parameters</span>
@@ -341,32 +341,32 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    dict[str, str]</span>
-<span class="sd">        Mapping of channel names (e.g. &#39;height_trace&#39;) to their full HDF5 path.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        Mapping of channel names (e.g. 'height_trace') to their full HDF5 path.</span>
+<span class="sd">    """</span>
     <span class="n">channel_map</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">m_key</span><span class="p">,</span> <span class="n">m_group</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">m_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Measurement_&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">m_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Measurement_"</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="k">for</span> <span class="n">c_key</span> <span class="ow">in</span> <span class="n">m_group</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">c_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Channel_&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">c_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"Channel_"</span><span class="p">):</span>
                 <span class="k">continue</span>
 
             <span class="n">c_group</span> <span class="o">=</span> <span class="n">m_group</span><span class="p">[</span><span class="n">c_key</span><span class="p">]</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">c_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel.name&quot;</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">c_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel.name"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">continue</span>
 
-            <span class="n">retrace</span> <span class="o">=</span> <span class="n">_attr_to_bool</span><span class="p">(</span><span class="n">c_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;retrace&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
-            <span class="n">tr_rt</span> <span class="o">=</span> <span class="s2">&quot;retrace&quot;</span> <span class="k">if</span> <span class="n">retrace</span> <span class="k">else</span> <span class="s2">&quot;trace&quot;</span>
-            <span class="n">full_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_decode_attr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tr_rt</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m_key</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">c_key</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">retrace</span> <span class="o">=</span> <span class="n">_attr_to_bool</span><span class="p">(</span><span class="n">c_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"retrace"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+            <span class="n">tr_rt</span> <span class="o">=</span> <span class="s2">"retrace"</span> <span class="k">if</span> <span class="n">retrace</span> <span class="k">else</span> <span class="s2">"trace"</span>
+            <span class="n">full_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_decode_attr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tr_rt</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m_key</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">c_key</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">if</span> <span class="n">full_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">channel_map</span><span class="p">:</span>
                 <span class="n">channel_map</span><span class="p">[</span><span class="n">full_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_path</span>
     <span class="k">return</span> <span class="n">channel_map</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_channel_info</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Retrieve channel-related HDF5 groups and dataset name.</span>
 
 <span class="sd">    Parameters</span>
@@ -385,23 +385,23 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the channel is not found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">channel_map</span> <span class="o">=</span> <span class="n">_discover_available_channels</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">channel_map</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Channel &#39;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&#39; not found in file.&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Available channels: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">channel_map</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' not found in file."</span>
+            <span class="sa">f</span><span class="s2">"Available channels: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">channel_map</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">channel_path</span> <span class="o">=</span> <span class="n">channel_map</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span>
     <span class="n">channel_group</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">channel_path</span><span class="p">]</span>
-    <span class="n">measurement_key</span> <span class="o">=</span> <span class="n">channel_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">measurement_key</span> <span class="o">=</span> <span class="n">channel_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">measurement_group</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">measurement_key</span><span class="p">]</span>
-    <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+    <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">measurement_group</span><span class="p">,</span> <span class="n">channel_group</span><span class="p">,</span> <span class="n">dataset_name</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_z_scaling_h5</span><span class="p">(</span><span class="n">channel_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the Z scaling multiplier and offset from an HDF5 channel group.</span>
 
 <span class="sd">    Parameters</span>
@@ -418,31 +418,31 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    Defaults to (1.0, 0.0) if attributes are not present.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">multiplier</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;net-encoder.scaling.multiplier&quot;</span><span class="p">])</span>
+        <span class="n">multiplier</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"net-encoder.scaling.multiplier"</span><span class="p">])</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="n">multiplier</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Missing attribute &#39;net-encoder.scaling.multiplier&#39;. &quot;</span>
-            <span class="s2">&quot;Defaulting to multiplier = 1.0.&quot;</span>
+            <span class="s2">"Missing attribute 'net-encoder.scaling.multiplier'. "</span>
+            <span class="s2">"Defaulting to multiplier = 1.0."</span>
         <span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;net-encoder.scaling.offset&quot;</span><span class="p">])</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"net-encoder.scaling.offset"</span><span class="p">])</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Missing attribute &#39;net-encoder.scaling.offset&#39;. &quot;</span>
-            <span class="s2">&quot;Defaulting to offset = 0.0.&quot;</span>
+            <span class="s2">"Missing attribute 'net-encoder.scaling.offset'. "</span>
+            <span class="s2">"Defaulting to offset = 0.0."</span>
         <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Z value scaling: multiplier = </span><span class="si">{</span><span class="n">multiplier</span><span class="si">}</span><span class="s2">, offset = </span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Z value scaling: multiplier = </span><span class="si">{</span><span class="n">multiplier</span><span class="si">}</span><span class="s2">, offset = </span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">multiplier</span><span class="p">,</span> <span class="n">offset</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_z_unit_h5</span><span class="p">(</span><span class="n">channel_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the Z unit from an HDF5 channel group.</span>
 
 <span class="sd">    Parameters</span>
@@ -459,17 +459,17 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    Defaults to None if attribute is not present.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">z_unit</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;net-encoder.scaling.unit.unit&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+        <span class="n">z_unit</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">channel_group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"net-encoder.scaling.unit.unit"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">z_unit</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to read unit, returning None: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to read unit, returning None: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">z_unit</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_image_shape</span><span class="p">(</span><span class="n">measurement_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract pixel width and hight from an HDF5 JPK measurement group.</span>
 
 <span class="sd">    The pixel dimensions are used to determine image shape.</span>
@@ -477,7 +477,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    measurement_group : h5py.Group</span>
-<span class="sd">        HDF5 group corresponding to a Measurement (e.g. &#39;/Measurement_000&#39;).</span>
+<span class="sd">        HDF5 group corresponding to a Measurement (e.g. '/Measurement_000').</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -489,13 +489,13 @@
 <span class="sd">    ------</span>
 <span class="sd">    KeyError</span>
 <span class="sd">        If required attributes are missing in the measurement group.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">width_px</span> <span class="o">=</span> <span class="n">measurement_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;position-pattern.grid.ilength&quot;</span>
+            <span class="s2">"position-pattern.grid.ilength"</span>
         <span class="p">]</span>  <span class="c1"># number of pixels</span>
         <span class="n">height_px</span> <span class="o">=</span> <span class="n">measurement_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;position-pattern.grid.jlength&quot;</span>
+            <span class="s2">"position-pattern.grid.jlength"</span>
         <span class="p">]</span>  <span class="c1"># number of pixels</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">)</span>
@@ -503,12 +503,12 @@
     <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Missing required attribute &#39;</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&#39; in HDF5 measurement group.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Missing required attribute '</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">' in HDF5 measurement group."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_jpk_pixel_to_nm_scaling_h5</span><span class="p">(</span><span class="n">measurement_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract pixel-to-nanometre scaling from an HDF5 JPK measurement group.</span>
 
 <span class="sd">    This uses the fast scan axis (u/i) and converts the physical scan size to</span>
@@ -517,7 +517,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    measurement_group : h5py.Group</span>
-<span class="sd">        HDF5 group corresponding to a Measurement (e.g. &#39;/Measurement_000&#39;).</span>
+<span class="sd">        HDF5 group corresponding to a Measurement (e.g. '/Measurement_000').</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -528,29 +528,29 @@
 <span class="sd">    ------</span>
 <span class="sd">    KeyError</span>
 <span class="sd">        If required attributes are missing in the measurement group.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ulength</span> <span class="o">=</span> <span class="n">measurement_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;position-pattern.grid.ulength&quot;</span>
+            <span class="s2">"position-pattern.grid.ulength"</span>
         <span class="p">]</span>  <span class="c1"># physical length in meters</span>
         <span class="n">ilength</span> <span class="o">=</span> <span class="n">measurement_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;position-pattern.grid.ilength&quot;</span>
+            <span class="s2">"position-pattern.grid.ilength"</span>
         <span class="p">]</span>  <span class="c1"># number of pixels</span>
 
         <span class="k">if</span> <span class="n">ilength</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pixel count (ilength) is zero; cannot compute scaling.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Pixel count (ilength) is zero; cannot compute scaling."</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">ulength</span> <span class="o">/</span> <span class="n">ilength</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e9</span>
 
     <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Missing required attribute &#39;</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&#39; in HDF5 measurement group.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Missing required attribute '</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">' in HDF5 measurement group."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_line_rate</span><span class="p">(</span><span class="n">measurement_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract image line rate from an HDF5 JPK measurement group.</span>
 
 <span class="sd">    The line rate is the scan speed in terms of lines per second,</span>
@@ -559,7 +559,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    measurement_group : h5py.Group</span>
-<span class="sd">        HDF5 group corresponding to a Measurement (e.g. &#39;/Measurement_000&#39;).</span>
+<span class="sd">        HDF5 group corresponding to a Measurement (e.g. '/Measurement_000').</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -570,10 +570,10 @@
 <span class="sd">    ------</span>
 <span class="sd">    KeyError</span>
 <span class="sd">        If required attributes are missing in the measurement group.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">line_rate</span> <span class="o">=</span> <span class="n">measurement_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;timing-settings.scanRate&quot;</span>
+            <span class="s2">"timing-settings.scanRate"</span>
         <span class="p">]</span>  <span class="c1"># scan lines per second</span>
 
         <span class="k">return</span> <span class="n">line_rate</span>
@@ -581,15 +581,15 @@
     <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Missing required attribute &#39;</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&#39; in HDF5 measurement group.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Missing required attribute '</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">' in HDF5 measurement group."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_guess_and_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert height data to nanometers for metric data.</span>
 
-<span class="sd">    Attempts to guess the unit from data range; defaults to &#39;nm&#39; on failure.</span>
+<span class="sd">    Attempts to guess the unit from data range; defaults to 'nm' on failure.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -599,13 +599,13 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">height_unit</span> <span class="o">=</span> <span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">image_stack</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">&quot;nm&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to guess height unit, defaulting to &#39;nm&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">"nm"</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to guess height unit, defaulting to 'nm': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">image_stack</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">height_unit</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">image_stack</span>
 
@@ -613,18 +613,18 @@
 <div class="viewcode-block" id="apply_z_unit_conversion">
 <a class="viewcode-back" href="../../../../api/playNano.io.formats.html#playNano.io.formats.read_h5jpk.apply_z_unit_conversion">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_z_unit_conversion</span><span class="p">(</span>
-    <span class="n">images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span>
+    <span class="n">images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply z unit conversion to nanometers if needed, or guess if unknown.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Apply z unit conversion to nanometers if needed, or guess if unknown."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">z_unit</span> <span class="o">=</span> <span class="n">_get_z_unit_h5</span><span class="p">(</span><span class="n">channel_group</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not read unit for channel &#39;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not read unit for channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">z_unit</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">z_unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">z_unit</span> <span class="ow">in</span> <span class="n">height_units</span><span class="p">:</span>
         <span class="n">images</span> <span class="o">=</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">z_unit</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">z_unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">z_unit</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;deg&quot;</span><span class="p">]:</span>
+    <span class="k">elif</span> <span class="n">z_unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">z_unit</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"V"</span><span class="p">,</span> <span class="s2">"v"</span><span class="p">,</span> <span class="s2">"deg"</span><span class="p">]:</span>
         <span class="k">pass</span>  <span class="c1"># No conversion needed</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">images</span> <span class="o">=</span> <span class="n">_guess_and_standardize_units_to_nm</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
@@ -638,7 +638,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">load_h5jpk</span><span class="p">(</span>
     <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flip_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load image stack from a JPK .h5-jpk file, scaled to nanometers.</span>
 
 <span class="sd">    The images are loaded, reshaped into frames, and have timestamps generated.</span>
@@ -656,10 +656,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">measurement_group</span><span class="p">,</span> <span class="n">channel_group</span><span class="p">,</span> <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">_get_channel_info</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
 
         <span class="c1"># Load raw image data: shape (pixels, frames)</span>
@@ -694,7 +694,7 @@
         <span class="c1"># Compose per-frame metadata list</span>
         <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
-            <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
+            <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">"line_rate"</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
 
         <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="n">image_stack</span><span class="p">,</span>

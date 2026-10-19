@@ -268,15 +268,15 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playNano.processing.pipeline</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module containing the ProcessingPipeline class for AFMImageStack processing.</span>
+<span></span><span class="sd">"""Module containing the ProcessingPipeline class for AFMImageStack processing.</span>
 
 <span class="sd">This module provides ProcessingPipeline, which runs a sequence of</span>
-<span class="sd">mask/filter/method/plugin steps on an AFMImageStack. Each step&#39;s output is stored</span>
+<span class="sd">mask/filter/method/plugin steps on an AFMImageStack. Each step's output is stored</span>
 <span class="sd">in `stack.processed` (for filters) or `stack.masks` (for masks), and detailed</span>
 <span class="sd">provenance (timestamps, parameters, step type, version info, keys) is recorded in</span>
-<span class="sd">`stack.provenance[&quot;processing&quot;]`. Environment metadata at pipeline start is recorded in</span>
-<span class="sd">`stack.provenance[&quot;environment&quot;]`.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">`stack.provenance["processing"]`. Environment metadata at pipeline start is recorded in</span>
+<span class="sd">`stack.provenance["environment"]`.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -295,7 +295,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_plugin_version</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attempt to determine the package version for a plugin function.</span>
 
 <span class="sd">    This inspects the module in which `fn` is defined, extracts the top-level</span>
@@ -313,11 +313,11 @@
 <span class="sd">    str or None</span>
 <span class="sd">        The version string of the package containing `fn`, or None if it cannot</span>
 <span class="sd">        be determined.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">module</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">module</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">):</span>
-            <span class="n">pkg_name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">):</span>
+            <span class="n">pkg_name</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -326,7 +326,7 @@
 <div class="viewcode-block" id="ProcessingPipeline">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProcessingPipeline</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Orchestrates a sequence of masks and filters (or other processing steps).</span>
 
 <span class="sd">    Acts on an AFMImageStack, recording outputs and detailed provenance.</span>
@@ -336,29 +336,29 @@
 <span class="sd">      - filter/method/plugin steps apply to the current data (and mask if present),</span>
 <span class="sd">        storing results in `stack.processed[...]`</span>
 <span class="sd">    Provenance for each step (index, name, params, timestamp, step_type, version,</span>
-<span class="sd">    keys, summaries) is appended to `stack.provenance[&quot;processing&quot;][&quot;steps&quot;]`. A</span>
+<span class="sd">    keys, summaries) is appended to `stack.provenance["processing"]["steps"]`. A</span>
 <span class="sd">    mapping from step name to list of snapshot keys is built as</span>
-<span class="sd">    `stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]`. The final processed array</span>
+<span class="sd">    `stack.provenance["processing"]["keys_by_name"]`. The final processed array</span>
 <span class="sd">    overwrites `stack.data`. Environment info is captured once under</span>
-<span class="sd">    `stack.provenance[&quot;environment&quot;]`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    `stack.provenance["environment"]`.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the processing pipeline with an AFMImageStack instance.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
 <span class="sd">            The AFMImageStack instance to process.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="ProcessingPipeline.add_mask">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline.add_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a masking step to the pipeline.</span>
 
 <span class="sd">        Parameters</span>
@@ -377,7 +377,7 @@
 <span class="sd">        -----</span>
 <span class="sd">        If a mask is currently active (i.e. not cleared), this new mask will be</span>
 <span class="sd">        logically combined (ORed) with the existing one.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mask_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -385,7 +385,7 @@
 <div class="viewcode-block" id="ProcessingPipeline.add_filter">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline.add_filter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a filter step to the pipeline.</span>
 
 <span class="sd">        Parameters</span>
@@ -405,7 +405,7 @@
 <span class="sd">        If a mask is currently active, the pipeline will attempt to use a</span>
 <span class="sd">        masked version of the filter (from `MASK_FILTERS_MAP`) if available.</span>
 <span class="sd">        Otherwise, the unmasked filter is applied to the whole dataset.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">filter_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -413,7 +413,7 @@
 <div class="viewcode-block" id="ProcessingPipeline.clear_mask">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline.clear_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a step to clear the current mask.</span>
 
 <span class="sd">        Returns</span>
@@ -425,49 +425,49 @@
 <span class="sd">        -----</span>
 <span class="sd">        Calling this resets the masking state, so subsequent filters will be</span>
 <span class="sd">        applied to the entire dataset unless a new mask is added.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;clear&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"clear"</span><span class="p">,</span> <span class="p">{}))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="ProcessingPipeline.run">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.pipeline.ProcessingPipeline.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute configured steps on the AFMImageStack, stores outputs and provenance.</span>
 
 <span class="sd">        Behavior:</span>
 <span class="sd">        1. Record or update environment metadata via `gather_environment_info()`</span>
-<span class="sd">           into `stack.provenance[&quot;environment&quot;]`.</span>
-<span class="sd">        2. Reset previous processing provenance under `stack.provenance[&quot;processing&quot;]`,</span>
-<span class="sd">           ensuring keys `&quot;steps&quot;` (list) and `&quot;keys_by_name&quot;` (dict) exist</span>
+<span class="sd">           into `stack.provenance["environment"]`.</span>
+<span class="sd">        2. Reset previous processing provenance under `stack.provenance["processing"]`,</span>
+<span class="sd">           ensuring keys `"steps"` (list) and `"keys_by_name"` (dict) exist</span>
 <span class="sd">           and are cleared.</span>
-<span class="sd">        3. If not already present, snapshot the original data as `&quot;raw&quot;` in</span>
+<span class="sd">        3. If not already present, snapshot the original data as `"raw"` in</span>
 <span class="sd">        `stack.processed`.</span>
 <span class="sd">        4. Iterate over self.steps in order (1-based index):</span>
 <span class="sd">           - Resolve step type via `stack._resolve_step(step_name)`, yielding</span>
 <span class="sd">           (step_type, fn).</span>
 <span class="sd">           - Record a timestamp (`utc_now_iso()`), index, name, params, step_type,</span>
 <span class="sd">            function version (via `fn.__version__` or plugin lookup), and module name.</span>
-<span class="sd">           - If step_type == &quot;clear&quot;:</span>
+<span class="sd">           - If step_type == "clear":</span>
 <span class="sd">               * reset current mask to None</span>
-<span class="sd">               * record `&quot;mask_cleared&quot;: True` in provenance entry</span>
-<span class="sd">           - If step_type == &quot;mask&quot;:</span>
+<span class="sd">               * record `"mask_cleared": True` in provenance entry</span>
+<span class="sd">           - If step_type == "mask":</span>
 <span class="sd">               * call `stack._execute_mask_step(fn, arr, **kwargs)` to get a boolean</span>
 <span class="sd">               mask array</span>
 <span class="sd">               * if no existing mask: store under a new key `step_&lt;idx&gt;_&lt;mask_name&gt;`</span>
 <span class="sd">               in `stack.masks`</span>
 <span class="sd">                 else overlay with previous mask (logical OR) under derived key</span>
-<span class="sd">               * update current mask, record `&quot;mask_key&quot;` and `&quot;mask_summary&quot;` in</span>
+<span class="sd">               * update current mask, record `"mask_key"` and `"mask_summary"` in</span>
 <span class="sd">               provenance</span>
 <span class="sd">           - Else (filter/method/plugin):</span>
 <span class="sd">               * call `stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)`</span>
 <span class="sd">               to get new array</span>
-<span class="sd">               * store result under `stack.processed[&quot;step_&lt;idx&gt;_&lt;safe_name&gt;&quot;]`,</span>
+<span class="sd">               * store result under `stack.processed["step_&lt;idx&gt;_&lt;safe_name&gt;"]`,</span>
 <span class="sd">               update arr</span>
-<span class="sd">               * record `&quot;processed_key&quot;` and `&quot;output_summary&quot;` in provenance</span>
+<span class="sd">               * record `"processed_key"` and `"output_summary"` in provenance</span>
 <span class="sd">        5. After all steps, overwrite `stack.data = arr`.</span>
-<span class="sd">        6. Build `stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;]` mapping each</span>
+<span class="sd">        6. Build `stack.provenance["processing"]["keys_by_name"]` mapping each</span>
 <span class="sd">        step name to the list of stored keys (processed_key or mask_key) in order.</span>
 <span class="sd">        7. Return the final processed array.</span>
 
@@ -488,38 +488,38 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(data, pixel_size_nm=1.0, channel=&quot;h&quot;, file_path=&quot;.&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(data, pixel_size_nm=1.0, channel="h", file_path=".")</span>
 <span class="sd">        &gt;&gt;&gt; pipeline = ProcessingPipeline(stack)</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add_filter(&quot;gaussian_filter&quot;, sigma=1.0)</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add_mask(&quot;threshold_mask&quot;, threshold=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.add_filter("gaussian_filter", sigma=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.add_mask("threshold_mask", threshold=0.5)</span>
 <span class="sd">        &gt;&gt;&gt; result = pipeline.run()</span>
 <span class="sd">        &gt;&gt;&gt; # Final array in stack.data:</span>
 <span class="sd">        &gt;&gt;&gt; result.shape</span>
 <span class="sd">        (n_frames, height, width)</span>
 <span class="sd">        &gt;&gt;&gt; # Provenance entries:</span>
-<span class="sd">        &gt;&gt;&gt; for rec in stack.provenance[&quot;processing&quot;][&quot;steps&quot;]:</span>
+<span class="sd">        &gt;&gt;&gt; for rec in stack.provenance["processing"]["steps"]:</span>
 <span class="sd">        ...     print(</span>
-<span class="sd">        ...         rec[&quot;index&quot;],</span>
-<span class="sd">        ...         rec[&quot;name&quot;],</span>
-<span class="sd">        ...         rec.get(&quot;processed_key&quot;) or rec.get(&quot;mask_key&quot;)</span>
+<span class="sd">        ...         rec["index"],</span>
+<span class="sd">        ...         rec["name"],</span>
+<span class="sd">        ...         rec.get("processed_key") or rec.get("mask_key")</span>
 <span class="sd">        ...     )</span>
 <span class="sd">        &gt;&gt;&gt; # Keys by name:</span>
-<span class="sd">        &gt;&gt;&gt; print(stack.provenance[&quot;processing&quot;][&quot;keys_by_name&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; print(stack.provenance["processing"]["keys_by_name"])</span>
 <span class="sd">        &gt;&gt;&gt; # Environment info:</span>
-<span class="sd">        &gt;&gt;&gt; print(stack.provenance[&quot;environment&quot;])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; print(stack.provenance["environment"])</span>
+<span class="sd">        """</span>
         <span class="c1"># Record environment info (overwrite or only if empty)</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">gather_environment_info</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;environment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">env</span>
 
         <span class="c1"># Reset previous processing history</span>
-        <span class="n">proc_prov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">]</span>
-        <span class="n">proc_prov</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="n">proc_prov</span><span class="p">[</span><span class="s2">&quot;keys_by_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">proc_prov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">]</span>
+        <span class="n">proc_prov</span><span class="p">[</span><span class="s2">"steps"</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">proc_prov</span><span class="p">[</span><span class="s2">"keys_by_name"</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="c1"># Snapshot raw once</span>
-        <span class="k">if</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># current mask or None</span>
@@ -528,70 +528,70 @@
         <span class="k">for</span> <span class="n">step_name</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
             <span class="n">step_idx</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;[processing] Applying step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; with args </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa</span>
+                <span class="sa">f</span><span class="s2">"[processing] Applying step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' with args </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa</span>
             <span class="p">)</span>
             <span class="c1"># Prepare record for this step</span>
             <span class="n">timestamp</span> <span class="o">=</span> <span class="n">utc_now_iso</span><span class="p">()</span>
             <span class="n">step_record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">step_idx</span><span class="p">,</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">step_name</span><span class="p">,</span>
-                <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
-                <span class="c1"># we&#39;ll fill &#39;step_type&#39; and reference keys and any summary</span>
+                <span class="s2">"index"</span><span class="p">:</span> <span class="n">step_idx</span><span class="p">,</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="n">step_name</span><span class="p">,</span>
+                <span class="s2">"params"</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
+                <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+                <span class="c1"># we'll fill 'step_type' and reference keys and any summary</span>
             <span class="p">}</span>
             <span class="c1"># Resolve step type</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">step_type</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">_resolve_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to resolve step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to resolve step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">raise</span>
-            <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;step_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">step_type</span>
+            <span class="n">step_record</span><span class="p">[</span><span class="s2">"step_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">step_type</span>
 
-            <span class="n">func_version</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">&quot;__version__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">func_version</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;plugin&quot;</span><span class="p">:</span>
+            <span class="n">func_version</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">"__version__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">func_version</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"plugin"</span><span class="p">:</span>
                 <span class="n">func_version</span> <span class="o">=</span> <span class="n">_get_plugin_version</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-            <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">func_version</span>
-            <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;function_module&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">step_record</span><span class="p">[</span><span class="s2">"version"</span><span class="p">]</span> <span class="o">=</span> <span class="n">func_version</span>
+            <span class="n">step_record</span><span class="p">[</span><span class="s2">"function_module"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">"__module__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"clear"</span><span class="p">:</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="c1"># No snapshot stored in stack.processed/masks</span>
                 <span class="c1"># Record that mask was cleared</span>
-                <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;mask_cleared&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
+                <span class="n">step_record</span><span class="p">[</span><span class="s2">"mask_cleared"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
                 <span class="k">continue</span>
 
-            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;mask&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"mask"</span><span class="p">:</span>
                 <span class="c1"># Compute new mask</span>
                 <span class="n">new_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">_execute_mask_step</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="c1"># First mask: store under a unique key as before</span>
-                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">"</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Overlay: combine and store under derived key</span>
                     <span class="n">combined</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">new_mask</span><span class="p">)</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">last_mask_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="n">last_mask_part</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">last_mask_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">:])</span>
+                        <span class="n">last_mask_part</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">last_mask_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">2</span><span class="p">:])</span>
                     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-                        <span class="n">last_mask_part</span> <span class="o">=</span> <span class="s2">&quot;overlay&quot;</span>
+                        <span class="n">last_mask_part</span> <span class="o">=</span> <span class="s2">"overlay"</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                            <span class="s2">&quot;No previous mask found when overlaying; using &#39;overlay&#39;&quot;</span>
+                            <span class="s2">"No previous mask found when overlaying; using 'overlay'"</span>
                         <span class="p">)</span>
 
-                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">last_mask_part</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">last_mask_part</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">"</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                     <span class="n">new_mask</span> <span class="o">=</span> <span class="n">combined</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="n">new_mask</span>
                 <span class="c1"># Record the mask snapshot key in history (no need to duplicate array)</span>
-                <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;mask_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+                <span class="n">step_record</span><span class="p">[</span><span class="s2">"mask_key"</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
                 <span class="c1"># Optionally record mask shape/dtype summary</span>
-                <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;mask_summary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">new_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                    <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                <span class="n">step_record</span><span class="p">[</span><span class="s2">"mask_summary"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"shape"</span><span class="p">:</span> <span class="n">new_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="s2">"dtype"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_mask</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
                 <span class="p">}</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
                 <span class="k">continue</span>
 
             <span class="c1"># Else: filter/method/plugin</span>
@@ -600,36 +600,36 @@
                     <span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">step_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to apply filter &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to apply filter '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">raise</span>
             <span class="c1"># Store snapshot under unique key</span>
-            <span class="n">safe_name</span> <span class="o">=</span> <span class="n">step_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
-            <span class="n">proc_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">safe_name</span> <span class="o">=</span> <span class="n">step_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
+            <span class="n">proc_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">proc_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="c1"># Update arr for next steps</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="n">new_arr</span>
             <span class="c1"># Record processed_key in history</span>
-            <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;processed_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc_key</span>
-            <span class="n">step_record</span><span class="p">[</span><span class="s2">&quot;output_summary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">new_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="n">step_record</span><span class="p">[</span><span class="s2">"processed_key"</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc_key</span>
+            <span class="n">step_record</span><span class="p">[</span><span class="s2">"output_summary"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">"shape"</span><span class="p">:</span> <span class="n">new_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="s2">"dtype"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
             <span class="p">}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step_record</span><span class="p">)</span>
 
         <span class="c1"># After all steps, overwrite stack.data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">arr</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processing pipeline completed successfully.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Processing pipeline completed successfully."</span><span class="p">)</span>
         <span class="c1"># Optionally also attach a name→list-of-keys view</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 
         <span class="n">keys_by_name</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s2">&quot;processed_key&quot;</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">:</span>
-                <span class="n">keys_by_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;processed_key&quot;</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="s2">&quot;mask_key&quot;</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">:</span>
-                <span class="n">keys_by_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;mask_key&quot;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;processing&quot;</span><span class="p">][</span><span class="s2">&quot;keys_by_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys_by_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">"processed_key"</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">:</span>
+                <span class="n">keys_by_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">"processed_key"</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="s2">"mask_key"</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">:</span>
+                <span class="n">keys_by_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">"mask_key"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"processing"</span><span class="p">][</span><span class="s2">"keys_by_name"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys_by_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">arr</span></div>
 </div>
 

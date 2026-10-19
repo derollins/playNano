@@ -331,7 +331,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.core</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Core functions for loading and processing AFMImageStacks.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Core functions for loading and processing AFMImageStacks."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -348,7 +348,7 @@
     <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an AFMImageStack from a file, apply a list of processing steps, and return it.</span>
 
 <span class="sd">    Parameters</span>
@@ -357,13 +357,13 @@
 <span class="sd">        Path to the AFM stack file.</span>
 
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to load (e.g., &#39;h&#39;, &#39;z&#39;, etc.).</span>
+<span class="sd">        Channel to load (e.g., 'h', 'z', etc.).</span>
 
 <span class="sd">    steps : list of tuple</span>
 <span class="sd">        List of processing steps in the form (step_name, kwargs). Special step_name</span>
 <span class="sd">        values:</span>
-<span class="sd">        - &quot;clear&quot; : clears the current mask</span>
-<span class="sd">        - &quot;mask&quot;  : applies a mask function with kwargs</span>
+<span class="sd">        - "clear" : clears the current mask</span>
+<span class="sd">        - "mask"  : applies a mask function with kwargs</span>
 <span class="sd">        - otherwise : treated as a filter name with kwargs</span>
 
 <span class="sd">    Returns</span>
@@ -375,17 +375,17 @@
 <span class="sd">    ------</span>
 <span class="sd">    LoadError</span>
 <span class="sd">        If the AFM stack cannot be loaded from `input_path`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="n">pipeline</span> <span class="o">=</span> <span class="n">ProcessingPipeline</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"clear"</span><span class="p">:</span>
             <span class="n">pipeline</span><span class="o">.</span><span class="n">clear_mask</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;mask&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"mask"</span><span class="p">:</span>
             <span class="n">pipeline</span><span class="o">.</span><span class="n">add_mask</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">name</span><span class="p">:</span>
             <span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>

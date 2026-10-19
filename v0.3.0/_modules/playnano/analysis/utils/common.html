@@ -329,7 +329,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.utils.common</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Common utility functions for analysis.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Common utility functions for analysis."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -345,7 +345,7 @@
 <div class="viewcode-block" id="NumpyEncoder">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.NumpyEncoder">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NumpyEncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Custom JSON encoder for serializing NumPy ndarray and scalar objects.</span>
 
 <span class="sd">    This encoder converts NumPy arrays to native Python lists and NumPy scalar</span>
@@ -355,12 +355,12 @@
 
 <span class="sd">    Example:</span>
 <span class="sd">        json.dump(data, file, cls=NumpyEncoder)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="NumpyEncoder.default">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.NumpyEncoder.default">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Override default method to convert NumPy arrays and scalar types.</span>
 
 <span class="sd">        Convert NumPy arrays ad scalar types to JSON-serializable forms.</span>
@@ -372,11 +372,11 @@
 <span class="sd">            A JSON-serializable version of the object. If the object is a NumPy</span>
 <span class="sd">            ndarray, it is converted to a list. If the object is a NumPy scalar</span>
 <span class="sd">            (e.g., np.float32, np.int64), it is converted to the equivalent Python</span>
-<span class="sd">            scalar. Otherwise, the superclass&#39;s default method is used.</span>
+<span class="sd">            scalar. Otherwise, the superclass's default method is used.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If the object cannot be serialized by the superclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)):</span>
@@ -384,7 +384,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)):</span>
             <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;function </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;function </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;"</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
 </div>
 
@@ -393,12 +393,12 @@
 <div class="viewcode-block" id="safe_json_dumps">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.safe_json_dumps">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_json_dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serialize an object to JSON safely, falling back to str() on failure.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Serialize an object to JSON safely, falling back to str() on failure."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">NumpyEncoder</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="c1"># fallback for anything not serializable, like functions</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fallback triggered for object: </span><span class="si">{</span><span class="n">obj</span><span class="si">!r}</span><span class="s2"> with error </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fallback triggered for object: </span><span class="si">{</span><span class="n">obj</span><span class="si">!r}</span><span class="s2"> with error </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
 
 
@@ -406,18 +406,18 @@
 <div class="viewcode-block" id="export_to_hdf5">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.export_to_hdf5">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">export_to_hdf5</span><span class="p">(</span>
-    <span class="n">record</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;analysis_record&quot;</span>
+    <span class="n">record</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"analysis_record"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save a nested dict/list/array structure to HDF5 with full breakdown.</span>
 
 <span class="sd">    - Dicts become groups.</span>
 <span class="sd">    - Lists of primitives become datasets.</span>
 <span class="sd">    - Lists of complex objects become subgroups item_0, item_1, etc.</span>
 <span class="sd">    - NumPy arrays become datasets.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">out_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -426,28 +426,28 @@
 
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">[])</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"empty"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">[])</span>
                 <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
-                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">))</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-                        <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;item_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span> <span class="n">item</span><span class="p">)</span>
+                        <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="sa">f</span><span class="s2">"item_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span> <span class="n">item</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 
         <span class="n">recurse</span><span class="p">(</span><span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">),</span> <span class="n">record</span><span class="p">)</span></div>
 
@@ -456,9 +456,9 @@
 <div class="viewcode-block" id="load_analysis_from_hdf5">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.load_analysis_from_hdf5">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_analysis_from_hdf5</span><span class="p">(</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;analysis_record&quot;</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"analysis_record"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load a nested dict/list/NumPy array structure from an HDF5 file.</span>
 
 <span class="sd">    This exactly reverses `export_to_hdf5`. Automatically converts integer-valued</span>
@@ -470,7 +470,7 @@
 <span class="sd">        Path to the HDF5 file containing the saved analysis dictionary.</span>
 <span class="sd">    dataset_name : str</span>
 <span class="sd">        Name of the top-level group in the HDF5 file where the dictionary is stored.</span>
-<span class="sd">        Default is &#39;analysis_record&#39;.</span>
+<span class="sd">        Default is 'analysis_record'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -488,14 +488,14 @@
 <span class="sd">    ------</span>
 <span class="sd">    KeyError</span>
 <span class="sd">        If `dataset_name` is not found in the HDF5 file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively reconstruct dict/list/array from an HDF5 group.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;values&quot;</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">][()]</span>
+<span class="w">        </span><span class="sd">"""Recursively reconstruct dict/list/array from an HDF5 group."""</span>
+        <span class="k">if</span> <span class="s2">"values"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">][()]</span>
             <span class="c1"># Convert bytes to str if needed</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"S"</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
 
             <span class="c1"># Scalar array</span>
@@ -514,11 +514,11 @@
                     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">data</span>
 
-        <span class="k">if</span> <span class="s2">&quot;empty&quot;</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"empty"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
-        <span class="k">if</span> <span class="s2">&quot;value&quot;</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">"value"</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span>
             <span class="k">return</span> <span class="p">(</span>
                 <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">()</span>
@@ -526,41 +526,41 @@
             <span class="p">)</span>
 
         <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;item_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"item_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="p">]</span>
             <span class="k">return</span> <span class="n">items</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">}</span>
 
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">dataset_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset &#39;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&#39; not found in HDF5 file.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset '</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">' not found in HDF5 file."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">recurse</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">])</span></div>
 
 
 
 <div class="viewcode-block" id="sanitize_analysis_for_logging">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.sanitize_analysis_for_logging">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a JSON-safe version of any object, printing any functions it finds.&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"root"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return a JSON-safe version of any object, printing any functions it finds."""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
     <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Removing function at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;anonymous&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Removing function at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="s1">'anonymous'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;function </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;anonymous&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;function </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="s1">'anonymous'</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span>
 
     <span class="k">if</span> <span class="n">_depth</span> <span class="o">&gt;</span> <span class="n">_max_depth</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;... truncated depth </span><span class="si">{</span><span class="n">_depth</span><span class="si">}</span><span class="s2"> ...&gt;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;... truncated depth </span><span class="si">{</span><span class="n">_depth</span><span class="si">}</span><span class="s2"> ...&gt;"</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">k</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span>
-                <span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="n">_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">_max_depth</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="n">_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">_max_depth</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
@@ -568,24 +568,24 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span>
-                <span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="n">_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">_max_depth</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="n">_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">_max_depth</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;_array_shape&quot;</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-            <span class="s2">&quot;_array_dtype&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
-            <span class="s2">&quot;_summary&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"_array_shape"</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="s2">"_array_dtype"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="s2">"_summary"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"min"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"max"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"mean"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">}</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
@@ -597,7 +597,7 @@
 <div class="viewcode-block" id="make_json_safe">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.make_json_safe">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_json_safe</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Make a AnalysisRecord safe for export through JSON dumping.</span>
 
 <span class="sd">    Prepare an AnalysisRecord for JSON dumping by stripping out or summarizing</span>
@@ -611,14 +611,14 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    dict</span>
-<span class="sd">        A new dict with the same top-level keys (&quot;environment&quot;, &quot;analysis&quot;,</span>
-<span class="sd">        &quot;provenance&quot;), but with each value run through your sanitizers so</span>
+<span class="sd">        A new dict with the same top-level keys ("environment", "analysis",</span>
+<span class="sd">        "provenance"), but with each value run through your sanitizers so</span>
 <span class="sd">        that they contain only numbers, strings, lists, and dicts.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;environment&quot;</span><span class="p">]),</span>
-        <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]),</span>
-        <span class="s2">&quot;provenance&quot;</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;provenance&quot;</span><span class="p">]),</span>
+        <span class="s2">"environment"</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"environment"</span><span class="p">]),</span>
+        <span class="s2">"analysis"</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">]),</span>
+        <span class="s2">"provenance"</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"provenance"</span><span class="p">]),</span>
     <span class="p">}</span></div>
 
 </pre></div>

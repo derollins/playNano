@@ -497,12 +497,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.utils.loader</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module for resolving and instantiating analysis modules.</span>
 
 <span class="sd">Handles lookup in the built-in registry and via entry points</span>
-<span class="sd">registered under the group &#39;playnano.analysis&#39;.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">registered under the group 'playnano.analysis'.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -515,7 +515,7 @@
 <div class="viewcode-block" id="load_analysis_module">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.loader.html#playnano.analysis.utils.loader.load_analysis_module">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_analysis_module</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisModule</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load and instantiate an AnalysisModule by name.</span>
 
 <span class="sd">    Parameters</span>
@@ -534,21 +534,21 @@
 <span class="sd">        If the module cannot be found.</span>
 <span class="sd">    TypeError</span>
 <span class="sd">        If the loaded object is not a subclass of AnalysisModule.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">cls</span> <span class="o">=</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">eps</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">()</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-            <span class="n">group</span><span class="o">=</span><span class="s2">&quot;playnano.analysis&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span>
+            <span class="n">group</span><span class="o">=</span><span class="s2">"playnano.analysis"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">eps</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Analysis module &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found in registry or entry points&quot;</span>
+                <span class="sa">f</span><span class="s2">"Analysis module '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found in registry or entry points"</span>
             <span class="p">)</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="n">eps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
 
     <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">AnalysisModule</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not a subclass of AnalysisModule&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' is not a subclass of AnalysisModule"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">instance</span></div>
 

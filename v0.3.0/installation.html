@@ -406,7 +406,7 @@ Some input files must include metadata (e.g. <code class="docutils literal notra
 </pre></div>
 </div>
 <p>Check version from Python:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import playnano; print(playnano.__version__)&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import playnano; print(playnano.__version__)"</span>
 </pre></div>
 </div>
 </section>
@@ -416,7 +416,7 @@ Some input files must include metadata (e.g. <code class="docutils literal notra
 <p>If you wish to change the code or contribute to the project, clone the repository
 from the GitHub repository and install in “editable” mode. This will give you access to
 the latest development version and make changes to the codebase.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1) Clone the repository (if you haven&#39;t already)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1) Clone the repository (if you haven't already)</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/derollins/playNano.git
 <span class="c1"># And navigate to the project root</span>
 <span class="nb">cd</span><span class="w"> </span>playNano
@@ -435,16 +435,16 @@ To work on the documentation, or run the example notebooks, you can install thes
 <p>If you are developing or contributing, install the full set of extras, especially the
 dev group (which includes linting and testing tools).</p>
 <p>You can also install optional extras for docs, notebooks, or development:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[docs]&quot;</span><span class="w">       </span><span class="c1"># docs build dependencies (Sphinx, theme, nbsphinx)</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[notebooks]&quot;</span><span class="w">  </span><span class="c1"># notebook/demo dependencies (Jupyter)</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w">        </span><span class="c1"># developer dependencies (linting, testing, pre-commit)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[docs]"</span><span class="w">       </span><span class="c1"># docs build dependencies (Sphinx, theme, nbsphinx)</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[notebooks]"</span><span class="w">  </span><span class="c1"># notebook/demo dependencies (Jupyter)</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w">        </span><span class="c1"># developer dependencies (linting, testing, pre-commit)</span>
 </pre></div>
 </div>
 <section id="developer-usage">
 <h3>Developer usage<a class="headerlink" href="#developer-usage" title="Link to this heading">¶</a></h3>
 <p>Install all of the dependencies for linting, tests, docs and notebooks:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># After cloning the repo and activating your conda env</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev,docs,notebooks]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev,docs,notebooks]"</span>
 </pre></div>
 </div>
 <p>Run tests:</p>

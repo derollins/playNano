@@ -497,7 +497,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.dbscan_clustering</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">DBSCAN clustering on features over the entire stack in 3D (x, y, time).</span>
 
 <span class="sd">This module extracts feature points from a previous analysis step, optionally</span>
@@ -510,7 +510,7 @@
 <span class="sd">    Key in previous_results containing `features_per_frame`.</span>
 
 <span class="sd">coord_columns : Sequence[str]</span>
-<span class="sd">    Which keys in each feature-dict to use (e.g. (&quot;x&quot;,&quot;y&quot;)).</span>
+<span class="sd">    Which keys in each feature-dict to use (e.g. ("x","y")).</span>
 
 <span class="sd">use_time : bool</span>
 <span class="sd">    If True and coord_columns length is 2, append frame time as the third dimension.</span>
@@ -531,7 +531,7 @@
 
 <span class="sd">**dbscan_kwargs</span>
 <span class="sd">    Forwarded to sklearn.cluster.DBSCAN.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
 
@@ -544,7 +544,7 @@
 <div class="viewcode-block" id="DBSCANClusteringModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.dbscan_clustering.html#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DBSCANClusteringModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DBSCAN clustering of features across an AFMImageStack in (x, y, time) space.</span>
 
 <span class="sd">    This module extracts coordinates from per-frame features, optionally adds time</span>
@@ -555,23 +555,23 @@
 <span class="sd">    Version</span>
 <span class="sd">    -------</span>
 <span class="sd">    0.1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            The string identifier for this module: &quot;dbscan_clustering&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;dbscan_clustering&quot;</span>
+<span class="sd">            The string identifier for this module: "dbscan_clustering".</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"dbscan_clustering"</span>
 
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="s2">&quot;log_blob_detection&quot;</span><span class="p">]</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
 
 <div class="viewcode-block" id="DBSCANClusteringModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.dbscan_clustering.html#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run">[docs]</a>
@@ -580,9 +580,9 @@
         <span class="n">stack</span><span class="p">,</span>
         <span class="n">previous_results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span>
-        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features_per_frame&quot;</span><span class="p">,</span>
-        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;centroid_x&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_y&quot;</span><span class="p">),</span>
+        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"feature_detection"</span><span class="p">,</span>
+        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"features_per_frame"</span><span class="p">,</span>
+        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"centroid_x"</span><span class="p">,</span> <span class="s2">"centroid_y"</span><span class="p">),</span>
         <span class="n">use_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
         <span class="n">min_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -590,7 +590,7 @@
         <span class="n">time_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">dbscan_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform DBSCAN clustering on detected features in (x, y[, t]) space.</span>
 
 <span class="sd">        Parameters</span>
@@ -603,16 +603,16 @@
 <span class="sd">            the given `detection_module` and `coord_key`.</span>
 
 <span class="sd">        detection_module : str</span>
-<span class="sd">            Which module&#39;s output to use from `previous_results`. Default</span>
-<span class="sd">            is &quot;feature_detection&quot;.</span>
+<span class="sd">            Which module's output to use from `previous_results`. Default</span>
+<span class="sd">            is "feature_detection".</span>
 
 <span class="sd">        coord_key : str</span>
 <span class="sd">            Key in `previous_results[detection_module]` containing the list</span>
-<span class="sd">            of per-frame features. Default is &quot;features_per_frame&quot;.</span>
+<span class="sd">            of per-frame features. Default is "features_per_frame".</span>
 
 <span class="sd">        coord_columns : Sequence[str]</span>
 <span class="sd">            Keys to extract coordinates from each feature. If missing, will fall back</span>
-<span class="sd">            to `centroid` tuple. Default is (&quot;centroid_x&quot;, &quot;centroid_y&quot;).</span>
+<span class="sd">            to `centroid` tuple. Default is ("centroid_x", "centroid_y").</span>
 
 <span class="sd">        use_time : bool</span>
 <span class="sd">            Whether to append frame timestamp as a third coordinate. Dafaulr is True.</span>
@@ -641,19 +641,19 @@
 <span class="sd">        dict[str, Any]</span>
 <span class="sd">            Output dictionary with the following keys:</span>
 
-<span class="sd">                - &quot;clusters&quot;: list of dicts, one per cluster, containing:</span>
-<span class="sd">                    - &quot;id&quot;: cluster ID (int)</span>
-<span class="sd">                    - &quot;frames&quot;: list of frame indices</span>
-<span class="sd">                    - &quot;point_indices&quot;: list of feature indices within frames</span>
-<span class="sd">                    - &quot;coords&quot;: list of 2D or 3D coordinates (post-normalization)</span>
-<span class="sd">                - &quot;cluster_centers&quot;: np.ndarray of shape (n_clusters, D)</span>
+<span class="sd">                - "clusters": list of dicts, one per cluster, containing:</span>
+<span class="sd">                    - "id": cluster ID (int)</span>
+<span class="sd">                    - "frames": list of frame indices</span>
+<span class="sd">                    - "point_indices": list of feature indices within frames</span>
+<span class="sd">                    - "coords": list of 2D or 3D coordinates (post-normalization)</span>
+<span class="sd">                - "cluster_centers": np.ndarray of shape (n_clusters, D)</span>
 <span class="sd">                    Mean location of each cluster in original coordinate units.</span>
-<span class="sd">                - &quot;summary&quot;: dict with:</span>
-<span class="sd">                    - &quot;n_clusters&quot;: total number of clusters found</span>
-<span class="sd">                    - &quot;members_per_cluster&quot;: dict of cluster ID to count</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                - "summary": dict with:</span>
+<span class="sd">                    - "n_clusters": total number of clusters found</span>
+<span class="sd">                    - "members_per_cluster": dict of cluster ID to count</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
 
         <span class="c1"># Auto-detect the most recent available detection module</span>
         <span class="k">if</span> <span class="n">detection_module</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">previous_results</span><span class="p">:</span>
@@ -662,7 +662,7 @@
             <span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results.&quot;</span>  <span class="c1"># noqa</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results."</span>  <span class="c1"># noqa</span>
                 <span class="p">)</span>
             <span class="n">detection_module</span> <span class="o">=</span> <span class="n">available</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -674,10 +674,10 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">feat</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coord_columns</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="n">cent</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;centroid&quot;</span><span class="p">)</span>
+                    <span class="n">cent</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"centroid"</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">cent</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">cent</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">coord_columns</span><span class="p">):</span>
                         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Missing keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> in feature&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Missing keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> in feature"</span>
                         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
                     <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">cent</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">cent</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
                 <span class="k">if</span> <span class="n">use_time</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -688,9 +688,9 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">points</span><span class="p">:</span>
             <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="p">(</span><span class="n">use_time</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">coord_columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">coord_columns</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">{</span>
-                <span class="s2">&quot;clusters&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                <span class="s2">&quot;cluster_centers&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)),</span>
-                <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_clusters&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;members_per_cluster&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+                <span class="s2">"clusters"</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">"cluster_centers"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)),</span>
+                <span class="s2">"summary"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"n_clusters"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"members_per_cluster"</span><span class="p">:</span> <span class="p">{}},</span>
             <span class="p">}</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
@@ -707,7 +707,7 @@
         <span class="n">clustering</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">dbscan_kwargs</span><span class="p">)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-        <span class="c1"># compute &#39;cluster centers&#39; as mean of points in each cluster</span>
+        <span class="c1"># compute 'cluster centers' as mean of points in each cluster</span>
         <span class="n">unique_labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">})</span>
         <span class="n">centers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
@@ -729,20 +729,20 @@
                 <span class="n">coords_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
             <span class="n">clusters_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">cid</span><span class="p">,</span>
-                    <span class="s2">&quot;frames&quot;</span><span class="p">:</span> <span class="n">frames</span><span class="p">,</span>
-                    <span class="s2">&quot;point_indices&quot;</span><span class="p">:</span> <span class="n">p_inds</span><span class="p">,</span>
-                    <span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="n">coords_list</span><span class="p">,</span>
+                    <span class="s2">"id"</span><span class="p">:</span> <span class="n">cid</span><span class="p">,</span>
+                    <span class="s2">"frames"</span><span class="p">:</span> <span class="n">frames</span><span class="p">,</span>
+                    <span class="s2">"point_indices"</span><span class="p">:</span> <span class="n">p_inds</span><span class="p">,</span>
+                    <span class="s2">"coords"</span><span class="p">:</span> <span class="n">coords_list</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
             <span class="n">members</span><span class="p">[</span><span class="n">cid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
 
-        <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;n_clusters&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">),</span> <span class="s2">&quot;members_per_cluster&quot;</span><span class="p">:</span> <span class="n">members</span><span class="p">}</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n_clusters"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">),</span> <span class="s2">"members_per_cluster"</span><span class="p">:</span> <span class="n">members</span><span class="p">}</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;clusters&quot;</span><span class="p">:</span> <span class="n">clusters_out</span><span class="p">,</span>
-            <span class="s2">&quot;cluster_centers&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">),</span>
-            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+            <span class="s2">"clusters"</span><span class="p">:</span> <span class="n">clusters_out</span><span class="p">,</span>
+            <span class="s2">"cluster_centers"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">),</span>
+            <span class="s2">"summary"</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
 

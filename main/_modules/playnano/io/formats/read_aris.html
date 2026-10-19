@@ -498,46 +498,70 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_aris</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module to decode and load .aris high-speed AFM data files into an AFMImageStack object.</span>
 
 <span class="sd">The Asylum Reseach ARIS files contain multiple frames that may differ in pixel</span>
 <span class="sd">resolution. The global pixel size (from the first frame) is stored in</span>
 <span class="sd">`pixel_size_nm`, while per-frame overrides are stored in each entry of</span>
 <span class="sd">`frame_metadata` under the key `frame_pixel_size_nm`.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_hdf5_attr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_frame_metadata</span><span class="p">,</span> <span class="n">decode_hdf5_attr</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_aris_start</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Parse ARIS StartTime ('YYYY-MM-DD HH:MM:SS.ffffff... +HHMM') to aware datetime.</span>
+
+<span class="sd">    ARIS stamps go to sub-microseconds; Python's %f is 6 digits, so trim any excess</span>
+<span class="sd">    (e.g. '.638777400' -&gt; '.638777').</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="c1"># trim fractional seconds to 6 digits so %f parses</span>
+    <span class="k">if</span> <span class="s2">"."</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="n">head</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">frac</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">tail</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">" "</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">frac</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">rest</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">rest</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">frac</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S.</span><span class="si">%f</span><span class="s2"> %z"</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S %z"</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_channel_names</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract and decode channel names from the ARIS HDF5 DataSetInfo group.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    info : h5py.Group</span>
-<span class="sd">        The &#39;/DataSetInfo&#39; group of the ARIS file.</span>
+<span class="sd">        The '/DataSetInfo' group of the ARIS file.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of str</span>
 <span class="sd">        Decoded channel names.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">decode_hdf5_attr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;ChannelNames&quot;</span><span class="p">]]</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">decode_hdf5_attr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"ChannelNames"</span><span class="p">]]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_aris_global_pixel_to_nm_scaling_h5</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract pixel-to-nanometre scaling from an ARIS HDF5 DataSetInfo Global group.</span>
 
 <span class="sd">    This uses the fast scan axis (FastScanSize) in meters and converts the physical</span>
@@ -562,19 +586,19 @@
 <span class="sd">        If required attributes are missing.</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If ScanPoints is zero.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Global/Parameters/Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;FastScanSize&quot;</span>
+        <span class="n">scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Global/Parameters/Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+            <span class="s2">"FastScanSize"</span>
         <span class="p">]</span>  <span class="c1"># physical length in meters</span>
-        <span class="n">pixel_scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Global/Parameters/Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-            <span class="s2">&quot;ScanPoints&quot;</span>
+        <span class="n">pixel_scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Global/Parameters/Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+            <span class="s2">"ScanPoints"</span>
         <span class="p">]</span>  <span class="c1"># number of pixels</span>
 
         <span class="k">if</span> <span class="n">pixel_scan_width</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Pixel count (ScanPoints) is zero; cannot compute scaling.&quot;</span>
+                <span class="s2">"Pixel count (ScanPoints) is zero; cannot compute scaling."</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">scan_width</span> <span class="o">/</span> <span class="n">pixel_scan_width</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e9</span>
@@ -582,26 +606,26 @@
     <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Missing required attribute &#39;</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&#39; in HDF5 measurement group.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Missing required attribute '</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">' in HDF5 measurement group."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_sorted_frame_keys</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return frame keys sorted numerically.</span>
 
-<span class="sd">    ARIS frame datasets use keys like &#39;Frame 0&#39;, &#39;Frame 1&#39;, &#39;Frame 2&#39;... .</span>
+<span class="sd">    ARIS frame datasets use keys like 'Frame 0', 'Frame 1', 'Frame 2'... .</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : h5py.Group</span>
-<span class="sd">        The &#39;/DataSet/Resolution 0&#39; group containing frame datasets.</span>
+<span class="sd">        The '/DataSet/Resolution 0' group containing frame datasets.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of str</span>
 <span class="sd">        Sorted frame keys.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">data_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data_keys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]))</span>
 
@@ -613,7 +637,7 @@
     <span class="n">info</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">,</span>
     <span class="n">selected_ch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load all frames for the given channel and compute per-frame pixel sizes.</span>
 
 <span class="sd">    Parameters</span>
@@ -629,21 +653,21 @@
 <span class="sd">    -------</span>
 <span class="sd">    (ndarray, list of float)</span>
 <span class="sd">        3D stack array and per-frame pixel-size values (nm).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sorted_keys</span> <span class="o">=</span> <span class="n">_get_sorted_frame_keys</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="n">initial_pixel_size_nm</span> <span class="o">=</span> <span class="n">_aris_global_pixel_to_nm_scaling_h5</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
-    <span class="n">initial_scan_pixel_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Global/Parameters/Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;ScanPoints&quot;</span><span class="p">]</span>
+    <span class="n">initial_scan_pixel_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Global/Parameters/Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"ScanPoints"</span><span class="p">]</span>
 
     <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">pixel_sizes_nm</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">frame_key</span> <span class="ow">in</span> <span class="n">sorted_keys</span><span class="p">:</span>
-        <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">frame_key</span><span class="p">][</span><span class="n">selected_ch</span><span class="p">][</span><span class="s2">&quot;Image&quot;</span><span class="p">][:])</span>
+        <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">frame_key</span><span class="p">][</span><span class="n">selected_ch</span><span class="p">][</span><span class="s2">"Image"</span><span class="p">][:])</span>
         <span class="c1"># If the scan size changes it is recorded in the per frame record in the</span>
         <span class="c1"># metadata group</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">new_scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Frames&quot;</span><span class="p">][</span><span class="n">frame_key</span><span class="p">][</span><span class="s2">&quot;Parameters&quot;</span><span class="p">][</span><span class="s2">&quot;Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-                <span class="s2">&quot;FastScanSize&quot;</span>
+            <span class="n">new_scan_width</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Frames"</span><span class="p">][</span><span class="n">frame_key</span><span class="p">][</span><span class="s2">"Parameters"</span><span class="p">][</span><span class="s2">"Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+                <span class="s2">"FastScanSize"</span>
             <span class="p">]</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
             <span class="n">new_scan_width</span> <span class="o">=</span> <span class="kc">None</span>
@@ -652,8 +676,8 @@
             <span class="n">pixel_sizes_nm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_pixel_size_nm</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_scan_points</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Frames&quot;</span><span class="p">][</span><span class="n">frame_key</span><span class="p">][</span><span class="s2">&quot;Parameters&quot;</span><span class="p">][</span><span class="s2">&quot;Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
-                    <span class="s2">&quot;ScanPoints&quot;</span>
+                <span class="n">new_scan_points</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Frames"</span><span class="p">][</span><span class="n">frame_key</span><span class="p">][</span><span class="s2">"Parameters"</span><span class="p">][</span><span class="s2">"Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+                    <span class="s2">"ScanPoints"</span>
                 <span class="p">]</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
                 <span class="n">new_scan_points</span> <span class="o">=</span> <span class="kc">None</span>
@@ -676,7 +700,7 @@
     <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load image stack from a Asylum Research .aris file, scaled to nanometers.</span>
 
 <span class="sd">    The images are loaded, reshaped into frames, and have timestamps generated.</span>
@@ -698,40 +722,57 @@
 <span class="sd">    Pixel size may vary between frames in ARIS files. The global</span>
 <span class="sd">    `pixel_size_nm` attribute corresponds to the first frame, while</span>
 <span class="sd">    per-frame values are stored in `frame_metadata`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span>
-            <span class="s2">&quot;/DataSet/Resolution 0&quot;</span>
+            <span class="s2">"/DataSet/Resolution 0"</span>
         <span class="p">]</span>  <span class="c1"># where the image data is stored per frame per channel</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;/DataSetInfo&quot;</span><span class="p">]</span>  <span class="c1"># where image metadata, channel names etc.</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">"/DataSetInfo"</span><span class="p">]</span>  <span class="c1"># where image metadata, channel names etc.</span>
 
         <span class="n">file_channels</span> <span class="o">=</span> <span class="n">_get_channel_names</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">file_channels</span><span class="p">:</span>
             <span class="n">selected_ch</span> <span class="o">=</span> <span class="n">channel</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Channel &#39;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&#39; is not available.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' is not available."</span><span class="p">)</span>
 
         <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_sizes_nm</span> <span class="o">=</span> <span class="n">load_frames_and_scaling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">selected_ch</span><span class="p">)</span>
 
         <span class="c1"># Read timestamps and line_rate</span>
-        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Series&quot;</span><span class="p">][</span><span class="s2">&quot;Time&quot;</span><span class="p">][:]</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Series"</span><span class="p">][</span><span class="s2">"Time"</span><span class="p">][:]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span> <span class="o">!=</span> <span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Timestamp count (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span><span class="si">}</span><span class="s2">) does not match frame count (</span><span class="si">{</span><span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span>  <span class="c1"># noqa</span>
+                <span class="sa">f</span><span class="s2">"Timestamp count (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span><span class="si">}</span><span class="s2">) does not match frame count (</span><span class="si">{</span><span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span>  <span class="c1"># noqa</span>
             <span class="p">)</span>
-        <span class="n">line_rate</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;Global/Parameters/Scan&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;ScanRate&quot;</span><span class="p">]</span>
+        <span class="n">line_rate</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Global/Parameters/Scan"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span>
+            <span class="s2">"ScanRate"</span>
+        <span class="p">]</span>  <span class="c1"># TODO: honour per-frame ScanRate overrides (it can change between frames)</span>
+
+        <span class="c1"># Absolute time (aware, sub-ms): base epoch + per-frame Series/Time offset</span>
+        <span class="n">start_dt</span> <span class="o">=</span> <span class="n">_parse_aris_start</span><span class="p">(</span>
+            <span class="n">decode_hdf5_attr</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"Global"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"StartTime"</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">base_ms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_dt</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span> <span class="k">if</span> <span class="n">start_dt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_epoch_ms</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">base_ms</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="n">base_ms</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+            <span class="p">)</span>
 
         <span class="c1"># Compose per-frame metadata list</span>
         <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="n">frame</span><span class="p">]),</span>
-                    <span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">pixel_sizes_nm</span><span class="p">[</span><span class="n">frame</span><span class="p">]),</span>
-                    <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">line_rate</span><span class="p">),</span>
-                <span class="p">}</span>
+                <span class="n">build_frame_metadata</span><span class="p">(</span>
+                    <span class="n">timestamp</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="n">frame</span><span class="p">])</span>
+                    <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>  <span class="c1"># seconds from frame 0</span>
+                    <span class="n">frame_pixel_size_nm</span><span class="o">=</span><span class="n">pixel_sizes_nm</span><span class="p">[</span><span class="n">frame</span><span class="p">],</span>
+                    <span class="n">line_rate</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">line_rate</span><span class="p">),</span>
+                    <span class="n">start_epoch_ms</span><span class="o">=</span><span class="n">_epoch_ms</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span>
+                <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>

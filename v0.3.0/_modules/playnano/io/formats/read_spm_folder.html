@@ -329,7 +329,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_spm_folder</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Placeholder for a functional script to load a folder containing .spm frames.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Placeholder for a functional script to load a folder containing .spm frames."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -345,7 +345,7 @@
 <div class="viewcode-block" id="parse_spm_header">
 <a class="viewcode-back" href="../../../../api/playnano.io.formats.read_spm_folder.html#playnano.io.formats.read_spm_folder.parse_spm_header">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_spm_header</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">65536</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract ASCII header key-value pairs from a `.spm` file.</span>
 
 <span class="sd">    Parameters</span>
@@ -359,17 +359,17 @@
 <span class="sd">    -------</span>
 <span class="sd">    dict</span>
 <span class="sd">        Mapping of header keys to values as strings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">header_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">max_bytes</span><span class="p">)</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;latin1&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"latin1"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\\</span><span class="s2">"</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">header_dict</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">continue</span>  <span class="c1"># Skip malformed lines</span>
@@ -381,7 +381,7 @@
 <div class="viewcode-block" id="load_spm_folder">
 <a class="viewcode-back" href="../../../../api/playnano.io.formats.read_spm_folder.html#playnano.io.formats.read_spm_folder.load_spm_folder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_spm_folder</span><span class="p">(</span><span class="n">folder_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an AFM video from a folder of individual .spm image files.</span>
 
 <span class="sd">    Parameters</span>
@@ -395,10 +395,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory."</span><span class="p">)</span>
 
     <span class="c1"># Include files with .spm or numeric extensions like .001, .002, etc.</span>
     <span class="n">spm_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
@@ -407,16 +407,16 @@
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">folder</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
             <span class="ow">and</span> <span class="p">(</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.spm&quot;</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">".spm"</span>
                 <span class="ow">or</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="p">]</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">spm_files</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No .spm files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No .spm files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">spm_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .spm files.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">spm_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .spm files."</span><span class="p">)</span>
 
     <span class="c1"># Load first image to get shape and pixel size</span>
     <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">spm_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
@@ -430,7 +430,7 @@
     <span class="c1"># Extract metadata from first image</span>
     <span class="c1"># Line rate and timestamps</span>
     <span class="n">spm_header</span> <span class="o">=</span> <span class="n">parse_spm_header</span><span class="p">(</span><span class="n">spm_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Read the file header</span>
-    <span class="n">line_rate_str</span> <span class="o">=</span> <span class="n">spm_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Scan Rate&quot;</span><span class="p">)</span>
+    <span class="n">line_rate_str</span> <span class="o">=</span> <span class="n">spm_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"Scan Rate"</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">line_rate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line_rate_str</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
@@ -439,7 +439,7 @@
     <span class="n">lines_per_frame</span> <span class="o">=</span> <span class="n">height_px</span>  <span class="c1"># number of fast scan lines in an image</span>
     <span class="k">if</span> <span class="n">line_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">lines_per_frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Missing data: line_rate=</span><span class="si">{</span><span class="n">line_rate</span><span class="si">}</span><span class="s2">, lines_per_frame=</span><span class="si">{</span><span class="n">lines_per_frame</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Missing data: line_rate=</span><span class="si">{</span><span class="n">line_rate</span><span class="si">}</span><span class="s2">, lines_per_frame=</span><span class="si">{</span><span class="n">lines_per_frame</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">frame_rate</span> <span class="o">=</span> <span class="n">line_rate</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">lines_per_frame</span><span class="p">)</span>  <span class="c1"># frames per second</span>
     <span class="n">frame_interval</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">frame_rate</span>  <span class="c1"># time taken per frame</span>
@@ -447,21 +447,21 @@
 
     <span class="c1"># Load all images</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spm_files</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">px_size_nm</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent pixel size in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent pixel size in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">image_stack</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
 
     <span class="c1"># Compose per-frame metadata list</span>
     <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
-        <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
+        <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">"line_rate"</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="n">num_frames</span><span class="si">}</span><span class="s2"> frames with shape </span><span class="si">{</span><span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and pixel size&quot;</span>
+        <span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="n">num_frames</span><span class="si">}</span><span class="s2"> frames with shape </span><span class="si">{</span><span class="n">image_stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and pixel size"</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>

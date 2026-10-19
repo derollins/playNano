@@ -528,7 +528,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 <section id="quick-verification">
 <h2>3. Quick verification<a class="headerlink" href="#quick-verification" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>--help
-python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import playnano; print(playnano.__version__)&quot;</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import playnano; print(playnano.__version__)"</span>
 </pre></div>
 </div>
 </section>
@@ -550,7 +550,7 @@ find out more about using the GUI in <a class="reference internal" href="gui.htm
 <p>For batch processing and analysis the processing and analysis pipelines are run through separate commands.
 To run these commands on example data, these commands can be run from the project root.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="se">\</span>
-<span class="w">  </span>--processing<span class="w"> </span><span class="s2">&quot;remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--processing<span class="w"> </span><span class="s2">"remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--export<span class="w"> </span>h5,tif,npz<span class="w"> </span>--make-gif<span class="w"> </span>--draw-ts<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>sample_processed
 </pre></div>
 </div>
@@ -563,7 +563,7 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
 </div>
 <p>Run analysis (detection + tracking):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>./results/sample_processed_filtered.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3&quot;</span>
+<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3"</span>
 </pre></div>
 </div>
 </section>

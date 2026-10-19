@@ -498,14 +498,16 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_jpk_folder</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module to load .jpk AFM data files from a folder into Python NumPy arrays.</span>
 
 <span class="sd">Files contained within the same folder are read together.</span>
 <span class="sd">Files read with the height data in nm.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -513,13 +515,26 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFMReader.jpk</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_jpk</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_frame_metadata</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1"># ratio 1.0 for standard scanning</span>
+<span class="c1"># ratio 0.5 for bidirectional scanning</span>
+<span class="n">_BIDIRECTIONAL_RATIO_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.7</span>
+
+<span class="n">TAG_START_DATE</span> <span class="o">=</span> <span class="s2">"32771"</span>
+<span class="n">TAG_END_DATE</span> <span class="o">=</span> <span class="s2">"32774"</span>
+<span class="n">TAG_SETTINGS</span> <span class="o">=</span> <span class="s2">"32791"</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_scan_rate</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the scan rate in lines per second from a .jpk image file.</span>
+
+<span class="sd">    This is the 'Scanrate-Frequency' tag in the JPK TIFF metadata (tag 0x8049) and</span>
+<span class="sd">    covers the whole trace and retrace including the overscan. For bidirectional</span>
+<span class="sd">    scanning, the effective scan rate of the image is half this value.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -530,11 +545,146 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        The scan rate of the image in fast scan lines per second.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">&quot;32841&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">"32841"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
         <span class="p">)</span>  <span class="c1"># Return the Scan Rate attribute from the tiff tag value.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_jpk_date</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Parse a JPK date tag ('yyyy-MM-dd HH:mm:ss[.SSS] zz') to a naive datetime.</span>
+
+<span class="sd">    Keeps milliseconds when present, drops the trailing timezone abbreviation,</span>
+<span class="sd">    and tolerates files without the fractional-seconds part.</span>
+<span class="sd">    """</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[:</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># drop 'BST'/'GMT'</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S.</span><span class="si">%f</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S"</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unparseable JPK date: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_frame_times</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="n">datetime</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extract frame start and end times from a .jpk image file metadata.</span>
+
+<span class="sd">    (start, end) datetimes of one image, from StartDate (0x8003 hex, 32771 dec) /</span>
+<span class="sd">    EndDate (0x8006 hex, 32774 dec). And convert to naive datetimes (drop timezone).</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
+        <span class="n">tg</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span>
+        <span class="k">return</span> <span class="n">_parse_jpk_date</span><span class="p">(</span><span class="n">tg</span><span class="p">[</span><span class="n">TAG_START_DATE</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="n">_parse_jpk_date</span><span class="p">(</span>
+            <span class="n">tg</span><span class="p">[</span><span class="n">TAG_END_DATE</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_epoch_ms</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Naive JPK datetime -&gt; Unix epoch ms (naive assumed UTC)."""</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="kc">None</span> <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bidirectional_from_timing</span><span class="p">(</span>
+    <span class="n">duration_s</span><span class="p">,</span> <span class="n">scanrate_hz</span><span class="p">,</span> <span class="n">slow_lines</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="n">_BIDIRECTIONAL_RATIO_THRESHOLD</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Infer bidirectional (interlaced) scanning from frame duration and scan rate.</span>
+
+<span class="sd">    Infer interlace from documented tags only. Interlaced frames take ~half the naive</span>
+<span class="sd">    slow_lines/scanrate time -&gt; ratio ~0.5; normal ~1.0.</span>
+<span class="sd">    """</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">duration_s</span> <span class="o">*</span> <span class="n">scanrate_hz</span> <span class="o">/</span> <span class="n">slow_lines</span>
+    <span class="k">return</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="n">thresh</span><span class="p">,</span> <span class="n">ratio</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bidirectional_from_blob</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read bidirectional (interlaced) scanning from the JPK TIFF metadata settings blob.</span>
+
+<span class="sd">    The 0x8017 (32791) tag contains a text blob with key-value pairs, including</span>
+<span class="sd">    fast-imaging.feed-forward-parameters.yaxis.interlace = true/false which indicates</span>
+<span class="sd">    bidirectional scanning.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
+        <span class="n">tg</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">tg</span><span class="p">[</span><span class="n">TAG_SETTINGS</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="n">TAG_SETTINGS</span> <span class="ow">in</span> <span class="n">tg</span> <span class="k">else</span> <span class="s2">""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">grab</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">"\s*:\s*([^\n]+)"</span><span class="p">,</span> <span class="n">blob</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">yaxis_interlace</span> <span class="o">=</span> <span class="n">grab</span><span class="p">(</span><span class="s2">"fast-imaging.feed-forward-parameters.yaxis.interlace"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">yaxis_interlace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"Interlace setting not found in </span><span class="si">%s</span><span class="s2">. Assuming False (likely not HS)."</span><span class="p">,</span>
+            <span class="n">jpk_file</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">yaxis_interlace</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_frame_timing</span><span class="p">(</span>
+    <span class="n">jpk_files</span><span class="p">,</span> <span class="n">lines_per_frame</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Per-frame timestamps (s from first frame) and durations (s).</span>
+
+<span class="sd">    Primary: real StartDate/EndDate tags (ms precision, correct for interlaced and</span>
+<span class="sd">    standard alike, and captures real inter-frame jitter / dropped frames).</span>
+<span class="sd">    Fallback (if any date is unreadable): scan-rate timing, halved when interlaced.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If any frame contains unreadable or missing StartDate/EndDate metadata,</span>
+<span class="sd">    timing falls back to scan-rate estimation for the entire stack to ensure</span>
+<span class="sd">    a consistent timestamp source across all frames.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">_frame_times</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">jpk_files</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">starts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">s</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">starts</span><span class="p">])</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">e</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">_extract_scan_rate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># lines per second</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"No StartDate/EndDate and no scan rate in </span><span class="si">{</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">; "</span>
+                <span class="sa">f</span><span class="s2">"cannot time frames."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"One or more JPK StartDate/EndDate tags were unreadable (</span><span class="si">%s</span><span class="s2">); "</span>
+            <span class="s2">"using scan-rate timing for the entire stack."</span><span class="p">,</span>
+            <span class="n">exc</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">lines_per_frame</span> <span class="o">/</span> <span class="n">rate</span>
+        <span class="k">if</span> <span class="n">_bidirectional_from_blob</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">interval</span> <span class="o">/=</span> <span class="mf">2.0</span>  <span class="c1"># bidirectional images at ~2x</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">))</span> <span class="o">*</span> <span class="n">interval</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">),</span> <span class="n">interval</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">timestamps</span><span class="p">,</span> <span class="n">durations</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">starts</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_scan_direction</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read scan direction from JPK TIFF Motion tag (0x804B / 32843).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Typically 'bottomUp' or 'topDown'.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">"32843"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="load_jpk_folder">
@@ -542,10 +692,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">load_jpk_folder</span><span class="p">(</span>
     <span class="n">folder_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flip_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an AFM video from a folder of individual .jpk image files.</span>
 
-<span class="sd">    AFMReader converts &quot;height&quot;, &quot;measuredHeight&quot; and &quot;amplitude&quot; channels to nm.</span>
+<span class="sd">    AFMReader converts "height", "measuredHeight" and "amplitude" channels to nm.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -560,66 +710,76 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory."</span><span class="p">)</span>
 
-    <span class="n">jpk_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.jpk&quot;</span><span class="p">))</span>
+    <span class="n">jpk_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.jpk"</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">jpk_files</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No .jpk files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No .jpk files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .jpk files.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .jpk files."</span><span class="p">)</span>
 
-    <span class="c1"># Load first image to get shape and pixel size</span>
+    <span class="c1"># Load first image to get shape, pixel size and scan rate</span>
     <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span> <span class="o">=</span> <span class="n">load_jpk</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">flip_image</span><span class="p">:</span>
-        <span class="n">first_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">first_img</span><span class="p">)</span>
+
     <span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span> <span class="o">=</span> <span class="n">first_img</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">first_img</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="n">scan_rate</span> <span class="o">=</span> <span class="n">_extract_scan_rate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="c1"># Preallocate image stack</span>
     <span class="n">num_frames</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span>
     <span class="n">image_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_frames</span><span class="p">,</span> <span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="c1"># Extract metadata from first image</span>
-    <span class="c1"># Line rate and timestamps</span>
-    <span class="n">line_rate</span> <span class="o">=</span> <span class="n">_extract_scan_rate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># lines per second</span>
-    <span class="n">lines_per_frame</span> <span class="o">=</span> <span class="n">height_px</span>  <span class="c1"># number of fast scan lines in an image</span>
-    <span class="n">frame_rate</span> <span class="o">=</span> <span class="n">line_rate</span> <span class="o">/</span> <span class="n">lines_per_frame</span>  <span class="c1"># frames per second</span>
-    <span class="n">frame_interval</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">frame_rate</span>  <span class="c1"># time taken per frame</span>
-    <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame_interval</span>
+    <span class="c1"># Real per-frame timing (ms precision) with interlace-aware fallback</span>
+    <span class="n">timestamps</span><span class="p">,</span> <span class="n">frame_durations</span><span class="p">,</span> <span class="n">starts</span> <span class="o">=</span> <span class="n">_frame_timing</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">,</span> <span class="n">height_px</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">starts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># dates present -&gt; documented-tag inference</span>
+        <span class="n">bidirectional</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_bidirectional_from_timing</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">frame_durations</span><span class="p">)),</span>
+            <span class="n">scan_rate</span><span class="p">,</span>
+            <span class="n">height_px</span><span class="p">,</span>  <span class="c1"># height_px = slow_lines per frame</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># dates missing -&gt; we already fell back; blob</span>
+        <span class="n">bidirectional</span> <span class="o">=</span> <span class="n">_bidirectional_from_blob</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Load all images</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">):</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="n">timestamps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span> <span class="o">=</span> <span class="n">load_jpk</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">flip_image</span><span class="p">:</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="n">image_stack</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
 
+        <span class="n">scan_direction</span> <span class="o">=</span> <span class="n">_scan_direction</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+
         <span class="c1"># Compose per-frame metadata list</span>
         <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
-                <span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">:</span> <span class="n">px_size_nm</span><span class="p">,</span>
-                <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">,</span>
-            <span class="p">}</span>
+            <span class="n">build_frame_metadata</span><span class="p">(</span>
+                <span class="n">timestamp</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                <span class="n">frame_pixel_size_nm</span><span class="o">=</span><span class="n">px_size_nm</span><span class="p">,</span>
+                <span class="n">line_rate</span><span class="o">=</span><span class="n">scan_rate</span><span class="p">,</span>
+                <span class="n">frame_duration_s</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">frame_durations</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                <span class="n">start_epoch_ms</span><span class="o">=</span><span class="n">_to_epoch_ms</span><span class="p">(</span><span class="n">starts</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                <span class="n">scan_direction</span><span class="o">=</span><span class="n">scan_direction</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+    <span class="n">afm</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
         <span class="n">data</span><span class="o">=</span><span class="n">image_stack</span><span class="p">,</span>
-        <span class="n">pixel_size_nm</span><span class="o">=</span><span class="n">first_pixel_size_nm</span><span class="p">,</span>
+        <span class="n">pixel_size_nm</span><span class="o">=</span><span class="n">first_pixel_size_nm</span><span class="p">,</span>  <span class="c1"># stack-level fallback/reference value</span>
         <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
         <span class="n">file_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">folder</span><span class="p">),</span>
         <span class="n">frame_metadata</span><span class="o">=</span><span class="n">frame_metadata</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+    <span class="n">afm</span><span class="o">.</span><span class="n">acquisition</span><span class="p">[</span><span class="s2">"bidirectional"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">bidirectional</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">afm</span></div>
 
 </pre></div>
         </article>

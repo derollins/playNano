@@ -498,107 +498,201 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_asd</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Module to decode and load .asd high speed AFM data files into Python NumPy arrays.</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Module to decode and load .asd high-speed AFM data files as an AFMImageStack.</span>
 
-<span class="sd">Files containing multiple image frames are read together.</span>
-<span class="sd">Converts the height data into nm from another metric unit (e.g. m).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Files containing multiple image frames are read together. Height data (channel</span>
+<span class="sd">'TP') is converted to nm from the guessed source unit.</span>
+
+<span class="sd">Timing (per-frame): asd files record a uniform frame time in the header, so</span>
+<span class="sd">``timestamp`` (seconds from frame 0) and ``frame_duration_s`` are the same for</span>
+<span class="sd">every frame. Absolute time (``start_epoch_ms``) is derived from the header</span>
+<span class="sd">date, which is the END of acquisition (the file's write time), backdated by</span>
+<span class="sd">``num_frames * frame_duration_s`` to place frame 0 at the true start.</span>
+
+<span class="sd">Frame direction (``scan_direction``) is left as None, asd files don't encode</span>
+<span class="sd">slow-axis direction. Anecdotally, the asd ``scan_direction`` is usually topDown</span>
+<span class="sd">(or Ygo).</span>
+
+<span class="sd">The asd ``scan_direction`` integer in the header encodes an acquisition mode</span>
+<span class="sd">plus channel-1 fast-axis direction, although I've not found formal documentation</span>
+<span class="sd">of this. The raw value, file version and channel signature are preserved in</span>
+<span class="sd">``stack.acquisition`` for later decoding.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFMReader.asd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_asd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_height_units_to_nm</span><span class="p">,</span> <span class="n">guess_height_data_units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">build_frame_metadata</span><span class="p">,</span>
+    <span class="n">convert_height_units_to_nm</span><span class="p">,</span>
+    <span class="n">guess_height_data_units</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert height data to nanometers if the channel is topography (&quot;TP&quot;).</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert topography data to nanometres, guessing the source unit from data range.</span>
 
-<span class="sd">    Attempts to guess the unit from data range; defaults to &#39;nm&#39; on failure.</span>
+<span class="sd">    Only converts when ``channel`` is 'TP' (topography); other channels</span>
+<span class="sd">    (error, phase) are returned unchanged. Guessing failure falls back to 'nm'.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    image_stack : np.ndarray</span>
 <span class="sd">        AFM height data array (2D or 3D).</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel name; must be &quot;TP&quot; to trigger conversion.</span>
+<span class="sd">        Channel name; must be 'TP' to trigger conversion.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The (possibly rescaled) image stack.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">height_unit</span> <span class="o">=</span> <span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">image_stack</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Guessed that the height unit is </span><span class="si">{</span><span class="n">height_unit</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">&quot;nm&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to guess height unit, defaulting to &#39;nm&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">height_unit</span> <span class="o">=</span> <span class="s2">"nm"</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to guess height unit, defaulting to 'nm': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s2">&quot;TP&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s2">"TP"</span><span class="p">:</span>
         <span class="n">image_stack</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">height_unit</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">image_stack</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sniff_file_version</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Infer the asd file version from AFMReader's header dict.</span>
+
+<span class="sd">    AFMReader's ``load_asd`` doesn't return the version, so infer it from</span>
+<span class="sd">    keys that differ between the version-0/1/2 parsers. Best-effort; returns</span>
+<span class="sd">    ``None`` if the header shape doesn't match any known version.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="s2">"number_of_frames"</span> <span class="ow">in</span> <span class="n">asd_metadata</span><span class="p">:</span>  <span class="c1"># v2 adds this extra key at the end</span>
+        <span class="k">return</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="s2">"x_rounding_degree"</span> <span class="ow">in</span> <span class="n">asd_metadata</span><span class="p">:</span>  <span class="c1"># v1 splits rounding into x/y</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="s2">"rounding_degree"</span> <span class="ow">in</span> <span class="n">asd_metadata</span><span class="p">:</span>  <span class="c1"># v0 has a single rounding value</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_start_epoch_ms</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">total_duration_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Derive frame 0's start time as Unix epoch ms.</span>
+
+<span class="sd">    The asd header's date fields record when the file was written — i.e. when</span>
+<span class="sd">    the LAST frame finished — not when acquisition started. Backdate by</span>
+<span class="sd">    ``total_duration_s`` to place frame 0. Naive local time assumed UTC, with</span>
+<span class="sd">    second precision (see readme).</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">end_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"year"</span><span class="p">],</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"month"</span><span class="p">],</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"day"</span><span class="p">],</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">],</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">],</span>
+            <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"second"</span><span class="p">],</span>
+            <span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">start_dt</span> <span class="o">=</span> <span class="n">end_dt</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">total_duration_s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_dt</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="load_asd_file">
 <a class="viewcode-back" href="../../../../api/playnano.io.formats.read_asd.html#playnano.io.formats.read_asd.load_asd_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_asd_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Load image stack from an .asd file scaled to nanometers.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Load an .asd HS-AFM file into an AFMImageStack, with height data in nm.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    file_path : Path | str</span>
 <span class="sd">        Path to the .asd file.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to extract.</span>
+<span class="sd">        Channel to extract ('TP' topography, 'ER' error, or 'PH' phase).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        Loaded stack.</span>
+
+<span class="sd">        Data is held in ``data`` as a 3D array (N, H, W). The stack's</span>
+<span class="sd">        ``pixel_size_nm`` is the constant pixel size in nanometres, and</span>
+<span class="sd">        ``channel`` is the channel name.</span>
+
+<span class="sd">        Per-frame ``frame_metadata`` populates ``timestamp``,</span>
+<span class="sd">        ``frame_pixel_size_nm``, ``line_rate``, ``frame_duration_s`` and</span>
+<span class="sd">        ``start_epoch_ms``; ``scan_direction`` stays None.</span>
+
+<span class="sd">        Stack-level ``acquisition`` records asd-specific provenance:</span>
+<span class="sd">        ``asd_file_version``, ``asd_scan_direction_raw`` (undecoded int),</span>
+<span class="sd">        ``asd_channels`` (tuple). ``bidirectional`` is not set, asd files</span>
+<span class="sd">        don't encode slow-axis alternation.</span>
+<span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 
     <span class="c1"># Read .asd data and header</span>
     <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">asd_metadata</span> <span class="o">=</span> <span class="n">load_asd</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
-
     <span class="n">image_stack</span> <span class="o">=</span> <span class="n">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
 
-    <span class="n">frame_time</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;frame_time&quot;</span><span class="p">]</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;y_pixels&quot;</span><span class="p">]</span>
-    <span class="n">num_frames</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="p">[</span><span class="s2">&quot;num_frames&quot;</span><span class="p">]</span>
+    <span class="c1"># --- Timing ---</span>
+    <span class="c1"># Variable scan sizes / pixel sizes aren't allowed within a single .asd</span>
+    <span class="c1"># file, and frame_time is a single header value, so all per-frame values</span>
+    <span class="c1"># here are constants of the stack.</span>
+    <span class="n">frame_duration_s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"frame_time"</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1000.0</span>  <span class="c1"># ms -&gt; s</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"y_pixels"</span><span class="p">])</span>
+    <span class="n">num_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"num_frames"</span><span class="p">])</span>
+    <span class="n">line_rate</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="n">frame_duration_s</span>  <span class="c1"># lines per second</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame_duration_s</span>
+    <span class="n">base_epoch_ms</span> <span class="o">=</span> <span class="n">_start_epoch_ms</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">,</span> <span class="n">num_frames</span> <span class="o">*</span> <span class="n">frame_duration_s</span><span class="p">)</span>
 
-    <span class="n">line_rate</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="p">(</span><span class="n">frame_time</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># lines per second</span>
-    <span class="n">frame_interval</span> <span class="o">=</span> <span class="n">lines</span> <span class="o">/</span> <span class="n">line_rate</span>  <span class="c1"># seconds per frame (lines / lines per second)</span>
-    <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span> <span class="o">*</span> <span class="n">frame_interval</span>
-
-    <span class="c1"># Compose per-frame metadata list</span>
-    <span class="c1"># Variable scan sizes/ pixel sizes not allowed in .asd files- simply use</span>
-    <span class="c1"># pixel_size_nm in all frame_metadata dictionaries.</span>
-    <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
-        <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
-                <span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">:</span> <span class="n">pixel_size_nm</span><span class="p">,</span>
-                <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">,</span>
-            <span class="p">}</span>
+    <span class="c1"># --- Per-frame metadata ---</span>
+    <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">build_frame_metadata</span><span class="p">(</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+            <span class="n">frame_pixel_size_nm</span><span class="o">=</span><span class="n">pixel_size_nm</span><span class="p">,</span>
+            <span class="n">line_rate</span><span class="o">=</span><span class="n">line_rate</span><span class="p">,</span>
+            <span class="n">frame_duration_s</span><span class="o">=</span><span class="n">frame_duration_s</span><span class="p">,</span>
+            <span class="n">start_epoch_ms</span><span class="o">=</span><span class="p">(</span>
+                <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">base_epoch_ms</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="n">base_epoch_ms</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">frame_duration_s</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+            <span class="p">),</span>
+            <span class="n">scan_direction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># not encoded in asd</span>
         <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span>
+    <span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+    <span class="n">afm</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
         <span class="n">data</span><span class="o">=</span><span class="n">image_stack</span><span class="p">,</span>
         <span class="n">pixel_size_nm</span><span class="o">=</span><span class="n">pixel_size_nm</span><span class="p">,</span>
         <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
         <span class="n">file_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span>
         <span class="n">frame_metadata</span><span class="o">=</span><span class="n">frame_metadata</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+
+    <span class="c1"># --- Stack-level acquisition provenance ---</span>
+    <span class="c1"># AFMReader returns '' for an unused channel slot; normalise to None.</span>
+    <span class="n">ch1</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel1"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">ch2</span> <span class="o">=</span> <span class="n">asd_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel2"</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">afm</span><span class="o">.</span><span class="n">acquisition</span><span class="p">[</span><span class="s2">"asd_file_version"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_sniff_file_version</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">)</span>
+    <span class="n">afm</span><span class="o">.</span><span class="n">acquisition</span><span class="p">[</span><span class="s2">"asd_scan_direction_raw"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">asd_metadata</span><span class="p">[</span><span class="s2">"scan_direction"</span><span class="p">])</span>
+    <span class="c1"># AFMReader only allows the opening of one channel if they are both topography,</span>
+    <span class="c1"># but the header has two slots; record both for provenance.</span>
+    <span class="n">afm</span><span class="o">.</span><span class="n">acquisition</span><span class="p">[</span><span class="s2">"asd_channels"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch1</span><span class="p">,</span> <span class="n">ch2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">afm</span></div>
 
 </pre></div>
         </article>

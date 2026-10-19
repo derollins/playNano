@@ -497,7 +497,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.export_data</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Tools for exporting AFM image stacks in multiple formats.</span>
 
 <span class="sd">This module provides utilities for serializing</span>
@@ -512,7 +512,7 @@
 <span class="sd">- **HDF5**: Hierarchical bundle ideal for provenance-rich workflows.</span>
 
 <span class="sd">Each export supports both *filtered* and *raw* modes.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -542,7 +542,7 @@
 <div class="viewcode-block" id="check_path_is_path">
 <a class="viewcode-back" href="../../../api/playnano.io.export_data.html#playnano.io.export_data.check_path_is_path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">check_path_is_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ensure the input is returned as a ``pathlib.Path``.</span>
 
 <span class="sd">    Converts strings to ``Path`` objects. Raises ``TypeError`` for unsupported types.</span>
@@ -561,13 +561,13 @@
 <span class="sd">    ------</span>
 <span class="sd">    TypeError</span>
 <span class="sd">        If the input is not a ``str`` or ``Path``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> to Path object.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Converting </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> to Path object."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">path</span>
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> is not a string or Path.&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> is not a string or Path."</span><span class="p">)</span></div>
 
 
 
@@ -579,7 +579,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">save_ome_tiff_stack</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save an :class:`~playNano.afm_stack.AFMImageStack` as an OME-TIFF file.</span>
 
 <span class="sd">    The OME-TIFF export embeds image data, pixel calibration, timestamps,</span>
@@ -603,12 +603,12 @@
 <span class="sd">        The AFM image stack to export.</span>
 <span class="sd">    raw : bool, optional</span>
 <span class="sd">        If True, export the unprocessed raw snapshot</span>
-<span class="sd">        (``processed[&#39;raw&#39;]`` if present). Otherwise, export the current</span>
+<span class="sd">        (``processed['raw']`` if present). Otherwise, export the current</span>
 <span class="sd">        data in ``.data`` with all processing applied.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - Each frame&#39;s timestamp is stored in the OME metadata as ``DeltaT``.</span>
+<span class="sd">    - Each frame's timestamp is stored in the OME metadata as ``DeltaT``.</span>
 <span class="sd">    - The pixel size (in nm) is converted to micrometres for OME compliance.</span>
 <span class="sd">    - The exported file includes additional TIFF tags:</span>
 
@@ -622,21 +622,21 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from pathlib import Path</span>
 <span class="sd">    &gt;&gt;&gt; from playnano.io.export_data import save_ome_tiff_stack</span>
-<span class="sd">    &gt;&gt;&gt; save_ome_tiff_stack(Path(&quot;output/stack.ome.tif&quot;), stack)</span>
-<span class="sd">    &gt;&gt;&gt; save_ome_tiff_stack(Path(&quot;output/raw_stack.ome.tif&quot;), stack, raw=True)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; save_ome_tiff_stack(Path("output/stack.ome.tif"), stack)</span>
+<span class="sd">    &gt;&gt;&gt; save_ome_tiff_stack(Path("output/raw_stack.ome.tif"), stack, raw=True)</span>
+<span class="sd">    """</span>
 
     <span class="c1"># --- Select data and timestamps ---</span>
-    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span>
         <span class="n">meta_src</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
+            <span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">data</span>
         <span class="n">meta_src</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">frame_metadata</span>
 
-    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
 
     <span class="c1"># --- Reshape to 5D (T,C,Z,Y,X) ---</span>
     <span class="n">data_5d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
@@ -644,29 +644,29 @@
 
     <span class="c1"># --- Metadata ---</span>
     <span class="n">provenance_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-    <span class="n">processed_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="n">processed_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="n">channel</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">channel</span>
-    <span class="n">planes</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;DeltaT&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
+    <span class="n">planes</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"DeltaT"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
 
-    <span class="n">pixel_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
+    <span class="n">pixel_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">pixel_sizes</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;pixel_size_nm is not consistent across frames &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;(min=</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">pixel_sizes</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, max=</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">pixel_sizes</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> nm).&quot;</span>
+            <span class="sa">f</span><span class="s2">"pixel_size_nm is not consistent across frames "</span>
+            <span class="sa">f</span><span class="s2">"(min=</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">pixel_sizes</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, max=</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">pixel_sizes</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> nm)."</span>
         <span class="p">)</span>
 
     <span class="n">ome_metadata</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;axes&quot;</span><span class="p">:</span> <span class="s2">&quot;TCZYX&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PhysicalSizeX&quot;</span><span class="p">:</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
-        <span class="s2">&quot;PhysicalSizeY&quot;</span><span class="p">:</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
-        <span class="s2">&quot;PhysicalSizeZ&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="s2">&quot;TimeIncrement&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"axes"</span><span class="p">:</span> <span class="s2">"TCZYX"</span><span class="p">,</span>
+        <span class="s2">"PhysicalSizeX"</span><span class="p">:</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="s2">"PhysicalSizeY"</span><span class="p">:</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="s2">"PhysicalSizeZ"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"TimeIncrement"</span><span class="p">:</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">timestamps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">timestamps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.0</span>
         <span class="p">),</span>
-        <span class="s2">&quot;Plane&quot;</span><span class="p">:</span> <span class="n">planes</span><span class="p">,</span>
-        <span class="s2">&quot;Channel&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">}],</span>
+        <span class="s2">"Plane"</span><span class="p">:</span> <span class="n">planes</span><span class="p">,</span>
+        <span class="s2">"Channel"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"Name"</span><span class="p">:</span> <span class="n">channel</span><span class="p">}],</span>
     <span class="p">}</span>
 
     <span class="n">extratags</span> <span class="o">=</span> <span class="p">[</span>
@@ -679,15 +679,15 @@
     <span class="n">tifffile</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
         <span class="n">data_5d</span><span class="p">,</span>
-        <span class="n">photometric</span><span class="o">=</span><span class="s2">&quot;minisblack&quot;</span><span class="p">,</span>
+        <span class="n">photometric</span><span class="o">=</span><span class="s2">"minisblack"</span><span class="p">,</span>
         <span class="n">metadata</span><span class="o">=</span><span class="n">ome_metadata</span><span class="p">,</span>
         <span class="n">ome</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">resolution</span><span class="o">=</span><span class="p">(</span><span class="n">dpi</span><span class="p">,</span> <span class="n">dpi</span><span class="p">),</span>
-        <span class="n">resolutionunit</span><span class="o">=</span><span class="s2">&quot;INCH&quot;</span><span class="p">,</span>
+        <span class="n">resolutionunit</span><span class="o">=</span><span class="s2">"INCH"</span><span class="p">,</span>
         <span class="n">extratags</span><span class="o">=</span><span class="n">extratags</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote OME-TIFF → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Wrote OME-TIFF → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -699,7 +699,7 @@
 <div class="viewcode-block" id="save_npz_bundle">
 <a class="viewcode-back" href="../../../api/playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_npz_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save :class:`~playNano.afm_stack.AFMImageStack` with metadata as a `.npz` bundle.</span>
 
 <span class="sd">    The NPZ archive consolidates the AFM stack data, metadata, provenance,</span>
@@ -733,7 +733,7 @@
 <span class="sd">    - ``state_backups_json`` is only included if the stack defines a ``state_backups``</span>
 <span class="sd">      attribute.</span>
 <span class="sd">    - When ``raw=True``, timestamps are taken from</span>
-<span class="sd">      ``state_backups[&#39;frame_metadata_before_edit&#39;]`` (if available),</span>
+<span class="sd">      ``state_backups['frame_metadata_before_edit']`` (if available),</span>
 <span class="sd">      otherwise from ``.frame_metadata``.</span>
 <span class="sd">    - Provenance is serialized using</span>
 <span class="sd">      :func:`~playNano.utils.io_utils.make_json_safe`</span>
@@ -745,49 +745,49 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from pathlib import Path</span>
 <span class="sd">    &gt;&gt;&gt; from playnano.io.export_data import save_npz_bundle</span>
-<span class="sd">    &gt;&gt;&gt; save_npz_bundle(Path(&quot;output/stack_export&quot;), stack)</span>
-<span class="sd">    &gt;&gt;&gt; save_npz_bundle(Path(&quot;output/raw_only&quot;), stack, raw=True)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.npz&quot;</span><span class="p">)</span>
+<span class="sd">    &gt;&gt;&gt; save_npz_bundle(Path("output/stack_export"), stack)</span>
+<span class="sd">    &gt;&gt;&gt; save_npz_bundle(Path("output/raw_only"), stack, raw=True)</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".npz"</span><span class="p">)</span>
     <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># --- Core metadata ---</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
     <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">make_json_safe</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">)</span>
-    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
     <span class="n">arrays</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;pixel_size_nm&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-        <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="n">channel</span><span class="p">,</span>
-        <span class="s2">&quot;frame_metadata_json&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
-        <span class="s2">&quot;provenance_json&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+        <span class="s2">"pixel_size_nm"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+        <span class="s2">"channel"</span><span class="p">:</span> <span class="n">channel</span><span class="p">,</span>
+        <span class="s2">"frame_metadata_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+        <span class="s2">"provenance_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
     <span class="p">}</span>
 
     <span class="c1"># only save state_backups if it exists</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">&quot;state_backups&quot;</span><span class="p">):</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;state_backups_json&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"state_backups"</span><span class="p">):</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"state_backups_json"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span>
         <span class="p">)</span>
 
     <span class="c1"># --- Data and optional layers ---</span>
-    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span>
-        <span class="n">meta_src</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">&quot;state_backups&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span>
+        <span class="n">meta_src</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"state_backups"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span>
         <span class="p">)</span>
-        <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"timestamps"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;timestamps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">get_frame_times</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"timestamps"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">get_frame_times</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">arrays</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;processed__</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">arrays</span><span class="p">[</span><span class="sa">f</span><span class="s2">"processed__</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">arrays</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;masks__</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">arrays</span><span class="p">[</span><span class="sa">f</span><span class="s2">"masks__</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
     <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="o">**</span><span class="n">arrays</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote NPZ bundle → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Wrote NPZ bundle → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -797,7 +797,7 @@
 <div class="viewcode-block" id="save_h5_bundle">
 <a class="viewcode-back" href="../../../api/playnano.io.export_data.html#playnano.io.export_data.save_h5_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_h5_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save an :class:`~playnano.afm_stack.AFMImageStack` and metadata as an HDF5 bundle.</span>
 
 <span class="sd">    The hierarchical layout preserves round-trip reconstruction fidelity and stores</span>
@@ -830,73 +830,73 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : Path</span>
-<span class="sd">        Destination path for the HDF5 file. The &#39;.h5&#39; suffix will be added</span>
+<span class="sd">        Destination path for the HDF5 file. The '.h5' suffix will be added</span>
 <span class="sd">        automatically.</span>
 <span class="sd">    stack : AFMImageStack</span>
 <span class="sd">        The stack to export.</span>
 <span class="sd">    raw : bool, optional</span>
-<span class="sd">        If True, only the unprocessed raw snapshot (`processed[&#39;raw&#39;]`) is exported.</span>
+<span class="sd">        If True, only the unprocessed raw snapshot (`processed['raw']`) is exported.</span>
 <span class="sd">        Otherwise, the full `.data`, masks, and processed layers are included.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    * `state_backups_json` is only created if the stack has a non-empty</span>
 <span class="sd">      `state_backups` attribute.</span>
-<span class="sd">    * Timestamps are taken from `state_backups[&#39;frame_metadata_before_edit&#39;]`</span>
+<span class="sd">    * Timestamps are taken from `state_backups['frame_metadata_before_edit']`</span>
 <span class="sd">      if exporting raw data, otherwise from `.frame_metadata`.</span>
 <span class="sd">    * Provenance is sanitized via</span>
 <span class="sd">      :func:`~playnano.analysis.utils.common.make_json_safe`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">check_path_is_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.h5&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">check_path_is_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".h5"</span><span class="p">)</span>
     <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="c1"># --- Core data ---</span>
-        <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                <span class="s2">&quot;data&quot;</span><span class="p">,</span>
-                <span class="n">data</span><span class="o">=</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-                <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+                <span class="s2">"data"</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">compression</span><span class="o">=</span><span class="s2">"gzip"</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">meta_src</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span>
+                <span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span>
+                <span class="s2">"data"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">"gzip"</span>
             <span class="p">)</span>
 
-            <span class="n">proc_grp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;processed&quot;</span><span class="p">)</span>
+            <span class="n">proc_grp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"processed"</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">proc_grp</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                    <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">"gzip"</span>
                 <span class="p">)</span>
 
-            <span class="n">mask_grp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">)</span>
+            <span class="n">mask_grp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"masks"</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">mask_grp</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">)</span>
+                <span class="n">mask_grp</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span> <span class="n">compression</span><span class="o">=</span><span class="s2">"gzip"</span><span class="p">)</span>
 
             <span class="n">meta_src</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span>
 
-        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">timestamps</span><span class="p">)</span>
+        <span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">md</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"timestamps"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">timestamps</span><span class="p">)</span>
 
         <span class="c1"># --- JSON metadata ---</span>
         <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">make_json_safe</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">)</span>
-        <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
 
-        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;frame_metadata_json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">meta_src</span><span class="p">)))</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;provenance_json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">))</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">&quot;state_backups&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"frame_metadata_json"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">meta_src</span><span class="p">)))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"provenance_json"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"state_backups"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                <span class="s2">&quot;state_backups_json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="p">))</span>
+                <span class="s2">"state_backups_json"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bytes_</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="p">))</span>
             <span class="p">)</span>
 
         <span class="c1"># --- Root attributes ---</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;pixel_size_nm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pixel_size_nm</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">channel</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"pixel_size_nm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pixel_size_nm</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">channel</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote </span><span class="si">{</span><span class="s1">&#39;raw &#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">HDF5 bundle → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Wrote </span><span class="si">{</span><span class="s1">'raw '</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">HDF5 bundle → </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -912,7 +912,7 @@
     <span class="n">formats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Export an :class:`AFMImageStack` in one or more serialization formats.</span>
 
 <span class="sd">    Parameters</span>
@@ -923,40 +923,40 @@
 <span class="sd">        Target directory for output files.</span>
 <span class="sd">    base_name : str</span>
 <span class="sd">        Base filename (no extension).</span>
-<span class="sd">    formats : list of {&quot;tif&quot;, &quot;npz&quot;, &quot;h5&quot;}</span>
+<span class="sd">    formats : list of {"tif", "npz", "h5"}</span>
 <span class="sd">        Which formats to produce.</span>
 <span class="sd">    raw : bool, optional</span>
-<span class="sd">        If True, exports only the unprocessed raw snapshot, (``.processed[&#39;raw&#39;]``).</span>
+<span class="sd">        If True, exports only the unprocessed raw snapshot, (``.processed['raw']``).</span>
 <span class="sd">        Default is False.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    SystemExit</span>
 <span class="sd">        If an unsupported format string is provided.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">valid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tif&quot;</span><span class="p">,</span> <span class="s2">&quot;npz&quot;</span><span class="p">,</span> <span class="s2">&quot;h5&quot;</span><span class="p">}</span>
+<span class="sd">    """</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"tif"</span><span class="p">,</span> <span class="s2">"npz"</span><span class="p">,</span> <span class="s2">"h5"</span><span class="p">}</span>
     <span class="n">bad</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">formats</span><span class="p">)</span> <span class="o">-</span> <span class="n">valid</span>
     <span class="k">if</span> <span class="n">bad</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported format(s): </span><span class="si">{</span><span class="n">bad</span><span class="si">}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported format(s): </span><span class="si">{</span><span class="n">bad</span><span class="si">}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">output_folder</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+    <span class="n">output_folder</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"output"</span><span class="p">)</span>
     <span class="n">output_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">stem</span> <span class="o">=</span> <span class="n">sanitize_output_name</span><span class="p">(</span>
         <span class="n">base_name</span><span class="p">,</span>
-        <span class="n">Path</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span> <span class="k">if</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span> <span class="k">else</span> <span class="s2">&quot;playnano_export&quot;</span><span class="p">,</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span> <span class="k">if</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span> <span class="k">else</span> <span class="s2">"playnano_export"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;raw&quot;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">):</span>
-        <span class="n">stem</span> <span class="o">+=</span> <span class="s2">&quot;_filtered&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">k</span> <span class="o">!=</span> <span class="s2">"raw"</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">):</span>
+        <span class="n">stem</span> <span class="o">+=</span> <span class="s2">"_filtered"</span>
 
-    <span class="k">if</span> <span class="s2">&quot;tif&quot;</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.ome.tif&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s2">&quot;npz&quot;</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.npz&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s2">&quot;h5&quot;</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="s2">"tif"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.ome.tif"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"npz"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.npz"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"h5"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.h5"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span></div>
 
 </pre></div>
         </article>

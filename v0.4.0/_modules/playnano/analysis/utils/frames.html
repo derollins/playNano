@@ -497,11 +497,11 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.utils.frames</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Frame-based post-processing helpers.</span>
 
 <span class="sd">E.g. summarize per-frame statistics or produce histograms.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -515,7 +515,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">frame_summary_to_dataframe</span><span class="p">(</span>
     <span class="n">features_per_frame</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">dict</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a DataFrame with one row per frame.</span>
 
 <span class="sd">    Summarises number of features, total area, mean intensity, etc.</span>
@@ -523,7 +523,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    features_per_frame : list of lists of dict</span>
-<span class="sd">        As returned by `FeatureDetectionModule.run()[&quot;features_per_frame&quot;]`.</span>
+<span class="sd">        As returned by `FeatureDetectionModule.run()["features_per_frame"]`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -534,18 +534,18 @@
 <span class="sd">          - total_area  (int)</span>
 <span class="sd">          - mean_area   (float)</span>
 <span class="sd">          - mean_intensity (float)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feats</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">features_per_frame</span><span class="p">):</span>
-        <span class="n">areas</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;area&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
-        <span class="n">intensities</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
+        <span class="n">areas</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
+        <span class="n">intensities</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">"mean"</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
         <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;frame_index&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
-                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">),</span>
-                <span class="s2">&quot;total_area&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">areas</span><span class="p">),</span>
-                <span class="s2">&quot;mean_area&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="n">areas</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
-                <span class="s2">&quot;mean_intensity&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"frame_index"</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+                <span class="s2">"n_features"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">),</span>
+                <span class="s2">"total_area"</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">areas</span><span class="p">),</span>
+                <span class="s2">"mean_area"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="n">areas</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">"mean_intensity"</span><span class="p">:</span> <span class="p">(</span>
                     <span class="nb">float</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="n">intensities</span> <span class="k">else</span> <span class="mf">0.0</span>
                 <span class="p">),</span>
             <span class="p">}</span>
@@ -563,7 +563,7 @@
     <span class="n">save_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plot a histogram of a per-frame summary metric.</span>
 
 <span class="sd">    Parameters</span>
@@ -571,7 +571,7 @@
 <span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        As returned by `frame_summary_to_dataframe`.</span>
 <span class="sd">    column : str</span>
-<span class="sd">        Which column to histogram (e.g. &#39;n_features&#39;).</span>
+<span class="sd">        Which column to histogram (e.g. 'n_features').</span>
 <span class="sd">    ax : matplotlib Axes, optional</span>
 <span class="sd">    save_to : Path, optional</span>
 <span class="sd">    bins : int</span>
@@ -580,14 +580,14 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    ax : matplotlib Axes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 
-    <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Histogram of </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Count"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Histogram of </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">save_to</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_to</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>

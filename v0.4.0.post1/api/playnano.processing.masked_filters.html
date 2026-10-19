@@ -509,13 +509,13 @@
 <p>Module for filtering AFM data in NumPy arrays with a boolean mask.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.polynomial_flatten_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#polynomial_flatten_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.polynomial_flatten_masked" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#polynomial_flatten_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.polynomial_flatten_masked" title="Link to this definition">¶</a></dt>
 <dd><p>Fit a 2D polynomial using background (mask==False) and subtract it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Polynomial order. Default order=2.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Polynomial order. Default order=2.</p></li>
 <li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
 </ul>
 </dd>
@@ -526,7 +526,7 @@
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If mask.shape != data.shape or order is not a positive integer.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape or order is not a positive integer.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -556,7 +556,7 @@ False=background (used to fit).</p></li>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If mask.shape != data.shape.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -579,7 +579,7 @@ False=background (used to fit).</p></li>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If mask.shape != data.shape.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape.</p>
 </dd>
 </dl>
 </dd></dl>

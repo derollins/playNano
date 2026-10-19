@@ -498,7 +498,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.system_info</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module containing helper functions for collecting system info.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Module containing helper functions for collecting system info."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
@@ -507,35 +507,35 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.time_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">utc_now_iso</span>
 
 <span class="n">KEY_DEPENDENCIES</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;h5py&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;scipy&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;scikit-learn&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;scikit-image&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;pandas&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Pillow&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;matplotlib&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;afmreader&quot;</span><span class="p">,</span>
+    <span class="s2">"numpy"</span><span class="p">,</span>
+    <span class="s2">"h5py"</span><span class="p">,</span>
+    <span class="s2">"scipy"</span><span class="p">,</span>
+    <span class="s2">"scikit-learn"</span><span class="p">,</span>
+    <span class="s2">"scikit-image"</span><span class="p">,</span>
+    <span class="s2">"pandas"</span><span class="p">,</span>
+    <span class="s2">"Pillow"</span><span class="p">,</span>
+    <span class="s2">"matplotlib"</span><span class="p">,</span>
+    <span class="s2">"afmreader"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="gather_environment_info">
 <a class="viewcode-back" href="../../../api/playnano.utils.system_info.html#playnano.utils.system_info.gather_environment_info">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gather_environment_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gather the system info for provenance records.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Gather the system info for provenance records."""</span>
     <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">utc_now_iso</span><span class="p">(),</span>
-        <span class="s2">&quot;python_version&quot;</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">),</span>
-        <span class="s2">&quot;platform&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">release</span><span class="p">()</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">utc_now_iso</span><span class="p">(),</span>
+        <span class="s2">"python_version"</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">),</span>
+        <span class="s2">"platform"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">release</span><span class="p">()</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">info</span><span class="p">[</span><span class="s2">&quot;playnano_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;playnano&quot;</span><span class="p">)</span>
+        <span class="n">info</span><span class="p">[</span><span class="s2">"playnano_version"</span><span class="p">]</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">"playnano"</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PackageNotFoundError</span><span class="p">:</span>
-        <span class="n">info</span><span class="p">[</span><span class="s2">&quot;playnano_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">info</span><span class="p">[</span><span class="s2">"playnano_version"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="n">KEY_DEPENDENCIES</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pkg</span><span class="si">}</span><span class="s2">_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span>
+            <span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">pkg</span><span class="si">}</span><span class="s2">_version"</span><span class="p">]</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PackageNotFoundError</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="k">return</span> <span class="n">info</span></div>

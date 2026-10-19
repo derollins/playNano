@@ -324,12 +324,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_jpk_folder</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module to load .jpk AFM data files from a folder into Python NumPy arrays.</span>
 
 <span class="sd">Files contained within the same folder are read together.</span>
 <span class="sd">Files read with the height data in nm.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -344,7 +344,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_scan_rate</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the scan rate in lines per second from a .jpk image file.</span>
 
 <span class="sd">    Parameters</span>
@@ -356,10 +356,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        The scan rate of the image in fast scan lines per second.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">jpk_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">&quot;32841&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">"32841"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
         <span class="p">)</span>  <span class="c1"># Return the Scan Rate attribute from the tiff tag value.</span>
 
 
@@ -368,10 +368,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">load_jpk_folder</span><span class="p">(</span>
     <span class="n">folder_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flip_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an AFM video from a folder of individual .jpk image files.</span>
 
-<span class="sd">    AFMReader converts &quot;height&quot;, &quot;measuredHeight&quot; and &quot;amplitude&quot; channels to nm.</span>
+<span class="sd">    AFMReader converts "height", "measuredHeight" and "amplitude" channels to nm.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -386,17 +386,17 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2"> is not a directory."</span><span class="p">)</span>
 
-    <span class="n">jpk_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.jpk&quot;</span><span class="p">))</span>
+    <span class="n">jpk_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.jpk"</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">jpk_files</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No .jpk files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No .jpk files found in </span><span class="si">{</span><span class="n">folder</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .jpk files.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .jpk files."</span><span class="p">)</span>
 
     <span class="c1"># Load first image to get shape and pixel size</span>
     <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span> <span class="o">=</span> <span class="n">load_jpk</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
@@ -419,12 +419,12 @@
 
     <span class="c1"># Load all images</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span> <span class="o">=</span> <span class="n">load_jpk</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">px_size_nm</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent pixel size in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent pixel size in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">flip_image</span><span class="p">:</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="n">image_stack</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
@@ -432,7 +432,7 @@
         <span class="c1"># Compose per-frame metadata list</span>
         <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">:</span>
-            <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">&quot;line_rate&quot;</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
+            <span class="n">frame_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span> <span class="s2">"line_rate"</span><span class="p">:</span> <span class="n">line_rate</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">AFMImageStack</span><span class="p">(</span>
         <span class="n">data</span><span class="o">=</span><span class="n">image_stack</span><span class="p">,</span>

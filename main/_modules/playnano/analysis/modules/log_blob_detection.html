@@ -498,12 +498,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.log_blob_detection</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module for LoG blob detection.</span>
 
-<span class="sd">Detect &quot;blobs&quot; in each frame of an AFM image stack using the Laplacian-of-Gaussian</span>
+<span class="sd">Detect "blobs" in each frame of an AFM image stack using the Laplacian-of-Gaussian</span>
 <span class="sd">method. Provides automatic multi-scale blob detection and optional radius estimation.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -513,7 +513,7 @@
 <div class="viewcode-block" id="LoGBlobDetectionModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.log_blob_detection.html#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LoGBlobDetectionModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect blobs in AFM image stacks using the Laplacian-of-Gaussian (LoG) method.</span>
 
 <span class="sd">    This module applies multi-scale blob detection to each frame in an AFM image stack</span>
@@ -535,23 +535,23 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; module = LoGBlobDetectionModule()</span>
 <span class="sd">    &gt;&gt;&gt; result = module.run(stack, min_sigma=1.0, max_sigma=5.0, num_sigma=10)</span>
-<span class="sd">    &gt;&gt;&gt; result[&#39;summary&#39;][&#39;total_blobs&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; result['summary']['total_blobs']</span>
 <span class="sd">    42</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            The string identifier for this module: &quot;log_blob_detection&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;log_blob_detection&quot;</span>
+<span class="sd">            The string identifier for this module: "log_blob_detection".</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"log_blob_detection"</span>
 
 <div class="viewcode-block" id="LoGBlobDetectionModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.log_blob_detection.html#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run">[docs]</a>
@@ -567,8 +567,8 @@
         <span class="n">overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
         <span class="n">include_radius</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Detect &quot;blobs&quot; in each frame via a Laplacian-of-Gaussian filter.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Detect "blobs" in each frame via a Laplacian-of-Gaussian filter.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -607,7 +607,7 @@
 <span class="sd">                - total_frames : int</span>
 <span class="sd">                - total_blobs : int</span>
 <span class="sd">                - avg_blobs_per_frame : float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">skimage.feature</span><span class="w"> </span><span class="kn">import</span> <span class="n">blob_log</span>
 
         <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
@@ -629,25 +629,25 @@
             <span class="n">feats</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sigma</span> <span class="ow">in</span> <span class="n">blobs</span><span class="p">:</span>
                 <span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;frame_timestamp&quot;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
-                    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
-                    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
-                    <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span><span class="p">),</span>
+                    <span class="s2">"frame_timestamp"</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
+                    <span class="s2">"y"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+                    <span class="s2">"x"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                    <span class="s2">"sigma"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span><span class="p">),</span>
                 <span class="p">}</span>
                 <span class="k">if</span> <span class="n">include_radius</span><span class="p">:</span>
-                    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;radius&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mf">0.5</span><span class="p">))</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s2">"radius"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mf">0.5</span><span class="p">))</span>
                 <span class="n">feats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
             <span class="n">features_per_frame</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
             <span class="n">total</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
 
         <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;total_frames&quot;</span><span class="p">:</span> <span class="n">n_frames</span><span class="p">,</span>
-            <span class="s2">&quot;total_blobs&quot;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
-            <span class="s2">&quot;avg_blobs_per_frame&quot;</span><span class="p">:</span> <span class="n">total</span> <span class="o">/</span> <span class="n">n_frames</span> <span class="k">if</span> <span class="n">n_frames</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"total_frames"</span><span class="p">:</span> <span class="n">n_frames</span><span class="p">,</span>
+            <span class="s2">"total_blobs"</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
+            <span class="s2">"avg_blobs_per_frame"</span><span class="p">:</span> <span class="n">total</span> <span class="o">/</span> <span class="n">n_frames</span> <span class="k">if</span> <span class="n">n_frames</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;features_per_frame&quot;</span><span class="p">:</span> <span class="n">features_per_frame</span><span class="p">,</span>
-            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+            <span class="s2">"features_per_frame"</span><span class="p">:</span> <span class="n">features_per_frame</span><span class="p">,</span>
+            <span class="s2">"summary"</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
 

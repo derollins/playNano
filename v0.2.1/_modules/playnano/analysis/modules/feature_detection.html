@@ -324,11 +324,11 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.feature_detection</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Threshold-based feature detection for AFM image stacks.</span>
 
 <span class="sd">Detect features in each frame of an AFM image stack through thresholding methods.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -347,7 +347,7 @@
 <div class="viewcode-block" id="FeatureDetectionModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.feature_detection.html#playnano.analysis.modules.feature_detection.FeatureDetectionModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FeatureDetectionModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect contiguous features in each frame of an AFM image stack.</span>
 
 <span class="sd">    This module takes either a user-supplied mask function or a pre-computed boolean</span>
@@ -363,7 +363,7 @@
 
 <span class="sd">    mask_key : str, optional</span>
 <span class="sd">        Name of a boolean mask array from a previous analysis (e.g.</span>
-<span class="sd">        `previous_results[&quot;your_mask_key&quot;]`). Required if `mask_fn` is not provided.</span>
+<span class="sd">        `previous_results["your_mask_key"]`). Required if `mask_fn` is not provided.</span>
 
 <span class="sd">    min_size : int</span>
 <span class="sd">        Minimum area (in pixels) for a region to be kept. Default is 10.</span>
@@ -399,12 +399,12 @@
 <span class="sd">        - features_per_frame : list of list of dict</span>
 <span class="sd">          Per-frame list of feature stats dicts, each with:</span>
 
-<span class="sd">            - `&quot;frame_timestamp&quot;` : float</span>
-<span class="sd">            - `&quot;label&quot;`           : int</span>
-<span class="sd">            - `&quot;area&quot;`            : int</span>
-<span class="sd">            - `&quot;min&quot;`, `&quot;max&quot;`, `&quot;mean&quot;` : float</span>
-<span class="sd">            - `&quot;bbox&quot;`            : (min_row, min_col, max_row, max_col)</span>
-<span class="sd">            - `&quot;centroid&quot;`        : (row, col)</span>
+<span class="sd">            - `"frame_timestamp"` : float</span>
+<span class="sd">            - `"label"`           : int</span>
+<span class="sd">            - `"area"`            : int</span>
+<span class="sd">            - `"min"`, `"max"`, `"mean"` : float</span>
+<span class="sd">            - `"bbox"`            : (min_row, min_col, max_row, max_col)</span>
+<span class="sd">            - `"centroid"`        : (row, col)</span>
 
 <span class="sd">        - labeled_masks : list of np.ndarray</span>
 <span class="sd">          The final labeled mask (integer labels) for each frame.</span>
@@ -412,9 +412,9 @@
 <span class="sd">        - summary : dict</span>
 <span class="sd">          Aggregate metrics:</span>
 
-<span class="sd">            - `&quot;total_frames&quot;` : int</span>
-<span class="sd">            - `&quot;total_features&quot;` : int</span>
-<span class="sd">            - `&quot;avg_features_per_frame&quot;` : float</span>
+<span class="sd">            - `"total_frames"` : int</span>
+<span class="sd">            - `"total_features"` : int</span>
+<span class="sd">            - `"avg_features_per_frame"` : float</span>
 
 <span class="sd">    Version</span>
 <span class="sd">    -------</span>
@@ -422,26 +422,26 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; pipeline.add(&quot;feature_detection&quot;, mask_fn=mask_mean_offset, min_size=20,</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20,</span>
 <span class="sd">    ...              fill_holes=True, hole_area=50)</span>
 <span class="sd">    &gt;&gt;&gt; result = pipeline.run(stack)</span>
-<span class="sd">    &gt;&gt;&gt; result[&quot;summary&quot;][&quot;total_features&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; result["summary"]["total_features"]</span>
 <span class="sd">    123</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            The string identifier for this module: &quot;feature_detection&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;feature_detection&quot;</span>
+<span class="sd">            The string identifier for this module: "feature_detection".</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"feature_detection"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask_array</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -451,12 +451,12 @@
         <span class="n">mask_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="o">**</span><span class="n">mask_kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve mask array from previous results or by computing frame-by-frame.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resolve mask array from previous results or by computing frame-by-frame."""</span>
         <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="k">if</span> <span class="n">mask_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">previous_results</span> <span class="ow">or</span> <span class="n">mask_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">previous_results</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mask_key &#39;</span><span class="si">{</span><span class="n">mask_key</span><span class="si">}</span><span class="s2">&#39; not found in previous_results&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mask_key '</span><span class="si">{</span><span class="n">mask_key</span><span class="si">}</span><span class="s2">' not found in previous_results"</span><span class="p">)</span>
             <span class="n">mask_arr</span> <span class="o">=</span> <span class="n">previous_results</span><span class="p">[</span><span class="n">mask_key</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
                 <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask_arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
@@ -464,19 +464,19 @@
                 <span class="ow">and</span> <span class="n">mask_arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;previous_results[</span><span class="si">{</span><span class="n">mask_key</span><span class="si">}</span><span class="s2">] must be a boolean ndarray of shape </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa</span>
+                    <span class="sa">f</span><span class="s2">"previous_results[</span><span class="si">{</span><span class="n">mask_key</span><span class="si">}</span><span class="s2">] must be a boolean ndarray of shape </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa</span>
                 <span class="p">)</span>
             <span class="k">return</span> <span class="n">mask_arr</span>
 
         <span class="k">if</span> <span class="n">mask_fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either mask_fn or mask_key must be provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Either mask_fn or mask_key must be provided"</span><span class="p">)</span>
 
-        <span class="c1"># Resolve mask_fn if it&#39;s a registered string</span>
+        <span class="c1"># Resolve mask_fn if it's a registered string</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask_fn</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">mask_fn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MASK_MAP</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;mask_fn &#39;</span><span class="si">{</span><span class="n">mask_fn</span><span class="si">}</span><span class="s2">&#39; is not a known registered mask. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"mask_fn '</span><span class="si">{</span><span class="n">mask_fn</span><span class="si">}</span><span class="s2">' is not a known registered mask. "</span>
+                    <span class="sa">f</span><span class="s2">"Available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="n">mask_fn</span> <span class="o">=</span> <span class="n">MASK_MAP</span><span class="p">[</span><span class="n">mask_fn</span><span class="p">]</span>
 
@@ -490,7 +490,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
                 <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mf</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span> <span class="ow">and</span> <span class="n">mf</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
             <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mask_fn returned invalid mask for frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mask_fn returned invalid mask for frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">mask_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf</span>
         <span class="k">return</span> <span class="n">mask_arr</span>
 
@@ -505,7 +505,7 @@
         <span class="n">fill_holes</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">hole_area</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a single frame: hole fill, labeling, filtering, stats.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Process a single frame: hole fill, labeling, filtering, stats."""</span>
         <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="c1"># Optionally fill holes</span>
@@ -541,24 +541,24 @@
                 <span class="k">continue</span>
             <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;frame_timestamp&quot;</span><span class="p">:</span> <span class="n">frame_ts</span><span class="p">,</span>
-                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
-                    <span class="s2">&quot;area&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">area</span><span class="p">),</span>
-                    <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
-                    <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
-                    <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
-                    <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">bbox</span><span class="p">)),</span>  <span class="c1"># (minr, minc, maxr, maxc)</span>
-                    <span class="s2">&quot;centroid&quot;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">centroid</span><span class="p">)),</span>
+                    <span class="s2">"frame_timestamp"</span><span class="p">:</span> <span class="n">frame_ts</span><span class="p">,</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+                    <span class="s2">"area"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">area</span><span class="p">),</span>
+                    <span class="s2">"min"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+                    <span class="s2">"max"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+                    <span class="s2">"mean"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+                    <span class="s2">"bbox"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">bbox</span><span class="p">)),</span>  <span class="c1"># (minr, minc, maxr, maxc)</span>
+                    <span class="s2">"centroid"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">centroid</span><span class="p">)),</span>
                 <span class="p">}</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">features</span><span class="p">,</span> <span class="n">labeled</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_summarize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarize results across frames.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Summarize results across frames."""</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;total_frames&quot;</span><span class="p">:</span> <span class="n">n_frames</span><span class="p">,</span>
-            <span class="s2">&quot;total_features&quot;</span><span class="p">:</span> <span class="n">total_features</span><span class="p">,</span>
-            <span class="s2">&quot;avg_features_per_frame&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">"total_frames"</span><span class="p">:</span> <span class="n">n_frames</span><span class="p">,</span>
+            <span class="s2">"total_features"</span><span class="p">:</span> <span class="n">total_features</span><span class="p">,</span>
+            <span class="s2">"avg_features_per_frame"</span><span class="p">:</span> <span class="p">(</span>
                 <span class="n">total_features</span> <span class="o">/</span> <span class="n">n_frames</span> <span class="k">if</span> <span class="n">n_frames</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
             <span class="p">),</span>
         <span class="p">}</span>
@@ -566,9 +566,9 @@
 <div class="viewcode-block" id="FeatureDetectionModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.feature_detection.html#playnano.analysis.modules.feature_detection.FeatureDetectionModule.run">[docs]</a>
     <span class="nd">@param_conditions</span><span class="p">(</span>
-        <span class="n">mask_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mask_key&quot;</span><span class="p">),</span>
-        <span class="n">mask_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mask_fn&quot;</span><span class="p">),</span>
-        <span class="n">hole_area</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fill_holes&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">mask_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mask_key"</span><span class="p">),</span>
+        <span class="n">mask_key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mask_fn"</span><span class="p">),</span>
+        <span class="n">hole_area</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fill_holes"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -588,7 +588,7 @@
         <span class="c1"># kwargs for mask_fn(frame, **mask_kwargs)</span>
         <span class="o">**</span><span class="n">mask_kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Detect contiguous features on each frame of stack.data.</span>
 
 <span class="sd">        Parameters</span>
@@ -623,14 +623,14 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add(&quot;feature_detection&quot;, mask_fn=mask_mean_offset, min_size=20)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20)</span>
 <span class="sd">        &gt;&gt;&gt; result = pipeline.run(stack)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;AFMImageStack has no data&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"AFMImageStack has no data"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stack.data must be a 3D numpy array (n_frames, H, W)&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"stack.data must be a 3D numpy array (n_frames, H, W)"</span><span class="p">)</span>
         <span class="n">n_frames</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="n">mask_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_mask_array</span><span class="p">(</span>
@@ -661,9 +661,9 @@
             <span class="n">total_features</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;features_per_frame&quot;</span><span class="p">:</span> <span class="n">features_per_frame</span><span class="p">,</span>
-            <span class="s2">&quot;labeled_masks&quot;</span><span class="p">:</span> <span class="n">labeled_masks</span><span class="p">,</span>
-            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_summarize</span><span class="p">(</span><span class="n">n_frames</span><span class="p">,</span> <span class="n">total_features</span><span class="p">),</span>
+            <span class="s2">"features_per_frame"</span><span class="p">:</span> <span class="n">features_per_frame</span><span class="p">,</span>
+            <span class="s2">"labeled_masks"</span><span class="p">:</span> <span class="n">labeled_masks</span><span class="p">,</span>
+            <span class="s2">"summary"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_summarize</span><span class="p">(</span><span class="n">n_frames</span><span class="p">,</span> <span class="n">total_features</span><span class="p">),</span>
         <span class="p">}</span></div>
 </div>
 

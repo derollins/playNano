@@ -613,6 +613,7 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.filters.html#playnano.processing.filters.row_median_align"><code class="docutils literal notranslate"><span class="pre">row_median_align()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.filters.html#playnano.processing.filters.vertical_flip"><code class="docutils literal notranslate"><span class="pre">vertical_flip()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.filters.html#playnano.processing.filters.zero_mean"><code class="docutils literal notranslate"><span class="pre">zero_mean()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.processing.filters.html#playnano.processing.filters.zero_median"><code class="docutils literal notranslate"><span class="pre">zero_median()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.processing.mask_generators.html">playnano.processing.mask_generators module</a><ul>
@@ -630,6 +631,7 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.masked_filters.html#playnano.processing.masked_filters.remove_plane_masked"><code class="docutils literal notranslate"><span class="pre">remove_plane_masked()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.masked_filters.html#playnano.processing.masked_filters.row_median_align_masked"><code class="docutils literal notranslate"><span class="pre">row_median_align_masked()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.masked_filters.html#playnano.processing.masked_filters.zero_mean_masked"><code class="docutils literal notranslate"><span class="pre">zero_mean_masked()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.processing.masked_filters.html#playnano.processing.masked_filters.zero_median_masked"><code class="docutils literal notranslate"><span class="pre">zero_median_masked()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.processing.pipeline.html">playnano.processing.pipeline module</a><ul>
@@ -638,6 +640,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.processing.stack_edit.html">playnano.processing.stack_edit module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.stack_edit.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_final_frames"><code class="docutils literal notranslate"><span class="pre">drop_final_frames()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_frame_range"><code class="docutils literal notranslate"><span class="pre">drop_frame_range()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.stack_edit.html#playnano.processing.stack_edit.drop_frames"><code class="docutils literal notranslate"><span class="pre">drop_frames()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.processing.stack_edit.html#playnano.processing.stack_edit.register_stack_edit_processing"><code class="docutils literal notranslate"><span class="pre">register_stack_edit_processing()</span></code></a></li>
@@ -763,13 +766,13 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.utils.constants.html">playnano.utils.constants module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.utils.io_utils.html">playnano.utils.io_utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.build_frame_metadata"><code class="docutils literal notranslate"><span class="pre">build_frame_metadata()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.compute_zscale_range"><code class="docutils literal notranslate"><span class="pre">compute_zscale_range()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.convert_height_units_to_nm"><code class="docutils literal notranslate"><span class="pre">convert_height_units_to_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.decode_hdf5_attr"><code class="docutils literal notranslate"><span class="pre">decode_hdf5_attr()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.guess_height_data_units"><code class="docutils literal notranslate"><span class="pre">guess_height_data_units()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.make_json_safe"><code class="docutils literal notranslate"><span class="pre">make_json_safe()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.normalize_to_uint8"><code class="docutils literal notranslate"><span class="pre">normalize_to_uint8()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.pad_to_square"><code class="docutils literal notranslate"><span class="pre">pad_to_square()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.prepare_output_directory"><code class="docutils literal notranslate"><span class="pre">prepare_output_directory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.sanitize_output_name"><code class="docutils literal notranslate"><span class="pre">sanitize_output_name()</span></code></a></li>
 </ul>

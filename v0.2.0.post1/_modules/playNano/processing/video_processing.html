@@ -272,7 +272,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playNano.processing.video_processing</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Video processing functions for AFM time-series (stacks of frames).</span>
 
 <span class="sd">This module provides functions that operate on 3D numpy arrays</span>
@@ -286,7 +286,7 @@
 <span class="sd">All functions follow a NumPy-style API: input stacks are 3D arrays</span>
 <span class="sd">with shape (n_frames, height, width). Outputs are processed</span>
 <span class="sd">stacks and a metadata dictionary.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
@@ -306,18 +306,18 @@
 
 <div class="viewcode-block" id="align_frames">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.align_frames">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">align_frames</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">reference_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fft_cross_correlation&quot;</span><span class="p">,</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pad&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft_cross_correlation"</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pad"</span><span class="p">,</span>
     <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">max_shift</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">pre_filter_sigma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_jump</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Align a stack of AFM frames to a reference frame using integer-pixel shifts.</span>
 
 <span class="sd">    Alignment is performed using either FFT-based or full cross-correlation.</span>
@@ -332,14 +332,14 @@
 <span class="sd">    reference_frame : int, optional</span>
 <span class="sd">        Index of the frame to use as the alignment reference (default 0). Must be</span>
 <span class="sd">        within [0, n_frames-1].</span>
-<span class="sd">    method : {&quot;fft_cross_correlation&quot;, &quot;full_cross_correlation&quot;}, optional</span>
-<span class="sd">        Alignment method (default &quot;fft_cross_correlation&quot;). FFT-based cross-correlation</span>
+<span class="sd">    method : {"fft_cross_correlation", "full_cross_correlation"}, optional</span>
+<span class="sd">        Alignment method (default "fft_cross_correlation"). FFT-based cross-correlation</span>
 <span class="sd">        is generally faster and uses less memory for large frames.</span>
-<span class="sd">    mode : {&quot;pad&quot;, &quot;crop&quot;, &quot;crop_square&quot;}, optional</span>
+<span class="sd">    mode : {"pad", "crop", "crop_square"}, optional</span>
 <span class="sd">        How to handle borders after shifting:</span>
-<span class="sd">        - &quot;pad&quot;: keep all frames with NaN padding (default)</span>
-<span class="sd">        - &quot;crop&quot;: crop to intersection of all frames</span>
-<span class="sd">        - &quot;crop_square&quot;: crop to largest centered square</span>
+<span class="sd">        - "pad": keep all frames with NaN padding (default)</span>
+<span class="sd">        - "crop": crop to intersection of all frames</span>
+<span class="sd">        - "crop_square": crop to largest centered square</span>
 <span class="sd">    debug : bool, optional</span>
 <span class="sd">        If True, returns additional diagnostic outputs.</span>
 <span class="sd">    max_shift : int, optional</span>
@@ -358,26 +358,26 @@
 <span class="sd">        shifts.</span>
 <span class="sd">    metadata : dict</span>
 <span class="sd">        Dictionary containing alignment information:</span>
-<span class="sd">        - &quot;reference_frame&quot;: int, index of the reference frame</span>
-<span class="sd">        - &quot;method&quot;: str, the alignment method used</span>
-<span class="sd">        - &quot;mode&quot;: str, border approach used</span>
-<span class="sd">        - &quot;shifts&quot;: np.ndarray of shape (n_frames, 2), detected (dy, dx) shifts</span>
-<span class="sd">        - &quot;original_shape&quot;: tuple of (height, width)</span>
-<span class="sd">        - &quot;aligned_shape&quot;: tuple of (height, width) of the output canvas</span>
-<span class="sd">        - &quot;border_mask&quot;: np.ndarray[bool], True where valid frame pixels exist</span>
-<span class="sd">        - &quot;pre_filter_sigma&quot;: float or None</span>
-<span class="sd">        - &quot;max_shift&quot;: int or None</span>
-<span class="sd">        - &quot;max_jump&quot;: int or None</span>
+<span class="sd">        - "reference_frame": int, index of the reference frame</span>
+<span class="sd">        - "method": str, the alignment method used</span>
+<span class="sd">        - "mode": str, border approach used</span>
+<span class="sd">        - "shifts": np.ndarray of shape (n_frames, 2), detected (dy, dx) shifts</span>
+<span class="sd">        - "original_shape": tuple of (height, width)</span>
+<span class="sd">        - "aligned_shape": tuple of (height, width) of the output canvas</span>
+<span class="sd">        - "border_mask": np.ndarray[bool], True where valid frame pixels exist</span>
+<span class="sd">        - "pre_filter_sigma": float or None</span>
+<span class="sd">        - "max_shift": int or None</span>
+<span class="sd">        - "max_jump": int or None</span>
 <span class="sd">    debug_outputs : dict, optional</span>
 <span class="sd">        Returned only if ``debug=True``. Contains:</span>
-<span class="sd">        - &quot;shifts&quot;: copy of the shifts array.</span>
+<span class="sd">        - "shifts": copy of the shifts array.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If ``stack.ndim`` is not 3.</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``method`` is not one of {&quot;fft_cross_correlation&quot;, &quot;full_cross_correlation&quot;}.</span>
+<span class="sd">        If ``method`` is not one of {"fft_cross_correlation", "full_cross_correlation"}.</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If ``reference_frame`` is not in the range [0, n_frames-1].</span>
 
@@ -398,16 +398,16 @@
 <span class="sd">    &gt;&gt;&gt; aligned_stack, metadata = align_frames(stack, reference_frame=0)</span>
 <span class="sd">    &gt;&gt;&gt; aligned_stack.shape</span>
 <span class="sd">    (10, 210, 210)  # padded to accommodate shifts</span>
-<span class="sd">    &gt;&gt;&gt; metadata[&#39;shifts&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; metadata['shifts']</span>
 <span class="sd">    array([[ 0,  0],</span>
 <span class="sd">        [ 1, -2],</span>
 <span class="sd">        ...])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;stack must be a 3D array (n_frames, H, W), got shape </span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"stack must be a 3D array (n_frames, H, W), got shape </span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span>
@@ -415,7 +415,7 @@
     <span class="c1"># Validate reference_frame</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">reference_frame</span> <span class="o">&lt;</span> <span class="n">n_frames</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;reference_frame must be in [0, </span><span class="si">{</span><span class="n">n_frames</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">], got </span><span class="si">{</span><span class="n">reference_frame</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"reference_frame must be in [0, </span><span class="si">{</span><span class="n">n_frames</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">], got </span><span class="si">{</span><span class="n">reference_frame</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="c1"># Preprocess reference frame</span>
@@ -436,18 +436,18 @@
             <span class="n">frame</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">pre_filter_sigma</span><span class="p">)</span>
 
         <span class="c1"># Compute shift</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;fft_cross_correlation&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"fft_cross_correlation"</span><span class="p">:</span>
             <span class="n">frame0</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">frame0</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">frame0</span><span class="p">)</span>
-            <span class="n">cc</span> <span class="o">=</span> <span class="n">fftconvolve</span><span class="p">(</span><span class="n">frame0</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ref0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)</span>
+            <span class="n">cc</span> <span class="o">=</span> <span class="n">fftconvolve</span><span class="p">(</span><span class="n">frame0</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ref0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"full"</span><span class="p">)</span>
             <span class="n">y_center</span><span class="p">,</span> <span class="n">x_center</span> <span class="o">=</span> <span class="n">H</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;full_cross_correlation&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"full_cross_correlation"</span><span class="p">:</span>
             <span class="n">cc</span> <span class="o">=</span> <span class="n">correlate2d</span><span class="p">(</span>
-                <span class="n">ref</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s2">&quot;fill&quot;</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="mi">0</span>
+                <span class="n">ref</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"full"</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s2">"fill"</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="mi">0</span>
             <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
             <span class="n">y_center</span><span class="p">,</span> <span class="n">x_center</span> <span class="o">=</span> <span class="n">H</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Apply max_shift restriction</span>
         <span class="k">if</span> <span class="n">max_shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -500,38 +500,38 @@
         <span class="n">border_mask</span><span class="p">[</span><span class="n">y_start</span> <span class="p">:</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">H</span><span class="p">,</span> <span class="n">x_start</span> <span class="p">:</span> <span class="n">x_start</span> <span class="o">+</span> <span class="n">W</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;reference_frame&quot;</span><span class="p">:</span> <span class="n">reference_frame</span><span class="p">,</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
-        <span class="s2">&quot;shifts&quot;</span><span class="p">:</span> <span class="n">shifts</span><span class="p">,</span>
-        <span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
-        <span class="s2">&quot;aligned_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">new_H</span><span class="p">,</span> <span class="n">new_W</span><span class="p">),</span>
-        <span class="s2">&quot;border_mask&quot;</span><span class="p">:</span> <span class="n">border_mask</span><span class="p">,</span>
-        <span class="s2">&quot;pre_filter_sigma&quot;</span><span class="p">:</span> <span class="n">pre_filter_sigma</span><span class="p">,</span>
-        <span class="s2">&quot;max_shift&quot;</span><span class="p">:</span> <span class="n">max_shift</span><span class="p">,</span>
-        <span class="s2">&quot;max_jump&quot;</span><span class="p">:</span> <span class="n">max_jump</span><span class="p">,</span>
+        <span class="s2">"reference_frame"</span><span class="p">:</span> <span class="n">reference_frame</span><span class="p">,</span>
+        <span class="s2">"method"</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
+        <span class="s2">"mode"</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+        <span class="s2">"shifts"</span><span class="p">:</span> <span class="n">shifts</span><span class="p">,</span>
+        <span class="s2">"original_shape"</span><span class="p">:</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+        <span class="s2">"aligned_shape"</span><span class="p">:</span> <span class="p">(</span><span class="n">new_H</span><span class="p">,</span> <span class="n">new_W</span><span class="p">),</span>
+        <span class="s2">"border_mask"</span><span class="p">:</span> <span class="n">border_mask</span><span class="p">,</span>
+        <span class="s2">"pre_filter_sigma"</span><span class="p">:</span> <span class="n">pre_filter_sigma</span><span class="p">,</span>
+        <span class="s2">"max_shift"</span><span class="p">:</span> <span class="n">max_shift</span><span class="p">,</span>
+        <span class="s2">"max_jump"</span><span class="p">:</span> <span class="n">max_jump</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="c1"># Apply cropping according to mode</span>
-    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;crop&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"crop"</span><span class="p">:</span>
         <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">crop_meta</span> <span class="o">=</span> <span class="n">intersection_crop</span><span class="p">(</span><span class="n">aligned_stack</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
-        <span class="k">if</span> <span class="s2">&quot;bounds&quot;</span> <span class="ow">in</span> <span class="n">crop_meta</span><span class="p">:</span>
-            <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">]</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"crop"</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
+        <span class="k">if</span> <span class="s2">"bounds"</span> <span class="ow">in</span> <span class="n">crop_meta</span><span class="p">:</span>
+            <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">"bounds"</span><span class="p">]</span>
             <span class="n">border_mask</span> <span class="o">=</span> <span class="n">border_mask</span><span class="p">[</span><span class="n">y_min</span> <span class="p">:</span> <span class="n">y_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x_min</span> <span class="p">:</span> <span class="n">x_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">border_mask</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;crop_square&quot;</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">]</span> <span class="o">=</span> <span class="n">border_mask</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"crop_square"</span><span class="p">:</span>
         <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">crop_meta</span> <span class="o">=</span> <span class="n">crop_square</span><span class="p">(</span><span class="n">aligned_stack</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"crop"</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
         <span class="n">H_sq</span><span class="p">,</span> <span class="n">W_sq</span> <span class="o">=</span> <span class="n">aligned_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span>
+        <span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">"offset"</span><span class="p">]</span>
         <span class="n">border_mask</span> <span class="o">=</span> <span class="n">border_mask</span><span class="p">[</span><span class="n">r_start</span> <span class="p">:</span> <span class="n">r_start</span> <span class="o">+</span> <span class="n">H_sq</span><span class="p">,</span> <span class="n">c_start</span> <span class="p">:</span> <span class="n">c_start</span> <span class="o">+</span> <span class="n">W_sq</span><span class="p">]</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">border_mask</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;pad&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">]</span> <span class="o">=</span> <span class="n">border_mask</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"pad"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;shifts&quot;</span><span class="p">:</span> <span class="n">shifts</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="p">{</span><span class="s2">"shifts"</span><span class="p">:</span> <span class="n">shifts</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span>
 
     <span class="k">return</span> <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">metadata</span></div>
 
@@ -539,17 +539,17 @@
 
 <div class="viewcode-block" id="rolling_frame_align">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.rolling_frame_align">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">rolling_frame_align</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pad&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pad"</span><span class="p">,</span>
     <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">max_shift</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">pre_filter_sigma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_jump</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Align a stack of AFM frames using a rolling reference and integer pixel shifts.</span>
 
 <span class="sd">    This function computes frame-to-frame shifts relative to a rolling reference</span>
@@ -566,11 +566,11 @@
 <span class="sd">    window : int, optional</span>
 <span class="sd">        Number of previous aligned frames to average when building the rolling</span>
 <span class="sd">        reference. Default is 5.</span>
-<span class="sd">    mode : {&quot;pad&quot;, &quot;crop&quot;, &quot;crop_square&quot;}, optional</span>
+<span class="sd">    mode : {"pad", "crop", "crop_square"}, optional</span>
 <span class="sd">        How to handle borders after shifting:</span>
-<span class="sd">        - &quot;pad&quot;: keep all frames with NaN padding (default)</span>
-<span class="sd">        - &quot;crop&quot;: crop to intersection of all frames</span>
-<span class="sd">        - &quot;crop_square&quot;: crop to largest centered square</span>
+<span class="sd">        - "pad": keep all frames with NaN padding (default)</span>
+<span class="sd">        - "crop": crop to intersection of all frames</span>
+<span class="sd">        - "crop_square": crop to largest centered square</span>
 <span class="sd">    debug : bool, optional</span>
 <span class="sd">        If True, returns additional diagnostic outputs such as the rolling reference</span>
 <span class="sd">        frames. Default is False.</span>
@@ -593,21 +593,21 @@
 <span class="sd">        alignment.</span>
 <span class="sd">    metadata : dict</span>
 <span class="sd">        Dictionary containing alignment information:</span>
-<span class="sd">        - &quot;window&quot;: int, rolling reference window used</span>
-<span class="sd">        - &quot;method&quot;: str, alignment method used</span>
-<span class="sd">        - &quot;mode&quot;: str, border approach used</span>
-<span class="sd">        - &quot;shifts&quot;: ndarray of shape (n_frames, 2), detected integer shifts (dy, dx)</span>
-<span class="sd">        - &quot;original_shape&quot;: tuple of (height, width)</span>
-<span class="sd">        - &quot;aligned_shape&quot;: tuple of (canvas_height, canvas_width)</span>
-<span class="sd">        - &quot;border_mask&quot;: ndarray of shape (canvas_height, canvas_width), True where</span>
+<span class="sd">        - "window": int, rolling reference window used</span>
+<span class="sd">        - "method": str, alignment method used</span>
+<span class="sd">        - "mode": str, border approach used</span>
+<span class="sd">        - "shifts": ndarray of shape (n_frames, 2), detected integer shifts (dy, dx)</span>
+<span class="sd">        - "original_shape": tuple of (height, width)</span>
+<span class="sd">        - "aligned_shape": tuple of (canvas_height, canvas_width)</span>
+<span class="sd">        - "border_mask": ndarray of shape (canvas_height, canvas_width), True where</span>
 <span class="sd">          valid pixels exist</span>
-<span class="sd">        - &quot;pre_filter_sigma&quot;: float or None</span>
-<span class="sd">        - &quot;max_shift&quot;: int or None</span>
-<span class="sd">        - &quot;max_jump&quot;: int or None</span>
+<span class="sd">        - "pre_filter_sigma": float or None</span>
+<span class="sd">        - "max_shift": int or None</span>
+<span class="sd">        - "max_jump": int or None</span>
 <span class="sd">    debug_outputs : dict, optional</span>
 <span class="sd">        Returned only if `debug=True`. Contains:</span>
-<span class="sd">        - &quot;shifts&quot;: copy of the detected shifts array</span>
-<span class="sd">        - &quot;aligned_refs&quot;: deque of indices used for rolling reference</span>
+<span class="sd">        - "shifts": copy of the detected shifts array</span>
+<span class="sd">        - "aligned_refs": deque of indices used for rolling reference</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -639,19 +639,19 @@
 <span class="sd">    &gt;&gt;&gt; aligned_stack, metadata = rolling_frame_align(stack, window=3)</span>
 <span class="sd">    &gt;&gt;&gt; aligned_stack.shape</span>
 <span class="sd">    (10, 210, 210)</span>
-<span class="sd">    &gt;&gt;&gt; metadata[&#39;shifts&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; metadata['shifts']</span>
 <span class="sd">    array([[0, 0],</span>
 <span class="sd">           [1, -1],</span>
 <span class="sd">           ...])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;stack must be a 3D array (n_frames, H, W), got shape </span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"stack must be a 3D array (n_frames, H, W), got shape </span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">window</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;window must be &gt;= 1&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"window must be &gt;= 1"</span><span class="p">)</span>
 
     <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_frames</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -698,7 +698,7 @@
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_frames</span><span class="p">):</span>
         <span class="c1"># Compute rolling mean</span>
-        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
             <span class="n">denom_safe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rolling_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rolling_count</span><span class="p">)</span>
             <span class="n">ref</span> <span class="o">=</span> <span class="n">rolling_sum</span> <span class="o">/</span> <span class="n">denom_safe</span>
             <span class="n">ref_mask_bool</span> <span class="o">=</span> <span class="n">rolling_count</span> <span class="o">!=</span> <span class="mi">0</span>
@@ -787,43 +787,43 @@
         <span class="n">border_mask</span><span class="p">[</span><span class="n">y_start</span> <span class="p">:</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">H</span><span class="p">,</span> <span class="n">x_start</span> <span class="p">:</span> <span class="n">x_start</span> <span class="o">+</span> <span class="n">W</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;window&quot;</span><span class="p">:</span> <span class="n">window</span><span class="p">,</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;phase_cross_correlation&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
-        <span class="s2">&quot;shifts&quot;</span><span class="p">:</span> <span class="n">shifts</span><span class="p">,</span>
-        <span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
-        <span class="s2">&quot;aligned_shape&quot;</span><span class="p">:</span> <span class="n">aligned_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="s2">&quot;border_mask&quot;</span><span class="p">:</span> <span class="n">border_mask</span><span class="p">,</span>
-        <span class="s2">&quot;pre_filter_sigma&quot;</span><span class="p">:</span> <span class="n">pre_filter_sigma</span><span class="p">,</span>
-        <span class="s2">&quot;max_shift&quot;</span><span class="p">:</span> <span class="n">max_shift</span><span class="p">,</span>
-        <span class="s2">&quot;max_jump&quot;</span><span class="p">:</span> <span class="n">max_jump</span><span class="p">,</span>
+        <span class="s2">"window"</span><span class="p">:</span> <span class="n">window</span><span class="p">,</span>
+        <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"phase_cross_correlation"</span><span class="p">,</span>
+        <span class="s2">"mode"</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+        <span class="s2">"shifts"</span><span class="p">:</span> <span class="n">shifts</span><span class="p">,</span>
+        <span class="s2">"original_shape"</span><span class="p">:</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span>
+        <span class="s2">"aligned_shape"</span><span class="p">:</span> <span class="n">aligned_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s2">"border_mask"</span><span class="p">:</span> <span class="n">border_mask</span><span class="p">,</span>
+        <span class="s2">"pre_filter_sigma"</span><span class="p">:</span> <span class="n">pre_filter_sigma</span><span class="p">,</span>
+        <span class="s2">"max_shift"</span><span class="p">:</span> <span class="n">max_shift</span><span class="p">,</span>
+        <span class="s2">"max_jump"</span><span class="p">:</span> <span class="n">max_jump</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="c1"># Apply cropping</span>
-    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;crop&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"crop"</span><span class="p">:</span>
         <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">crop_meta</span> <span class="o">=</span> <span class="n">intersection_crop</span><span class="p">(</span><span class="n">aligned_stack</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
-        <span class="k">if</span> <span class="s2">&quot;bounds&quot;</span> <span class="ow">in</span> <span class="n">crop_meta</span><span class="p">:</span>
-            <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">]</span>
-            <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">][</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"crop"</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
+        <span class="k">if</span> <span class="s2">"bounds"</span> <span class="ow">in</span> <span class="n">crop_meta</span><span class="p">:</span>
+            <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">"bounds"</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">][</span>
                 <span class="n">y_min</span> <span class="p">:</span> <span class="n">y_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x_min</span> <span class="p">:</span> <span class="n">x_max</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="p">]</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;crop_square&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"crop_square"</span><span class="p">:</span>
         <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">crop_meta</span> <span class="o">=</span> <span class="n">crop_square</span><span class="p">(</span><span class="n">aligned_stack</span><span class="p">)</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"crop"</span><span class="p">]</span> <span class="o">=</span> <span class="n">crop_meta</span>
         <span class="n">H_sq</span><span class="p">,</span> <span class="n">W_sq</span> <span class="o">=</span> <span class="n">aligned_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">&quot;offset&quot;</span><span class="p">]</span>
-        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;border_mask&quot;</span><span class="p">][</span>
+        <span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span> <span class="o">=</span> <span class="n">crop_meta</span><span class="p">[</span><span class="s2">"offset"</span><span class="p">]</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">"border_mask"</span><span class="p">][</span>
             <span class="n">r_start</span> <span class="p">:</span> <span class="n">r_start</span> <span class="o">+</span> <span class="n">H_sq</span><span class="p">,</span> <span class="n">c_start</span> <span class="p">:</span> <span class="n">c_start</span> <span class="o">+</span> <span class="n">W_sq</span>
         <span class="p">]</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;pad&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">"pad"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">aligned_stack</span><span class="p">,</span>
             <span class="n">metadata</span><span class="p">,</span>
-            <span class="p">{</span><span class="s2">&quot;shifts&quot;</span><span class="p">:</span> <span class="n">shifts</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s2">&quot;aligned_refs&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">aligned_refs</span><span class="p">)},</span>
+            <span class="p">{</span><span class="s2">"shifts"</span><span class="p">:</span> <span class="n">shifts</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s2">"aligned_refs"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">aligned_refs</span><span class="p">)},</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">aligned_stack</span><span class="p">,</span> <span class="n">metadata</span></div>
@@ -837,9 +837,9 @@
 
 <div class="viewcode-block" id="intersection_crop">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.intersection_crop">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">intersection_crop</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Crop aligned stack to the largest common intersection region.</span>
 
 <span class="sd">    Parameters</span>
@@ -854,7 +854,7 @@
 <span class="sd">        no valid pixels exist.</span>
 <span class="sd">    meta : dict</span>
 <span class="sd">        Metadata about cropping parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">valid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">stack</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -862,11 +862,11 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
         <span class="c1"># No valid pixels, return original stack</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;operation&quot;</span><span class="p">:</span> <span class="s2">&quot;crop_intersection&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-            <span class="s2">&quot;new_shape&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-            <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="s2">&quot;No finite pixels found, returned original stack&quot;</span><span class="p">,</span>
+            <span class="s2">"operation"</span><span class="p">:</span> <span class="s2">"crop_intersection"</span><span class="p">,</span>
+            <span class="s2">"original_shape"</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="s2">"new_shape"</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="s2">"bounds"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"note"</span><span class="p">:</span> <span class="s2">"No finite pixels found, returned original stack"</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">stack</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">meta</span>
 
@@ -876,10 +876,10 @@
     <span class="n">cropped</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[:,</span> <span class="n">y_min</span> <span class="p">:</span> <span class="n">y_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x_min</span> <span class="p">:</span> <span class="n">x_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;operation&quot;</span><span class="p">:</span> <span class="s2">&quot;crop_intersection&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="s2">&quot;new_shape&quot;</span><span class="p">:</span> <span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">),</span>
+        <span class="s2">"operation"</span><span class="p">:</span> <span class="s2">"crop_intersection"</span><span class="p">,</span>
+        <span class="s2">"original_shape"</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s2">"new_shape"</span><span class="p">:</span> <span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s2">"bounds"</span><span class="p">:</span> <span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">cropped</span><span class="p">,</span> <span class="n">meta</span></div>
 
@@ -887,9 +887,9 @@
 
 <div class="viewcode-block" id="crop_square">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.crop_square">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">crop_square</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Crop aligned stack to the largest centered square region.</span>
 
 <span class="sd">    Parameters</span>
@@ -903,7 +903,7 @@
 <span class="sd">        Cropped stack with square height and width.</span>
 <span class="sd">    meta : dict</span>
 <span class="sd">        Metadata about cropping parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cropped</span><span class="p">,</span> <span class="n">inter_meta</span> <span class="o">=</span> <span class="n">intersection_crop</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
     <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
@@ -913,12 +913,12 @@
     <span class="n">cropped_sq</span> <span class="o">=</span> <span class="n">cropped</span><span class="p">[:,</span> <span class="n">r_start</span> <span class="p">:</span> <span class="n">r_start</span> <span class="o">+</span> <span class="n">size</span><span class="p">,</span> <span class="n">c_start</span> <span class="p">:</span> <span class="n">c_start</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;operation&quot;</span><span class="p">:</span> <span class="s2">&quot;crop_square&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="s2">&quot;intersection_shape&quot;</span><span class="p">:</span> <span class="n">inter_meta</span><span class="p">[</span><span class="s2">&quot;new_shape&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;new_shape&quot;</span><span class="p">:</span> <span class="n">cropped_sq</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="s2">&quot;square_size&quot;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span>
-        <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span><span class="p">),</span>
+        <span class="s2">"operation"</span><span class="p">:</span> <span class="s2">"crop_square"</span><span class="p">,</span>
+        <span class="s2">"original_shape"</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s2">"intersection_shape"</span><span class="p">:</span> <span class="n">inter_meta</span><span class="p">[</span><span class="s2">"new_shape"</span><span class="p">],</span>
+        <span class="s2">"new_shape"</span><span class="p">:</span> <span class="n">cropped_sq</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s2">"square_size"</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span>
+        <span class="s2">"offset"</span><span class="p">:</span> <span class="p">(</span><span class="n">r_start</span><span class="p">,</span> <span class="n">c_start</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">cropped_sq</span><span class="p">,</span> <span class="n">meta</span></div>
 
@@ -926,14 +926,14 @@
 
 <div class="viewcode-block" id="replace_nan">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.replace_nan">[docs]</a>
-<span class="nd">@param_conditions</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">)</span>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@param_conditions</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mode"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"constant"</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">replace_nan</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;global_mean&quot;</span><span class="p">,</span> <span class="s2">&quot;constant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zero&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"zero"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">,</span> <span class="s2">"global_mean"</span><span class="p">,</span> <span class="s2">"constant"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"zero"</span><span class="p">,</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Replace NaN values in a 2D frame or 3D AFM image stack using various strategies.</span>
 
 <span class="sd">    Primarily used in video pipelines after alignment, but also applicable to single</span>
@@ -944,15 +944,15 @@
 <span class="sd">    stack : np.ndarray</span>
 <span class="sd">        Input 3D array of shape (n_frames, height, width) or 2D frame (height, width)</span>
 <span class="sd">        that may contain NaN values.</span>
-<span class="sd">    mode : {&quot;zero&quot;, &quot;mean&quot;, &quot;median&quot;, &quot;global_mean&quot;, &quot;constant&quot;}, optional</span>
-<span class="sd">        Replacement strategy. Default is &quot;zero&quot;.</span>
-<span class="sd">        - &quot;zero&quot; : Replace NaNs with 0.</span>
-<span class="sd">        - &quot;mean&quot; : Replace NaNs with the mean of each frame.</span>
-<span class="sd">        - &quot;median&quot; : Replace NaNs with the median of each frame.</span>
-<span class="sd">        - &quot;global_mean&quot; : Replace NaNs with the mean of the entire stack.</span>
-<span class="sd">        - &quot;constant&quot; : Replace NaNs with a user-specified constant `value`.</span>
+<span class="sd">    mode : {"zero", "mean", "median", "global_mean", "constant"}, optional</span>
+<span class="sd">        Replacement strategy. Default is "zero".</span>
+<span class="sd">        - "zero" : Replace NaNs with 0.</span>
+<span class="sd">        - "mean" : Replace NaNs with the mean of each frame.</span>
+<span class="sd">        - "median" : Replace NaNs with the median of each frame.</span>
+<span class="sd">        - "global_mean" : Replace NaNs with the mean of the entire stack.</span>
+<span class="sd">        - "constant" : Replace NaNs with a user-specified constant `value`.</span>
 <span class="sd">    value : float, optional</span>
-<span class="sd">        Constant value to use when `mode=&quot;constant&quot;`. Must be provided in that case.</span>
+<span class="sd">        Constant value to use when `mode="constant"`. Must be provided in that case.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -965,46 +965,46 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `mode` is unknown or if `mode=&quot;constant&quot;` and `value` is not provided.</span>
+<span class="sd">        If `mode` is unknown or if `mode="constant"` and `value` is not provided.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - Frame-wise operations like &quot;mean&quot; and &quot;median&quot; compute statistics per frame</span>
+<span class="sd">    - Frame-wise operations like "mean" and "median" compute statistics per frame</span>
 <span class="sd">      independently.</span>
 <span class="sd">    - Preserves the dtype of the input stack.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">filled</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">nan_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;zero&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"zero"</span><span class="p">:</span>
         <span class="n">filled</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"mean"</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">filled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">frame</span> <span class="o">=</span> <span class="n">filled</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
                 <span class="n">frame_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
                 <span class="n">frame</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame_mean</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"median"</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">filled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">frame</span> <span class="o">=</span> <span class="n">filled</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
                 <span class="n">frame_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
                 <span class="n">frame</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame_median</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;global_mean&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"global_mean"</span><span class="p">:</span>
         <span class="n">global_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">filled</span><span class="p">)</span>
         <span class="n">filled</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)]</span> <span class="o">=</span> <span class="n">global_mean</span>
-    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"constant"</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide &#39;value&#39; for constant mode.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Must provide 'value' for constant mode."</span><span class="p">)</span>
         <span class="n">filled</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)]</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;nans_filled&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">nan_count</span><span class="p">),</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
-        <span class="s2">&quot;value_used&quot;</span><span class="p">:</span> <span class="n">value</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"nans_filled"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">nan_count</span><span class="p">),</span>
+        <span class="s2">"mode"</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+        <span class="s2">"value_used"</span><span class="p">:</span> <span class="n">value</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"constant"</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">filled</span><span class="p">,</span> <span class="n">meta</span></div>
@@ -1019,7 +1019,7 @@
 <div class="viewcode-block" id="temporal_median_filter">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.temporal_median_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">temporal_median_filter</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply median filter across the time dimension.</span>
 
 <span class="sd">    Parameters</span>
@@ -1033,7 +1033,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    filtered : ndarray of shape (n_frames, height, width)</span>
 <span class="sd">        Stack after temporal median filtering.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -1041,7 +1041,7 @@
 <div class="viewcode-block" id="temporal_mean_filter">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.temporal_mean_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">temporal_mean_filter</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply mean filter across the time dimension.</span>
 
 <span class="sd">    Parameters</span>
@@ -1055,7 +1055,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    filtered : ndarray of shape (n_frames, height, width)</span>
 <span class="sd">        Stack after temporal mean filtering.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -1068,19 +1068,19 @@
 <div class="viewcode-block" id="register_video_processing">
 <a class="viewcode-back" href="../../../api/playNano.processing.html#playNano.processing.video_processing.register_video_processing">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_video_processing</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a dictionary of registered video processing filters.</span>
 
 <span class="sd">    Keys are names of the operations, values are the functions themselves.</span>
 <span class="sd">    These functions should take a 3D stack (n_frames, H, W) and return either</span>
 <span class="sd">    an ndarray (filtered stack) or a tuple (stack, metadata).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;align_frames&quot;</span><span class="p">:</span> <span class="n">align_frames</span><span class="p">,</span>
-        <span class="s2">&quot;rolling_frame_align&quot;</span><span class="p">:</span> <span class="n">rolling_frame_align</span><span class="p">,</span>
-        <span class="s2">&quot;intersection_crop&quot;</span><span class="p">:</span> <span class="n">intersection_crop</span><span class="p">,</span>
-        <span class="s2">&quot;crop_square&quot;</span><span class="p">:</span> <span class="n">crop_square</span><span class="p">,</span>
-        <span class="s2">&quot;replace_nan&quot;</span><span class="p">:</span> <span class="n">replace_nan</span><span class="p">,</span>
+        <span class="s2">"align_frames"</span><span class="p">:</span> <span class="n">align_frames</span><span class="p">,</span>
+        <span class="s2">"rolling_frame_align"</span><span class="p">:</span> <span class="n">rolling_frame_align</span><span class="p">,</span>
+        <span class="s2">"intersection_crop"</span><span class="p">:</span> <span class="n">intersection_crop</span><span class="p">,</span>
+        <span class="s2">"crop_square"</span><span class="p">:</span> <span class="n">crop_square</span><span class="p">,</span>
+        <span class="s2">"replace_nan"</span><span class="p">:</span> <span class="n">replace_nan</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 </pre></div>

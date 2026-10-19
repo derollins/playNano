@@ -272,7 +272,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playNano.cli.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Utility functions for the playNano CLI.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Utility functions for the playNano CLI."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -301,17 +301,17 @@
 
 <span class="c1"># Names of all entry-point plugins (if any third-party filters are installed)</span>
 <span class="n">_PLUGIN_ENTRYPOINTS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ep</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;playNano.filters&quot;</span><span class="p">)</span>
+    <span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ep</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playNano.filters"</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="c1"># Names of all entry-point plugins (if any third-party filters are installed)</span>
 <span class="n">_ANALYSIS_PLUGIN_ENTRYPOINTS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ep</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;playNano.analysis&quot;</span><span class="p">)</span>
+    <span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ep</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playNano.analysis"</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="n">INVALID_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\/:*?&quot;&lt;&gt;|&#39;</span>
-<span class="n">INVALID_FOLDER_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;*?&quot;&lt;&gt;|&#39;</span>
-<span class="n">SKIP_PARAM_NAMES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;arr&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="s2">&quot;stack&quot;</span><span class="p">,</span> <span class="s2">&quot;debug&quot;</span><span class="p">}</span>
+<span class="n">INVALID_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'\/:*?"&lt;&gt;|'</span>
+<span class="n">INVALID_FOLDER_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'*?"&lt;&gt;|'</span>
+<span class="n">SKIP_PARAM_NAMES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">,</span> <span class="s2">"arr"</span><span class="p">,</span> <span class="s2">"mask"</span><span class="p">,</span> <span class="s2">"stack"</span><span class="p">,</span> <span class="s2">"debug"</span><span class="p">}</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -319,9 +319,9 @@
 <div class="viewcode-block" id="is_valid_step">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.is_valid_step">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_step</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if `name` is a built-in filter, mask, plugin or the &#39;clear&#39; step.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return True if `name` is a built-in filter, mask, plugin or the 'clear' step."""</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span>
+        <span class="n">name</span> <span class="o">==</span> <span class="s2">"clear"</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">MASK_MAP</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_PLUGIN_ENTRYPOINTS</span>
@@ -334,9 +334,9 @@
 <div class="viewcode-block" id="is_valid_analysis_step">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.is_valid_analysis_step">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_analysis_step</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if `name` is a built-in analysis, plugin or the &#39;clear&#39; step.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return True if `name` is a built-in analysis, plugin or the 'clear' step."""</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span>
+        <span class="n">name</span> <span class="o">==</span> <span class="s2">"clear"</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_ANALYSIS_PLUGIN_ENTRYPOINTS</span>
     <span class="p">)</span></div>
@@ -346,7 +346,7 @@
 <div class="viewcode-block" id="parse_processing_string">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.parse_processing_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_processing_string</span><span class="p">(</span><span class="n">processing_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse a semicolon-delimited string of processing steps into a structured list.</span>
 
 <span class="sd">    Each step in the string can optionally include parameters, separated by commas.</span>
@@ -357,7 +357,7 @@
 <span class="sd">    processing_str : str</span>
 <span class="sd">        Semicolon-delimited string specifying processing steps.</span>
 <span class="sd">        Each step may have optional parameters (seperated by commas) after a colon,</span>
-<span class="sd">        e.g., &quot;remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2&quot;</span>
+<span class="sd">        e.g., "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -368,61 +368,61 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; parse_processing_string(&quot;remove_plane&quot;)</span>
-<span class="sd">    [(&#39;remove_plane&#39;, {})]</span>
+<span class="sd">    &gt;&gt;&gt; parse_processing_string("remove_plane")</span>
+<span class="sd">    [('remove_plane', {})]</span>
 
-<span class="sd">    &gt;&gt;&gt; parse_processing_string(&quot;gaussian_filter:sigma=2.0,truncate=4.0&quot;)</span>
-<span class="sd">    [(&#39;gaussian_filter&#39;, {&#39;sigma&#39;: 2.0, &#39;truncate&#39;: 4.0})]</span>
+<span class="sd">    &gt;&gt;&gt; parse_processing_string("gaussian_filter:sigma=2.0,truncate=4.0")</span>
+<span class="sd">    [('gaussian_filter', {'sigma': 2.0, 'truncate': 4.0})]</span>
 
 <span class="sd">    &gt;&gt;&gt; parse_processing_string(</span>
-<span class="sd">    ...     &quot;remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2&quot;</span>
+<span class="sd">    ...     "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"</span>
 <span class="sd">    ... )</span>
 <span class="sd">    [</span>
-<span class="sd">        (&#39;remove_plane&#39;, {}),</span>
-<span class="sd">        (&#39;gaussian_filter&#39;, {&#39;sigma&#39;: 2.0}),</span>
-<span class="sd">        (&#39;threshold_mask&#39;, {&#39;threshold&#39;: 2})</span>
+<span class="sd">        ('remove_plane', {}),</span>
+<span class="sd">        ('gaussian_filter', {'sigma': 2.0}),</span>
+<span class="sd">        ('threshold_mask', {'threshold': 2})</span>
 <span class="sd">    ]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># Split the input string into individual steps using &#39;;&#39; as the delimiter</span>
-    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">processing_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">):</span>
+    <span class="c1"># Split the input string into individual steps using ';' as the delimiter</span>
+    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">processing_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">):</span>
         <span class="n">segment</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="p">:</span>
             <span class="k">continue</span>  <span class="c1"># Skip empty segments</span>
 
-        <span class="c1"># Check if the step includes parameters (indicated by &#39;:&#39;)</span>
-        <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">segment</span><span class="p">:</span>
-            <span class="n">step_name</span><span class="p">,</span> <span class="n">params_part</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Check if the step includes parameters (indicated by ':')</span>
+        <span class="k">if</span> <span class="s2">":"</span> <span class="ow">in</span> <span class="n">segment</span><span class="p">:</span>
+            <span class="n">step_name</span><span class="p">,</span> <span class="n">params_part</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">step_name</span> <span class="o">=</span> <span class="n">step_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
             <span class="c1"># Validate the step name</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown processing step: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown processing step: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
             <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-            <span class="c1"># Split parameters by &#39;,&#39; and parse each key=value pair</span>
-            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">params_part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+            <span class="c1"># Split parameters by ',' and parse each key=value pair</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">params_part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">):</span>
                 <span class="n">pair</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">pair</span><span class="p">:</span>
                     <span class="k">continue</span>  <span class="c1"># Skip empty parameter entries</span>
 
-                <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"="</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Invalid parameter expression &#39;</span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2">&#39; in step &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Invalid parameter expression '</span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2">' in step '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span>
                     <span class="p">)</span>
 
-                <span class="n">key</span><span class="p">,</span> <span class="n">val_str</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">key</span><span class="p">,</span> <span class="n">val_str</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="n">val_str</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
                 <span class="c1"># Attempt to convert the value to a boolean, int, or float</span>
-                <span class="k">if</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">):</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+                <span class="k">if</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"true"</span><span class="p">,</span> <span class="s2">"false"</span><span class="p">):</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">val_str</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"."</span> <span class="ow">in</span> <span class="n">val_str</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="n">val_str</span>  <span class="c1"># Leave as string if not numeric</span>
 
@@ -434,7 +434,7 @@
             <span class="c1"># Step without parameters</span>
             <span class="n">step_name</span> <span class="o">=</span> <span class="n">segment</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown processing step: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown processing step: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
             <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">step_name</span><span class="p">,</span> <span class="p">{}))</span>
 
     <span class="k">return</span> <span class="n">steps</span></div>
@@ -444,7 +444,7 @@
 <div class="viewcode-block" id="parse_processing_file">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.parse_processing_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_processing_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</span>
 
 <span class="sd">    Expected YAML schema:</span>
@@ -458,10 +458,10 @@
 <span class="sd">          order: 2</span>
 
 <span class="sd">    Returns a list in the order listed under `filters`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;processing file not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"processing file not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">text</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
 
     <span class="c1"># Attempt to parse YAML first</span>
@@ -475,32 +475,32 @@
             <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unable to parse processing file as YAML or JSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Unable to parse processing file as YAML or JSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;filters&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;processing file must contain top-level key &#39;filters&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"filters"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"processing file must contain top-level key 'filters'"</span><span class="p">)</span>
 
-    <span class="n">filters_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;filters&quot;</span><span class="p">]</span>
+    <span class="n">filters_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filters_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;filters&#39; must be a list in the processing file&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'filters' must be a list in the processing file"</span><span class="p">)</span>
 
     <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">filters_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"name"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Each entry under &#39;filters&#39; must be a dict containing &#39;name&#39;&quot;</span>
+                <span class="s2">"Each entry under 'filters' must be a dict containing 'name'"</span>
             <span class="p">)</span>  <span class="c1"># noqa</span>
-        <span class="n">step_name</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="n">step_name</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unknown processing step in processing file: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="sa">f</span><span class="s2">"Unknown processing step in processing file: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span>
             <span class="p">)</span>
 
         <span class="c1"># Build kwargs from all other key/value pairs in the dict</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"name"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
@@ -513,7 +513,7 @@
 <div class="viewcode-block" id="parse_analysis_string">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.parse_analysis_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_analysis_string</span><span class="p">(</span><span class="n">analysis_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse ; delimited analysis strings into a list (analysis_step_name, kwargs) tuples.</span>
 
 <span class="sd">    Each segment in `analysis_str` is of the form:</span>
@@ -522,47 +522,47 @@
 <span class="sd">        analysis_module_name:param1=value1,param2=value2</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">      &quot;log_blob_detection:min_sigma=1.0,max_sigma=5.0;x_means_clustering:time_weight=0.2&quot;</span>
+<span class="sd">      "log_blob_detection:min_sigma=1.0,max_sigma=5.0;x_means_clustering:time_weight=0.2"</span>
 
 <span class="sd">    Returns a list in the order encountered, e.g.:</span>
-<span class="sd">      [(&quot;log_blob_detection&quot;, {&quot;min_sigma&quot;:1.0,&quot;max_sigma&quot;:5.0}),</span>
-<span class="sd">       (&quot;x_means_clustering&quot;, {&quot;time_weight&quot;: 0.2})]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">      [("log_blob_detection", {"min_sigma":1.0,"max_sigma":5.0}),</span>
+<span class="sd">       ("x_means_clustering", {"time_weight": 0.2})]</span>
+<span class="sd">    """</span>
     <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1"># Split on &#39;;&#39; (also accept &#39;,&#39; as alternate, just in case)</span>
-    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">analysis_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">):</span>
+    <span class="c1"># Split on ';' (also accept ',' as alternate, just in case)</span>
+    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">analysis_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">):</span>
         <span class="n">segment</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">segment</span><span class="p">:</span>
             <span class="k">continue</span>
 
-        <span class="c1"># If the segment contains &#39;:&#39;, separate name from params</span>
-        <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">segment</span><span class="p">:</span>
-            <span class="n">name_part</span><span class="p">,</span> <span class="n">params_part</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># If the segment contains ':', separate name from params</span>
+        <span class="k">if</span> <span class="s2">":"</span> <span class="ow">in</span> <span class="n">segment</span><span class="p">:</span>
+            <span class="n">name_part</span><span class="p">,</span> <span class="n">params_part</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">step_name</span> <span class="o">=</span> <span class="n">name_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_analysis_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown analysis step: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown analysis step: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
-            <span class="c1"># Parse params: they can be separated by &#39;,&#39; or &#39;;&#39; (but usually commas)</span>
+            <span class="c1"># Parse params: they can be separated by ',' or ';' (but usually commas)</span>
             <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">params_part</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">params_part</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">";"</span><span class="p">,</span> <span class="s2">","</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">):</span>
                 <span class="n">pair</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">pair</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"="</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Invalid parameter expression &#39;</span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2">&#39; in analysis step &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>  <span class="c1"># noqa</span>
+                        <span class="sa">f</span><span class="s2">"Invalid parameter expression '</span><span class="si">{</span><span class="n">pair</span><span class="si">}</span><span class="s2">' in analysis step '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span>  <span class="c1"># noqa</span>
                     <span class="p">)</span>  <span class="c1"># noqa</span>
-                <span class="n">key</span><span class="p">,</span> <span class="n">val_str</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">key</span><span class="p">,</span> <span class="n">val_str</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="n">val_str</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
                 <span class="c1"># Convert to float or int if possible</span>
-                <span class="k">if</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"true"</span><span class="p">,</span> <span class="s2">"false"</span><span class="p">):</span>
                     <span class="c1"># Allow boolean parameters if needed</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">val_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">val_str</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">"."</span> <span class="ow">in</span> <span class="n">val_str</span><span class="p">:</span>
                             <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
@@ -577,7 +577,7 @@
             <span class="c1"># No colon → just the filter name</span>
             <span class="n">step_name</span> <span class="o">=</span> <span class="n">segment</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_analysis_step</span><span class="p">(</span><span class="n">step_name</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown analysis step: &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown analysis step: '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
             <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">step_name</span><span class="p">,</span> <span class="p">{}))</span>
 
@@ -588,7 +588,7 @@
 <div class="viewcode-block" id="parse_analysis_file">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.parse_analysis_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_analysis_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse a YAML or JSON analysis file into a list of (name, parameters) tuples.</span>
 
 <span class="sd">    This reads a saved analysis pipeline definition, validates its structure,</span>
@@ -632,62 +632,62 @@
 <span class="sd">    This would be parsed as::</span>
 
 <span class="sd">        [</span>
-<span class="sd">            (&quot;count_nonzero&quot;, {}),</span>
-<span class="sd">            (&quot;feature_detection&quot;, {</span>
-<span class="sd">                &quot;mask_fn&quot;: &quot;mask_threshold&quot;,</span>
-<span class="sd">                &quot;min_size&quot;: 10,</span>
-<span class="sd">                &quot;remove_edge&quot;: True</span>
+<span class="sd">            ("count_nonzero", {}),</span>
+<span class="sd">            ("feature_detection", {</span>
+<span class="sd">                "mask_fn": "mask_threshold",</span>
+<span class="sd">                "min_size": 10,</span>
+<span class="sd">                "remove_edge": True</span>
 <span class="sd">            }),</span>
-<span class="sd">            (&quot;particle_tracking&quot;, {</span>
-<span class="sd">                &quot;coord_columns&quot;: [&quot;centroid_x&quot;, &quot;centroid_y&quot;],</span>
-<span class="sd">                &quot;coord_key&quot;: &quot;features_per_frame&quot;,</span>
-<span class="sd">                &quot;detection_module&quot;: &quot;feature_detection&quot;,</span>
-<span class="sd">                &quot;max_distance&quot;: 5.0</span>
+<span class="sd">            ("particle_tracking", {</span>
+<span class="sd">                "coord_columns": ["centroid_x", "centroid_y"],</span>
+<span class="sd">                "coord_key": "features_per_frame",</span>
+<span class="sd">                "detection_module": "feature_detection",</span>
+<span class="sd">                "max_distance": 5.0</span>
 <span class="sd">            })</span>
 <span class="sd">        ]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span>
     <span class="c1"># Try JSON first if file extension suggests, otherwise YAML</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,):</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">".json"</span><span class="p">,):</span>
             <span class="n">raw</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">raw</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to parse analysis file as YAML or JSON&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unable to parse analysis file as YAML or JSON"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-    <span class="c1"># Support two styles: {&quot;analysis&quot;: [...]} or bare list [...]</span>
+    <span class="c1"># Support two styles: {"analysis": [...]} or bare list [...]</span>
     <span class="n">steps_raw</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;analysis&quot;</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
-        <span class="n">steps_raw</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"analysis"</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="n">steps_raw</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">steps_raw</span> <span class="o">=</span> <span class="n">raw</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid analysis file: expected top-level &#39;analysis&#39; or list of steps&quot;</span>
+            <span class="s2">"Invalid analysis file: expected top-level 'analysis' or list of steps"</span>
         <span class="p">)</span>
 
     <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">steps_raw</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">step</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"name"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">step</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid step #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: each step must be a mapping with a &#39;name&#39; key&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid step #</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: each step must be a mapping with a 'name' key"</span>
             <span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">step</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_analysis_step</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown analysis step: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown analysis step: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Copy kwargs excluding the name to keep file dict intact</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"name"</span><span class="p">}</span>
         <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">out</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_analysis_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Retrieve an analysis class by name from built-in modules or registered entry points.</span>
 
 <span class="sd">    This function first checks the `BUILTIN_ANALYSIS_MODULES` dictionary. If the</span>
@@ -711,26 +711,26 @@
 <span class="sd">    Exception</span>
 <span class="sd">        If any other error occurs during module loading, the exception is logged</span>
 <span class="sd">        and re-raised.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># mirror pipeline._load_module logic or import from registry</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># try to load entry point</span>
             <span class="n">eps</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">()</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-                <span class="n">group</span><span class="o">=</span><span class="s2">&quot;playNano.analysis&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">module_name</span>
+                <span class="n">group</span><span class="o">=</span><span class="s2">"playNano.analysis"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">module_name</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">eps</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analysis module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Analysis module '</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">)</span>
             <span class="bp">cls</span> <span class="o">=</span> <span class="n">eps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">cls</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load analysis module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load analysis module '</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">raise</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cast_input</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected_type</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a string input into a specified Python type, with fallback defaults.</span>
 
 <span class="sd">    Handles `Optional` and `Union` annotations, and performs best-effort conversion</span>
@@ -753,14 +753,14 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - Boolean conversion recognizes &#39;1&#39;, &#39;true&#39;, &#39;yes&#39;, &#39;y&#39;, &#39;t&#39;</span>
+<span class="sd">    - Boolean conversion recognizes '1', 'true', 'yes', 'y', 't'</span>
 <span class="sd">      (case-insensitive) as True.</span>
 <span class="sd">    - Tuple and list types assume comma-separated values in the string.</span>
 <span class="sd">    - `Optional[T]` and `Union[T, NoneType]` are treated as `T`.</span>
 <span class="sd">    - For generic types like `list[int]`, the element type hint is ignored,</span>
 <span class="sd">      but the container conversion still applies.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
 
     <span class="c1"># handle missing annotations</span>
@@ -790,17 +790,17 @@
     <span class="c1"># Handle plain tuple/list types</span>
     <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">expected_type</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
-            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">expected_type</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
-            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
             <span class="k">return</span> <span class="n">items</span>
 
     <span class="c1"># simple types</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="nb">bool</span><span class="p">:</span>
             <span class="n">s2</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">s2</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">s2</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">,</span> <span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"t"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">:</span>
@@ -818,10 +818,10 @@
 <div class="viewcode-block" id="ask_for_analysis_params">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.ask_for_analysis_params">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_for_analysis_params</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Introspect a module&#39;s `run()` or parameter spec and ask for values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Introspect a module's `run()` or parameter spec and ask for values."""</span>
     <span class="bp">cls</span> <span class="o">=</span> <span class="n">_get_analysis_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;parameters&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"parameters"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">_ask_with_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -830,7 +830,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_ask_with_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for parameter values based on a module-provided spec.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Prompt user for parameter values based on a module-provided spec."""</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">pending</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">pending</span><span class="p">:</span>
@@ -843,15 +843,15 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_ask_with_signature</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for parameter values based on `run()` signature.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Prompt user for parameter values based on `run()` signature."""</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">conds</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="s2">&quot;_param_conditions&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">conds</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="s2">"_param_conditions"</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="n">pending</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;self&quot;</span><span class="p">,</span> <span class="s2">&quot;stack&quot;</span><span class="p">,</span> <span class="s2">&quot;previous_results&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"self"</span><span class="p">,</span> <span class="s2">"stack"</span><span class="p">,</span> <span class="s2">"previous_results"</span><span class="p">)</span>
         <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
     <span class="p">]</span>
     <span class="k">while</span> <span class="n">pending</span><span class="p">:</span>
@@ -867,15 +867,15 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_process_pending_entries</span><span class="p">(</span><span class="n">pending</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process pending spec entries with conditions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Process pending spec entries with conditions."""</span>
     <span class="n">progressed</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">to_retry</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
         <span class="n">name</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;condition&quot;</span><span class="p">),</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"condition"</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="n">should_ask</span> <span class="o">=</span> <span class="n">_resolve_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">should_ask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -892,11 +892,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_process_signature_pending</span><span class="p">(</span><span class="n">pending</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">conds</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process pending signature parameters with conditions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Process pending signature parameters with conditions."""</span>
     <span class="n">progressed</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">to_retry</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">conds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s2">&quot;condition&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">conds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="n">should_ask</span> <span class="o">=</span> <span class="n">_resolve_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">should_ask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">to_retry</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pname</span><span class="p">,</span> <span class="n">param</span><span class="p">))</span>
@@ -912,13 +912,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prompt_remaining</span><span class="p">(</span><span class="n">to_retry</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for remaining spec entries.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Prompt user for remaining spec entries."""</span>
     <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">to_retry</span><span class="p">:</span>
         <span class="n">name</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">cond</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;condition&quot;</span><span class="p">),</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"condition"</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">cond</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_resolve_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
             <span class="k">continue</span>
@@ -928,9 +928,9 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prompt_signature_remaining</span><span class="p">(</span><span class="n">to_retry</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">conds</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for remaining signature parameters.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Prompt user for remaining signature parameters."""</span>
     <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">to_retry</span><span class="p">:</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">conds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s2">&quot;condition&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">conds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">cond</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_resolve_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="n">default</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">_empty</span> <span class="k">else</span> <span class="kc">None</span>
@@ -940,7 +940,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Safely evaluate a conditional parameter dependency.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Safely evaluate a conditional parameter dependency."""</span>
     <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">try</span><span class="p">:</span>
@@ -952,18 +952,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prompt_and_cast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt user for a value and cast appropriately.&quot;&quot;&quot;</span>
-    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">typ</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): &quot;</span>  <span class="c1"># noqa</span>
+<span class="w">    </span><span class="sd">"""Prompt user for a value and cast appropriately."""</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span><span class="w"> </span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">typ</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): "</span>  <span class="c1"># noqa</span>
     <span class="n">val_str</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">_cast_input</span><span class="p">(</span><span class="n">val_str</span><span class="p">,</span> <span class="n">typ</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_processing_callable</span><span class="p">(</span><span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a processing callable filter, mask generator, or mask filter.</span>
 
 <span class="sd">    These are from built-ins or plugins.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">FILTER_MAP</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span>
@@ -977,43 +977,43 @@
             <span class="k">return</span> <span class="n">STACK_EDIT_MAP</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">_PLUGIN_ENTRYPOINTS</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_PLUGIN_ENTRYPOINTS</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing step &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing step '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' not found"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load processing step &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load processing step '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">raise</span>
 
 
 <div class="viewcode-block" id="get_processing_step_type">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.get_processing_step_type">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_processing_step_type</span><span class="p">(</span><span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the type of a processing step.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return the type of a processing step."""</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;filter&quot;</span>
+        <span class="k">return</span> <span class="s2">"filter"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">MASK_MAP</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;mask generator&quot;</span>
+        <span class="k">return</span> <span class="s2">"mask generator"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">MASK_FILTERS_MAP</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;mask filter&quot;</span>
+        <span class="k">return</span> <span class="s2">"mask filter"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">_PLUGIN_ENTRYPOINTS</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;plugin filter&quot;</span>
+        <span class="k">return</span> <span class="s2">"plugin filter"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">VIDEO_FILTER_MAP</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;video filter&quot;</span>
+        <span class="k">return</span> <span class="s2">"video filter"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">STACK_EDIT_MAP</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;stack edit&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span></div>
+        <span class="k">return</span> <span class="s2">"stack edit"</span>
+    <span class="k">return</span> <span class="s2">"unknown"</span></div>
 
 
 
 <div class="viewcode-block" id="ask_for_processing_params">
 <a class="viewcode-back" href="../../../api/playNano.cli.html#playNano.cli.utils.ask_for_processing_params">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_for_processing_params</span><span class="p">(</span><span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Introspect a processing callable&#39;s parameters and ask interactively.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Introspect a processing callable's parameters and ask interactively.</span>
 
 <span class="sd">    Skips the first positional arguments (data, mask).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">func</span> <span class="o">=</span> <span class="n">_get_processing_callable</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>  <span class="c1"># your existing resolver</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="n">conditions</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;_param_conditions&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">"_param_conditions"</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="c1"># parameters in signature order, excluding data-like args</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SKIP_PARAM_NAMES</span><span class="p">]</span>
@@ -1052,7 +1052,7 @@
 
             <span class="n">default</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">_empty</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="n">ann</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">annotation</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">annotation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">_empty</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): &quot;</span>  <span class="c1"># noqa</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): "</span>  <span class="c1"># noqa</span>
             <span class="n">val_str</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cast_input</span><span class="p">(</span><span class="n">val_str</span><span class="p">,</span> <span class="n">ann</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
 
@@ -1064,7 +1064,7 @@
                 <span class="n">ann</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">param</span><span class="o">.</span><span class="n">annotation</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">annotation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">_empty</span> <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">)</span>
-                <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span><span class="s1">&#39;__name__&#39;</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): &quot;</span>  <span class="c1"># noqa</span>
+                <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"  Enter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (type=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ann</span><span class="p">,</span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="n">ann</span><span class="p">))</span><span class="si">}</span><span class="s2">, default=</span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">): "</span>  <span class="c1"># noqa</span>
                 <span class="n">val_str</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_cast_input</span><span class="p">(</span><span class="n">val_str</span><span class="p">,</span> <span class="n">ann</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
             <span class="k">break</span>
@@ -1075,14 +1075,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_for_dump</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert Python objects into JSON/YAML-safe types suitable for safe_dump/json.dump.</span>
 
 <span class="sd">    - tuple -&gt; list</span>
 <span class="sd">    - numpy types -&gt; native Python types (numbers, lists)</span>
 <span class="sd">    - pathlib.Path -&gt; str</span>
 <span class="sd">    - recursively applied to lists/dicts</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Paths -&gt; strings</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
@@ -1114,12 +1114,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_loaded</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize objects returned by yaml.safe_load / json.load.</span>
 
 <span class="sd">    - Convert tuples to lists (some YAML loaders can still produce tuples)</span>
 <span class="sd">    - Recurse into dicts/lists</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">_normalize_loaded</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>

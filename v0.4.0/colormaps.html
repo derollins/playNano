@@ -512,9 +512,9 @@ alongside built-in options such as <code class="docutils literal notranslate"><s
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">playnano</span>  <span class="c1"># registers all three colourmaps on import</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;afm_brown&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;playnano_gold&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;classic_afm&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"classic_afm"</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="overview">
@@ -710,17 +710,17 @@ that used a similar colourmap.</p>
 <section id="programmatic">
 <h3>Programmatic<a class="headerlink" href="#programmatic" title="Link to this heading">¶</a></h3>
 <p>All three colourmaps are available as <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>
-<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v3.10.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearSegmentedColormap</span></code></a> objects via
+<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v3.11.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearSegmentedColormap</span></code></a> objects via
 <a class="reference internal" href="api/playnano.utils.colormaps.html#module-playnano.utils.colormaps" title="playnano.utils.colormaps"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.utils.colormaps</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span><span class="w"> </span><span class="nn">playnano</span>  <span class="c1"># register_custom_colormaps() is called on import</span>
 
  <span class="c1"># All three are now available by name for matplotlib functions like imshow():</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;afm_brown&quot;</span><span class="p">)</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;playnano_gold&quot;</span><span class="p">)</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;classic_afm&quot;</span><span class="p">)</span>
+ <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown"</span><span class="p">)</span>
+ <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">)</span>
+ <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"classic_afm"</span><span class="p">)</span>
 
  <span class="c1"># Reversed versions are also registered automatically</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;afm_brown_r&quot;</span><span class="p">)</span>
+ <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown_r"</span><span class="p">)</span>
 
  <span class="c1"># Additionally, they can be used within the playNano export functions</span>
  <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
@@ -728,12 +728,12 @@ that used a similar colourmap.</p>
  <span class="n">export_gif</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">,</span>
     <span class="n">make_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span>
-    <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="o">=</span><span class="s2">"exports"</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="o">=</span><span class="s2">"sample"</span><span class="p">,</span>
     <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">cmap_name</span><span class="o">=</span><span class="s2">&quot;playnano_gold&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;afm_brown&quot;, &quot;classic_afm&quot;</span>
-    <span class="n">zmin</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">zmax</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">cmap_name</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">,</span>  <span class="c1"># or "afm_brown", "classic_afm"</span>
+    <span class="n">zmin</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>

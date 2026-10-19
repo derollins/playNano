@@ -508,13 +508,13 @@
 <p>Module for applying version numbers to filters and masks.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.versioning.versioned_filter">
-<span class="sig-prename descclassname"><span class="pre">playnano.utils.versioning.</span></span><span class="sig-name descname"><span class="pre">versioned_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/utils/versioning.html#versioned_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.versioning.versioned_filter" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">playnano.utils.versioning.</span></span><span class="sig-name descname"><span class="pre">versioned_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/utils/versioning.html#versioned_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.versioning.versioned_filter" title="Link to this definition">¶</a></dt>
 <dd><p>Add decorator to assign a version number to a filter or mask function.</p>
 <p>This adds a <code class="docutils literal notranslate"><span class="pre">__version__</span></code> attribute to the decorated function, which can
 be used for provenance tracking or documentation purposes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The version string to assign to the function, e.g., “1.0.0”.</p>
+<dd class="field-odd"><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The version string to assign to the function, e.g., “1.0.0”.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The decorated function with a <code class="docutils literal notranslate"><span class="pre">__version__</span></code> attribute.</p>
@@ -524,11 +524,11 @@ be used for provenance tracking or documentation purposes.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">gaussian_filter</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="o">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gaussian_filter</span><span class="o">.</span><span class="n">__version__</span>
-<span class="go">&#39;1.0.0&#39;</span>
+<span class="go">'1.0.0'</span>
 </pre></div>
 </div>
 </dd></dl>

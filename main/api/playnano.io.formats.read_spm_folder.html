@@ -506,43 +506,75 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.formats.read_spm_folder">
 <span id="playnano-io-formats-read-spm-folder-module"></span><h1>playnano.io.formats.read_spm_folder module<a class="headerlink" href="#module-playnano.io.formats.read_spm_folder" title="Link to this heading">¶</a></h1>
-<p>Placeholder for a functional script to load a folder containing .spm frames.</p>
+<p>Module to load a folder of NanoScope .spm files as an AFMImageStack.</p>
+<p>Files contained within the same folder are read together.
+Files read with the height data in nm.</p>
+<p>Timing (per-frame): real <code class="docutils literal notranslate"><span class="pre">Relative</span> <span class="pre">frame</span> <span class="pre">time</span></code> values from each file’s header
+are used to compute both <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (seconds from frame 0) and
+<code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code> (gap to the next frame). Real values capture the actual
+inter-frame jitter and dead time between acquisitions, which the synthesised
+<code class="docutils literal notranslate"><span class="pre">lines</span> <span class="pre">/</span> <span class="pre">Scan</span> <span class="pre">Rate</span></code> estimate would miss. If any file is missing that field
+the reader falls back to the synth interval for the whole stack.</p>
+<p>Frame direction (<code class="docutils literal notranslate"><span class="pre">scan_direction</span></code>) is stored per frame because a NanoScope time
+series can capture alternating up/down frames. Absolute time (<code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code>)
+is derived from each file’s <code class="docutils literal notranslate"><span class="pre">Date</span></code> field.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_spm_folder.load_spm_folder">
-<span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_spm_folder.</span></span><span class="sig-name descname"><span class="pre">load_spm_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_spm_folder.html#load_spm_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_spm_folder.load_spm_folder" title="Link to this definition">¶</a></dt>
-<dd><p>Load an AFM video from a folder of individual .spm image files.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_spm_folder.</span></span><span class="sig-name descname"><span class="pre">load_spm_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_spm_folder.html#load_spm_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_spm_folder.load_spm_folder" title="Link to this definition">¶</a></dt>
+<dd><p>Load a NanoScope .spm time-series folder into an AFMImageStack.</p>
+<p>Real per-frame timing is used when <code class="docutils literal notranslate"><span class="pre">Relative</span> <span class="pre">frame</span> <span class="pre">time</span></code> is present in
+every file, giving actual inter-frame gaps rather than a uniform synthetic
+interval. Frame direction is stored per frame so a series with alternating
+up/down frames is faithfully represented.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>folder_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to folder containing .spm files.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Channel to extract.</p></li>
+<li><p><strong>folder_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Folder containing the .spm frames. Files with numeric extensions
+(<code class="docutils literal notranslate"><span class="pre">.001</span></code>, <code class="docutils literal notranslate"><span class="pre">.002</span></code> …) are treated as .spm too.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel name to extract.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded AFM image stack with metadata and per-frame info.</p>
+<dd class="field-even"><p>Loaded stack. <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> is taken from the first frame;
+per-frame values live in <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> (<code class="docutils literal notranslate"><span class="pre">timestamp</span></code>,
+<code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>, <code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code>, <code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scan_direction</span></code>, <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The final frame’s <code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> — there’s no frame N+1
+to measure against, and inventing a duration would silently claim
+information the file doesn’t contain.</p>
+<p><code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> is derived from <code class="docutils literal notranslate"><span class="pre">Date</span></code>, which is naive local time
+with second precision. It is good enough for provenance but should not be
+used for sub-second alignment across machines.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_spm_folder.parse_spm_header">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_spm_folder.</span></span><span class="sig-name descname"><span class="pre">parse_spm_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65536</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/io/formats/read_spm_folder.html#parse_spm_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_spm_folder.parse_spm_header" title="Link to this definition">¶</a></dt>
-<dd><p>Extract ASCII header key-value pairs from a <cite>.spm</cite> file.</p>
+<dd><p>Extract ASCII header key-value pairs from a .spm file.</p>
+<p>NanoScope headers are backslash-prefixed ‘key: value’ lines at the start
+of the file, followed by the binary image data at <code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">offset</span></code>. This
+reads the first <code class="docutils literal notranslate"><span class="pre">max_bytes</span></code> and parses whatever key/value lines it finds.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>Path</em>) – Path to the <cite>.spm</cite> file.</p></li>
-<li><p><strong>max_bytes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bytes to read from the start of the file. Default is 65536.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>Path</em>) – Path to the .spm file.</p></li>
+<li><p><strong>max_bytes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Bytes to read from the start of the file. The default (65 kB) covers
+the fields this reader needs on typical Dimension/BioScope files, but
+very large headers may need more.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Mapping of header keys to values as strings.</p>
+<dd class="field-even"><p>Mapping of header keys to values as strings (values keep their unit
+suffixes; use <code class="docutils literal notranslate"><span class="pre">_first_float</span></code> to strip them).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>

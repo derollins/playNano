@@ -298,15 +298,15 @@ implement two things:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playNano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">MyModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;my_module&quot;</span>
+        <span class="k">return</span> <span class="s2">"my_module"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span> <span class="n">previous_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="c1"># Example: count total number of pixels in the dataset</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"count"</span><span class="p">:</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Outputs must be returned as a dictionary mapping <strong>string keys</strong> to
@@ -318,15 +318,15 @@ results (arrays, dicts, numbers, etc.). These values are stored under
 <p>If your module requires the outputs of another analysis step, you can
 declare this using the <code class="docutils literal notranslate"><span class="pre">requires</span></code> class attribute:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyDependentModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;detect_particles&quot;</span><span class="p">]</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"detect_particles"</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;my_dependent&quot;</span>
+        <span class="k">return</span> <span class="s2">"my_dependent"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">previous_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
-        <span class="n">particles</span> <span class="o">=</span> <span class="n">previous_results</span><span class="p">[</span><span class="s2">&quot;detect_particles&quot;</span><span class="p">][</span><span class="s2">&quot;coords&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;n_particles&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)}</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="n">previous_results</span><span class="p">[</span><span class="s2">"detect_particles"</span><span class="p">][</span><span class="s2">"coords"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"n_particles"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)}</span>
 </pre></div>
 </div>
 <p>This ensures the pipeline provides access to upstream results.</p>
@@ -337,8 +337,8 @@ declare this using the <code class="docutils literal notranslate"><span class="p
 <h2>Registering the Module<a class="headerlink" href="#registering-the-module" title="Link to this heading">¶</a></h2>
 <p>Add an entry under <code class="docutils literal notranslate"><span class="pre">[project.entry-points.&quot;playNano.analysis&quot;]</span></code> in
 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> so the plugin system can discover your module:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">&quot;playNano.analysis&quot;</span><span class="k">]</span>
-<span class="n">my_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mypackage.mymodule:MyModule&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.</span><span class="s2">"playNano.analysis"</span><span class="k">]</span>
+<span class="n">my_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"mypackage.mymodule:MyModule"</span>
 </pre></div>
 </div>
 <p>After installation (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code>), playNano will automatically detect
@@ -361,14 +361,14 @@ generated module documentation.</p></li>
 <h2>Usage in a Pipeline<a class="headerlink" href="#usage-in-a-pipeline" title="Link to this heading">¶</a></h2>
 <p>Once installed, your module can be invoked just like a built-in one:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/sample.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;my_module:param1=42&quot;</span>
+<span class="w">    </span>--analysis-steps<span class="w"> </span><span class="s2">"my_module:param1=42"</span>
 </pre></div>
 </div>
 <p>or programmatically:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playNano.analysis.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisPipeline</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
-<span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;my_module&quot;</span><span class="p">,</span> <span class="n">param1</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"my_module"</span><span class="p">,</span> <span class="n">param1</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
 </pre></div>
 </div>

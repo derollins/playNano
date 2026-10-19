@@ -498,7 +498,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.data_loaders</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Data loaders for AFM image stacks exported by **playNano**.</span>
 
 <span class="sd">This module provides readers for serialized AFMImageStack bundles created</span>
@@ -516,7 +516,7 @@
 <span class="sd">    Load a `.h5` bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
 <span class="sd">load_ome_tiff_stack</span>
 <span class="sd">    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -533,8 +533,8 @@
 
 <div class="viewcode-block" id="load_npz_bundle">
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_npz_bundle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_npz_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_npz_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle.</span>
 
 <span class="sd">    The `.npz` file must contain the following keys:</span>
@@ -554,7 +554,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
 <span class="sd">        Path to the `.npz` file.</span>
-<span class="sd">    channel : str, default=&quot;height_trace&quot;</span>
+<span class="sd">    channel : str, default="height_trace"</span>
 <span class="sd">        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`</span>
 <span class="sd">        but ignored when reading the bundle.</span>
 
@@ -568,38 +568,38 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If required keys are missing or JSON blobs cannot be decoded.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">arrs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Core data</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
-    <span class="n">pixel_size_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;pixel_size_nm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">channel</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
+    <span class="n">pixel_size_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">"pixel_size_nm"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
     <span class="c1"># Metadata</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;frame_metadata_json&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">"frame_metadata_json"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing &#39;frame_metadata_json&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing 'frame_metadata_json'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in &#39;frame_metadata_json&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in 'frame_metadata_json': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">provenance</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;provenance_json&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">provenance</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">"provenance_json"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing &#39;provenance_json&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing 'provenance_json'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in &#39;provenance_json&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in 'provenance_json': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="n">state_backups</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="s2">&quot;state_backups_json&quot;</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">"state_backups_json"</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">state_backups</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">&quot;state_backups_json&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="n">state_backups</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arrs</span><span class="p">[</span><span class="s2">"state_backups_json"</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in &#39;state_backups_json&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON in 'state_backups_json': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="c1"># Build stack</span>
@@ -616,17 +616,17 @@
     <span class="c1"># Provenance</span>
     <span class="n">saved_prov</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="c1"># annotate bundle info</span>
-    <span class="n">saved_prov</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bundle&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">&quot;npz&quot;</span><span class="p">)</span>
+    <span class="n">saved_prov</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"bundle"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">"npz"</span><span class="p">)</span>
     <span class="c1"># then replace stack.provenance wholesale</span>
     <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span> <span class="o">=</span> <span class="n">saved_prov</span>
 
     <span class="c1"># Processed and mask layers</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">arrs</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;processed__&quot;</span><span class="p">):</span>
-            <span class="n">step</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"processed__"</span><span class="p">):</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"__"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;masks__&quot;</span><span class="p">):</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"masks__"</span><span class="p">):</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"__"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">stack</span></div>
@@ -635,8 +635,8 @@
 
 <div class="viewcode-block" id="load_h5_bundle">
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_h5_bundle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_h5_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_h5_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle.</span>
 
 <span class="sd">    Expected HDF5 structure</span>
@@ -659,7 +659,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
 <span class="sd">        Path to the `.h5` file.</span>
-<span class="sd">    channel : str, default=&quot;height_trace&quot;</span>
+<span class="sd">    channel : str, default="height_trace"</span>
 <span class="sd">        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`</span>
 <span class="sd">        but ignored when reading the bundle.</span>
 
@@ -675,34 +675,34 @@
 <span class="sd">        If required datasets are missing or JSON decoding fails.</span>
 <span class="sd">        If required datasets (``frame_metadata_json`` or ``provenance_json``)</span>
 <span class="sd">        are missing or contain invalid JSON.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="n">pixel_size_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;pixel_size_nm&quot;</span><span class="p">])</span>
-        <span class="n">channel</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">])</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">pixel_size_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"pixel_size_nm"</span><span class="p">])</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">])</span>
 
         <span class="n">processed</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">n</span><span class="p">:</span> <span class="n">ds</span><span class="p">[()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processed&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="n">n</span><span class="p">:</span> <span class="n">ds</span><span class="p">[()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"processed"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">ds</span><span class="p">[()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">ds</span><span class="p">[()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"masks"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
-        <span class="k">if</span> <span class="s2">&quot;frame_metadata_json&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing &#39;frame_metadata_json&#39;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;provenance_json&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing &#39;provenance_json&#39;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"frame_metadata_json"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing 'frame_metadata_json'"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"provenance_json"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> missing 'provenance_json'"</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;frame_metadata_json&quot;</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
-            <span class="n">provenance</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;provenance_json&quot;</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">"frame_metadata_json"</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
+            <span class="n">provenance</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">"provenance_json"</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON metadata: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid JSON metadata: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
         <span class="n">state_backups</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="s2">&quot;state_backups_json&quot;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"state_backups_json"</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">state_backups</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;state_backups_json&quot;</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+                <span class="n">state_backups</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">"state_backups_json"</span><span class="p">][()]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid &#39;state_backups_json&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: invalid 'state_backups_json': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
         <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -719,8 +719,8 @@
 
         <span class="c1"># Attach provenance and mark as bundle</span>
         <span class="n">saved_prov</span> <span class="o">=</span> <span class="n">provenance</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">saved_prov</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bundle&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">&quot;h5&quot;</span>
+        <span class="n">saved_prov</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"bundle"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">"h5"</span>
         <span class="p">)</span>
         <span class="c1"># then replace stack.provenance wholesale</span>
         <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span> <span class="o">=</span> <span class="n">saved_prov</span>
@@ -731,8 +731,8 @@
 
 <div class="viewcode-block" id="load_ome_tiff_stack">
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_ome_tiff_stack">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_ome_tiff_stack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_ome_tiff_stack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
 
 <span class="sd">    Attempts to parse OME-XML and custom metadata tags to reconstruct</span>
@@ -763,14 +763,14 @@
 <span class="sd">    ValueError</span>
 <span class="sd">        If the image array shape is unsupported or essential metadata</span>
 <span class="sd">        cannot be parsed.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
 
     <span class="c1"># read image + ome metadata</span>
     <span class="k">with</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">TiffFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">tif</span><span class="p">:</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
         <span class="n">ome_xml</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">ome_metadata</span>
-        <span class="n">description_tag</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ImageDescription&quot;</span><span class="p">)</span>
+        <span class="n">description_tag</span> <span class="o">=</span> <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ImageDescription"</span><span class="p">)</span>
         <span class="n">metadata_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">description_tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -784,10 +784,10 @@
         <span class="k">if</span> <span class="n">custom_tag_id</span> <span class="ow">in</span> <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">custom_tag_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
-                    <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="n">custom_tag_id</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                    <span class="n">tif</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="n">custom_tag_id</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not decode custom tag </span><span class="si">{</span><span class="n">custom_tag_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not decode custom tag </span><span class="si">{</span><span class="n">custom_tag_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Normalize dimensions</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
@@ -795,7 +795,7 @@
         <span class="k">elif</span> <span class="n">img</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected OME-TIFF shape: </span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected OME-TIFF shape: </span><span class="si">{</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Defaults</span>
         <span class="n">ps_nm</span> <span class="o">=</span> <span class="mf">1.0</span>
@@ -805,28 +805,28 @@
         <span class="c1"># Parse OME-XML for physical sizes, timestamps, and channel name</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">ome_xml</span><span class="p">)</span>
-            <span class="n">ns</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ome&quot;</span><span class="p">:</span> <span class="s2">&quot;http://www.openmicroscopy.org/Schemas/OME/2016-06&quot;</span><span class="p">}</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ome"</span><span class="p">:</span> <span class="s2">"http://www.openmicroscopy.org/Schemas/OME/2016-06"</span><span class="p">}</span>
 
-            <span class="n">pixels</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//ome:Pixels&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pixels</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PhysicalSizeX&quot;</span><span class="p">):</span>
-                <span class="n">ps_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">pixels</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;PhysicalSizeX&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e3</span>  <span class="c1"># µm → nm</span>
+            <span class="n">pixels</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">".//ome:Pixels"</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pixels</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"PhysicalSizeX"</span><span class="p">):</span>
+                <span class="n">ps_nm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">pixels</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"PhysicalSizeX"</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e3</span>  <span class="c1"># µm → nm</span>
 
-            <span class="n">planes</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//ome:Plane&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+            <span class="n">planes</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">".//ome:Plane"</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
             <span class="n">time_points</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DeltaT&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">planes</span><span class="p">)</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DeltaT"</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">planes</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">if</span> <span class="n">time_points</span><span class="p">:</span>
                 <span class="n">timestamps</span> <span class="o">=</span> <span class="n">time_points</span>
 
-            <span class="n">channel_elem</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//ome:Channel&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">channel_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;Name&quot;</span> <span class="ow">in</span> <span class="n">channel_elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
-                <span class="n">channel_name</span> <span class="o">=</span> <span class="n">channel_elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span>
+            <span class="n">channel_elem</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">".//ome:Channel"</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">channel_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"Name"</span> <span class="ow">in</span> <span class="n">channel_elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+                <span class="n">channel_name</span> <span class="o">=</span> <span class="n">channel_elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">"Name"</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse OME-XML metadata for </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to parse OME-XML metadata for </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
+        <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frame_metadata</span><span class="p">:</span>
-            <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ps_nm</span>
+            <span class="n">frame</span><span class="p">[</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ps_nm</span>
 
         <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -839,15 +839,15 @@
         <span class="n">provenance_clean</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">custom_tag_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">custom_tag_data</span>
-        <span class="k">elif</span> <span class="s2">&quot;UserDataProvenance&quot;</span> <span class="ow">in</span> <span class="n">metadata_dict</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="s2">"UserDataProvenance"</span> <span class="ow">in</span> <span class="n">metadata_dict</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata_dict</span><span class="p">[</span><span class="s2">&quot;UserDataProvenance&quot;</span><span class="p">])</span>
+                <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata_dict</span><span class="p">[</span><span class="s2">"UserDataProvenance"</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not decode provenance from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not decode provenance from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Always add bundle info</span>
-        <span class="n">provenance_clean</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bundle&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">&quot;ome-tiff&quot;</span>
+        <span class="n">provenance_clean</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"bundle"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">bundle_file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">bundle_type</span><span class="o">=</span><span class="s2">"ome-tiff"</span>
         <span class="p">)</span>
         <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span> <span class="o">=</span> <span class="n">provenance_clean</span>
 

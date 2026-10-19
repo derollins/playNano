@@ -498,7 +498,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.filters</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module for applying flattening and filtering to AFM images in Numpy arrays.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Module for applying flattening and filtering to AFM images in Numpy arrays."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -514,9 +514,9 @@
 
 <div class="viewcode-block" id="row_median_align">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.row_median_align">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">row_median_align</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Subtract the median of each row from that row to remove horizontal banding.</span>
 
 <span class="sd">    Parameters</span>
@@ -528,7 +528,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Row-aligned image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">aligned</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="c1"># Compute median for each row</span>
     <span class="n">medians</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">aligned</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -540,9 +540,9 @@
 
 <div class="viewcode-block" id="remove_plane">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.remove_plane">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">remove_plane</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fit a 2D plane to the image using linear regression and subtract it.</span>
 
 <span class="sd">    Uses a 2D plane (z = ax + by + c) to remove to remove overall tilt.</span>
@@ -556,7 +556,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Plane-removed image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
     <span class="c1"># Create coordinate grids</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
@@ -578,9 +578,9 @@
 
 <div class="viewcode-block" id="polynomial_flatten">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.polynomial_flatten">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">polynomial_flatten</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Subtract a 2D polynomial surface of given order to flatten AFM image data.</span>
 
 <span class="sd">    Parameters</span>
@@ -599,12 +599,12 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If data is not a 2D array or if order is not a positive integer.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Validate input shape and type</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input data must be a 2D NumPy array.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Input data must be a 2D NumPy array."</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Polynomial order must be a positive integer.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Polynomial order must be a positive integer."</span><span class="p">)</span>
 
     <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
 
@@ -618,14 +618,14 @@
         <span class="n">poly</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to generate polynomial features: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to generate polynomial features: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="c1"># Solve for least-squares polynomial surface</span>
     <span class="n">Zf</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">coeff</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Zf</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Least squares fitting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Least squares fitting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="c1"># Reconstruct the fitted surface and subtract it</span>
     <span class="n">Z_fit</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">coeff</span>
@@ -637,9 +637,9 @@
 
 <div class="viewcode-block" id="zero_mean">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.zero_mean">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.2.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.2.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">zero_mean</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Subtract the overall mean height to center data around zero.</span>
 
 <span class="sd">    Parameters</span>
@@ -653,19 +653,42 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Zero-mean image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean value calculated: </span><span class="si">{</span><span class="n">mean_val</span><span class="si">}</span><span class="s2">. Subtracting.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mean value calculated: </span><span class="si">{</span><span class="n">mean_val</span><span class="si">}</span><span class="s2">. Subtracting."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">img</span> <span class="o">-</span> <span class="n">mean_val</span></div>
+
+
+
+<div class="viewcode-block" id="zero_median">
+<a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.zero_median">[docs]</a>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">zero_median</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Subtract the overall median height to center the background around zero.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        2D AFM image data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Zero-median image.</span>
+<span class="sd">    """</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">median_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img</span> <span class="o">-</span> <span class="n">median_val</span></div>
 
 
 
 <div class="viewcode-block" id="gaussian_filter">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.gaussian_filter">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_filter</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply a Gaussian low-pass filter to smooth high-frequency noise.</span>
 
 <span class="sd">    Parameters</span>
@@ -679,16 +702,16 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Smoothed image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="vertical_flip">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.vertical_flip">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">vertical_flip</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Vertically flip an image, reversing the row order.</span>
 
 <span class="sd">    Parameters</span>
@@ -700,7 +723,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Vertically flipped image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 
@@ -708,14 +731,15 @@
 <div class="viewcode-block" id="register_filters">
 <a class="viewcode-back" href="../../../api/playnano.processing.filters.html#playnano.processing.filters.register_filters">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_filters</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return list of filter options.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return list of filter options."""</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;remove_plane&quot;</span><span class="p">:</span> <span class="n">remove_plane</span><span class="p">,</span>
-        <span class="s2">&quot;row_median_align&quot;</span><span class="p">:</span> <span class="n">row_median_align</span><span class="p">,</span>
-        <span class="s2">&quot;zero_mean&quot;</span><span class="p">:</span> <span class="n">zero_mean</span><span class="p">,</span>
-        <span class="s2">&quot;polynomial_flatten&quot;</span><span class="p">:</span> <span class="n">polynomial_flatten</span><span class="p">,</span>
-        <span class="s2">&quot;gaussian_filter&quot;</span><span class="p">:</span> <span class="n">gaussian_filter</span><span class="p">,</span>
-        <span class="s2">&quot;vertical_flip&quot;</span><span class="p">:</span> <span class="n">vertical_flip</span><span class="p">,</span>
+        <span class="s2">"remove_plane"</span><span class="p">:</span> <span class="n">remove_plane</span><span class="p">,</span>
+        <span class="s2">"row_median_align"</span><span class="p">:</span> <span class="n">row_median_align</span><span class="p">,</span>
+        <span class="s2">"zero_mean"</span><span class="p">:</span> <span class="n">zero_mean</span><span class="p">,</span>
+        <span class="s2">"zero_median"</span><span class="p">:</span> <span class="n">zero_median</span><span class="p">,</span>
+        <span class="s2">"polynomial_flatten"</span><span class="p">:</span> <span class="n">polynomial_flatten</span><span class="p">,</span>
+        <span class="s2">"gaussian_filter"</span><span class="p">:</span> <span class="n">gaussian_filter</span><span class="p">,</span>
+        <span class="s2">"vertical_flip"</span><span class="p">:</span> <span class="n">vertical_flip</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 </pre></div>

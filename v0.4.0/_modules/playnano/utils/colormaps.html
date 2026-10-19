@@ -497,13 +497,13 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.colormaps</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Utilities for loading, registering, and validating custom colormaps.</span>
 
 <span class="sd">This module provides helper functions to register custom colormaps shipped</span>
 <span class="sd">with the playNano package, validate colormap names, and safely resolve</span>
 <span class="sd">user-provided colormap inputs with sensible fallbacks.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">resources</span>
@@ -515,11 +515,11 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">DEFAULT_CMAP</span> <span class="o">=</span> <span class="s2">&quot;afm_brown&quot;</span>
+<span class="n">DEFAULT_CMAP</span> <span class="o">=</span> <span class="s2">"afm_brown"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_load_and_register_cmap</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load a colormap from a CSV file and register it with Matplotlib.</span>
 
 <span class="sd">    The CSV file is expected to contain a 256x3 array of RGB values in the</span>
@@ -542,20 +542,20 @@
 <span class="sd">    Exception</span>
 <span class="sd">        Any exception raised by NumPy, Matplotlib, or file I/O is propagated</span>
 <span class="sd">        to the caller. Callers are expected to handle failures gracefully.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">rgb_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">rgb_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="p">():</span>
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">ListedColormap</span><span class="p">(</span><span class="n">rgb_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
         <span class="c1"># Register reversed version (conventional in AFM analysis)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cmap</span><span class="o">.</span><span class="n">reversed</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_r&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cmap</span><span class="o">.</span><span class="n">reversed</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_r"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="register_custom_colormaps">
 <a class="viewcode-back" href="../../../api/playnano.utils.colormaps.html#playnano.utils.colormaps.register_custom_colormaps">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_custom_colormaps</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load and register all custom playNano colormaps.</span>
 
 <span class="sd">    Colormap definitions are stored as CSV files within the</span>
@@ -572,28 +572,28 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Resolve the resource directory even when installed as a wheel or zip</span>
-    <span class="n">resource_path</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">&quot;playnano.resources.colormaps&quot;</span><span class="p">)</span>
+    <span class="n">resource_path</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">"playnano.resources.colormaps"</span><span class="p">)</span>
 
     <span class="n">cmaps_to_load</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;playnano_gold&quot;</span><span class="p">:</span> <span class="s2">&quot;playnano_gold.csv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;afm_brown&quot;</span><span class="p">:</span> <span class="s2">&quot;afm_brown.csv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;classic_afm&quot;</span><span class="p">:</span> <span class="s2">&quot;classic_afm.csv&quot;</span><span class="p">,</span>
+        <span class="s2">"playnano_gold"</span><span class="p">:</span> <span class="s2">"playnano_gold.csv"</span><span class="p">,</span>
+        <span class="s2">"afm_brown"</span><span class="p">:</span> <span class="s2">"afm_brown.csv"</span><span class="p">,</span>
+        <span class="s2">"classic_afm"</span><span class="p">:</span> <span class="s2">"classic_afm.csv"</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">cmaps_to_load</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_load_and_register_cmap</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">resource_path</span> <span class="o">/</span> <span class="n">filename</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to load colormap </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Failed to load colormap </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="is_valid_cmap">
 <a class="viewcode-back" href="../../../api/playnano.utils.colormaps.html#playnano.utils.colormaps.is_valid_cmap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_cmap</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether a colormap name is available in Matplotlib.</span>
 
 <span class="sd">    This includes both:</span>
@@ -610,7 +610,7 @@
 <span class="sd">    bool</span>
 <span class="sd">        True if the colormap exists and can be used by Matplotlib,</span>
 <span class="sd">        False otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -621,7 +621,7 @@
 <div class="viewcode-block" id="resolve_cmap">
 <a class="viewcode-back" href="../../../api/playnano.utils.colormaps.html#playnano.utils.colormaps.resolve_cmap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve a user-provided colormap name to a valid colormap.</span>
 
 <span class="sd">    If the requested colormap is not recognized, a warning is logged and</span>
@@ -649,10 +649,10 @@
 <span class="sd">    --------</span>
 <span class="sd">    is_valid_cmap : Check whether a colormap name is supported.</span>
 <span class="sd">    DEFAULT_CMAP : Default colormap used as a fallback.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Unknown colormap &#39;</span><span class="si">%s</span><span class="s2">&#39;, falling back to &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span><span class="p">,</span>
+            <span class="s2">"Unknown colormap '</span><span class="si">%s</span><span class="s2">', falling back to '</span><span class="si">%s</span><span class="s2">'."</span><span class="p">,</span>
             <span class="n">cmap</span><span class="p">,</span>
             <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
         <span class="p">)</span>
@@ -664,7 +664,7 @@
 <div class="viewcode-block" id="get_available_cmaps">
 <a class="viewcode-back" href="../../../api/playnano.utils.colormaps.html#playnano.utils.colormaps.get_available_cmaps">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_available_cmaps</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a sorted list of available colormap names.</span>
 
 <span class="sd">    This includes all built-in Matplotlib colormaps as well as any custom</span>
@@ -674,7 +674,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    list of str</span>
 <span class="sd">        Sorted list of colormap names.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="p">())</span></div>
 
 </pre></div>

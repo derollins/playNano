@@ -497,7 +497,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.image_sequence_export</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Image-sequence export utilities for AFM image stacks.</span>
 
 <span class="sd">This module provides functions for saving each frame of an AFM image stack as</span>
@@ -511,7 +511,7 @@
 <span class="sd">- matplotlib</span>
 <span class="sd">- numpy</span>
 <span class="sd">- Pillow (PIL)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -534,7 +534,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">_VALID_IMAGE_FORMATS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">}</span>
+<span class="n">_VALID_IMAGE_FORMATS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"png"</span><span class="p">,</span> <span class="s2">"jpg"</span><span class="p">,</span> <span class="s2">"jpeg"</span><span class="p">}</span>
 
 <span class="c1"># JPEG quality (0–95). Only used when saving JPEG files.</span>
 <span class="n">_JPEG_QUALITY</span> <span class="o">=</span> <span class="mi">90</span>
@@ -547,9 +547,9 @@
     <span class="n">pixel_sizes_nm</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">timestamps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">scale_bar_length_nm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-    <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;output_frames&quot;</span><span class="p">,</span>
-    <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;frame&quot;</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">"output_frames"</span><span class="p">,</span>
+    <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"frame"</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"png"</span><span class="p">,</span>
     <span class="n">cmap_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
     <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -557,7 +557,7 @@
     <span class="n">draw_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save every frame of an AFM image stack as an individual image file.</span>
 
 <span class="sd">    Frames are normalised, colourised with a matplotlib colormap, and annotated</span>
@@ -581,16 +581,16 @@
 <span class="sd">        automatically if it does not exist.</span>
 <span class="sd">    base_name : str</span>
 <span class="sd">        Stem used for each file: ``&lt;base_name&gt;_0000.png``, etc.</span>
-<span class="sd">        Default is ``&quot;frame&quot;``.</span>
-<span class="sd">    fmt : {&quot;png&quot;, &quot;jpg&quot;, &quot;jpeg&quot;}</span>
-<span class="sd">        Image file format. Default is ``&quot;png&quot;``.</span>
+<span class="sd">        Default is ``"frame"``.</span>
+<span class="sd">    fmt : {"png", "jpg", "jpeg"}</span>
+<span class="sd">        Image file format. Default is ``"png"``.</span>
 <span class="sd">    cmap_name : str</span>
-<span class="sd">        Name of the matplotlib colormap. Default is ``&#39;afmhot&#39;``.</span>
+<span class="sd">        Name of the matplotlib colormap. Default is ``'afmhot'``.</span>
 <span class="sd">    zmin : float or str or None, optional</span>
-<span class="sd">        Minimum z-value mapped to the low end of the colormap. ``&quot;auto&quot;``</span>
+<span class="sd">        Minimum z-value mapped to the low end of the colormap. ``"auto"``</span>
 <span class="sd">        uses the 1st percentile of the full stack.</span>
 <span class="sd">    zmax : float or str or None, optional</span>
-<span class="sd">        Maximum z-value mapped to the high end of the colormap. ``&quot;auto&quot;``</span>
+<span class="sd">        Maximum z-value mapped to the high end of the colormap. ``"auto"``</span>
 <span class="sd">        uses the 99th percentile of the full stack.</span>
 <span class="sd">    draw_ts : bool</span>
 <span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
@@ -617,14 +617,14 @@
 <span class="sd">      :data:`_JPEG_QUALITY` (default 90).</span>
 <span class="sd">    - Zero-padded four-digit frame indices are used so files sort correctly</span>
 <span class="sd">      up to 9 999 frames; for larger stacks the padding grows automatically.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fmt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VALID_IMAGE_FORMATS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unsupported image format &#39;</span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">&#39;. Choose from </span><span class="si">{</span><span class="n">_VALID_IMAGE_FORMATS</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="sa">f</span><span class="s2">"Unsupported image format '</span><span class="si">{</span><span class="n">fmt</span><span class="si">}</span><span class="s2">'. Choose from </span><span class="si">{</span><span class="n">_VALID_IMAGE_FORMATS</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
-    <span class="n">save_fmt</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span> <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;png&quot;</span>
-    <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;jpg&quot;</span> <span class="k">if</span> <span class="n">save_fmt</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span> <span class="k">else</span> <span class="s2">&quot;png&quot;</span>
+    <span class="n">save_fmt</span> <span class="o">=</span> <span class="s2">"jpeg"</span> <span class="k">if</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"jpg"</span><span class="p">,</span> <span class="s2">"jpeg"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"png"</span>
+    <span class="n">ext</span> <span class="o">=</span> <span class="s2">"jpg"</span> <span class="k">if</span> <span class="n">save_fmt</span> <span class="o">==</span> <span class="s2">"jpeg"</span> <span class="k">else</span> <span class="s2">"png"</span>
 
     <span class="n">output_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
     <span class="n">output_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -643,7 +643,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">has_valid_timestamps</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid timestamps provided; frame indices will be used instead.&quot;</span>
+            <span class="s2">"Invalid timestamps provided; frame indices will be used instead."</span>
         <span class="p">)</span>
 
     <span class="c1"># Validate pixel sizes</span>
@@ -653,7 +653,7 @@
         <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pixel_sizes_nm</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_frames</span>
     <span class="p">):</span>
         <span class="n">draw_scale</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid pixel_sizes_nm list; scale bar will be omitted.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Invalid pixel_sizes_nm list; scale bar will be omitted."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">compute_zscale_range</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">zmin</span><span class="p">,</span> <span class="n">zmax</span><span class="p">)</span>
@@ -661,8 +661,8 @@
         <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="n">save_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">save_fmt</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">:</span>
-        <span class="n">save_kwargs</span><span class="p">[</span><span class="s2">&quot;quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_JPEG_QUALITY</span>
+    <span class="k">if</span> <span class="n">save_fmt</span> <span class="o">==</span> <span class="s2">"jpeg"</span><span class="p">:</span>
+        <span class="n">save_kwargs</span><span class="p">[</span><span class="s2">"quality"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_JPEG_QUALITY</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_stack</span><span class="p">):</span>
         <span class="c1"># Determine timestamps</span>
@@ -673,7 +673,7 @@
                 <span class="n">timestamp</span> <span class="o">=</span> <span class="n">i</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid timestamps provided, using frame index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> as timestamp.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid timestamps provided, using frame index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> as timestamp."</span>
             <span class="p">)</span>
             <span class="n">timestamp</span> <span class="o">=</span> <span class="n">i</span>
 
@@ -692,12 +692,12 @@
             <span class="n">zmax_val</span><span class="o">=</span><span class="n">zmax_val</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">pad</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">pad</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">frame_annotated</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">output_folder</span> <span class="o">/</span> <span class="n">file_name</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">save_fmt</span><span class="p">,</span> <span class="o">**</span><span class="n">save_kwargs</span>
         <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_frames</span><span class="si">}</span><span class="s2"> frames written to </span><span class="si">{</span><span class="n">output_folder</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_frames</span><span class="si">}</span><span class="s2"> frames written to </span><span class="si">{</span><span class="n">output_folder</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output_folder</span></div>
 
 
@@ -710,7 +710,7 @@
     <span class="n">output_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">scale_bar_nm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"png"</span><span class="p">,</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -719,7 +719,7 @@
     <span class="n">cmap_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Export an AFM image stack as a folder of annotated PNG or JPEG images.</span>
 
 <span class="sd">    Each frame is saved as a separate file named</span>
@@ -733,23 +733,23 @@
 <span class="sd">        Whether to generate the image sequence. Returns immediately when</span>
 <span class="sd">        ``False``.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Root directory for output. Defaults to ``&quot;output&quot;`` when ``None``.</span>
+<span class="sd">        Root directory for output. Defaults to ``"output"`` when ``None``.</span>
 <span class="sd">        A subfolder named after the stack stem is created inside it.</span>
 <span class="sd">    output_name : str or None</span>
 <span class="sd">        Base name for the subfolder and frame files. Derived from the stack</span>
 <span class="sd">        file name when ``None``.</span>
 <span class="sd">    scale_bar_nm : int or None</span>
 <span class="sd">        Scale bar length in nanometres. Defaults to 100 nm when ``None``.</span>
-<span class="sd">    fmt : {&quot;png&quot;, &quot;jpg&quot;, &quot;jpeg&quot;}</span>
-<span class="sd">        Image file format. Default is ``&quot;png&quot;``.</span>
+<span class="sd">    fmt : {"png", "jpg", "jpeg"}</span>
+<span class="sd">        Image file format. Default is ``"png"``.</span>
 <span class="sd">    raw : bool</span>
 <span class="sd">        If ``True``, export the unprocessed raw snapshot. Default is</span>
 <span class="sd">        ``False``.</span>
 <span class="sd">    zmin : float or None, optional</span>
-<span class="sd">        Minimum z-value for colormap scaling. ``&quot;auto&quot;`` triggers the 1st</span>
+<span class="sd">        Minimum z-value for colormap scaling. ``"auto"`` triggers the 1st</span>
 <span class="sd">        percentile. ``None`` uses per-frame minimum.</span>
 <span class="sd">    zmax : float or None, optional</span>
-<span class="sd">        Maximum z-value for colormap scaling. ``&quot;auto&quot;`` triggers the 99th</span>
+<span class="sd">        Maximum z-value for colormap scaling. ``"auto"`` triggers the 99th</span>
 <span class="sd">        percentile. ``None`` uses per-frame maximum.</span>
 <span class="sd">    draw_ts : bool</span>
 <span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
@@ -767,27 +767,27 @@
 <span class="sd">    - Timestamps and pixel size are read from ``afm_stack.frame_metadata``.</span>
 <span class="sd">      When exporting raw data after an ``edit_stack`` step, the pre-edit</span>
 <span class="sd">      metadata stored in</span>
-<span class="sd">      ``afm_stack.state_backups[&#39;frame_metadata_before_edit&#39;]`` is used.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">      ``afm_stack.state_backups['frame_metadata_before_edit']`` is used.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">make_sequence</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="n">out_root</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
+    <span class="n">out_root</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"output"</span><span class="p">)</span>
     <span class="n">base</span> <span class="o">=</span> <span class="n">sanitize_output_name</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
 
     <span class="n">stack_data</span><span class="p">,</span> <span class="n">meta_src</span><span class="p">,</span> <span class="n">is_filtered</span> <span class="o">=</span> <span class="n">resolve_stack_data</span><span class="p">(</span><span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">is_filtered</span><span class="p">:</span>
-        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_filtered&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_filtered"</span>
 
-    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">[</span><span class="n">md</span><span class="p">[</span><span class="s2">"timestamp"</span><span class="p">]</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span><span class="p">]</span>
     <span class="n">pixels_to_nm</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">md</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span>
+        <span class="n">md</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span> <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">meta_src</span>
     <span class="p">]</span>
 
     <span class="n">bar_nm</span> <span class="o">=</span> <span class="n">scale_bar_nm</span> <span class="k">if</span> <span class="n">scale_bar_nm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">100</span>
     <span class="n">frames_dir</span> <span class="o">=</span> <span class="n">out_root</span> <span class="o">/</span> <span class="n">base</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[export] Writing image sequence → </span><span class="si">{</span><span class="n">frames_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[export] Writing image sequence → </span><span class="si">{</span><span class="n">frames_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">create_image_sequence</span><span class="p">(</span>
         <span class="n">stack_data</span><span class="p">,</span>
         <span class="n">pixels_to_nm</span><span class="p">,</span>
@@ -803,7 +803,7 @@
         <span class="n">draw_scale</span><span class="o">=</span><span class="n">draw_scale</span><span class="p">,</span>
         <span class="n">font_scale</span><span class="o">=</span><span class="n">font_scale</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[export] Image sequence written to </span><span class="si">{</span><span class="n">frames_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[export] Image sequence written to </span><span class="si">{</span><span class="n">frames_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 </pre></div>
         </article>

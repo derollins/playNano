@@ -497,7 +497,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.base</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module holding the AnalysisModule base class.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Module holding the AnalysisModule base class."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
@@ -510,7 +510,7 @@
 <div class="viewcode-block" id="AnalysisModule">
 <a class="viewcode-back" href="../../../api/playnano.analysis.base.html#playnano.analysis.base.AnalysisModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AnalysisModule</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Abstract base class for analysis steps.</span>
 
 <span class="sd">    Subclasses must implement:</span>
@@ -520,17 +520,17 @@
 
 <span class="sd">    Inherits from :class:`abc.ABC`.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Unique name for this analysis module, e.g. &quot;particle_detect&quot;.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Unique name for this analysis module, e.g. "particle_detect".</span>
 
 <span class="sd">        Used by pipeline to identify and refer to the module.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses must implement &#39;name&#39; property&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Subclasses must implement 'name' property"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AnalysisModule.run">
 <a class="viewcode-back" href="../../../api/playnano.analysis.base.html#playnano.analysis.base.AnalysisModule.run">[docs]</a>
@@ -541,7 +541,7 @@
         <span class="n">previous_results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">params</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisOutputs</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform the analysis on the given AFMImageStack.</span>
 
 <span class="sd">        Parameters</span>
@@ -561,8 +561,8 @@
 <span class="sd">            Dictionary mapping output names (strings) to results. Example::</span>
 
 <span class="sd">                {</span>
-<span class="sd">                    &quot;coords&quot;: numpy.ndarray of shape (N, 3),</span>
-<span class="sd">                    &quot;masks&quot;: numpy.ndarray of shape (n_frames, H, W)</span>
+<span class="sd">                    "coords": numpy.ndarray of shape (N, 3),</span>
+<span class="sd">                    "masks": numpy.ndarray of shape (n_frames, H, W)</span>
 <span class="sd">                }</span>
 
 <span class="sd">        Notes</span>
@@ -570,8 +570,8 @@
 <span class="sd">        Subclasses must implement this method. The returned dictionary can</span>
 <span class="sd">        contain any data the analysis module produces, but must be keyed by</span>
 <span class="sd">        unique output names.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses must implement &#39;run&#39; method&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Subclasses must implement 'run' method"</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

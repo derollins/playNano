@@ -498,40 +498,101 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.io_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Utility functions for IO operations in playNano.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Utility functions for IO operations in playNano."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="n">INVALID_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\/:*?&quot;&lt;&gt;|&#39;</span>
-<span class="n">INVALID_FOLDER_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;*?&quot;&lt;&gt;|&#39;</span>
-
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1">### --- CONSTANTS --- ###</span>
 
-<span class="n">height_units</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;cm&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="s2">&quot;um&quot;</span><span class="p">,</span> <span class="s2">&quot;nm&quot;</span><span class="p">,</span> <span class="s2">&quot;pm&quot;</span><span class="p">]</span>
+<span class="n">INVALID_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'\/:*?"&lt;&gt;|'</span>
+<span class="n">INVALID_FOLDER_CHARS</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'*?"&lt;&gt;|'</span>
 
 
-<div class="viewcode-block" id="pad_to_square">
-<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.pad_to_square">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pad_to_square</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">border_color</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad a 2D grayscale image to a square canvas by centring it.&quot;&quot;&quot;</span>
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-    <span class="n">canvas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span> <span class="n">border_color</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="n">h</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">canvas</span><span class="p">[</span><span class="n">y</span> <span class="p">:</span> <span class="n">y</span> <span class="o">+</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>  <span class="c1"># noqa</span>
-    <span class="k">return</span> <span class="n">canvas</span></div>
+<span class="n">FRAME_METADATA_KEYS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"timestamp"</span><span class="p">,</span>
+    <span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span>
+    <span class="s2">"frame_duration_s"</span><span class="p">,</span>
+    <span class="s2">"start_epoch_ms"</span><span class="p">,</span>
+    <span class="s2">"scan_direction"</span><span class="p">,</span>
+    <span class="s2">"line_rate"</span><span class="p">,</span>
+<span class="p">)</span>
 
+<span class="n">HEIGHT_UNITS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"m"</span><span class="p">,</span> <span class="s2">"cm"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"um"</span><span class="p">,</span> <span class="s2">"nm"</span><span class="p">,</span> <span class="s2">"pm"</span><span class="p">]</span>
+
+<span class="c1"># --- FRAME METADATA ------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="build_frame_metadata">
+<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.build_frame_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_frame_metadata</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">frame_pixel_size_nm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">frame_duration_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start_epoch_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scan_direction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">line_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build a canonical per-frame metadata dict shared by all playNano readers.</span>
+
+<span class="sd">    Every value is cast to a native Python type so the dict is JSON-serialisable</span>
+<span class="sd">    (frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise</span>
+<span class="sd">    raise TypeError).</span>
+
+<span class="sd">    Fields a format cannot provide are stored as ``None``.</span>
+
+<span class="sd">    Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not</span>
+<span class="sd">    here. ``start_time`` (human-readable ISO) is derived from the first frame's</span>
+<span class="sd">    ``start_epoch_ms`` at the stack level; don't duplicate it per frame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    timestamp : float</span>
+<span class="sd">        Frame time in seconds relative to frame 0. Required.</span>
+<span class="sd">    frame_pixel_size_nm : float</span>
+<span class="sd">        Physical size of one pixel in nanometres for this frame. Required.</span>
+<span class="sd">    frame_duration_s : float, optional</span>
+<span class="sd">        Frame acquisition duration in seconds; ``None`` if unknown.</span>
+<span class="sd">    start_epoch_ms : int, optional</span>
+<span class="sd">        Frame start as Unix epoch milliseconds (UTC); ``None`` for formats</span>
+<span class="sd">        without absolute timing.</span>
+<span class="sd">    scan_direction : str, optional</span>
+<span class="sd">        Slow-axis frame direction (e.g. ``'topDown'``/``'bottomUp'``). Per-frame</span>
+<span class="sd">        because NanoScope spm sequences can alternate.</span>
+<span class="sd">    line_rate : float, optional</span>
+<span class="sd">        Fast-scan line rate (lines per second); ``None`` if unknown.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Exactly the keys in ``FRAME_METADATA_KEYS``.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"timestamp"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">timestamp</span><span class="p">),</span>
+        <span class="s2">"frame_pixel_size_nm"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">frame_pixel_size_nm</span><span class="p">),</span>
+        <span class="s2">"frame_duration_s"</span><span class="p">:</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">frame_duration_s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">frame_duration_s</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="s2">"start_epoch_ms"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">start_epoch_ms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_epoch_ms</span><span class="p">),</span>
+        <span class="s2">"scan_direction"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">scan_direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">scan_direction</span><span class="p">),</span>
+        <span class="s2">"line_rate"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">line_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">line_rate</span><span class="p">),</span>
+    <span class="p">}</span></div>
+
+
+
+<span class="c1"># --- HEIGHT UNIT HANDLING ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="guess_height_data_units">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.guess_height_data_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">guess_height_data_units</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Guess the most likely units of AFM height data from the data range.</span>
 
 <span class="sd">    Parameters</span>
@@ -544,8 +605,8 @@
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        A string indicating the guessed unit of the height data, one of:</span>
-<span class="sd">        &#39;pm&#39; (picometers), &#39;nm&#39; (nanometers), &#39;um&#39; (micrometers),</span>
-<span class="sd">        &#39;mm&#39; (millimeters), or &#39;m&#39; (meters).</span>
+<span class="sd">        'pm' (picometers), 'nm' (nanometers), 'um' (micrometers),</span>
+<span class="sd">        'mm' (millimeters), or 'm' (meters).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -555,41 +616,41 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The unit is estimated based on the numeric range of the data as follows:</span>
-<span class="sd">        - Range &gt; 1e4           : &#39;pm&#39;</span>
-<span class="sd">        - 1e-2 &lt; Range &lt;= 1e4   : &#39;nm&#39;</span>
-<span class="sd">        - 1e-4 &lt; Range &lt;= 1e-2  : &#39;um&#39;</span>
-<span class="sd">        - 1e-5 &lt; Range &lt;= 1e-4  : &#39;mm&#39;</span>
-<span class="sd">        - Range &lt;= 1e-5         : &#39;m&#39;</span>
+<span class="sd">        - Range &gt; 1e4           : 'pm'</span>
+<span class="sd">        - 1e-2 &lt; Range &lt;= 1e4   : 'nm'</span>
+<span class="sd">        - 1e-4 &lt; Range &lt;= 1e-2  : 'um'</span>
+<span class="sd">        - 1e-5 &lt; Range &lt;= 1e-4  : 'mm'</span>
+<span class="sd">        - Range &lt;= 1e-5         : 'm'</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; data = np.array([[0, 5e-9], [1e-8, 2e-8]])</span>
 <span class="sd">    &gt;&gt;&gt; guess_height_data_units(data)</span>
-<span class="sd">    &#39;nm&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    'nm'</span>
+<span class="sd">    """</span>
     <span class="n">finite</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">stack</span><span class="p">)]</span>
     <span class="k">if</span> <span class="n">finite</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No finite values in data.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No finite values in data."</span><span class="p">)</span>
 
     <span class="n">z_range</span> <span class="o">=</span> <span class="n">finite</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">finite</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">z_range</span> <span class="o">&gt;</span> <span class="mf">1e4</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;pm&quot;</span>
+        <span class="k">return</span> <span class="s2">"pm"</span>
     <span class="k">elif</span> <span class="mf">1e-2</span> <span class="o">&lt;</span> <span class="n">z_range</span> <span class="o">&lt;=</span> <span class="mf">1e4</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;nm&quot;</span>
+        <span class="k">return</span> <span class="s2">"nm"</span>
     <span class="k">elif</span> <span class="mf">1e-4</span> <span class="o">&lt;</span> <span class="n">z_range</span> <span class="o">&lt;=</span> <span class="mf">1e-2</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;um&quot;</span>
+        <span class="k">return</span> <span class="s2">"um"</span>
     <span class="k">elif</span> <span class="mf">1e-5</span> <span class="o">&lt;</span> <span class="n">z_range</span> <span class="o">&lt;=</span> <span class="mf">1e-4</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;mm&quot;</span>
+        <span class="k">return</span> <span class="s2">"mm"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;m&quot;</span></div>
+        <span class="k">return</span> <span class="s2">"m"</span></div>
 
 
 
 <div class="viewcode-block" id="convert_height_units_to_nm">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.convert_height_units_to_nm">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_height_units_to_nm</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert AFM height data from the guessed unit to nanometers.</span>
 
 <span class="sd">    Parameters</span>
@@ -598,7 +659,7 @@
 <span class="sd">        Input height data array, typically 2D or 3D.</span>
 <span class="sd">    unit : str</span>
 <span class="sd">        Unit string as returned by `guess_height_data_units`. Must be one of:</span>
-<span class="sd">        &#39;pm&#39;, &#39;nm&#39;, &#39;um&#39;, &#39;mm&#39;, or &#39;m&#39;.</span>
+<span class="sd">        'pm', 'nm', 'um', 'mm', or 'm'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -609,28 +670,31 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the provided unit string is not recognized.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">unit_to_multiplier</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;pm&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>  <span class="c1"># 1 pm = 1e-3 nm</span>
-        <span class="s2">&quot;nm&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># already in nm</span>
-        <span class="s2">&quot;um&quot;</span><span class="p">:</span> <span class="mf">1e3</span><span class="p">,</span>  <span class="c1"># 1 µm = 1000 nm</span>
-        <span class="s2">&quot;mm&quot;</span><span class="p">:</span> <span class="mf">1e6</span><span class="p">,</span>  <span class="c1"># 1 mm = 1e6 nm</span>
-        <span class="s2">&quot;m&quot;</span><span class="p">:</span> <span class="mf">1e9</span><span class="p">,</span>  <span class="c1"># 1 m = 1e9 nm</span>
+        <span class="s2">"pm"</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>  <span class="c1"># 1 pm = 1e-3 nm</span>
+        <span class="s2">"nm"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># already in nm</span>
+        <span class="s2">"um"</span><span class="p">:</span> <span class="mf">1e3</span><span class="p">,</span>  <span class="c1"># 1 µm = 1000 nm</span>
+        <span class="s2">"mm"</span><span class="p">:</span> <span class="mf">1e6</span><span class="p">,</span>  <span class="c1"># 1 mm = 1e6 nm</span>
+        <span class="s2">"m"</span><span class="p">:</span> <span class="mf">1e9</span><span class="p">,</span>  <span class="c1"># 1 m = 1e9 nm</span>
     <span class="p">}</span>
 
     <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unit_to_multiplier</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unrecognized unit &#39;</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">&#39;. Must be one of: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">unit_to_multiplier</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Unrecognized unit '</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">'. Must be one of: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">unit_to_multiplier</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">data</span> <span class="o">*</span> <span class="n">unit_to_multiplier</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span></div>
 
 
 
+<span class="c1"># --- IMAGE UTILITIES ------------------------------------------------</span>
+
+
 <div class="viewcode-block" id="normalize_to_uint8">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.normalize_to_uint8">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_to_uint8</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize a float image to the uint8 [0, 255] range, handling NaNs and Infs.</span>
 
 <span class="sd">    Parameters</span>
@@ -642,7 +706,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Normalized image as a uint8 NumPy array with values in the range [0, 255].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Replace NaNs and Infs with 0</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
@@ -660,10 +724,82 @@
 
 
 
+<div class="viewcode-block" id="compute_zscale_range">
+<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.compute_zscale_range">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_zscale_range</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">lower_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">upper_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute robust Z-scale bounds (height or intensity range) for normalization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        2D or 3D array of AFM image data.</span>
+<span class="sd">    zmin : float, "auto", or None</span>
+<span class="sd">        Lower bound: "auto" uses percentile, None uses data min, float uses value.</span>
+<span class="sd">    zmax : float or "auto"</span>
+<span class="sd">        Upper bound: "auto" uses percentile, None uses data max, float uses value.</span>
+<span class="sd">    lower_percentile : int, optional</span>
+<span class="sd">        Percentile to use for lower bound when zmin == "auto". Default is 1.</span>
+<span class="sd">    upper_percentile : int, optional</span>
+<span class="sd">        Percentile to use for upper bound when zmax == "auto". Default is 99.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (float, float)</span>
+<span class="sd">        zmin and zmax values suitable for normalization.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If zmin &gt; zmax after processing or invalid input types.</span>
+<span class="sd">    """</span>
+    <span class="n">flat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">flat</span><span class="p">)]</span>
+
+    <span class="c1"># Process zmin</span>
+    <span class="k">if</span> <span class="n">zmin</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">lower_percentile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zmin_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="c1"># Process zmax</span>
+    <span class="k">if</span> <span class="n">zmax</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">upper_percentile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zmax_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmax</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmax must be a float, 'auto', or None."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="c1"># Validation</span>
+    <span class="k">if</span> <span class="n">zmin_val</span> <span class="o">&gt;</span> <span class="n">zmax_val</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"zmin must be less than or equal to zmax."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[Z-scaling] zmin=</span><span class="si">{</span><span class="n">zmin_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm, zmax=</span><span class="si">{</span><span class="n">zmax_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span></div>
+
+
+
+<span class="c1"># --- OUTPUT FILE AND FOLDER UTILS ------------------------------------------------</span>
+
+
 <div class="viewcode-block" id="sanitize_output_name">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.sanitize_output_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sanitize_output_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sanitize output file names by removing extensions and stripping whitespace.</span>
 
 <span class="sd">    Parameters</span>
@@ -677,18 +813,18 @@
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        Sanitized base file name without extension.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="c1"># Remove extension if any</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
 
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">INVALID_CHARS</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid characters in output name: </span><span class="si">{</span><span class="n">INVALID_CHARS</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid characters in output name: </span><span class="si">{</span><span class="n">INVALID_CHARS</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">name</span></div>
 
@@ -696,9 +832,9 @@
 
 <div class="viewcode-block" id="prepare_output_directory">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.prepare_output_directory">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">prepare_output_directory</span><span class="p">(</span><span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Validate, resolve, and create the output directory if it doesn&#39;t exist.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_output_directory</span><span class="p">(</span><span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"output"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Validate, resolve, and create the output directory if it doesn't exist.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -716,99 +852,33 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If any part of the folder path contains invalid characters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">folder</span> <span class="o">=</span> <span class="n">default</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid folder path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid folder path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="n">folder</span> <span class="o">=</span> <span class="n">folder</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">folder</span> <span class="k">else</span> <span class="n">default</span>
     <span class="n">folder_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">part</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">INVALID_FOLDER_CHARS</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid characters in output folder path: </span><span class="si">{</span><span class="n">INVALID_FOLDER_CHARS</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid characters in output folder path: </span><span class="si">{</span><span class="n">INVALID_FOLDER_CHARS</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
     <span class="n">folder_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">folder_path</span></div>
 
 
 
-<div class="viewcode-block" id="compute_zscale_range">
-<a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.compute_zscale_range">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">compute_zscale_range</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">zmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">zmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="n">lower_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">upper_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute robust Z-scale bounds (height or intensity range) for normalization.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        2D or 3D array of AFM image data.</span>
-<span class="sd">    zmin : float, &quot;auto&quot;, or None</span>
-<span class="sd">        Lower bound: &quot;auto&quot; uses percentile, None uses data min, float uses value.</span>
-<span class="sd">    zmax : float or &quot;auto&quot;</span>
-<span class="sd">        Upper bound: &quot;auto&quot; uses percentile, None uses data max, float uses value.</span>
-<span class="sd">    lower_percentile : int, optional</span>
-<span class="sd">        Percentile to use for lower bound when zmin == &quot;auto&quot;. Default is 1.</span>
-<span class="sd">    upper_percentile : int, optional</span>
-<span class="sd">        Percentile to use for upper bound when zmax == &quot;auto&quot;. Default is 99.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    (float, float)</span>
-<span class="sd">        zmin and zmax values suitable for normalization.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If zmin &gt; zmax after processing or invalid input types.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">flat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">flat</span><span class="p">)]</span>
-
-    <span class="c1"># Process zmin</span>
-    <span class="k">if</span> <span class="n">zmin</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
-        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">lower_percentile</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">zmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zmin_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmin_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zmin must be a float, &#39;auto&#39;, or None.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="c1"># Process zmax</span>
-    <span class="k">if</span> <span class="n">zmax</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
-        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">flat</span><span class="p">,</span> <span class="n">upper_percentile</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">zmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">zmax_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmax_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmax</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zmax must be a float, &#39;auto&#39;, or None.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="c1"># Validation</span>
-    <span class="k">if</span> <span class="n">zmin_val</span> <span class="o">&gt;</span> <span class="n">zmax_val</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zmin must be less than or equal to zmax.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Z-scaling] zmin=</span><span class="si">{</span><span class="n">zmin_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm, zmax=</span><span class="si">{</span><span class="n">zmax_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> nm&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">zmin_val</span><span class="p">,</span> <span class="n">zmax_val</span></div>
-
+<span class="c1"># --- SERIALIZATION AND TYPE CONVERSION ------------------------------------------------</span>
 
 
 <div class="viewcode-block" id="make_json_safe">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.make_json_safe">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_json_safe</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively convert NumPy types and non-JSON objects into serializable ones.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Recursively convert NumPy types and non-JSON objects into serializable ones."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)):</span>
@@ -828,10 +898,13 @@
 
 
 
+<span class="c1"># --- ATTRIBUTE DECODING ------------------------------------------------</span>
+
+
 <div class="viewcode-block" id="decode_hdf5_attr">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.decode_hdf5_attr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">decode_hdf5_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decode an attribute that may be bytes or a string.</span>
 
 <span class="sd">    Parameters</span>
@@ -843,9 +916,9 @@
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        The decoded string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">attr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">attr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span></div>
 
 </pre></div>

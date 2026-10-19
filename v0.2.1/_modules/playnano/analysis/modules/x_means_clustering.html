@@ -324,7 +324,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.x_means_clustering</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module for X-Means clustering as part of the playNano analysis pipeline.</span>
 
 <span class="sd">This module implements a version of the X-Means clustering algorithm,</span>
@@ -336,7 +336,7 @@
 <span class="sd">Estimation of the Number of Clusters. Carnegie Mellon University.</span>
 <span class="sd">http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -354,7 +354,7 @@
 <div class="viewcode-block" id="XMeansClusteringModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">XMeansClusteringModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Cluster features using the X-Means algorithm over (x, y[, t]) coordinates.</span>
 
 <span class="sd">    This module clusters spatial (and optionally temporal) feature coordinates extracted</span>
@@ -395,23 +395,23 @@
 <span class="sd">    Version</span>
 <span class="sd">    -------</span>
 <span class="sd">    0.1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
 <span class="sd">            The string identifier for this module.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;x_means_clustering&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"x_means_clustering"</span>
 
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="s2">&quot;log_blob_detection&quot;</span><span class="p">]</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
 
 <div class="viewcode-block" id="XMeansClusteringModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.run">[docs]</a>
@@ -420,9 +420,9 @@
         <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span>
         <span class="n">previous_results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span>
-        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features_per_frame&quot;</span><span class="p">,</span>
-        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;centroid_x&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_y&quot;</span><span class="p">),</span>
+        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"feature_detection"</span><span class="p">,</span>
+        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"features_per_frame"</span><span class="p">,</span>
+        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"centroid_x"</span><span class="p">,</span> <span class="s2">"centroid_y"</span><span class="p">),</span>
         <span class="n">use_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">min_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">max_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -432,7 +432,7 @@
         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
         <span class="n">bic_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform X-Means clustering on features extracted from an AFM stack.</span>
 
 <span class="sd">        This method extracts (x, y[, t]) coordinates from detected features,</span>
@@ -450,16 +450,16 @@
 
 <span class="sd">        detection_module : str</span>
 <span class="sd">            Key identifying which previous modules output to use.</span>
-<span class="sd">            Default is &quot;feature_detection&quot;.</span>
+<span class="sd">            Default is "feature_detection".</span>
 
 <span class="sd">        coord_key : str</span>
 <span class="sd">            Key under the detection module that holds per-frame feature dicts.</span>
-<span class="sd">            Default is &quot;features_per_frame&quot;.</span>
+<span class="sd">            Default is "features_per_frame".</span>
 
 <span class="sd">        coord_columns : Sequence[str]</span>
 <span class="sd">            Keys to extract from each feature for clustering coordinates.</span>
-<span class="sd">            If missing, will fall back to using the &quot;centroid&quot; tuple if available.</span>
-<span class="sd">            Defaults is (&quot;centroid_x&quot;, &quot;centroid_y&quot;).</span>
+<span class="sd">            If missing, will fall back to using the "centroid" tuple if available.</span>
+<span class="sd">            Defaults is ("centroid_x", "centroid_y").</span>
 
 <span class="sd">        use_time : bool</span>
 <span class="sd">            If True and `coord_columns` only gives 2D coordinates, appends the</span>
@@ -496,16 +496,16 @@
 <span class="sd">        dict</span>
 <span class="sd">            A dictionary with the following keys:</span>
 
-<span class="sd">            - &quot;clusters&quot; : list of dicts, each with:</span>
+<span class="sd">            - "clusters" : list of dicts, each with:</span>
 <span class="sd">                - id : int</span>
 <span class="sd">                - frames : list of int</span>
 <span class="sd">                - point_indices : list of int</span>
 <span class="sd">                - coords : list of tuple (normalized x, y, [t])</span>
-<span class="sd">            - &quot;cluster_centers&quot; : ndarray of shape (k, D)</span>
+<span class="sd">            - "cluster_centers" : ndarray of shape (k, D)</span>
 <span class="sd">                Final cluster centers in original (denormalized) coordinates.</span>
-<span class="sd">            - &quot;summary&quot; : dict</span>
-<span class="sd">                - &quot;n_clusters&quot; : int</span>
-<span class="sd">                - &quot;members_per_cluster&quot; : dict mapping cluster ID to point count.</span>
+<span class="sd">            - "summary" : dict</span>
+<span class="sd">                - "n_clusters" : int</span>
+<span class="sd">                - "members_per_cluster" : dict mapping cluster ID to point count.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -514,10 +514,10 @@
 
 <span class="sd">        KeyError</span>
 <span class="sd">            If the expected coordinate keys are missing from any feature dictionary.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Validate input dependencies</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
 
         <span class="c1"># Auto-detect the most recent available detection module</span>
         <span class="k">if</span> <span class="n">detection_module</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">previous_results</span><span class="p">:</span>
@@ -526,7 +526,7 @@
             <span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results.&quot;</span>  <span class="c1"># noqa</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results."</span>  <span class="c1"># noqa</span>
                 <span class="p">)</span>
             <span class="n">detection_module</span> <span class="o">=</span> <span class="n">available</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -541,12 +541,12 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">feat</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coord_columns</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="n">cent</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;centroid&quot;</span><span class="p">)</span>
+                    <span class="n">cent</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"centroid"</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">cent</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">cent</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coord_columns</span><span class="p">):</span>
                         <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">cent</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">cent</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Missing keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> in feature.&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Missing keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> in feature."</span>
                         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
                 <span class="k">if</span> <span class="n">use_time</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -558,9 +558,9 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">points</span><span class="p">:</span>
             <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">use_time</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">coord_columns</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">{</span>
-                <span class="s2">&quot;clusters&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                <span class="s2">&quot;cluster_centers&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)),</span>
-                <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_clusters&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;members_per_cluster&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+                <span class="s2">"clusters"</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">"cluster_centers"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)),</span>
+                <span class="s2">"summary"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"n_clusters"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"members_per_cluster"</span><span class="p">:</span> <span class="p">{}},</span>
             <span class="p">}</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
@@ -580,7 +580,7 @@
             <span class="n">init_k</span><span class="o">=</span><span class="n">min_k</span><span class="p">,</span>
             <span class="n">max_k</span><span class="o">=</span><span class="n">max_k</span><span class="p">,</span>
             <span class="n">min_cluster_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="n">distance</span><span class="o">=</span><span class="s2">&quot;sqeuclidean&quot;</span><span class="p">,</span>
+            <span class="n">distance</span><span class="o">=</span><span class="s2">"sqeuclidean"</span><span class="p">,</span>
             <span class="n">replicates</span><span class="o">=</span><span class="n">replicates</span><span class="p">,</span>
             <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span>
             <span class="n">bic_threshold</span><span class="o">=</span><span class="n">bic_threshold</span><span class="p">,</span>
@@ -606,18 +606,18 @@
                 <span class="n">coords_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
             <span class="n">clusters_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cid</span><span class="p">),</span>
-                    <span class="s2">&quot;frames&quot;</span><span class="p">:</span> <span class="n">frames</span><span class="p">,</span>
-                    <span class="s2">&quot;point_indices&quot;</span><span class="p">:</span> <span class="n">p_inds</span><span class="p">,</span>
-                    <span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="n">coords_list</span><span class="p">,</span>
+                    <span class="s2">"id"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cid</span><span class="p">),</span>
+                    <span class="s2">"frames"</span><span class="p">:</span> <span class="n">frames</span><span class="p">,</span>
+                    <span class="s2">"point_indices"</span><span class="p">:</span> <span class="n">p_inds</span><span class="p">,</span>
+                    <span class="s2">"coords"</span><span class="p">:</span> <span class="n">coords_list</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
             <span class="n">members</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">cid</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;clusters&quot;</span><span class="p">:</span> <span class="n">clusters_out</span><span class="p">,</span>
-            <span class="s2">&quot;cluster_centers&quot;</span><span class="p">:</span> <span class="n">centers</span><span class="p">,</span>
-            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;n_clusters&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">),</span> <span class="s2">&quot;members_per_cluster&quot;</span><span class="p">:</span> <span class="n">members</span><span class="p">},</span>
+            <span class="s2">"clusters"</span><span class="p">:</span> <span class="n">clusters_out</span><span class="p">,</span>
+            <span class="s2">"cluster_centers"</span><span class="p">:</span> <span class="n">centers</span><span class="p">,</span>
+            <span class="s2">"summary"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"n_clusters"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">),</span> <span class="s2">"members_per_cluster"</span><span class="p">:</span> <span class="n">members</span><span class="p">},</span>
         <span class="p">}</span></div>
 </div>
 
@@ -635,10 +635,10 @@
     <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">bic_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Core X-Means loop.</span>
+<span class="w">    </span><span class="sd">"""Core X-Means loop.</span>
 
 <span class="sd">    Parameters are equivalent to those in `run` above.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">k</span> <span class="o">=</span> <span class="n">init_k</span>
     <span class="n">centers</span> <span class="o">=</span> <span class="n">initialize_centers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
 
@@ -688,7 +688,7 @@
         <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">new_centers</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span>
 
-    <span class="n">final_dists</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;sqeuclidean&quot;</span><span class="p">)</span>
+    <span class="n">final_dists</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">"sqeuclidean"</span><span class="p">)</span>
     <span class="n">final_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">final_dists</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">final_labels</span><span class="p">,</span> <span class="n">centers</span></div>
 
@@ -697,7 +697,7 @@
 <div class="viewcode-block" id="compute_bic">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.compute_bic">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_bic</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Bayesian Information Criterion for a cluster.</span>
+<span class="w">    </span><span class="sd">"""Compute Bayesian Information Criterion for a cluster.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -710,7 +710,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        BIC value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -728,11 +728,11 @@
 <div class="viewcode-block" id="initialize_centers">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.initialize_centers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize_centers</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize k centers using a k-means++-like heuristic.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initialize k centers using a k-means++-like heuristic."""</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="n">points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">)]]</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="n">dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cdist</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">centers</span><span class="p">),</span> <span class="s2">&quot;sqeuclidean&quot;</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cdist</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">centers</span><span class="p">),</span> <span class="s2">"sqeuclidean"</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">probs</span> <span class="o">=</span> <span class="n">dists</span> <span class="o">/</span> <span class="n">dists</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">cumprobs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>

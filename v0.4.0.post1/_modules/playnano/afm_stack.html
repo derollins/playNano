@@ -498,7 +498,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.afm_stack</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Defines AFMImageStack for managing AFM time-series data and processing steps.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Defines AFMImageStack for managing AFM time-series data and processing steps."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -533,7 +533,7 @@
 <div class="viewcode-block" id="AFMImageStack">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Manage stacks of AFM images with metadata, analysis results, and provenance.</span>
 
 <span class="sd">    Contains snapshots of each stage of processing (including the raw data after the</span>
@@ -556,29 +556,29 @@
 <span class="sd">        Path to the source file or folder.</span>
 
 <span class="sd">    frame_metadata : list[dict[str, Any]]</span>
-<span class="sd">        Per-frame metadata dicts; each will include a normalized &#39;timestamp&#39; key and</span>
-<span class="sd">        per frame &#39;frame_pixel_size_nm&#39;.</span>
+<span class="sd">        Per-frame metadata dicts; each will include a normalized 'timestamp' key and</span>
+<span class="sd">        per frame 'frame_pixel_size_nm'.</span>
 
 <span class="sd">    processed : dict[str, np.ndarray]</span>
 <span class="sd">        Snapshots of processed data arrays from filters. Keys like</span>
-<span class="sd">        &#39;step_1_remove_plane&#39;.</span>
+<span class="sd">        'step_1_remove_plane'.</span>
 
 <span class="sd">    masks : dict[str, np.ndarray]</span>
-<span class="sd">        Boolean mask arrays from mask steps. Keys like &#39;step_2_threshold&#39;.</span>
+<span class="sd">        Boolean mask arrays from mask steps. Keys like 'step_2_threshold'.</span>
 
 <span class="sd">    analysis : dict[str, Any]</span>
-<span class="sd">        Results of analysis modules, keyed by &#39;step_&lt;i&gt;_&lt;module_name&gt;&#39;.</span>
+<span class="sd">        Results of analysis modules, keyed by 'step_&lt;i&gt;_&lt;module_name&gt;'.</span>
 
 <span class="sd">    provenance : dict[str, Any]</span>
 <span class="sd">        Records environment info and provenance of processing and analysis pipelines::</span>
 
 <span class="sd">            {</span>
-<span class="sd">                &quot;environment&quot;: {...},</span>
-<span class="sd">                &quot;processing&quot;: {&quot;steps&quot;: [...], &quot;keys_by_name&quot;: {...}},</span>
-<span class="sd">                &quot;analysis&quot;: {&quot;frame_times&quot;: [...], &quot;steps&quot;: [...],</span>
-<span class="sd">                &quot;results_by_name&quot;: {...}},</span>
+<span class="sd">                "environment": {...},</span>
+<span class="sd">                "processing": {"steps": [...], "keys_by_name": {...}},</span>
+<span class="sd">                "analysis": {"frame_times": [...], "steps": [...],</span>
+<span class="sd">                "results_by_name": {...}},</span>
 <span class="sd">            }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -588,7 +588,7 @@
         <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">frame_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize AFMImageStack with data, spatial metadata, and per-frame metadata.</span>
 
 <span class="sd">        Parameters</span>
@@ -601,7 +601,7 @@
 <span class="sd">            Pixel size in nanometers for the first frame; must be positive.</span>
 
 <span class="sd">        channel : str</span>
-<span class="sd">            Channel name (e.g., &#39;height_trace&#39;).</span>
+<span class="sd">            Channel name (e.g., 'height_trace').</span>
 
 <span class="sd">        file_path : Path</span>
 <span class="sd">            Source file or folder path.</span>
@@ -609,7 +609,7 @@
 <span class="sd">        frame_metadata : list of dict, optional</span>
 <span class="sd">            List of per-frame metadata dicts. Will be padded or trimmed to length</span>
 <span class="sd">            n_frames. After initialization, each entry is normalized to include a</span>
-<span class="sd">            numeric &#39;timestamp&#39; (fallback to frame index if missing). A pixel scaling</span>
+<span class="sd">            numeric 'timestamp' (fallback to frame index if missing). A pixel scaling</span>
 <span class="sd">            value for each frame `frame_pixel_size_nm` is also recorded when data is</span>
 <span class="sd">            loaded from a raw or processed file.</span>
 
@@ -620,18 +620,18 @@
 
 <span class="sd">        ValueError</span>
 <span class="sd">            If data.ndim != 3 or pixel_size_nm &lt;= 0, or metadata length mismatch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Validate that data is a 3D NumPy array</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`data` must be a NumPy array; got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`data` must be a NumPy array; got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;`data` must be a 3D array (n_frames, height, width); got shape </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa</span>
+                <span class="sa">f</span><span class="s2">"`data` must be a 3D array (n_frames, height, width); got shape </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa</span>
             <span class="p">)</span>
         <span class="c1"># Validate pixel_size_nm</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pixel_size_nm</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">or</span> <span class="n">pixel_size_nm</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;`pixel_size_nm` must be a positive number; got </span><span class="si">{</span><span class="n">pixel_size_nm</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"`pixel_size_nm` must be a positive number; got </span><span class="si">{</span><span class="n">pixel_size_nm</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -648,39 +648,39 @@
             <span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">frame_metadata</span> <span class="o">+</span> <span class="p">[{}]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Metadata length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">)</span><span class="si">}</span><span class="s2">) does not match number of frames (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">).&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="sa">f</span><span class="s2">"Metadata length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">)</span><span class="si">}</span><span class="s2">) does not match number of frames (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)."</span>  <span class="c1"># noqa: E501</span>
             <span class="p">)</span>
 
         <span class="c1"># Normalize all timestamps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">normalize_timestamps</span><span class="p">(</span><span class="n">frame_metadata</span><span class="p">)</span>
 
         <span class="c1"># Stores processed data arrays from filters, keyed by step</span>
-        <span class="c1"># name (e.g. &#39;gaussian_filter&#39;, &#39;remove_plane&#39;)</span>
+        <span class="c1"># name (e.g. 'gaussian_filter', 'remove_plane')</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Stores generated masks, keyed by mask generator name (e.g. &#39;otsu&#39;,</span>
-        <span class="c1"># &#39;threshold&#39;)</span>
+        <span class="c1"># Stores generated masks, keyed by mask generator name (e.g. 'otsu',</span>
+        <span class="c1"># 'threshold')</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Stores analysis results by name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">analysis</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Stores provenance information for the processing and analysis</span>
         <span class="c1"># environments and pipelines.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># to be filled when pipelines run</span>
-            <span class="s2">&quot;processing&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;steps&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;keys_by_name&quot;</span><span class="p">:</span> <span class="p">{}},</span>
-            <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;frame_times&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;steps&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;results_by_name&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+            <span class="s2">"environment"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># to be filled when pipelines run</span>
+            <span class="s2">"processing"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"steps"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"keys_by_name"</span><span class="p">:</span> <span class="p">{}},</span>
+            <span class="s2">"analysis"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"frame_times"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"steps"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"results_by_name"</span><span class="p">:</span> <span class="p">{}},</span>
         <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">callable</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Determine the type of a step and return its callable (or None for &#39;clear&#39;).</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Determine the type of a step and return its callable (or None for 'clear').</span>
 
 <span class="sd">        Resolution order:</span>
-<span class="sd">          1. &quot;clear&quot;</span>
+<span class="sd">          1. "clear"</span>
 <span class="sd">          2. Mask from MASK_MAP</span>
 <span class="sd">          3. Bound method on this AFMImageStack instance</span>
-<span class="sd">          4. Plugin from entry points &quot;playnano.filters&quot;</span>
-<span class="sd">          5. Plugin from entry points &quot;playnano.video_processing&quot;</span>
+<span class="sd">          4. Plugin from entry points "playnano.filters"</span>
+<span class="sd">          5. Plugin from entry points "playnano.video_processing"</span>
 <span class="sd">          6. Filter from FILTER_MAP</span>
 <span class="sd">          7. Video filter from VIDEO_FILTER_MAP</span>
 <span class="sd">          8. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits</span>
@@ -690,89 +690,89 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        step : str</span>
-<span class="sd">            Name of the processing step (e.g., &#39;remove_plane&#39;, &#39;threshold_mask&#39;,</span>
-<span class="sd">            &#39;clear&#39;).</span>
+<span class="sd">            Name of the processing step (e.g., 'remove_plane', 'threshold_mask',</span>
+<span class="sd">            'clear').</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        tuple[str, callable | None]</span>
-<span class="sd">            - step type: one of &quot;clear&quot;, &quot;mask&quot;, &quot;method&quot;, &quot;plugin&quot;, &quot;filter&quot;,</span>
-<span class="sd">              &quot;video_filter&quot;, &quot;video_plugin&quot;, &quot;stack_edit&quot;</span>
-<span class="sd">            - callable implementing the step, or None if step_type == &quot;clear&quot;.</span>
+<span class="sd">            - step type: one of "clear", "mask", "method", "plugin", "filter",</span>
+<span class="sd">              "video_filter", "video_plugin", "stack_edit"</span>
+<span class="sd">            - callable implementing the step, or None if step_type == "clear".</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If the step name is not recognized among clear, masks, methods,</span>
 <span class="sd">            plugins, or filters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># 1) Clear existing mask?</span>
-        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;clear&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s2">"clear"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"clear"</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="c1"># 2) Mask generator?</span>
         <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">MASK_MAP</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="n">MASK_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            <span class="k">return</span> <span class="s2">"mask"</span><span class="p">,</span> <span class="n">MASK_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
 
         <span class="c1"># 3) Bound method on self? (e.g. a custom method on AFMImageStack)</span>
         <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="n">method</span>
+            <span class="k">return</span> <span class="s2">"method"</span><span class="p">,</span> <span class="n">method</span>
 
         <span class="c1"># 4) Plugin filter entry point?</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ep</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
                 <span class="n">ep</span>
-                <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;playnano.filters&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playnano.filters"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">ep</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">step</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
             <span class="n">ep</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">ep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fn</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-            <span class="k">return</span> <span class="s2">&quot;plugin&quot;</span><span class="p">,</span> <span class="n">fn</span>
+            <span class="k">return</span> <span class="s2">"plugin"</span><span class="p">,</span> <span class="n">fn</span>
 
-        <span class="c1"># 5) Plugin 3D filter &#39;video processing&#39;entry point?</span>
+        <span class="c1"># 5) Plugin 3D filter 'video processing'entry point?</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ep</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
                 <span class="n">ep</span>
-                <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;playnano.video_processing&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playnano.video_processing"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">ep</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">step</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
             <span class="n">ep</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">ep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fn</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-            <span class="k">return</span> <span class="s2">&quot;video_plugin&quot;</span><span class="p">,</span> <span class="n">fn</span>
+            <span class="k">return</span> <span class="s2">"video_plugin"</span><span class="p">,</span> <span class="n">fn</span>
 
         <span class="c1"># 6) Unmasked filter in FILTER_MAP?</span>
         <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;filter&quot;</span><span class="p">,</span> <span class="n">FILTER_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            <span class="k">return</span> <span class="s2">"filter"</span><span class="p">,</span> <span class="n">FILTER_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
 
         <span class="c1"># 7) Video processing step in VIDEO_FILTER_MAP?</span>
         <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">VIDEO_FILTER_MAP</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;video_filter&quot;</span><span class="p">,</span> <span class="n">VIDEO_FILTER_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            <span class="k">return</span> <span class="s2">"video_filter"</span><span class="p">,</span> <span class="n">VIDEO_FILTER_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
 
         <span class="c1"># 8) Stack edit step ie. drop_frames?</span>
         <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">STACK_EDIT_MAP</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;stack_edit&quot;</span><span class="p">,</span> <span class="n">STACK_EDIT_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            <span class="k">return</span> <span class="s2">"stack_edit"</span><span class="p">,</span> <span class="n">STACK_EDIT_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
 
         <span class="c1"># 9) No match</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unrecognized step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Available masks: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;built-in filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;video filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">VIDEO_FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;methods: </span><span class="si">{</span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">m</span><span class="p">))]</span><span class="si">}</span><span class="s2">; &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;playnano.filters&#39;</span><span class="p">)]</span><span class="si">}</span><span class="s2">.&quot;</span>  <span class="c1"># noqa</span>
-            <span class="sa">f</span><span class="s2">&quot;video_plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">&#39;playnano.video_processing&#39;</span><span class="p">)]</span><span class="si">}</span><span class="s2">.&quot;</span>  <span class="c1"># noqa</span>
-            <span class="sa">f</span><span class="s2">&quot;stack_edit: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">STACK_EDIT_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; &quot;</span>
+            <span class="sa">f</span><span class="s2">"Unrecognized step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">'. "</span>
+            <span class="sa">f</span><span class="s2">"Available masks: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"built-in filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"video filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">VIDEO_FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"methods: </span><span class="si">{</span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">m</span><span class="p">))]</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.filters'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
+            <span class="sa">f</span><span class="s2">"video_plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.video_processing'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
+            <span class="sa">f</span><span class="s2">"stack_edit: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">STACK_EDIT_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_execute_mask_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">mask_fn</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute a boolean mask array by applying mask_fn to each frame.</span>
 
 <span class="sd">        Parameters</span>
@@ -788,8 +788,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
 <span class="sd">            Boolean array of shape (n_frames, H, W). If mask_fn fails on a frame,</span>
-<span class="sd">            that frame&#39;s mask is all False (and an error is logged).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            that frame's mask is all False (and an error is logged).</span>
+<span class="sd">        """</span>
         <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">new_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_frames</span><span class="p">):</span>
@@ -801,12 +801,12 @@
                     <span class="n">new_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Mask generator &#39;</span><span class="si">{</span><span class="n">mask_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Mask generator '</span><span class="si">{</span><span class="n">mask_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>  <span class="c1"># noqa</span>
                     <span class="n">new_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Mask generator &#39;</span><span class="si">{</span><span class="n">mask_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Mask generator '</span><span class="si">{</span><span class="n">mask_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>  <span class="c1"># noqa</span>
                 <span class="n">new_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">new_mask</span>
@@ -819,7 +819,7 @@
         <span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply a filter function to each frame, optionally using a mask.</span>
 
 <span class="sd">        If mask is not None and step_name is in MASK_FILTERS_MAP, applies the masked</span>
@@ -843,12 +843,12 @@
 <span class="sd">        np.ndarray</span>
 <span class="sd">            New 3D array of same shape as arr. If filtering fails on a frame,</span>
 <span class="sd">            original frame is kept (and a warning/error is logged).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n_frames</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">new_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">MASK_FILTERS_MAP</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mask present and masked </span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2"> filter selected.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mask present and masked </span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2"> filter selected."</span><span class="p">)</span>
             <span class="n">masked_fn</span> <span class="o">=</span> <span class="n">MASK_FILTERS_MAP</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_frames</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -858,16 +858,16 @@
                         <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">masked_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Masked filter &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Masked filter '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                         <span class="p">)</span>
                         <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Masked filter &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Masked filter '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
                     <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2"> filter applied without mask.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2"> filter applied without mask."</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_frames</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -876,18 +876,18 @@
                         <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Filter &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Filter '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                         <span class="p">)</span>  <span class="c1"># noqa</span>
                         <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filter &#39;</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">&#39; failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filter '</span><span class="si">{</span><span class="n">step_name</span><span class="si">}</span><span class="s2">' failed on frame </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="n">new_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">new_arr</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_execute_video_processing_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">video_fn</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute a video processing function on a full image stack.</span>
 
 <span class="sd">        This method applies a given callable to a 3D array representing</span>
@@ -923,7 +923,7 @@
 <span class="sd">        will attempt to call it without them before failing.</span>
 <span class="sd">        - All errors are logged via the module logger with the name of the</span>
 <span class="sd">        failing function.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">video_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
@@ -931,15 +931,15 @@
                 <span class="k">return</span> <span class="n">video_fn</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Video processing step &#39;</span><span class="si">{</span><span class="n">video_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Video processing step '</span><span class="si">{</span><span class="n">video_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">' failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
                 <span class="k">return</span> <span class="n">arr</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video processing step &#39;</span><span class="si">{</span><span class="n">video_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Video processing step '</span><span class="si">{</span><span class="n">video_fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">' failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">arr</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_execute_stack_edit_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute a structural edit operation on the AFMImageStack.</span>
 
 <span class="sd">        This method should not be used directly outside of ProcessingPipeline.</span>
@@ -948,7 +948,7 @@
 <span class="sd">        frame metadata remains synchronized with the resulting array.</span>
 
 <span class="sd">        The previous frame metadata is automatically backed up in</span>
-<span class="sd">        ``self.state_backups[&quot;frame_metadata_before_edit&quot;]`` before any modification,</span>
+<span class="sd">        ``self.state_backups["frame_metadata_before_edit"]`` before any modification,</span>
 <span class="sd">        allowing later restoration through :meth:`restore_frame_metadata`.</span>
 
 <span class="sd">        Parameters</span>
@@ -956,7 +956,7 @@
 <span class="sd">        fn : callable</span>
 <span class="sd">            A function that performs the edit operation. Must accept the current 3D</span>
 <span class="sd">            image stack (``arr``) as its first argument and return a modified</span>
-<span class="sd">            3D NumPy array with shape ``(n&#39;, h, w)``.</span>
+<span class="sd">            3D NumPy array with shape ``(n', h, w)``.</span>
 <span class="sd">        arr : numpy.ndarray</span>
 <span class="sd">            The 3D input array representing the current stack data, with shape</span>
 <span class="sd">            ``(n, height, width)``.</span>
@@ -995,16 +995,16 @@
 <span class="sd">        drop_frames : Remove specific frames from a stack.</span>
 <span class="sd">        restore_frame_metadata : Restore original frame metadata after edits.</span>
 <span class="sd">        ProcessingPipeline._execute_filter_step : Execute a standard filter step.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Run the edit function to get the new 3D array</span>
         <span class="n">new_arr</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># Only backup once per edit series to avoid redundant copies</span>
-        <span class="k">if</span> <span class="s2">&quot;frame_metadata_before_edit&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="p">[</span><span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"frame_metadata_before_edit"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="p">[</span><span class="s2">"frame_metadata_before_edit"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span>
 
         <span class="c1"># Update frame metadata by removing corresponding entries</span>
-        <span class="n">dropped_indices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;indices_to_drop&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">dropped_indices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"indices_to_drop"</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="n">dropped_indices</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">meta</span>
@@ -1015,30 +1015,30 @@
         <span class="c1"># Optional: sanity check</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span> <span class="o">!=</span> <span class="n">new_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;frame_metadata length mismatch after edit &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">new_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="sa">f</span><span class="s2">"frame_metadata length mismatch after edit "</span>
+                <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">new_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)."</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">new_arr</span>
 
 <div class="viewcode-block" id="AFMImageStack.restore_frame_metadata">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_frame_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restore_frame_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore frame metadata from the last state backup, if available.&quot;&quot;&quot;</span>
-        <span class="n">backup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;frame_metadata_before_edit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Restore frame metadata from the last state backup, if available."""</span>
+        <span class="n">backup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">backup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">backup</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Frame metadata restored from state_backups.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Frame metadata restored from state_backups."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No frame metadata backup found.&quot;</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No frame metadata backup found."</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.load_data">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.load_data">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load AFM data from a file or folder into AFMImageStack, normalizing timestamps.</span>
 
 <span class="sd">        Parameters</span>
@@ -1046,73 +1046,73 @@
 <span class="sd">        path : str or Path</span>
 <span class="sd">            Path to AFM data file or folder.</span>
 <span class="sd">        channel : str, optional</span>
-<span class="sd">            Channel name to load; default &quot;height_trace&quot;.</span>
+<span class="sd">            Channel name to load; default "height_trace".</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        AFMImageStack</span>
 <span class="sd">            Fully reconstructed AFMImageStack with processed snapshots and provenance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_afm_stack</span>
 
         <span class="n">afm</span> <span class="o">=</span> <span class="n">load_afm_stack</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
         <span class="n">afm</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">normalize_timestamps</span><span class="p">(</span><span class="n">afm</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)</span>
-        <span class="n">afm</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;steps&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;keys_by_name&quot;</span><span class="p">:</span> <span class="p">{}})</span>
+        <span class="n">afm</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"steps"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"keys_by_name"</span><span class="p">:</span> <span class="p">{}})</span>
 
         <span class="k">return</span> <span class="n">afm</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of frames in the stack.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            Number of frames (size along axis 0).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the number of pixel rows (frame height).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            Number of rows per frame.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the frame number of pixel columns.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            Number of columns per frame.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">image_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Spatial dimensions of a single frame.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        tuple of (``height``, ``width``)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
 <div class="viewcode-block" id="AFMImageStack.get_frame">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Retrieve the 2D image array for a specific frame index.</span>
 
 <span class="sd">        Parameters</span>
@@ -1129,14 +1129,14 @@
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
 <span class="sd">            If index is out of bounds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.get_frame_metadata">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Retrieve metadata dict for a specific frame index.</span>
 
 <span class="sd">        Parameters</span>
@@ -1147,37 +1147,37 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict[str, Any]</span>
-<span class="sd">            Metadata dict for that frame (includes normalized &#39;timestamp&#39;).</span>
+<span class="sd">            Metadata dict for that frame (includes normalized 'timestamp').</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
 <span class="sd">            If index is out of range.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame metadata index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of range&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Frame metadata index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of range"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.get_frames">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frames">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return a list of all individual 2D frame arrays.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        list of np.ndarray</span>
 <span class="sd">            List of length n_frames, each a 2D array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">)]</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.frames_with_metadata">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.frames_with_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">frames_with_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Yield tuples of (index, frame_array, metadata) for all frames.</span>
 
 <span class="sd">        Yields</span>
@@ -1188,18 +1188,18 @@
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        If any frame array is None, it is skipped with a warning log.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
             <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">idx</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">meta</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Frame </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> is None and skipped&quot;</span><span class="p">)</span></div>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Warning: Frame </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> is None and skipped"</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Index or slice the stack.</span>
 
 <span class="sd">        Parameters</span>
@@ -1217,7 +1217,7 @@
 <span class="sd">        ------</span>
 <span class="sd">        TypeError</span>
 <span class="sd">            If idx is neither int nor slice.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
@@ -1230,22 +1230,22 @@
                 <span class="n">file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span>
                 <span class="n">frame_metadata</span><span class="o">=</span><span class="n">sub_meta</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid index type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid index type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_snapshot_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Store the very first raw data under &#39;raw&#39; in processed dict.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Store the very first raw data under 'raw' in processed dict.</span>
 
 <span class="sd">        Subsequent calls do nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-            <span class="c1"># copy the array so later modifications to self.data don’t touch &#39;raw&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+            <span class="c1"># copy the array so later modifications to self.data don’t touch 'raw'</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <div class="viewcode-block" id="AFMImageStack.export_processing_log">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.export_processing_log">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">export_processing_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Export processing provenance and environment metadata to a JSON file.</span>
 
 <span class="sd">        Writes</span>
@@ -1254,10 +1254,10 @@
 <span class="sd">        Example JSON structure::</span>
 
 <span class="sd">            {</span>
-<span class="sd">            &quot;environment&quot;: { ... },</span>
-<span class="sd">            &quot;processing&quot;: {</span>
-<span class="sd">                &quot;steps&quot;: [ ... ],</span>
-<span class="sd">                &quot;keys_by_name&quot;: { ... }</span>
+<span class="sd">            "environment": { ... },</span>
+<span class="sd">            "processing": {</span>
+<span class="sd">                "steps": [ ... ],</span>
+<span class="sd">                "keys_by_name": { ... }</span>
 <span class="sd">            }</span>
 <span class="sd">            }</span>
 
@@ -1265,41 +1265,41 @@
 <span class="sd">        ----------</span>
 <span class="sd">        path : str</span>
 <span class="sd">            File path to write the JSON log. Creates parent dirs as needed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyEncoder</span>
 
         <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;environment&quot;</span><span class="p">,</span> <span class="p">{}),</span>
-            <span class="s2">&quot;processing&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s2">"environment"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"environment"</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="s2">"processing"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"processing"</span><span class="p">,</span> <span class="p">{}),</span>
         <span class="p">}</span>
 
         <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">dir</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">NumpyEncoder</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.export_analysis_log">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.export_analysis_log">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">export_analysis_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Export analysis provenance and results to a JSON file.</span>
 
 <span class="sd">        Expects that stack.analysis (or stack.analysis_results) and</span>
-<span class="sd">        stack.provenance[&quot;analysis&quot;] are populated by AnalysisPipeline.run().</span>
+<span class="sd">        stack.provenance["analysis"] are populated by AnalysisPipeline.run().</span>
 
 <span class="sd">        Writes</span>
 <span class="sd">        ------</span>
 <span class="sd">        Example JSON structure::</span>
 
 <span class="sd">            {</span>
-<span class="sd">            &quot;environment&quot;: { ... },</span>
-<span class="sd">            &quot;analysis&quot;: { &lt;step_key&gt;: outputs, ... },</span>
-<span class="sd">            &quot;provenance&quot;: {</span>
-<span class="sd">                &quot;steps&quot;: [ ... ],</span>
-<span class="sd">                &quot;results_by_name&quot;: { ... },</span>
-<span class="sd">                &quot;frame_times&quot;: [...],</span>
+<span class="sd">            "environment": { ... },</span>
+<span class="sd">            "analysis": { &lt;step_key&gt;: outputs, ... },</span>
+<span class="sd">            "provenance": {</span>
+<span class="sd">                "steps": [ ... ],</span>
+<span class="sd">                "results_by_name": { ... },</span>
+<span class="sd">                "frame_times": [...],</span>
 <span class="sd">            }</span>
 <span class="sd">            }</span>
 
@@ -1312,47 +1312,47 @@
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If no analysis results found on this stack.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyEncoder</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;analysis_results&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_results</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"analysis_results"</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_results</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;No analysis results found. Run an AnalysisPipeline first.&quot;</span>
+                <span class="s2">"No analysis results found. Run an AnalysisPipeline first."</span>
             <span class="p">)</span>
 
         <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">dir</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_results</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">NumpyEncoder</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.apply">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply a sequence of processing steps to each frame in the AFM image stack.</span>
 
 <span class="sd">        Steps can be:</span>
 
-<span class="sd">          - &quot;clear&quot;       : reset any existing mask</span>
+<span class="sd">          - "clear"       : reset any existing mask</span>
 <span class="sd">          - mask names    : keys in MASK_MAP</span>
 <span class="sd">          - filter names  : keys in FILTER_MAP</span>
-<span class="sd">          - plugin names  : entry points in &#39;playnano.filters&#39; or</span>
-<span class="sd">            &#39;playnano.video_processing&#39;</span>
+<span class="sd">          - plugin names  : entry points in 'playnano.filters' or</span>
+<span class="sd">            'playnano.video_processing'</span>
 <span class="sd">          - method names  : bound methods on this class</span>
 
 <span class="sd">        ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.</span>
 
 <span class="sd">        This is a stateless convenience: applies clear/mask/filter steps in order,</span>
-<span class="sd">        snapshots &#39;raw&#39; and the data after each filter step in self.processed, but does</span>
+<span class="sd">        snapshots 'raw' and the data after each filter step in self.processed, but does</span>
 <span class="sd">        not assign unique keys per step or update provenance.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        steps : list of str</span>
-<span class="sd">            Sequence of step names (e.g. [&quot;remove_plane&quot;, &quot;threshold_mask&quot;,</span>
-<span class="sd">            &quot;gaussian_filter&quot;]).</span>
+<span class="sd">            Sequence of step names (e.g. ["remove_plane", "threshold_mask",</span>
+<span class="sd">            "gaussian_filter"]).</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            Forwarded to each mask/filter function.</span>
 
@@ -1365,10 +1365,10 @@
 <span class="sd">        -----</span>
 <span class="sd">        For tracked, reproducible processing,</span>
 <span class="sd">        use ProcessingPipeline.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># 1) Snapshot raw data once</span>
-        <span class="k">if</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1377,47 +1377,47 @@
             <span class="n">step_type</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_step</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
 
             <span class="c1"># (A) CLEAR</span>
-            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;clear&quot;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Step &#39;clear&#39; → dropping existing mask.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"clear"</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Step 'clear' → dropping existing mask."</span><span class="p">)</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">continue</span>
 
             <span class="c1"># (B) MASK GENERATOR</span>
-            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;mask&quot;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39; → computing new mask.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"mask"</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">' → computing new mask."</span><span class="p">)</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_mask_step</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">continue</span>  <span class="c1"># masks don&#39;t modify arr</span>
+                <span class="k">continue</span>  <span class="c1"># masks don't modify arr</span>
 
             <span class="c1"># (C) FILTER OR PLUGIN (2D/frame)</span>
-            <span class="k">elif</span> <span class="n">step_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;filter&quot;</span><span class="p">,</span> <span class="s2">&quot;plugin&quot;</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39; (filter) → applying per-frame.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">step_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"plugin"</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">' (filter) → applying per-frame."</span><span class="p">)</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_filter_step</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
             <span class="c1"># (D) VIDEO FILTER / VIDEO PLUGIN (3D)</span>
-            <span class="k">elif</span> <span class="n">step_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;video_filter&quot;</span><span class="p">,</span> <span class="s2">&quot;video_plugin&quot;</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39; (video filter) → applying to full stack.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">step_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"video_filter"</span><span class="p">,</span> <span class="s2">"video_plugin"</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">' (video filter) → applying to full stack."</span><span class="p">)</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_video_processing_step</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
             <span class="c1"># (E) STACK EDIT</span>
-            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;stack_edit&quot;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39; (stack edit) → applying to full stack.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"stack_edit"</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">' (stack edit) → applying to full stack."</span><span class="p">)</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_stack_edit_step</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># masks invalid after structural change</span>
 
             <span class="c1"># (F) METHOD</span>
-            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">&quot;method&quot;</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step &#39;</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&#39; (method) → applying.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"method"</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">' (method) → applying."</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">new_arr</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                     <span class="n">new_arr</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">new_arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">new_arr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
+                    <span class="n">new_arr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="n">new_arr</span>
 
             <span class="c1"># (G) UNRECOGNIZED - should not happen due to _resolve_step</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported step type &#39;</span><span class="si">{</span><span class="n">step_type</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported step type '</span><span class="si">{</span><span class="n">step_type</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
 
             <span class="c1"># Store a snapshot in processed dict</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1430,7 +1430,7 @@
 <div class="viewcode-block" id="AFMImageStack.time_for_frame">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.time_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">time_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get timestamp for a given frame index, fallback to index if missing.</span>
 
 <span class="sd">        Parameters</span>
@@ -1441,7 +1441,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
-<span class="sd">            Timestamp in seconds; if metadata lacks &#39;timestamp&#39;, returns float(idx).</span>
+<span class="sd">            Timestamp in seconds; if metadata lacks 'timestamp', returns float(idx).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -1455,20 +1455,20 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{&quot;timestamp&quot;: 0.0}, {}, {&quot;timestamp&quot;: 2.0}]</span>
+<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {}, {"timestamp": 2.0}]</span>
 <span class="sd">        &gt;&gt;&gt; stack.time_for_frame(1)</span>
 <span class="sd">        1.0</span>
 <span class="sd">        &gt;&gt;&gt; stack.time_for_frame(2)</span>
 <span class="sd">        2.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timestamp"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ts</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.scaling_for_frame">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.scaling_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">scaling_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the frame_pixel_size_nm for a given frame index.</span>
 
 <span class="sd">        If the frame_metadata dictionaries or frame_pixel_size_nm values are missing</span>
@@ -1497,9 +1497,9 @@
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; stack.pixel_size_nm = 1.0   # fallback value</span>
 <span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [</span>
-<span class="sd">        ...     {&quot;frame_pixel_size_nm&quot;: 1.0},</span>
+<span class="sd">        ...     {"frame_pixel_size_nm": 1.0},</span>
 <span class="sd">        ...     {},</span>
-<span class="sd">        ...     {&quot;frame_pixel_size_nm&quot;: 2.0},</span>
+<span class="sd">        ...     {"frame_pixel_size_nm": 2.0},</span>
 <span class="sd">        ... ]</span>
 <span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(0)</span>
 <span class="sd">        1.0</span>
@@ -1507,14 +1507,14 @@
 <span class="sd">        1.0          # falls back to stack.pixel_size_nm</span>
 <span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(2)</span>
 <span class="sd">        2.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frame_pixel_size_nm&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.get_frame_times">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame_times">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_times</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return a list of timestamps (in seconds) for each frame in the stack.</span>
 
 <span class="sd">        This method uses `time_for_frame()` to retrieve the timestamp for</span>
@@ -1528,24 +1528,24 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{&quot;timestamp&quot;: 0.0}, {&quot;timestamp&quot;: 1.0}]</span>
+<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {"timestamp": 1.0}]</span>
 <span class="sd">        &gt;&gt;&gt; stack.get_frame_times()</span>
 <span class="sd">        [0.0, 1.0]</span>
 
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{&quot;timestamp&quot;: 0.0}, {}]</span>
+<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {}]</span>
 <span class="sd">        &gt;&gt;&gt; stack.get_frame_times()</span>
 <span class="sd">        [0.0, 1.0]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_for_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">))]</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.channel_for_frame">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.channel_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">channel_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the channel name for a given frame index.</span>
 
-<span class="sd">        Returns the value of the &#39;channel&#39; key in the frame&#39;s metadata if present,</span>
+<span class="sd">        Returns the value of the 'channel' key in the frame's metadata if present,</span>
 <span class="sd">        otherwise falls back to the global stack-level channel.</span>
 
 <span class="sd">        Parameters</span>
@@ -1557,15 +1557,15 @@
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
 <span class="sd">            Channel name for the frame.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AFMImageStack.restore_raw">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restore_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Restore self.data from the &#39;raw&#39; snapshot in self.processed.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Restore self.data from the 'raw' snapshot in self.processed.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1575,17 +1575,17 @@
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        KeyError</span>
-<span class="sd">            If &#39;raw&#39; data is not available in self.processed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s2">&quot;raw&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No raw data snapshot available to restore.&quot;</span><span class="p">)</span>
+<span class="sd">            If 'raw' data is not available in self.processed.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"No raw data snapshot available to restore."</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data restored from raw snapshot.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Data restored from raw snapshot."</span><span class="p">)</span>
         <span class="c1"># Restore frame metadata if it was backed up</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">restore_frame_metadata</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;Metadata restored from state_backups[&#39;frame_metadata_before_edit&#39;].&quot;</span>
+            <span class="s2">"Metadata restored from state_backups['frame_metadata_before_edit']."</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
 </div>

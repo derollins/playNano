@@ -272,7 +272,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playNano.io.loader</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Common loader for various high speed AFM video formats *and* playNano export bundles.</span>
 
 <span class="sd">Supported extensions:</span>
@@ -283,7 +283,7 @@
 <span class="sd">  - .ome.tif / .tif  (OME-TIFF bundles)</span>
 <span class="sd">  - .npz        (playNano NPZ bundles)</span>
 <span class="sd">  - .h5         (playNano HDF5 bundles)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -307,7 +307,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_loader_for_folder</span><span class="p">(</span>
     <span class="n">folder_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">folder_loaders</span><span class="p">:</span> <span class="nb">dict</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">callable</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine the appropriate loader for a folder containing AFM data.</span>
 
 <span class="sd">    Parameters</span>
@@ -326,26 +326,26 @@
 <span class="sd">    ------</span>
 <span class="sd">    FileNotFoundError</span>
 <span class="sd">        If no known file types are found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Determining loader for folder </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Determining loader for folder </span><span class="si">{</span><span class="n">folder_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">suffix_counts</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="n">ext</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
-            <span class="c1"># Handle &#39;old&#39; nanoscope numeric extensions like .001, .002 as &quot;.spm&quot;</span>
+            <span class="c1"># Handle 'old' nanoscope numeric extensions like .001, .002 as ".spm"</span>
             <span class="k">if</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.spm&quot;</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="s2">".spm"</span>
 
             <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">folder_loaders</span><span class="p">:</span>
                 <span class="n">suffix_counts</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span> <span class="o">=</span> <span class="n">suffix_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">suffix_counts</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;No supported AFM files found in the folder.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">"No supported AFM files found in the folder."</span><span class="p">)</span>
 
     <span class="c1"># Prefer .jpk for now</span>
     <span class="n">chosen_ext</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;.jpk&quot;</span> <span class="k">if</span> <span class="s2">&quot;.jpk&quot;</span> <span class="ow">in</span> <span class="n">suffix_counts</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">suffix_counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">suffix_counts</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="s2">".jpk"</span> <span class="k">if</span> <span class="s2">".jpk"</span> <span class="ow">in</span> <span class="n">suffix_counts</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">suffix_counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">suffix_counts</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">chosen_ext</span><span class="p">,</span> <span class="n">folder_loaders</span><span class="p">[</span><span class="n">chosen_ext</span><span class="p">]</span></div>
 
@@ -356,7 +356,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_loader_for_file</span><span class="p">(</span>
     <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">file_loaders</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">folder_loaders</span><span class="p">:</span> <span class="nb">dict</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">callable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine the appropriate loader for a single multi-frame AFM file.</span>
 
 <span class="sd">    Parameters</span>
@@ -377,28 +377,28 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the file type is unsupported or better handled as a folder.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Determining loader for file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Determining loader for file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ext</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> has no extension and cannot be identified.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> has no extension and cannot be identified."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">file_loaders</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">ext</span><span class="p">,</span> <span class="n">file_loaders</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">folder_loaders</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2"> file type is typically a single-frame export.&quot;</span>
-            <span class="s2">&quot;To load HS-AFM video, pass the full folder instead.&quot;</span>
+            <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2"> file type is typically a single-frame export."</span>
+            <span class="s2">"To load HS-AFM video, pass the full folder instead."</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported file type: </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported file type: </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="load_afm_stack">
 <a class="viewcode-back" href="../../../api/playNano.io.html#playNano.io.loader.load_afm_stack">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_afm_stack</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;height_trace&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_afm_stack</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Unified interface to load AFM stacks from various file formats.</span>
 
 <span class="sd">    High speed AFM videos can be saved as either individual frames</span>
@@ -423,49 +423,49 @@
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
 <span class="sd">        Loaded image stack with metadata.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raw input path: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Raw input path: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resolved path: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading AFM stack from </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> for channel &#39;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Resolved path: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading AFM stack from </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> for channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
     <span class="n">folder_loaders</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;.jpk&quot;</span><span class="p">:</span> <span class="n">load_jpk_folder</span><span class="p">,</span>
-        <span class="s2">&quot;.spm&quot;</span><span class="p">:</span> <span class="n">load_spm_folder</span><span class="p">,</span>
+        <span class="s2">".jpk"</span><span class="p">:</span> <span class="n">load_jpk_folder</span><span class="p">,</span>
+        <span class="s2">".spm"</span><span class="p">:</span> <span class="n">load_spm_folder</span><span class="p">,</span>
         <span class="c1"># Add others as needed</span>
     <span class="p">}</span>
 
     <span class="n">file_loaders</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;.h5-jpk&quot;</span><span class="p">:</span> <span class="n">load_h5jpk</span><span class="p">,</span>
-        <span class="s2">&quot;.asd&quot;</span><span class="p">:</span> <span class="n">load_asd_file</span><span class="p">,</span>
-        <span class="s2">&quot;.npz&quot;</span><span class="p">:</span> <span class="n">load_npz_bundle</span><span class="p">,</span>
-        <span class="s2">&quot;.h5&quot;</span><span class="p">:</span> <span class="n">load_h5_bundle</span><span class="p">,</span>
-        <span class="s2">&quot;.ome.tif&quot;</span><span class="p">:</span> <span class="n">load_ome_tiff_stack</span><span class="p">,</span>
-        <span class="s2">&quot;.tif&quot;</span><span class="p">:</span> <span class="n">load_ome_tiff_stack</span><span class="p">,</span>
+        <span class="s2">".h5-jpk"</span><span class="p">:</span> <span class="n">load_h5jpk</span><span class="p">,</span>
+        <span class="s2">".asd"</span><span class="p">:</span> <span class="n">load_asd_file</span><span class="p">,</span>
+        <span class="s2">".npz"</span><span class="p">:</span> <span class="n">load_npz_bundle</span><span class="p">,</span>
+        <span class="s2">".h5"</span><span class="p">:</span> <span class="n">load_h5_bundle</span><span class="p">,</span>
+        <span class="s2">".ome.tif"</span><span class="p">:</span> <span class="n">load_ome_tiff_stack</span><span class="p">,</span>
+        <span class="s2">".tif"</span><span class="p">:</span> <span class="n">load_ome_tiff_stack</span><span class="p">,</span>
         <span class="c1"># Add others as needed</span>
     <span class="p">}</span>
 
     <span class="c1"># Load folder</span>
     <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading folder </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading folder </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">ext</span><span class="p">,</span> <span class="n">loader</span> <span class="o">=</span> <span class="n">get_loader_for_folder</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">folder_loaders</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Loading folder </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> with loader </span><span class="si">{</span><span class="n">loader</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="sa">f</span><span class="s2">"Loading folder </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> with loader </span><span class="si">{</span><span class="n">loader</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa: E501</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">loader</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
 
     <span class="c1"># Load file</span>
     <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">ext</span><span class="p">,</span> <span class="n">loader</span> <span class="o">=</span> <span class="n">get_loader_for_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">file_loaders</span><span class="p">,</span> <span class="n">folder_loaders</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Loading file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> with loader </span><span class="si">{</span><span class="n">loader</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="sa">f</span><span class="s2">"Loading file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> with loader </span><span class="si">{</span><span class="n">loader</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa: E501</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">loader</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> is neither a file nor a directory.&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2"> is neither a file nor a directory."</span><span class="p">)</span></div>
 
 </pre></div>
         </article>

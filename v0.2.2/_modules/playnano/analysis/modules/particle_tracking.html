@@ -324,7 +324,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.particle_tracking</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module for linking particle features across frames to build trajectories.</span>
 
 <span class="sd">This module defines the ParticleTrackingModule, which links features</span>
@@ -338,10 +338,10 @@
 <span class="sd">    - A unique track ID</span>
 <span class="sd">    - A list of frames where the particle appears</span>
 <span class="sd">    - A list of point indices referencing the original features</span>
-<span class="sd">    - A list of centroids describing the particle&#39;s positions</span>
+<span class="sd">    - A list of centroids describing the particle's positions</span>
 
 <span class="sd">Optionally, per-track masks are extracted from the labeled feature masks.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
 
@@ -354,7 +354,7 @@
 <div class="viewcode-block" id="ParticleTrackingModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParticleTrackingModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Link detected features frame-to-frame to produce particle trajectories.</span>
 
 <span class="sd">    This module links features detected by a prior featuredetection module</span>
@@ -364,23 +364,23 @@
 <span class="sd">    Version</span>
 <span class="sd">    -------</span>
 <span class="sd">    0.1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            Unique identifier: &quot;particle_tracking&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;particle_tracking&quot;</span>
+<span class="sd">            Unique identifier: "particle_tracking".</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"particle_tracking"</span>
 
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span> <span class="s2">&quot;log_blob_detection&quot;</span><span class="p">]</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
 
 <div class="viewcode-block" id="ParticleTrackingModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run">[docs]</a>
@@ -388,13 +388,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span>
         <span class="n">previous_results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;feature_detection&quot;</span><span class="p">,</span>
-        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features_per_frame&quot;</span><span class="p">,</span>
-        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;centroid_x&quot;</span><span class="p">,</span> <span class="s2">&quot;centroid_y&quot;</span><span class="p">),</span>
+        <span class="n">detection_module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"feature_detection"</span><span class="p">,</span>
+        <span class="n">coord_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"features_per_frame"</span><span class="p">,</span>
+        <span class="n">coord_columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"centroid_x"</span><span class="p">,</span> <span class="s2">"centroid_y"</span><span class="p">),</span>
         <span class="n">max_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
         <span class="o">**</span><span class="n">params</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Track particles across frames using nearest-neighbor association.</span>
 
 <span class="sd">        Parameters</span>
@@ -405,20 +405,20 @@
 <span class="sd">        previous_results : dict[str, Any], optional</span>
 <span class="sd">            Must contain results from a detection module, including:</span>
 
-<span class="sd">            - coord_key (e.g., &quot;features_per_frame&quot;): list of dicts with per-frame</span>
+<span class="sd">            - coord_key (e.g., "features_per_frame"): list of dicts with per-frame</span>
 <span class="sd">              features</span>
-<span class="sd">            - &quot;labeled_masks&quot;: per-frame mask of label regions</span>
+<span class="sd">            - "labeled_masks": per-frame mask of label regions</span>
 
 <span class="sd">        detection_module : str, optional</span>
-<span class="sd">            Which module to read features from (default: &quot;feature_detection&quot;).</span>
+<span class="sd">            Which module to read features from (default: "feature_detection").</span>
 
 <span class="sd">        coord_key : str, optional</span>
 <span class="sd">            Key in previous_results[detection_module] containing per-frame feature dicts</span>
-<span class="sd">            (default: &quot;features_per_frame&quot;).</span>
+<span class="sd">            (default: "features_per_frame").</span>
 
 <span class="sd">        coord_columns : Sequence[str], optional</span>
-<span class="sd">            Keys to extract coordinates from each feature; falls back to &quot;centroid&quot; if</span>
-<span class="sd">            needed. Default is (&quot;centroid_x&quot;, &quot;centroid_y&quot;)).</span>
+<span class="sd">            Keys to extract coordinates from each feature; falls back to "centroid" if</span>
+<span class="sd">            needed. Default is ("centroid_x", "centroid_y")).</span>
 
 <span class="sd">        max_distance : float, optional</span>
 <span class="sd">            Maximum allowed movement per frame in coordinate units (default: 5.0).</span>
@@ -448,27 +448,27 @@
 
 <span class="sd">            - n_tracks : int</span>
 <span class="sd">              Total number of tracks</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
 
         <span class="c1"># Auto-detect the most recent available detection module</span>
 
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
 
         <span class="n">available</span> <span class="o">=</span> <span class="p">[</span><span class="n">mod</span> <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="p">)</span> <span class="k">if</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">previous_results</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results.&quot;</span>  <span class="c1"># noqa</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires one of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">requires</span><span class="si">}</span><span class="s2">, but none were found in previous results."</span>  <span class="c1"># noqa</span>
             <span class="p">)</span>
 
         <span class="n">detection_module</span> <span class="o">=</span> <span class="n">available</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fd_out</span> <span class="o">=</span> <span class="n">previous_results</span><span class="p">[</span><span class="n">detection_module</span><span class="p">]</span>
         <span class="n">feats</span> <span class="o">=</span> <span class="n">fd_out</span><span class="p">[</span><span class="n">coord_key</span><span class="p">]</span>  <span class="c1"># List[List[dict]]</span>
-        <span class="n">masks</span> <span class="o">=</span> <span class="n">fd_out</span><span class="p">[</span><span class="s2">&quot;labeled_masks&quot;</span><span class="p">]</span>  <span class="c1"># List[np.ndarray]</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">fd_out</span><span class="p">[</span><span class="s2">"labeled_masks"</span><span class="p">]</span>  <span class="c1"># List[np.ndarray]</span>
 
         <span class="n">n_frames</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
         <span class="n">tracks</span> <span class="o">=</span> <span class="p">[]</span>
@@ -481,10 +481,10 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">coord_columns</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">c</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;centroid&quot;</span><span class="p">)</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"centroid"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Missing coordinate keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> and fallback &#39;centroid&#39;&quot;</span>  <span class="c1"># noqa</span>
+                        <span class="sa">f</span><span class="s2">"Missing coordinate keys </span><span class="si">{</span><span class="n">coord_columns</span><span class="si">}</span><span class="s2"> and fallback 'centroid'"</span>  <span class="c1"># noqa</span>
                     <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
                 <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
 
@@ -511,9 +511,9 @@
 
                 <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">track</span> <span class="o">=</span> <span class="n">tracks</span><span class="p">[</span><span class="n">trk_id</span><span class="p">]</span>
-                    <span class="n">track</span><span class="p">[</span><span class="s2">&quot;frames&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                    <span class="n">track</span><span class="p">[</span><span class="s2">&quot;coords&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
-                    <span class="n">track</span><span class="p">[</span><span class="s2">&quot;point_indices&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_idx</span><span class="p">)</span>
+                    <span class="n">track</span><span class="p">[</span><span class="s2">"frames"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                    <span class="n">track</span><span class="p">[</span><span class="s2">"coords"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+                    <span class="n">track</span><span class="p">[</span><span class="s2">"point_indices"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_idx</span><span class="p">)</span>
                     <span class="n">assigned</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">best_idx</span><span class="p">)</span>
                     <span class="n">new_active</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">trk_id</span><span class="p">,</span> <span class="n">best</span><span class="p">))</span>
 
@@ -523,10 +523,10 @@
                     <span class="k">continue</span>
                 <span class="n">coords</span> <span class="o">=</span> <span class="n">extract_coords</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
                 <span class="n">trk</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">next_track_id</span><span class="p">,</span>
-                    <span class="s2">&quot;frames&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">],</span>
-                    <span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">coords</span><span class="p">],</span>
-                    <span class="s2">&quot;point_indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="s2">"id"</span><span class="p">:</span> <span class="n">next_track_id</span><span class="p">,</span>
+                    <span class="s2">"frames"</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">],</span>
+                    <span class="s2">"coords"</span><span class="p">:</span> <span class="p">[</span><span class="n">coords</span><span class="p">],</span>
+                    <span class="s2">"point_indices"</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="p">}</span>
                 <span class="n">tracks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trk</span><span class="p">)</span>
                 <span class="n">new_active</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">next_track_id</span><span class="p">,</span> <span class="n">coords</span><span class="p">))</span>
@@ -537,16 +537,16 @@
         <span class="c1"># Generate per-track masks from last known frame/feature</span>
         <span class="n">track_masks</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">trk</span> <span class="ow">in</span> <span class="n">tracks</span><span class="p">:</span>
-            <span class="n">t_last</span> <span class="o">=</span> <span class="n">trk</span><span class="p">[</span><span class="s2">&quot;frames&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">i_last</span> <span class="o">=</span> <span class="n">trk</span><span class="p">[</span><span class="s2">&quot;point_indices&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="n">t_last</span><span class="p">][</span><span class="n">i_last</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+            <span class="n">t_last</span> <span class="o">=</span> <span class="n">trk</span><span class="p">[</span><span class="s2">"frames"</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">i_last</span> <span class="o">=</span> <span class="n">trk</span><span class="p">[</span><span class="s2">"point_indices"</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="n">t_last</span><span class="p">][</span><span class="n">i_last</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"label"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">track_masks</span><span class="p">[</span><span class="n">trk</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">t_last</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span>
+                <span class="n">track_masks</span><span class="p">[</span><span class="n">trk</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">t_last</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;tracks&quot;</span><span class="p">:</span> <span class="n">tracks</span><span class="p">,</span>
-            <span class="s2">&quot;track_masks&quot;</span><span class="p">:</span> <span class="n">track_masks</span><span class="p">,</span>
-            <span class="s2">&quot;n_tracks&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tracks</span><span class="p">),</span>
+            <span class="s2">"tracks"</span><span class="p">:</span> <span class="n">tracks</span><span class="p">,</span>
+            <span class="s2">"track_masks"</span><span class="p">:</span> <span class="n">track_masks</span><span class="p">,</span>
+            <span class="s2">"n_tracks"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tracks</span><span class="p">),</span>
         <span class="p">}</span></div>
 </div>
 

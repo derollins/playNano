@@ -355,7 +355,7 @@ and reproducibility.</p>
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
 <p>Run an inline analysis pipeline from the CLI:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">   </span>--analysis-steps<span class="w"> </span><span class="s2">&quot;feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
 </pre></div>
 </div>
@@ -414,7 +414,7 @@ tracking in order to have particles to track.</p></li>
 <p>The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.</p>
 <p>This is the general form of the analyze subcommand for CLI use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="se">\</span>
-<span class="w">   </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s1">&#39;step1:arg=val;step2:arg=val&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s1">'step1:arg=val;step2:arg=val'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
@@ -463,18 +463,18 @@ tracking in order to have particles to track.</p></li>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisPipeline</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">&quot;data/processed_sample.h5&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">&quot;height_trace&quot;</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">"data/processed_sample.h5"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
 
 <span class="n">ap</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;detect_particles&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;track_particles&quot;</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"detect_particles"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"track_particles"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
 
 <span class="c1"># run and optionally write a sanitised JSON log</span>
-<span class="n">record</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">&quot;analysis.json&quot;</span><span class="p">)</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">"analysis.json"</span><span class="p">)</span>
 
 <span class="c1"># programmatic access</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -500,13 +500,13 @@ tracking in order to have particles to track.</p></li>
 <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
 <span class="c1"># 2) Walk step provenance</span>
-<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;steps&quot;</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">&quot;analysis_key&quot;</span><span class="p">],</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">"index"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"analysis_key"</span><span class="p">],</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"version"</span><span class="p">))</span>
 
 <span class="c1"># 3) Access outputs for a named module</span>
-<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">][</span><span class="s2">&quot;results_by_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;detect_particles&quot;</span><span class="p">,</span> <span class="p">[]):</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;analysis_key&quot;</span><span class="p">]</span>
-    <span class="n">outputs</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;outputs&quot;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"results_by_name"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detect_particles"</span><span class="p">,</span> <span class="p">[]):</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"analysis_key"</span><span class="p">]</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"outputs"</span><span class="p">]</span>
     <span class="c1"># use outputs (dict/list/array) directly</span>
 </pre></div>
 </div>

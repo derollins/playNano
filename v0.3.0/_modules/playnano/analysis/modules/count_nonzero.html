@@ -329,7 +329,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.count_nonzero</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Analysis module for counting non-zero data points in an array.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Analysis module for counting non-zero data points in an array."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
@@ -339,7 +339,7 @@
 <div class="viewcode-block" id="CountNonzeroModule">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.count_nonzero.html#playnano.analysis.modules.count_nonzero.CountNonzeroModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CountNonzeroModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Count non-zero pixels in each frame of an AFMImageStack.</span>
 
 <span class="sd">    This simple analysis module computes the number of non-zero pixels</span>
@@ -353,28 +353,28 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; module = CountNonzeroModule()</span>
 <span class="sd">    &gt;&gt;&gt; result = module.run(stack)</span>
-<span class="sd">    &gt;&gt;&gt; result[&#39;counts&#39;].shape</span>
+<span class="sd">    &gt;&gt;&gt; result['counts'].shape</span>
 <span class="sd">    (n_frames,)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.1.0&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the analysis module.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
 <span class="sd">            The string identifier for this module.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;count_nonzero&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"count_nonzero"</span>
 
 <div class="viewcode-block" id="CountNonzeroModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.count_nonzero.html#playnano.analysis.modules.count_nonzero.CountNonzeroModule.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">previous_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Count non-zero pixels per frame in the AFMImageStack.</span>
 
 <span class="sd">        Parameters</span>
@@ -393,15 +393,15 @@
 <span class="sd">        dict</span>
 <span class="sd">            Dictionary with key:</span>
 
-<span class="sd">                - &quot;counts&quot;: np.ndarray of shape (n_frames,), number of non-zero</span>
+<span class="sd">                - "counts": np.ndarray of shape (n_frames,), number of non-zero</span>
 <span class="sd">                  pixels per frame.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span>  <span class="c1"># shape (n_frames, H, W)</span>
         <span class="c1"># Compute counts</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
         <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># array of length n_frames</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;counts&quot;</span><span class="p">:</span> <span class="n">counts</span><span class="p">}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"counts"</span><span class="p">:</span> <span class="n">counts</span><span class="p">}</span></div>
 </div>
 
 </pre></div>
