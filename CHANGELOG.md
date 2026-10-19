@@ -10,9 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `drop_final_frame()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
-  similarly to the other funcitons in the module.
-- `zero_median` funciton in both filters and masked filters module to subtract the median value from ever pixel,
+- `drop_final_frames()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
+  similarly to the other functions in the module.
+- `zero_median` function in both filters and masked filters module to subtract the median value from ever pixel,
   optionally masked.
 - `particle_region_extraction` analysis module (`ParticleRegionExtractionModule`) that extracts per-particle,
   per-frame image regions from tracked detections — producing tight, padded, squared, or fixed-size bounding
@@ -54,10 +54,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reader docstrings expanded to document per-frame populated fields, whole-video
   acquisition fields, timing sources and fallbacks.
+- `playnano.utils.io_utils.height_units` renamed to `HEIGHT_UNITS`.
+- Developer tooling: `pre-commit-hooks` bumped to v6.0.0; `ome-types` added
+  to `dev` extras (used by the OME-TIFF units test).
 
 ### Fixed
 
-- OME-TIFF export now records explicit `PhysicalSize` (X, Y in nm) and
+- Bidirectional (interlaced) `.jpk` folder and `.h5-jpk` scans were timed as
+  unidirectional, so timestamps drifted from real acquisition time. Real
+  per-frame start/end times are now used, with interlace-aware scan-rate
+  timing as fallback.
+- `.h5-jpk`: dataset name is now read from the channel group rather than
+  reconstructed from the channel string, fixing a `KeyError` on camelCase
+  datasets (e.g. `MeasuredHeight`).
+- `.h5-jpk`: z-unit attribute is now decoded properly. Previously `str(bytes)`
+  produced `"b'm'"`, so the explicit unit-conversion path never matched.
+- OME-TIFF export now records explicit `PhysicalSize` (X, Y in µm) and
   `TimeIncrement` metadata, so timing and calibration survive round-trips
   through ImageJ/Fiji and other OME consumers such as napari.
 - `AFMImageStack.export_processing_log` referenced `self.stack.provenance`,
@@ -74,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Loading and metadata section added to `introduction.rst` describing the
   unified per-frame schema and the `stack.acquisition` slot.
+- Updated `processing-operations-rreference.rst` with `zero_meidan` and
+  `drop_final_frames`
 
 ## [0.4.0.post1] - 2026-05-12
 

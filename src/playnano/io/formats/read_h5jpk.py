@@ -106,7 +106,7 @@ def _get_channel_info(f: h5py.File, channel: str) -> tuple[h5py.Group, h5py.Grou
     channel_map = _discover_available_channels(f)
     if channel not in channel_map:
         raise ValueError(
-            f"Channel '{channel}' not found in file. "
+            f"Channel '{channel}' not found in file."
             f"Available channels: {list(channel_map)}"
         )
     channel_path = channel_map[channel]
