@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-19
+
 ### Added
 
 - `drop_final_frames()` function added to `stack_edit` module, this is a helper function that generates a list for `drop_frames`
   similarly to the other functions in the module.
-- `zero_median` function in both filters and masked filters module to subtract the median value from ever pixel,
+- `zero_median` function in both filters and masked filters module to subtract the median value from every pixel,
   optionally masked.
 - `particle_region_extraction` analysis module (`ParticleRegionExtractionModule`) that extracts per-particle,
   per-frame image regions from tracked detections — producing tight, padded, squared, or fixed-size bounding
@@ -86,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Loading and metadata section added to `introduction.rst` describing the
   unified per-frame schema and the `stack.acquisition` slot.
-- Updated `processing-operations-rreference.rst` with `zero_meidan` and
+- Updated `processing-operations-reference.rst` with `zero_median` and
   `drop_final_frames`
 
 ## [0.4.0.post1] - 2026-05-12
@@ -546,7 +548,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.0...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -556,3 +558,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.3.1]: https://github.com/derollins/playNano/releases/tag/v0.3.1
 [0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
+[0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0

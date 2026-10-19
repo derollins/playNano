@@ -73,6 +73,7 @@ class AFMImageStack:
 
             {
                 "environment": {...},
+                "acquisition": {...},
                 "processing": {"steps": [...], "keys_by_name": {...}},
                 "analysis": {"frame_times": [...], "steps": [...],
                 "results_by_name": {...}},

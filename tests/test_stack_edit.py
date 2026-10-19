@@ -172,6 +172,7 @@ def test_register_stack_edit_processing_contains_expected_keys():
     assert registry["drop_frames"] is drop_frames
     assert registry["drop_frame_range"] is drop_frame_range
     assert registry["select_frames"] is select_frames
+    assert registry["drop_final_frames"] is drop_final_frames
 
 
 # ---------------------------------------------------------------------
