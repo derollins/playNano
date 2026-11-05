@@ -130,7 +130,7 @@ Construct and run a pipeline from Python:
    from playnano.analysis.pipeline import AnalysisPipeline
    import yaml
 
-   stack = AFMImageStack.load_afm_stack("data/processed_sample.h5", channel="height_trace")
+   stack = AFMImageStack.load_data("data/processed_sample.h5", channel="height_trace")
 
    ap = AnalysisPipeline()
    ap.add("detect_particles", threshold=5)
