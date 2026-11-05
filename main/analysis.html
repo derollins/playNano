@@ -630,7 +630,7 @@ tracking in order to have particles to track.</p></li>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisPipeline</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">"data/processed_sample.h5"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">"data/processed_sample.h5"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
 
 <span class="n">ap</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
 <span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"detect_particles"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
