@@ -1,6 +1,9 @@
 """Unit tests for the playNano GUI, MainWindow, and ViewerWidget components."""
 
 import logging
+import os
+import subprocess
+import sys
 from unittest.mock import ANY, MagicMock, patch
 
 import matplotlib
@@ -358,6 +361,31 @@ def test_load_app_icon_warns_when_files_missing(tmp_path, caplog):
             icon = main.load_app_icon()
     assert icon.isNull()
     assert "icon files not found" in caplog.text
+
+
+def test_window_module_imports_first_in_fresh_process():
+    """
+    playnano.gui.window can be the first Qt-related import in a process.
+
+    Runs in a subprocess because this test session has already imported PySide6,
+    which would hide an import-order problem (matplotlib's Qt5-only backend
+    failed when imported before PySide6).
+    """
+    env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    code = (
+        "import playnano.gui.window\n"
+        "from matplotlib.backends import qt_compat\n"
+        "print(qt_compat.QT_API)\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "PySide6"
 
 
 def test_set_windows_app_id_is_noop_off_windows(monkeypatch):

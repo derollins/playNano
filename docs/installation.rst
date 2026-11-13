@@ -47,12 +47,17 @@ Create a reproducible conda environment and install **playNano**.
 Notes & troubleshooting
 -----------------------
 
-- **PySide6 / Qt issues**
-  If pip installation of PySide6 fails (common on some Windows setups), prefer the conda package:
+- **PySide6 / Qt**
+  The GUI uses ``PySide6-Essentials`` (the core Qt modules only), installed from PyPI by
+  ``pip install playnano``. Do **not** also install ``pyside6`` from conda-forge into the same
+  environment: pip does not recognise it as ``PySide6-Essentials`` and installs a second copy of
+  Qt into the same folder. If an environment already has conda's ``pyside6``, remove it and
+  reinstall from pip:
 
   .. code-block:: bash
 
-     conda install -c conda-forge pyside6
+     conda remove pyside6
+     pip install --force-reinstall PySide6-Essentials
 
 - **AFMReader**
   Required for reading some vendor formats (``.jpk``, ``.spm``, ``.asd``). If it is not available from PyPI in your environment, install it from GitHub:
@@ -169,7 +174,7 @@ This will install:
 
 - Python 3.11 and core scientific libraries (NumPy, SciPy, Pillow, Matplotlib)
 - AFM-specific tools: ``afmreader``
-- GUI support via ``PySide6``
+- GUI support via ``PySide6-Essentials`` (installed with pip)
 - Compatibility pins (e.g. ``h5py=3.8.*``) to avoid known issues
 
 .. note::
@@ -203,5 +208,5 @@ This project requires the following Python packages:
 - `python-dateutil`
 - `tifffile`
 - `pyyaml`
-- `PySide6` — for the GUI
+- `PySide6-Essentials` — for the GUI (the core Qt modules of PySide6)
 - [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
