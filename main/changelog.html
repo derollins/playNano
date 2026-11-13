@@ -4,8 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="API Reference" href="api/modules.html"><link rel="prev" title="GUI: Interactive Playback" href="gui.html">
+        <link rel="prefetch" href="_static/logo/playnano_logo_light.svg" as="image">
+        <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Changelog - playnano latest documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -182,8 +184,11 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo/playnano_logo_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo/playnano_logo_dark.svg" alt="Dark Logo"/>
+  </div>
   
-  <span class="sidebar-brand-text">playnano latest documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -513,12 +518,48 @@
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <section id="unreleased">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/compare/v0.5.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h3>
+<h3><a class="reference external" href="https://github.com/derollins/playNano/compare/v0.5.1...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h3>
 </section>
 <section id="id1">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.5.0">0.5.0</a> - 2026-10-19<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.5.1">0.5.1</a> - 2026-11-13<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <section id="added">
 <h4>Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>playNano logo and application icon. The GUI now sets its window and taskbar icon from bundled PNGs in
+<code class="docutils literal notranslate"><span class="pre">playnano/resources/icons/</span></code> (pixel-aligned 16 and 32 px versions for small sizes), and on Windows registers its own
+taskbar identity so the playNano icon is shown instead of Python’s.</p></li>
+</ul>
+</section>
+<section id="changed">
+<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Depend on <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> instead of <code class="docutils literal notranslate"><span class="pre">PySide6</span></code>. playNano only uses the core Qt modules (QtCore, QtGui,
+QtWidgets), and the full <code class="docutils literal notranslate"><span class="pre">PySide6</span></code> package now also pulls in Qt Addons, WebEngine and Pdf: about 83 MB to
+download instead of about 260 MB on Windows. Existing installs with the full <code class="docutils literal notranslate"><span class="pre">PySide6</span></code> keep working.
+<strong>conda users:</strong> don’t install <code class="docutils literal notranslate"><span class="pre">pyside6</span></code> from conda-forge alongside playNano; it is not recognised as
+<code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code>, so pip installs a second copy of Qt. <code class="docutils literal notranslate"><span class="pre">enviroment.yaml</span></code> and the installation docs now
+install Qt from pip.</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">playnano.gui.window</span></code> failed with <code class="docutils literal notranslate"><span class="pre">ImportError:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">import</span> <span class="pre">any</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">following</span> <span class="pre">Qt</span> <span class="pre">binding</span> <span class="pre">modules:</span> <span class="pre">PyQt5,</span> <span class="pre">PySide2</span></code> if it was imported before PySide6 (e.g. from a notebook or script). The GUI’s matplotlib canvas now uses the
+binding-neutral <code class="docutils literal notranslate"><span class="pre">backend_qtagg</span></code> instead of the Qt5-only <code class="docutils literal notranslate"><span class="pre">backend_qt5agg</span></code>.</p></li>
+</ul>
+</section>
+<section id="documentation">
+<h4>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Light and dark logos in the documentation sidebar, a favicon for the docs site, and the logo at the top of the README
+(switches with GitHub’s light/dark theme).</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.5.0">0.5.0</a> - 2026-10-19<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<section id="id3">
+<h4>Added<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">drop_final_frames()</span></code> function added to <code class="docutils literal notranslate"><span class="pre">stack_edit</span></code> module, this is a helper function that generates a list for <code class="docutils literal notranslate"><span class="pre">drop_frames</span></code>
 similarly to the other functions in the module.</p></li>
@@ -567,8 +608,8 @@ reader.</p></li>
 regressions early. Missing keys are still tolerated for loader round-trips.</p></li>
 </ul>
 </section>
-<section id="changed">
-<h4>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
+<section id="id4">
+<h4>Changed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Reader docstrings expanded to document per-frame populated fields, whole-video
 acquisition fields, timing sources and fallbacks.</p></li>
@@ -577,8 +618,8 @@ acquisition fields, timing sources and fallbacks.</p></li>
 to <code class="docutils literal notranslate"><span class="pre">dev</span></code> extras (used by the OME-TIFF units test).</p></li>
 </ul>
 </section>
-<section id="fixed">
-<h4>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
+<section id="id5">
+<h4>Fixed<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Bidirectional (interlaced) <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> folder and <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> scans were timed as
 unidirectional, so timestamps drifted from real acquisition time. Real
@@ -605,8 +646,8 @@ Corrected to <code class="docutils literal notranslate"><span class="pre">self.p
 callers. Related test in <code class="docutils literal notranslate"><span class="pre">tests/test_utils.py</span></code> removed.</p></li>
 </ul>
 </section>
-<section id="documentation">
-<h4>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h4>
+<section id="id6">
+<h4>Documentation<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Loading and metadata section added to <code class="docutils literal notranslate"><span class="pre">introduction.rst</span></code> describing the
 unified per-frame schema and the <code class="docutils literal notranslate"><span class="pre">stack.acquisition</span></code> slot.</p></li>
@@ -617,8 +658,8 @@ unified per-frame schema and the <code class="docutils literal notranslate"><spa
 </section>
 <section id="post1-2026-05-12">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.4.0.post1">0.4.0.post1</a> - 2026-05-12<a class="headerlink" href="#post1-2026-05-12" title="Link to this heading">¶</a></h3>
-<section id="id2">
-<h4>Documentation<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<section id="id7">
+<h4>Documentation<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed font asset paths in README (<code class="docutils literal notranslate"><span class="pre">src/playnano/fonts/</span></code> → <code class="docutils literal notranslate"><span class="pre">src/playnano/resources/fonts/</span></code>).</p></li>
 <li><p>Corrected BibTeX citation key year (2025 → 2026).</p></li>
@@ -635,10 +676,10 @@ unified per-frame schema and the <code class="docutils literal notranslate"><spa
 <h4>No code changes<a class="headerlink" href="#no-code-changes" title="Link to this heading">¶</a></h4>
 </section>
 </section>
-<section id="id3">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.4.0">0.4.0</a> - 2026-05-11<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
-<section id="id4">
-<h4>Added<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<section id="id8">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.4.0">0.4.0</a> - 2026-05-11<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<section id="id9">
+<h4>Added<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Official support for Python 3.13</p></li>
 <li><p>Compatibility with NumPy 2.x (including NumPy 2.0+)</p></li>
@@ -784,8 +825,8 @@ of argparse wiring and command dispatch.</p></li>
 </section>
 </section>
 <hr class="docutils" />
-<section id="id5">
-<h4>Changed<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<section id="id10">
+<h4>Changed<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
 <section id="pixel-size-handling">
 <h5>Pixel-size handling<a class="headerlink" href="#pixel-size-handling" title="Link to this heading">¶</a></h5>
 <ul class="simple">
@@ -847,8 +888,8 @@ version alignment and formatting fixes.</p></li>
 </section>
 </section>
 <hr class="docutils" />
-<section id="id6">
-<h4>Fixed<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<section id="id11">
+<h4>Fixed<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed loader errors relating to missing file extensions and no-suffix inputs.</p></li>
 <li><p>Connected FPS calculation based on <code class="docutils literal notranslate"><span class="pre">line_rate</span></code> to GUI playback logic.</p></li>
@@ -871,18 +912,18 @@ incomplete in some loaders, notably <code class="docutils literal notranslate"><
 </ul>
 </section>
 </section>
-<section id="id7">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.1">0.3.1</a> - 2026-03-12<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
-<section id="id8">
-<h4>Fixed<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<section id="id12">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.1">0.3.1</a> - 2026-03-12<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h3>
+<section id="id13">
+<h4>Fixed<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Resolved incorrect mask output in video processing pipeline.
 Video filter functions that return (array, metadata) were previously interpreted as (array, mask),
 causing metadata to be mis‑assigned as a mask and leading to failures in pipelines using mask‑aware steps.</p></li>
 </ul>
 </section>
-<section id="id9">
-<h4>Changed<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<section id="id14">
+<h4>Changed<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Updated <code class="docutils literal notranslate"><span class="pre">ProcessingPipeline._handle_video_filter_step()</span></code> to accept mask as an explicit optional parameter,
 ensuring its correct propagation through <code class="docutils literal notranslate"><span class="pre">run()</span></code> / <code class="docutils literal notranslate"><span class="pre">_run_single_step()</span></code> without overloading metadata as mask data.</p></li>
@@ -903,10 +944,10 @@ each function role‑specific.</p></li>
 </ul>
 </section>
 </section>
-<section id="id10">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.0">0.3.0</a> - 2026-03-06<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
-<section id="id11">
-<h4>Added<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<section id="id15">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.3.0">0.3.0</a> - 2026-03-06<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
+<section id="id16">
+<h4>Added<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Processing Plugins</strong></p>
 <ul>
@@ -946,8 +987,8 @@ type hint and docstring requirements, branching workflow, and guidance on contri
 analysis modules and processing plugins.</p></li>
 </ul>
 </section>
-<section id="id12">
-<h4>Changed<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
+<section id="id17">
+<h4>Changed<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Breaking: Particle Tracking output</strong></p>
 <ul>
@@ -989,16 +1030,16 @@ conflict (to be revisited in a future release).</p></li>
 </li>
 </ul>
 </section>
-<section id="id13">
-<h4>Fixed<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
+<section id="id18">
+<h4>Fixed<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Numerous typos corrected across docstrings, inline comments, docs, and tests.</p></li>
 <li><p>CLI <code class="docutils literal notranslate"><span class="pre">SKIP_PARAM_NAMES</span></code> expanded to avoid exposing internal array parameter names
 (<code class="docutils literal notranslate"><span class="pre">imarray</span></code>, <code class="docutils literal notranslate"><span class="pre">array</span></code>, <code class="docutils literal notranslate"><span class="pre">frame</span></code>, <code class="docutils literal notranslate"><span class="pre">video</span></code>) in the interactive wizard.</p></li>
 </ul>
 </section>
-<section id="id14">
-<h4>Documentation<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
+<section id="id19">
+<h4>Documentation<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>API reference restructured with captioned sections: Core, Analysis, Analysis Modules,
 Processing, IO, CLI, GUI.</p></li>
@@ -1011,10 +1052,10 @@ point and link to the plugins repository.</p></li>
 </ul>
 </section>
 </section>
-<section id="id15">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
-<section id="id16">
-<h4>Fixed<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h4>
+<section id="id20">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.2">0.2.2</a><a class="headerlink" href="#id20" title="Link to this heading">¶</a></h3>
+<section id="id21">
+<h4>Fixed<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Resolved a bug where the <code class="docutils literal notranslate"><span class="pre">clear</span></code> processing step unintentionally replaced <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>
 with an invalid or uninitialised array, causing corrupted or excessively large
@@ -1026,8 +1067,8 @@ returned by regionprops were interpreted as (row, col) but incorrectly assigned 
 Improved robustness of GIF frame generation when AFM data contains missing or extreme Z-values.</p></li>
 </ul>
 </section>
-<section id="id17">
-<h4>Changed<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h4>
+<section id="id22">
+<h4>Changed<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Normalization step now uses np.nan_to_num and np.clip to ensure all values are within the valid
 range before casting.</p></li>
@@ -1039,8 +1080,8 @@ range before casting.</p></li>
 </li>
 </ul>
 </section>
-<section id="id18">
-<h4>Added<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h4>
+<section id="id23">
+<h4>Added<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Safe normalization logic for GIF export in create_gif_with_scale_and_timestamp to handle NaN, inf,
 and out-of-range values before casting to np.uint8.</p></li>
@@ -1055,10 +1096,10 @@ and out-of-range values before casting to np.uint8.</p></li>
 </ul>
 </section>
 </section>
-<section id="id19">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id19" title="Link to this heading">¶</a></h3>
-<section id="id20">
-<h4>Changed<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h4>
+<section id="id24">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.1">0.2.1</a><a class="headerlink" href="#id24" title="Link to this heading">¶</a></h3>
+<section id="id25">
+<h4>Changed<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Package renames to all lowercase <code class="docutils literal notranslate"><span class="pre">playnano</span></code> to follow PEP8 and prevent cross-platform
 issues with case-sensitivity.</p></li>
@@ -1073,11 +1114,11 @@ to playnano.*.</p></li>
 </ul>
 </section>
 </section>
-<section id="id21">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id21" title="Link to this heading">¶</a></h3>
+<section id="id26">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.2.0">0.2.0</a><a class="headerlink" href="#id26" title="Link to this heading">¶</a></h3>
 <p>This release introduces video processing, stack editing, multi-version documentation, and major CLI enhancements.</p>
-<section id="id22">
-<h4>Added<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h4>
+<section id="id27">
+<h4>Added<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -1121,8 +1162,8 @@ origonal metadata.</p></li>
 </li>
 </ul>
 </section>
-<section id="id23">
-<h4>Changed<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h4>
+<section id="id28">
+<h4>Changed<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -1170,8 +1211,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </li>
 </ul>
 </section>
-<section id="id24">
-<h4>Fixed<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h4>
+<section id="id29">
+<h4>Fixed<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Documentation</strong></p>
 <ul>
@@ -1184,8 +1225,8 @@ can be accessed wherever jupyter is launched from.</p></li>
 </section>
 <section id="post1-2025-10-14">
 <h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0.post1">0.1.0.post1</a> - 2025-10-14<a class="headerlink" href="#post1-2025-10-14" title="Link to this heading">¶</a></h3>
-<section id="id25">
-<h4>Changed<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h4>
+<section id="id30">
+<h4>Changed<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>GitHub</strong></p>
 <ul>
@@ -1203,10 +1244,10 @@ can be accessed wherever jupyter is launched from.</p></li>
 </ul>
 </section>
 </section>
-<section id="id26">
-<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h3>
-<section id="id27">
-<h4>Added<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h4>
+<section id="id31">
+<h3><a class="reference external" href="https://github.com/derollins/playNano/releases/tag/v0.1.0">0.1.0</a> - 2025-09-17<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h3>
+<section id="id32">
+<h4>Added<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>First public release 🎉</p></li>
 <li><p><strong>AFM data loading &amp; playback</strong></p>
@@ -1269,14 +1310,14 @@ for quick sharing and presentation.</p></li>
 </li>
 </ul>
 </section>
-<section id="id28">
-<h4>Changed<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h4>
+<section id="id33">
+<h4>Changed<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
 </section>
-<section id="id29">
-<h4>Fixed<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h4>
+<section id="id34">
+<h4>Fixed<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>N/A (initial public release).</p></li>
 </ul>
@@ -1343,21 +1384,28 @@ for quick sharing and presentation.</p></li>
 <li><a class="reference internal" href="#">Changelog</a><ul>
 <li><a class="reference internal" href="#changelog">Changelog</a><ul>
 <li><a class="reference internal" href="#unreleased">Unreleased</a></li>
-<li><a class="reference internal" href="#id1">0.5.0 - 2026-10-19</a><ul>
+<li><a class="reference internal" href="#id1">0.5.1 - 2026-11-13</a><ul>
 <li><a class="reference internal" href="#added">Added</a></li>
 <li><a class="reference internal" href="#changed">Changed</a></li>
 <li><a class="reference internal" href="#fixed">Fixed</a></li>
-<li><a class="reference internal" href="#removed">Removed</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#id2">0.5.0 - 2026-10-19</a><ul>
+<li><a class="reference internal" href="#id3">Added</a></li>
+<li><a class="reference internal" href="#id4">Changed</a></li>
+<li><a class="reference internal" href="#id5">Fixed</a></li>
+<li><a class="reference internal" href="#removed">Removed</a></li>
+<li><a class="reference internal" href="#id6">Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#post1-2026-05-12">0.4.0.post1 - 2026-05-12</a><ul>
-<li><a class="reference internal" href="#id2">Documentation</a></li>
+<li><a class="reference internal" href="#id7">Documentation</a></li>
 <li><a class="reference internal" href="#no-code-changes">No code changes</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">0.4.0 - 2026-05-11</a><ul>
-<li><a class="reference internal" href="#id4">Added</a><ul>
+<li><a class="reference internal" href="#id8">0.4.0 - 2026-05-11</a><ul>
+<li><a class="reference internal" href="#id9">Added</a><ul>
 <li><a class="reference internal" href="#processing-filters">Processing filters</a></li>
 <li><a class="reference internal" href="#file-readers">File readers</a></li>
 <li><a class="reference internal" href="#visual-exports">Visual exports</a></li>
@@ -1367,7 +1415,7 @@ for quick sharing and presentation.</p></li>
 <li><a class="reference internal" href="#documentation-and-tests">Documentation and tests</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">Changed</a><ul>
+<li><a class="reference internal" href="#id10">Changed</a><ul>
 <li><a class="reference internal" href="#pixel-size-handling">Pixel-size handling</a></li>
 <li><a class="reference internal" href="#visualisation-rendering">Visualisation rendering</a></li>
 <li><a class="reference internal" href="#gui">GUI</a></li>
@@ -1376,45 +1424,45 @@ for quick sharing and presentation.</p></li>
 <li><a class="reference internal" href="#tests">Tests</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">Fixed</a></li>
+<li><a class="reference internal" href="#id11">Fixed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id7">0.3.1 - 2026-03-12</a><ul>
-<li><a class="reference internal" href="#id8">Fixed</a></li>
-<li><a class="reference internal" href="#id9">Changed</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id10">0.3.0 - 2026-03-06</a><ul>
-<li><a class="reference internal" href="#id11">Added</a></li>
-<li><a class="reference internal" href="#id12">Changed</a></li>
+<li><a class="reference internal" href="#id12">0.3.1 - 2026-03-12</a><ul>
 <li><a class="reference internal" href="#id13">Fixed</a></li>
-<li><a class="reference internal" href="#id14">Documentation</a></li>
+<li><a class="reference internal" href="#id14">Changed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id15">0.2.2</a><ul>
-<li><a class="reference internal" href="#id16">Fixed</a></li>
+<li><a class="reference internal" href="#id15">0.3.0 - 2026-03-06</a><ul>
+<li><a class="reference internal" href="#id16">Added</a></li>
 <li><a class="reference internal" href="#id17">Changed</a></li>
-<li><a class="reference internal" href="#id18">Added</a></li>
+<li><a class="reference internal" href="#id18">Fixed</a></li>
+<li><a class="reference internal" href="#id19">Documentation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id19">0.2.1</a><ul>
-<li><a class="reference internal" href="#id20">Changed</a></li>
+<li><a class="reference internal" href="#id20">0.2.2</a><ul>
+<li><a class="reference internal" href="#id21">Fixed</a></li>
+<li><a class="reference internal" href="#id22">Changed</a></li>
+<li><a class="reference internal" href="#id23">Added</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id21">0.2.0</a><ul>
-<li><a class="reference internal" href="#id22">Added</a></li>
-<li><a class="reference internal" href="#id23">Changed</a></li>
-<li><a class="reference internal" href="#id24">Fixed</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#post1-2025-10-14">0.1.0.post1 - 2025-10-14</a><ul>
+<li><a class="reference internal" href="#id24">0.2.1</a><ul>
 <li><a class="reference internal" href="#id25">Changed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id26">0.1.0 - 2025-09-17</a><ul>
+<li><a class="reference internal" href="#id26">0.2.0</a><ul>
 <li><a class="reference internal" href="#id27">Added</a></li>
 <li><a class="reference internal" href="#id28">Changed</a></li>
 <li><a class="reference internal" href="#id29">Fixed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#post1-2025-10-14">0.1.0.post1 - 2025-10-14</a><ul>
+<li><a class="reference internal" href="#id30">Changed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id31">0.1.0 - 2025-09-17</a><ul>
+<li><a class="reference internal" href="#id32">Added</a></li>
+<li><a class="reference internal" href="#id33">Changed</a></li>
+<li><a class="reference internal" href="#id34">Fixed</a></li>
 </ul>
 </li>
 </ul>

@@ -4,8 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Changelog" href="changelog.html"><link rel="prev" title="Command Line Interface (CLI)" href="cli.html">
+        <link rel="prefetch" href="_static/logo/playnano_logo_light.svg" as="image">
+        <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>GUI: Interactive Playback - playnano latest documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -182,8 +184,11 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo/playnano_logo_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo/playnano_logo_dark.svg" alt="Dark Logo"/>
+  </div>
   
-  <span class="sidebar-brand-text">playnano latest documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -648,13 +653,11 @@ lines or spinboxes, the exported frames reflect those settings.</p></li>
 </section>
 <section id="troubleshooting-tips">
 <h2>Troubleshooting &amp; tips<a class="headerlink" href="#troubleshooting-tips" title="Link to this heading">¶</a></h2>
-<ul>
-<li><p><strong>PySide6 installation</strong>: binaries are available on PyPI and conda-forge. If you
-have trouble installing via pip, try installing via conda:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pyside6
-</pre></div>
-</div>
-</li>
+<ul class="simple">
+<li><p><strong>PySide6 installation</strong>: the GUI uses <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> from PyPI, which
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">playnano</span></code> installs for you. Avoid also installing <code class="docutils literal notranslate"><span class="pre">pyside6</span></code> from
+conda-forge in the same environment; see <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> for how to fix an
+environment that has both.</p></li>
 <li><p><strong>Headless Linux / CI</strong>: GUI tests or GUI runs on headless systems require a
 virtual framebuffer (<code class="docutils literal notranslate"><span class="pre">xvfb-run</span></code>) or setting up an off-screen QPA platform plugin.</p></li>
 <li><p><strong>GIF export issues</strong>: check the console output for missing metadata (<code class="docutils literal notranslate"><span class="pre">line_rate</span></code>,
