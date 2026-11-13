@@ -1,6 +1,15 @@
 <!-- markdownlint-disable MD033 -->
 # 📽️ playNano
 
+<!-- markdownlint-disable MD013 -->
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/derollins/playNano/main/docs/_static/logo/playnano_logo_dark.svg" />
+    <img src="https://raw.githubusercontent.com/derollins/playNano/main/docs/_static/logo/playnano_logo_light.svg" alt="playNano logo" width="420" />
+  </picture>
+</div>
+<!-- markdownlint-enable MD013 -->
+
 ## AFM processing and analysis platform for high-speed AFM videos and time-series
 
 <div align="center">

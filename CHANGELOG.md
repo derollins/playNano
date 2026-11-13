@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-13
+
+### Added
+
+- playNano logo and application icon. The GUI now sets its window and taskbar icon from bundled PNGs in
+  `playnano/resources/icons/` (pixel-aligned 16 and 32 px versions for small sizes), and on Windows registers its own
+  taskbar identity so the playNano icon is shown instead of Python's.
+
+### Changed
+
+- Depend on `PySide6-Essentials` instead of `PySide6`. playNano only uses the core Qt modules (QtCore, QtGui,
+  QtWidgets), and the full `PySide6` package now also pulls in Qt Addons, WebEngine and Pdf: about 83 MB to
+  download instead of about 260 MB on Windows. Existing installs with the full `PySide6` keep working.
+  **conda users:** don't install `pyside6` from conda-forge alongside playNano; it is not recognised as
+  `PySide6-Essentials`, so pip installs a second copy of Qt. `enviroment.yaml` and the installation docs now
+  install Qt from pip.
+
+### Fixed
+
+- `playnano.gui.window` failed with `ImportError: Failed to import any of the following Qt binding modules: PyQt5,
+  PySide2` if it was imported before PySide6 (e.g. from a notebook or script). The GUI's matplotlib canvas now uses the
+  binding-neutral `backend_qtagg` instead of the Qt5-only `backend_qt5agg`.
+
+### Documentation
+
+- Light and dark logos in the documentation sidebar, a favicon for the docs site, and the logo at the top of the README
+  (switches with GitHub's light/dark theme).
+
 ## [0.5.0] - 2026-10-19
 
 ### Added
@@ -548,7 +576,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.1...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -559,3 +587,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
+[0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1

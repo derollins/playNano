@@ -1,6 +1,9 @@
 """Unit tests for the playNano GUI, MainWindow, and ViewerWidget components."""
 
 import logging
+import os
+import subprocess
+import sys
 from unittest.mock import ANY, MagicMock, patch
 
 import matplotlib
@@ -329,8 +332,66 @@ def test_gui_entry_launches_gui(mock_main_window, mock_qapplication):
         fps=5.0,
     )
     mock_window.show.assert_called_once()
+    mock_app.setWindowIcon.assert_called_once()
     mock_app.exec.assert_called_once()
     mock_exit.assert_called_once()
+
+
+def test_icon_files_are_bundled():
+    """Every icon size listed in ICON_SIZES ships as a square PNG of that size."""
+    icons_dir = main.files("playnano.resources.icons")
+    for size in main.ICON_SIZES:
+        path = icons_dir.joinpath(f"playnano_icon_{size}.png")
+        assert path.is_file(), f"missing {path.name}"
+        assert QPixmap(str(path)).size().width() == size
+
+
+def test_load_app_icon_has_all_sizes(qtbot):
+    """load_app_icon returns a non-null icon offering every bundled size."""
+    icon = main.load_app_icon()
+    assert not icon.isNull()
+    available = {s.width() for s in icon.availableSizes()}
+    assert set(main.ICON_SIZES) <= available
+
+
+def test_load_app_icon_warns_when_files_missing(tmp_path, caplog):
+    """A missing icon folder gives a null icon and a warning, not a crash."""
+    with patch.object(main, "files", return_value=tmp_path):
+        with caplog.at_level(logging.WARNING):
+            icon = main.load_app_icon()
+    assert icon.isNull()
+    assert "icon files not found" in caplog.text
+
+
+def test_window_module_imports_first_in_fresh_process():
+    """
+    playnano.gui.window can be the first Qt-related import in a process.
+
+    Runs in a subprocess because this test session has already imported PySide6,
+    which would hide an import-order problem (matplotlib's Qt5-only backend
+    failed when imported before PySide6).
+    """
+    env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    code = (
+        "import playnano.gui.window\n"
+        "from matplotlib.backends import qt_compat\n"
+        "print(qt_compat.QT_API)\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "PySide6"
+
+
+def test_set_windows_app_id_is_noop_off_windows(monkeypatch):
+    """On non-Windows platforms the app-id helper does nothing."""
+    monkeypatch.setattr(main.sys, "platform", "linux")
+    assert main._set_windows_app_id() is None
 
 
 def test_mainwindow_font_fallbacks(qtbot, caplog):
