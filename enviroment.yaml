@@ -15,9 +15,11 @@ dependencies:
   - scikit-learn
   - scikit-image
   - pyyaml>=6.0
-  - pyside6>=6.5
   - opencv-python-headless
   - pip
   - pip:
       - afmreader
       - python-dateutil>=2.8
+      # Qt from pip, not conda-forge: playNano depends on PySide6-Essentials,
+      # which conda-forge's pyside6 does not satisfy (see docs/installation.rst).
+      - PySide6-Essentials>=6.5

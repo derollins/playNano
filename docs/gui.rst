@@ -157,12 +157,10 @@ How to control annotations
 Troubleshooting & tips
 ----------------------
 
-- **PySide6 installation**: binaries are available on PyPI and conda-forge. If you
-  have trouble installing via pip, try installing via conda:
-
-  .. code-block:: bash
-
-     conda install -c conda-forge pyside6
+- **PySide6 installation**: the GUI uses ``PySide6-Essentials`` from PyPI, which
+  ``pip install playnano`` installs for you. Avoid also installing ``pyside6`` from
+  conda-forge in the same environment; see :doc:`installation` for how to fix an
+  environment that has both.
 
 - **Headless Linux / CI**: GUI tests or GUI runs on headless systems require a
   virtual framebuffer (``xvfb-run``) or setting up an off-screen QPA platform plugin.
