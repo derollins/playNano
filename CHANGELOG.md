@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- playNano logo and application icon. The GUI now sets its window and taskbar icon from bundled PNGs in
+  `playnano/resources/icons/` (pixel-aligned 16 and 32 px versions for small sizes), and on Windows registers its own
+  taskbar identity so the playNano icon is shown instead of Python's.
+
+### Documentation
+
+- Light and dark logos in the documentation sidebar, a favicon for the docs site, and the logo at the top of the README
+  (switches with GitHub's light/dark theme).
+
 ## [0.5.0] - 2026-10-19
 
 ### Added
