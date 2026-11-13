@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-13
+
 ### Added
 
 - playNano logo and application icon. The GUI now sets its window and taskbar icon from bundled PNGs in
@@ -574,7 +576,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.1...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -585,3 +587,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.4.0]: https://github.com/derollins/playNano/releases/tag/v0.4.0
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
+[0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
