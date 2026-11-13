@@ -1,0 +1,21 @@
+GIMP Palette
+Name: playnano_gold (17 stops)
+Columns: 17
+#
+  0   0   0	gold 000 #000000
+ 21   5   0	gold 016 #150500
+ 43  11   0	gold 032 #2B0B00
+ 63  19   2	gold 048 #3F1302
+ 82  28   5	gold 064 #521C05
+101  38   8	gold 080 #652608
+120  47  12	gold 096 #782F0C
+141  64  14	gold 112 #8D400E
+162  86  17	gold 128 #A25611
+183 107  20	gold 144 #B76B14
+205 128  22	gold 160 #CD8016
+226 150  25	gold 176 #E29619
+236 173  52	gold 192 #ECAD34
+244 197  85	gold 208 #F4C555
+252 221 117	gold 224 #FCDD75
+255 240 180	gold 240 #FFF0B4
+255 255 255	gold 255 #FFFFFF

@@ -1,0 +1,29 @@
+GIMP Palette
+Name: playNano GUI
+Columns: 6
+#
+ 30  30  30	Window background #1E1E1E
+ 37  37  37	Panel / tab pane / tooltip #252525
+ 42  42  42	Tab pane border #2A2A2A
+  0   0   0	Viewer background #000000
+224 224 224	Text #E0E0E0
+255 255 255	Text on buttons #FFFFFF
+  9  42  45	Teal - button fill (darkest) #092A2D
+ 18  92  97	Teal - button pressed #125C61
+ 25 114 120	Teal - tab #197278
+ 22 134 143	Teal - borders #16868F
+ 32 155 165	Teal - ACCENT (hover, selected, slider) #209BA5
+ 30 164 175	Teal - tab hover #1EA4AF
+ 30  30  47	Spinbox background #1E1E2F
+ 42  42  64	Spinbox focus background #2A2A40
+ 58 143 183	Spinbox border #3A8FB7
+ 86 192 216	Spinbox hover border #56C0D8
+  0 172 193	Spinbox focus border #00ACC1
+188 188 188	Slider groove #BCBCBC
+168 168 168	Disabled fill #A8A8A8
+130 130 130	Disabled border #828282
+136 136 136	Disabled button text #888888
+ 68  68  68	Disabled button fill #444444
+ 51  51  51	Disabled button border #333333
+255   0   0	Z-scale min line #FF0000
+ 55   0 255	Z-scale max line #3700FF
