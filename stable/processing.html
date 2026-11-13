@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Processing - playnano v0.5.0 documentation</title>
+        <title>Processing - playnano v0.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -696,7 +696,7 @@ custom pipelines:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.processing.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessingPipeline</span>
 
-<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_afm_stack</span><span class="p">(</span><span class="s2">"data/sample.h5-jpk"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">"data/sample.h5-jpk"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="n">ProcessingPipeline</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
 <span class="n">pipeline</span><span class="o">.</span><span class="n">add_filter</span><span class="p">(</span><span class="s2">"remove_plane"</span><span class="p">)</span>
@@ -873,7 +873,7 @@ print(flattened.shape)</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=e663822d"></script>
+</div><script src="_static/documentation_options.js?v=421b0634"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Installation - playnano v0.5.0 documentation</title>
+        <title>Installation - playnano v0.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.0 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -553,9 +553,14 @@ pip<span class="w"> </span>install<span class="w"> </span>playnano
 <section id="notes-troubleshooting">
 <h2>Notes &amp; troubleshooting<a class="headerlink" href="#notes-troubleshooting" title="Link to this heading">¶</a></h2>
 <ul>
-<li><p><strong>PySide6 / Qt issues</strong>
-If pip installation of PySide6 fails (common on some Windows setups), prefer the conda package:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pyside6
+<li><p><strong>PySide6 / Qt</strong>
+The GUI uses <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> (the core Qt modules only), installed from PyPI by
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">playnano</span></code>. Do <strong>not</strong> also install <code class="docutils literal notranslate"><span class="pre">pyside6</span></code> from conda-forge into the same
+environment: pip does not recognise it as <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> and installs a second copy of
+Qt into the same folder. If an environment already has conda’s <code class="docutils literal notranslate"><span class="pre">pyside6</span></code>, remove it and
+reinstall from pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>remove<span class="w"> </span>pyside6
+pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>PySide6-Essentials
 </pre></div>
 </div>
 </li>
@@ -651,7 +656,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 <ul class="simple">
 <li><p>Python 3.11 and core scientific libraries (NumPy, SciPy, Pillow, Matplotlib)</p></li>
 <li><p>AFM-specific tools: <code class="docutils literal notranslate"><span class="pre">afmreader</span></code></p></li>
-<li><p>GUI support via <code class="docutils literal notranslate"><span class="pre">PySide6</span></code></p></li>
+<li><p>GUI support via <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> (installed with pip)</p></li>
 <li><p>Compatibility pins (e.g. <code class="docutils literal notranslate"><span class="pre">h5py=3.8.*</span></code>) to avoid known issues</p></li>
 </ul>
 <div class="admonition note">
@@ -685,7 +690,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 <li><p><cite>python-dateutil</cite></p></li>
 <li><p><cite>tifffile</cite></p></li>
 <li><p><cite>pyyaml</cite></p></li>
-<li><p><cite>PySide6</cite> — for the GUI</p></li>
+<li><p><cite>PySide6-Essentials</cite> — for the GUI (the core Qt modules of PySide6)</p></li>
 <li><p>[<cite>AFMReader</cite>](<a class="reference external" href="https://github.com/AFM-SPM/AFMReader">https://github.com/AFM-SPM/AFMReader</a>) — for reading <cite>.jpk</cite>, <cite>.spm</cite> and <cite>.asd</cite> files</p></li>
 </ul>
 </section>
@@ -774,7 +779,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=e663822d"></script>
+</div><script src="_static/documentation_options.js?v=421b0634"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -304,7 +304,7 @@ Tips & troubleshooting
 
 - If GIF export fails, check the input metadata (e.g. ``line_rate``) and the console logs.
 
-- For Windows users, installing **PySide6** via ``conda install -c conda-forge pyside6`` can reduce platform-specific issues.
+- For GUI installation problems, see the PySide6 notes in :doc:`installation`.
 
 Links
 -----
