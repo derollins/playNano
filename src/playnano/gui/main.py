@@ -1,13 +1,67 @@
 """Main entry point for the playNano GUI application."""
 
+import logging
 import sys
 from importlib.resources import files
 
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from playnano.gui import styles
 from playnano.gui.window import MainWindow
 from playnano.utils.colormaps import DEFAULT_CMAP
+
+logger = logging.getLogger(__name__)
+
+#: Pixel sizes of the bundled application icon PNGs. The 16 and 32 px icons are
+#: simplified, pixel-aligned versions of the logo; larger sizes use the full mark.
+ICON_SIZES: tuple[int, ...] = (16, 32, 48, 64, 128, 256, 512)
+
+#: Windows taskbar identity for the GUI process (see ``_set_windows_app_id``).
+WINDOWS_APP_ID = "playnano.gui"
+
+
+def load_app_icon() -> QIcon:
+    """
+    Build the playNano application icon from the bundled PNG files.
+
+    Each size is added separately so Qt picks the hand-tuned bitmap for small
+    sizes (title bar, taskbar) instead of downscaling a large image.
+
+    Returns
+    -------
+    QIcon
+        The application icon. It is null (``QIcon.isNull()``) if no icon
+        files could be found, in which case a warning is logged.
+    """
+    icon = QIcon()
+    icons_dir = files("playnano.resources.icons")
+    for size in ICON_SIZES:
+        path = icons_dir.joinpath(f"playnano_icon_{size}.png")
+        if path.is_file():
+            icon.addFile(str(path), QSize(size, size))
+    if icon.isNull():
+        logger.warning("playNano icon files not found; using the default icon.")
+    return icon
+
+
+def _set_windows_app_id() -> None:
+    """
+    Give the GUI its own taskbar identity on Windows.
+
+    Without this, Windows groups the window under the Python interpreter and
+    shows Python's icon in the taskbar instead of the playNano icon. Does
+    nothing on other platforms.
+    """
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(WINDOWS_APP_ID)
+    except (AttributeError, OSError) as exc:
+        logger.debug("Could not set Windows AppUserModelID: %s", exc)
 
 
 def gui_entry(
@@ -60,7 +114,9 @@ def gui_entry(
     -----
     This function will start a Qt event loop and will not return to the caller.
     """
+    _set_windows_app_id()
     app = QApplication(sys.argv)
+    app.setWindowIcon(load_app_icon())
 
     qss_file = files(styles) / "dark_bluegreen.qss"
     if qss_file.is_file():

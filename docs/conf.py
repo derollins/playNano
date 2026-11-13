@@ -46,6 +46,14 @@ templates_path = ["_templates"]
 html_static_path = ["_static"]
 html_js_files = ["version-switcher.js"]
 html_css_files = ["version-switcher.css"]
+html_favicon = "_static/logo/favicon.ico"
+html_theme_options = {
+    # Paths are relative to html_static_path. The logos include the name, so the
+    # text title Furo normally shows under the logo is hidden.
+    "light_logo": "logo/playnano_logo_light.svg",
+    "dark_logo": "logo/playnano_logo_dark.svg",
+    "sidebar_hide_name": True,
+}
 
 html_sidebars = {
     "**": [

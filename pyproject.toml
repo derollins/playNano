@@ -73,7 +73,7 @@ dependencies = [
   "scikit-learn",
   "scikit-image",
   "pyyaml>=6.0",
-  "PySide6>=6.5",
+  "PySide6-Essentials>=6.5",
 ]
 
 [project.optional-dependencies]

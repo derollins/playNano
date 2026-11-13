@@ -10,9 +10,8 @@ type: software
 authors:
   - family-names: Rollins
     given-names: Daniel E.
-  - affiliation: University of Leeds
-    country: GB
-    city: Leeds
+    affiliation: University of Leeds
+    orcid: 'https://orcid.org/0009-0008-5324-7679'
 repository-code: 'https://github.com/derollins/playNano'
 url: 'https://derollins.github.io/playNano/'
 abstract: >-
@@ -24,14 +23,15 @@ keywords:
   - high-speed AFM
   - image analysis
   - nanoscience
-license: GPLv3+
-version: 0.4.0
-date-released: '2026-05-11'
+license: GPL-3.0-or-later
+version: 0.5.1
+date-released: '2026-11-13'
 preferred-citation:
-  type: misc
+  type: software
   authors:
     - family-names: Rollins
       given-names: Daniel E.
+      orcid: 'https://orcid.org/0009-0008-5324-7679'
   title: 'playNano: AFM Video Reader and Analysis Toolkit'
   year: 2026
   url: 'https://github.com/derollins/playNano'
