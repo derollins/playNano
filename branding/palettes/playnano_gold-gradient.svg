@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="64" viewBox="0 0 512 64">
+  <defs>
+    <linearGradient id="playnano_gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0.0000" stop-color="#000000"/>
+      <stop offset="0.0314" stop-color="#0B0300"/>
+      <stop offset="0.0627" stop-color="#150500"/>
+      <stop offset="0.0941" stop-color="#200800"/>
+      <stop offset="0.1255" stop-color="#2B0B00"/>
+      <stop offset="0.1569" stop-color="#350E00"/>
+      <stop offset="0.1882" stop-color="#3F1302"/>
+      <stop offset="0.2196" stop-color="#481704"/>
+      <stop offset="0.2510" stop-color="#521C05"/>
+      <stop offset="0.2824" stop-color="#5C2107"/>
+      <stop offset="0.3137" stop-color="#652608"/>
+      <stop offset="0.3451" stop-color="#6F2B0A"/>
+      <stop offset="0.3765" stop-color="#782F0C"/>
+      <stop offset="0.4078" stop-color="#82360D"/>
+      <stop offset="0.4392" stop-color="#8D400E"/>
+      <stop offset="0.4706" stop-color="#984B10"/>
+      <stop offset="0.5020" stop-color="#A25611"/>
+      <stop offset="0.5333" stop-color="#AD6012"/>
+      <stop offset="0.5647" stop-color="#B76B14"/>
+      <stop offset="0.5961" stop-color="#C27615"/>
+      <stop offset="0.6275" stop-color="#CD8016"/>
+      <stop offset="0.6588" stop-color="#D88B18"/>
+      <stop offset="0.6902" stop-color="#E29619"/>
+      <stop offset="0.7216" stop-color="#E8A124"/>
+      <stop offset="0.7529" stop-color="#ECAD34"/>
+      <stop offset="0.7843" stop-color="#F0B944"/>
+      <stop offset="0.8157" stop-color="#F4C555"/>
+      <stop offset="0.8471" stop-color="#F8D165"/>
+      <stop offset="0.8784" stop-color="#FCDD75"/>
+      <stop offset="0.9098" stop-color="#FFE88C"/>
+      <stop offset="0.9412" stop-color="#FFF0B4"/>
+      <stop offset="0.9725" stop-color="#FFF8DC"/>
+      <stop offset="1.0000" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="64" fill="url(#playnano_gold)"/>
+</svg>

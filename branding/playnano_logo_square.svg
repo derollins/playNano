@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="playnano_logo_square.svg"
+   inkscape:export-filename="playnano_logo_square_48.png"
+   inkscape:export-xdpi="46.080002"
+   inkscape:export-ydpi="46.080002"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="2.0031716"
+     inkscape:cx="-43.431127"
+     inkscape:cy="-9.7345629"
+     inkscape:window-width="2400"
+     inkscape:window-height="1261"
+     inkscape:window-x="2391"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid2"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="0.66145831"
+       spacingy="0.66145831"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect35"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,0.79374999,0,1 @ F,0,0,1,0,0.79374999,0,1 @ F,0,0,1,0,0.79374999,0,1"
+       radius="3"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <linearGradient
+       id="linearGradient31"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#95480f;stop-opacity:1;"
+         offset="0"
+         id="stop31" />
+      <stop
+         style="stop-color:#e59819;stop-opacity:1;"
+         offset="0.50216448"
+         id="stop33" />
+      <stop
+         style="stop-color:#ffeeaa;stop-opacity:1;"
+         offset="1"
+         id="stop32" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient31"
+       id="linearGradient32"
+       x1="5.2916665"
+       y1="13.229167"
+       x2="23.8125"
+       y2="13.229167"
+       gradientUnits="userSpaceOnUse" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath35">
+      <path
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.164;stroke-linecap:square;stroke-miterlimit:0;stroke-dasharray:none;paint-order:markers fill stroke"
+         d="M 23.123331,12.835356 5.9808346,3.0396435 A 0.46063101,0.46063101 149.87244 0 0 5.2916666,3.4395832 V 23.018749 a 0.460631,0.460631 30.127559 0 0 0.689168,0.39994 L 23.123331,13.622976 a 0.45357143,0.45357143 90 0 0 0,-0.78762 z"
+         id="path35"
+         inkscape:path-effect="#path-effect35"
+         inkscape:original-d="M 23.812499,13.229166 5.2916666,2.6458332 V 23.812499 Z" />
+    </clipPath>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect13-8"
+       style="stroke-width:0.173745;stroke-linecap:square;stroke-miterlimit:0;paint-order:markers fill stroke;fill:url(#linearGradient32);fill-opacity:1"
+       d="M 5.2916665,22.698465 H 23.8125 V 23.8125 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671054 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671051 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671052 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710522 H 23.8125 V 10.444079 H 5.2916665 Z m 0,-1.6710529 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710525 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710529 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710522 H 23.8125 v 1.114035 H 5.2916665 Z"
+       clip-path="url(#clipPath35)" />
+  </g>
+</svg>
