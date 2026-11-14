@@ -24,6 +24,7 @@ from playnano.utils.io_utils import (
     build_frame_metadata,
     compute_zscale_range,
     convert_height_units_to_nm,
+    ensure_not_input_path,
     guess_height_data_units,
     normalize_to_uint8,
 )
@@ -320,3 +321,20 @@ def test_get_available_cmaps_returns_sorted_list_of_strings():
     assert isinstance(cmaps, list)
     assert cmaps == sorted(cmaps)
     assert all(isinstance(cmap, str) for cmap in cmaps)
+
+
+def test_ensure_not_input_path_raises_for_same_file(tmp_path):
+    """The same path, written differently, is refused."""
+    inp = tmp_path / "in.h5"
+    inp.write_bytes(b"data")
+    with pytest.raises(ValueError, match="Refusing to overwrite the input file"):
+        ensure_not_input_path(tmp_path / "sub" / ".." / "in.h5", inp)
+
+
+def test_ensure_not_input_path_allows_other_files(tmp_path):
+    """A different file, a missing input and no input are all allowed."""
+    inp = tmp_path / "in.h5"
+    inp.write_bytes(b"data")
+    ensure_not_input_path(tmp_path / "in.json", inp)
+    ensure_not_input_path(tmp_path / "out.h5", tmp_path / "missing.h5")
+    ensure_not_input_path(tmp_path / "in.h5", None)

@@ -1511,10 +1511,24 @@ def test_raises_type_error_on_invalid_type():
 
 
 def test_export_bundles_invalid_format_raises(afm_stack_obj):
-    """Test that export budles raises and error and exits if unknown format passed."""
+    """Test that export_bundles raises ValueError if an unknown format is passed."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        with pytest.raises(SystemExit):
+        with pytest.raises(ValueError, match="Unsupported export format"):
             export_bundles(afm_stack_obj, Path(tmpdir), "bad_format", ["abc"])
+
+
+def test_export_bundles_refuses_to_overwrite_input(afm_stack_obj, tmp_path):
+    """Exporting into the input's folder under its name leaves the input intact."""
+    input_file = tmp_path / "in.h5"
+    input_file.write_bytes(b"original bundle")
+    afm_stack_obj.file_path = input_file
+
+    with pytest.raises(ValueError, match="Refusing to overwrite the input file"):
+        export_bundles(afm_stack_obj, tmp_path, "in", ["npz", "h5"], raw=True)
+
+    assert input_file.read_bytes() == b"original bundle"
+    # Nothing is written when any requested output would replace the input.
+    assert not (tmp_path / "in.npz").exists()
 
 
 def test_export_bundles_raw_flag(afm_stack_obj):

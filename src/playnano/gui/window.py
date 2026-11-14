@@ -79,7 +79,8 @@ class MainWindow(QMainWindow):
         output_name : str, default="playNano_export"
             Base filename to use for exports.
         scale_bar_nm : int, default=100
-            Physical length (nm) of the scale bar to draw on images.
+            Physical length (nm) of the scale bar to draw on images. 0 starts the
+            GUI with the scale bar switched off.
         zmin, zmax : 'auto' or float, default="auto"
             Display range endpoints; if "auto", they will be computed
             from the data.
@@ -174,7 +175,10 @@ class MainWindow(QMainWindow):
         self.processing_steps: list[tuple[str, dict]] = processing_steps or []
         self.output_dir = output_dir
         self.output_name = output_name
-        self.scale_bar_nm = scale_bar_nm
+        # 0 means "start with the scale bar hidden". Keep a usable length so the
+        # bar still appears if the checkbox is switched back on.
+        self._show_scale_bar_initially = scale_bar_nm != 0
+        self.scale_bar_nm = scale_bar_nm if scale_bar_nm else 100
         self.zmin = zmin
         self.zmax = zmax
         self._idx = 0
@@ -275,7 +279,7 @@ class MainWindow(QMainWindow):
         self.show_timestamp_box.setChecked(True)
         self.show_timestamp_box.toggled.connect(lambda: self.show_frame(self._idx))
         self.show_scale_bar_box = QCheckBox("Show Scale Bar")
-        self.show_scale_bar_box.setChecked(True)
+        self.show_scale_bar_box.setChecked(self._show_scale_bar_initially)
         self.show_scale_bar_box.toggled.connect(lambda: self.show_frame(self._idx))
 
         annotation_hbox = QHBoxLayout()
