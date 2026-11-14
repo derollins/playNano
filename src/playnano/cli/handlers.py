@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -41,9 +42,10 @@ def handle_play(args: argparse.Namespace) -> None:
     if isinstance(args.input_file, str):
         raw_input = args.input_file.strip()
 
-        # Check if known argument flags are embedded in the path
-        # (user forgot closing quote)
-        if "--channel" in raw_input or "--" in raw_input:
+        # Check if argument flags are embedded in the path (a quoted Windows path
+        # ending in a backslash swallows the rest of the command line). Only a
+        # flag after whitespace counts, so folder names like "run--2" are allowed.
+        if re.search(r"(^|\s)--[A-Za-z]", raw_input):
             raise ValueError(
                 f"\nInvalid input path: '{raw_input}'\n"
                 "⚠️  It looks like your input path includes CLI flags (e.g., '--channel').\n"  # noqa: E501

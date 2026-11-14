@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `playnano analyze` and the wizard's analysis export now write to `./output` when no `--output-folder` is given, as
+  the help text already said. Previously they wrote to the current folder (#84).
+- `export_bundles` raises `ValueError` for an unsupported format instead of calling `sys.exit(1)`, so scripts and the
+  wizard can handle the error (#84).
+
+### Removed
+
+- The `playnano gui` subcommand. It always failed with `AttributeError` and was never documented; use
+  `playnano play` to open the GUI (#84).
+- The `median_filter` (`playnano.filters`) and `particle_detect` (`playnano.analysis`) entry points, which named
+  functions and modules that do not exist (#84).
+
+### Fixed
+
+- `CITATION.cff` failed schema validation, so Zenodo could not archive the v0.5.1 release ("Citation metadata load
+  failed"). The licence is now the SPDX identifier `GPL-3.0-or-later` (was `GPLv3+`), the preferred citation type is
+  `software` (was `misc`), and the University of Leeds affiliation is on the author entry instead of a separate,
+  nameless author. The author's ORCID is now included.
+- `playnano analyze` could overwrite its input: run beside an `.h5` bundle with no output options, it replaced the
+  bundle with the analysis results. `analyze`, the wizard's analysis export and `export_bundles` now refuse to write
+  over the input file, and `analyze` checks this before loading any data (#84).
+- Output names lost everything after the first dot that was not an extension: `exp_1.5nM_protein` became `exp_1`.
+  Only known file extensions are now removed (#84).
+- `playnano play` rejected any input path containing `--`, such as `run--2/sample.h5-jpk`. Only a flag after a space
+  (a sign of a broken Windows quote) is now rejected (#84).
+- An unsupported export format in the wizard ended the whole session. It now reports the error and carries on (#84).
+- `playnano play --scale-bar-nm 0` showed a 100 nm scale bar. The GUI now starts with the scale bar switched off
+  (#84).
+- Default playback speed in `playnano play` ignored bidirectional scanning, so some videos played at half speed. It
+  now comes from the frame timestamps or frame durations, and only falls back to `line_rate`. Series recorded slower
+  than 1 fps (e.g. slow-scan AFM) play at 5 fps instead of in real time (#84).
+
 ## [0.5.1] - 2026-11-13
 
 ### Added

@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 import yaml
 
 from playnano.afm_stack import AFMImageStack
@@ -35,6 +36,7 @@ from playnano.io.image_sequence_export import export_image_sequence
 from playnano.io.video_export import export_video
 from playnano.processing.core import process_stack
 from playnano.utils.colormaps import DEFAULT_CMAP, resolve_cmap
+from playnano.utils.io_utils import ensure_not_input_path, prepare_output_directory
 from playnano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
@@ -229,7 +231,7 @@ def analyze_pipeline_mode(
     analysis_file : str or None
         Path to a YAML/JSON file defining the analysis pipeline.
     output_folder : str or None
-        Directory in which to write JSON + HDF5 exports.
+        Directory in which to write JSON + HDF5 exports; defaults to ``./output``.
     output_name : str or None
         Base filename (no extension) for both `<output>.json` and `<output>.h5`;
         defaults to the stem of `input_file`.
@@ -237,7 +239,21 @@ def analyze_pipeline_mode(
     Returns
     -------
     None
+
+    Raises
+    ------
+    ValueError
+        If either output file would overwrite `input_file`. This is checked before
+        the data is loaded.
     """
+    # 0) decide output paths first, so nothing runs if they would overwrite the input
+    out_dir = prepare_output_directory(output_folder, default="output")
+    base_name = output_name or Path(input_file).stem
+    json_path = out_dir / f"{base_name}.json"
+    h5_path = out_dir / f"{base_name}.h5"
+    for out_path in (json_path, h5_path):
+        ensure_not_input_path(out_path, input_file)
+
     # 1) load data
     stack = AFMImageStack.load_data(input_file, channel=channel)
     warn_if_unprocessed(stack)
@@ -257,14 +273,6 @@ def analyze_pipeline_mode(
     raw_record = pipeline.run(stack, log_to=None)
 
     # 4) write JSON
-    # — determine output folder & name
-    out_dir = Path(output_folder or ".")
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    base_name = output_name or Path(input_file).stem
-    json_path = out_dir / f"{base_name}.json"
-
-    # — sanitize & dump
     safe_record = make_json_safe(raw_record)
     logger.debug("Writing analysis JSON to %s", json_path)
     with json_path.open("w") as jf:
@@ -272,13 +280,112 @@ def analyze_pipeline_mode(
     logger.info("Wrote analysis JSON to %s", json_path)
 
     # 5) write HDF5
-    h5_path = out_dir / f"{base_name}.h5"
     logger.debug("Writing analysis HDF5 to %s", h5_path)
     try:
         export_to_hdf5(raw_record, out_path=h5_path)
         logger.info("Wrote analysis HDF5 to %s", h5_path)
     except Exception as e:
         logger.error("Failed to write analysis HDF5: %s", e)
+
+
+#: Playback rate used when a stack has no usable frame timing, or when its
+#: real-time rate is below ``MIN_REALTIME_FPS``.
+DEFAULT_PLAYBACK_FPS = 5.0
+
+#: Slowest real-time rate that is played back as recorded. Slower series (e.g.
+#: slow-scan AFM with seconds or minutes per frame) play at
+#: ``DEFAULT_PLAYBACK_FPS`` instead, which is watchable.
+MIN_REALTIME_FPS = 1.0
+
+
+def _measured_fps(afm_stack) -> float | None:
+    """
+    Work out the real-time frame rate of a stack from its frame metadata.
+
+    Sources are tried in this order:
+
+    1. The median interval between frame timestamps, when every frame has one.
+    2. The median ``frame_duration_s``.
+    3. ``line_rate`` divided by the number of rows. This ignores bidirectional
+       (interlaced) scanning, so it is only a fallback.
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The loaded stack.
+
+    Returns
+    -------
+    float or None
+        Frames per second, or None if the metadata has no usable timing.
+    """
+    frame_metadata = getattr(afm_stack, "frame_metadata", None)
+    if not isinstance(frame_metadata, (list, tuple)):
+        frame_metadata = []
+    frames = [m for m in frame_metadata if isinstance(m, dict)]
+
+    timestamps = [m.get("timestamp") for m in frames]
+    if len(timestamps) >= 2 and all(t is not None for t in timestamps):
+        intervals = np.diff(np.asarray(timestamps, dtype=float))
+        intervals = intervals[np.isfinite(intervals) & (intervals > 0)]
+        if intervals.size:
+            fps = 1.0 / float(np.median(intervals))
+            logger.debug(f"Computed fps from frame timestamps: {fps:.3g}")
+            return fps
+
+    durations = [m.get("frame_duration_s") for m in frames]
+    durations = [
+        float(d) for d in durations if d is not None and np.isfinite(d) and d > 0
+    ]
+    if durations:
+        fps = 1.0 / float(np.median(durations))
+        logger.debug(f"Computed fps from frame_duration_s: {fps:.3g}")
+        return fps
+
+    line_rate = frames[0].get("line_rate") if frames else None
+    if line_rate:
+        fps = line_rate / afm_stack.image_shape[0]
+        logger.debug(
+            f"Computed fps from line_rate: {fps:.3g} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
+        )
+        return fps
+
+    return None
+
+
+def _default_playback_fps(afm_stack) -> float:
+    """
+    Choose the default playback rate for a stack.
+
+    The stack plays in real time (see :func:`_measured_fps`) when it was
+    recorded at ``MIN_REALTIME_FPS`` or faster. Slower stacks, and stacks with
+    no usable frame timing, play at ``DEFAULT_PLAYBACK_FPS``.
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The loaded stack.
+
+    Returns
+    -------
+    float
+        Frames per second.
+    """
+    fps = _measured_fps(afm_stack)
+    if fps is None:
+        logger.warning(
+            "No frame timing in metadata; playing at %.1f fps.", DEFAULT_PLAYBACK_FPS
+        )
+        return DEFAULT_PLAYBACK_FPS
+    if fps < MIN_REALTIME_FPS:
+        logger.info(
+            "Recorded at %.3g fps, slower than %.1f fps; playing at %.1f fps.",
+            fps,
+            MIN_REALTIME_FPS,
+            DEFAULT_PLAYBACK_FPS,
+        )
+        return DEFAULT_PLAYBACK_FPS
+    return fps
 
 
 def play_pipeline_mode(
@@ -340,23 +447,7 @@ def play_pipeline_mode(
         raise LoadError(f"Failed to load {input_file}: {e}") from e
 
     if fps is None:
-        # Determine fps from metadata
-        frame_metadata = getattr(afm_stack, "frame_metadata", None)
-        line_rate = None
-        if (
-            isinstance(frame_metadata, (list, tuple))
-            and len(frame_metadata) > 0
-            and isinstance(frame_metadata[0], dict)
-        ):
-            line_rate = frame_metadata[0].get("line_rate")
-        if not line_rate:
-            logger.warning("No line_rate in metadata; defaulting to 5.0 fps")
-            fps = 5.0
-        else:
-            fps = line_rate / afm_stack.image_shape[0]
-            logger.debug(
-                f"Computed fps from line_rate: {fps:.2f} (line_rate={line_rate}, image_shape={afm_stack.image_shape})"  # noqa
-            )
+        fps = _default_playback_fps(afm_stack)
     else:
         logger.debug(f"Overriding data frame rate. FPS = {fps:.2f}.")
 
@@ -388,7 +479,7 @@ def play_pipeline_mode(
         output_dir=output_folder,
         output_name=output_name,
         steps_with_kwargs=steps_with_kwargs,
-        scale_bar_nm=scale_bar_nm or 100,
+        scale_bar_nm=100 if scale_bar_nm is None else scale_bar_nm,
         zmin=zmin,
         zmax=zmax,
         cmap=cmap,
@@ -838,9 +929,12 @@ class Wizard:
                 "Enter formats (comma-separated, e.g. tif,npz,h5): "
             ).strip()
             formats = [fmt.strip().lower() for fmt in fmt_str.split(",") if fmt.strip()]
-            export_bundles(
-                afm_stack_local, self.output_folder, self.output_name, formats
-            )
+            try:
+                export_bundles(
+                    afm_stack_local, self.output_folder, self.output_name, formats
+                )
+            except ValueError as e:
+                self.io.say(f"Export failed: {e}")
         gif_choice = self.io.ask("Create a GIF? (y/n): ").strip().lower()
         if gif_choice in ("y", "yes"):
             zmin_raw = (
@@ -1211,23 +1305,31 @@ class Wizard:
         Notes
         -----
         The output directory is determined by `self.output_folder`, defaulting
-        to the current working directory if not set.
+        to ``./output`` if not set.
 
         The base filename is taken from `self.output_name`, or derived from the
         stem of `self.input_file` if `output_name` is not provided.
 
         Results are saved atomically to `<base_name>.json` and `<base_name>.h5`
         in the output directory.
+
+        Raises
+        ------
+        ValueError
+            If either output file would overwrite the input file. This is checked
+            before the analysis runs.
         """
+        out_dir = prepare_output_directory(self.output_folder, default="output")
+        base_name = self.output_name or Path(self.input_file).stem
+        json_path = out_dir / f"{base_name}.json"
+        h5_path = out_dir / f"{base_name}.h5"
+        for out_path in (json_path, h5_path):
+            ensure_not_input_path(out_path, self.input_file)
+
         pipeline = self._build_pipeline()
         raw_record = pipeline.run(stack, log_to=None)
 
-        out_dir = Path(self.output_folder or ".")
-        base_name = self.output_name or Path(self.input_file).stem
-
         safe_record = make_json_safe(raw_record)
-        json_path = out_dir / f"{base_name}.json"
-        h5_path = out_dir / f"{base_name}.h5"
 
         # atomic writes
         self._atomic_write_json(json_path, safe_record)
@@ -1247,8 +1349,8 @@ class Wizard:
         * If there are no processing steps, analysis runs directly on the loaded AFM
           stack.
 
-        Results are exported as JSON and HDF5 into `self.output_folder` (or current
-        directory). The JSON is created with `make_json_safe` and both JSON/HDF5 are
+        Results are exported as JSON and HDF5 into `self.output_folder` (or
+        ``./output``). The JSON is created with `make_json_safe` and both JSON/HDF5 are
         written atomically.
 
         Parameters

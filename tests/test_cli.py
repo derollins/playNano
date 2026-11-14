@@ -322,6 +322,78 @@ def test_analyze_pipeline_creates_output_folder(monkeypatch, tmp_path, mock_pipe
     mock_load_data.assert_called_once_with(input_file, channel=channel)
 
 
+def test_analyze_default_output_does_not_overwrite_input(
+    tmp_path, monkeypatch, mock_pipeline
+):
+    """
+    Running analyze beside an .h5 bundle with no output options keeps the bundle.
+
+    Regression test: results used to go to the current folder under the input's
+    name, replacing ``in.h5`` with the analysis HDF5.
+    """
+    input_file = tmp_path / "in.h5"
+    input_file.write_bytes(b"original bundle")
+    monkeypatch.chdir(tmp_path)
+
+    monkeypatch.setattr(
+        "playnano.cli.actions.AFMImageStack.load_data", MagicMock(return_value="stack")
+    )
+    monkeypatch.setattr("playnano.cli.actions.warn_if_unprocessed", MagicMock())
+    monkeypatch.setattr(
+        "playnano.cli.actions.parse_analysis_string",
+        MagicMock(return_value=[("count_nonzero", {})]),
+    )
+    monkeypatch.setattr("playnano.cli.actions.make_json_safe", lambda x: x)
+    mock_export = MagicMock()
+    monkeypatch.setattr("playnano.cli.actions.export_to_hdf5", mock_export)
+
+    analyze_pipeline_mode("in.h5", "height_trace", "count_nonzero", None, None, None)
+
+    assert input_file.read_bytes() == b"original bundle"
+    assert (tmp_path / "output" / "in.json").exists()
+    mock_export.assert_called_once_with(
+        mock_pipeline.run.return_value, out_path=tmp_path / "output" / "in.h5"
+    )
+
+
+def test_analyze_refuses_output_that_overwrites_input(
+    tmp_path, monkeypatch, mock_pipeline
+):
+    """An output folder and name that point at the input fail before loading."""
+    input_file = tmp_path / "in.h5"
+    input_file.write_bytes(b"original bundle")
+    mock_load = MagicMock(return_value="stack")
+    monkeypatch.setattr("playnano.cli.actions.AFMImageStack.load_data", mock_load)
+
+    with pytest.raises(ValueError, match="Refusing to overwrite the input file"):
+        analyze_pipeline_mode(
+            str(input_file), "height_trace", "count_nonzero", None, str(tmp_path), None
+        )
+
+    assert input_file.read_bytes() == b"original bundle"
+    mock_load.assert_not_called()
+    mock_pipeline.run.assert_not_called()
+
+
+def test_wizard_analysis_export_refuses_to_overwrite_input(tmp_path):
+    """The wizard's analysis export also refuses to replace its input file."""
+    input_file = tmp_path / "in.h5"
+    input_file.write_bytes(b"original bundle")
+    build_pipeline = MagicMock()
+    wizard_like = SimpleNamespace(
+        output_folder=str(tmp_path),
+        output_name=None,
+        input_file=str(input_file),
+        _build_pipeline=build_pipeline,
+    )
+
+    with pytest.raises(ValueError, match="Refusing to overwrite the input file"):
+        Wizard._run_analysis_and_export(wizard_like, stack=MagicMock())
+
+    assert input_file.read_bytes() == b"original bundle"
+    build_pipeline.assert_not_called()
+
+
 @patch("playnano.cli.actions.AFMImageStack.load_data", side_effect=Exception("err"))
 def test_play_pipeline_mode_load_error_exits(mock_load, caplog):
     """Test that play_pipeline_mode raises LoadError on loading failure."""
@@ -2702,3 +2774,121 @@ def test_io_say(capsys):
 def test_cast_input(s, expected_type, default, expected):
     """Test the _cast_input utility function with various inputs and types."""
     assert cli_utils._cast_input(s, expected_type, default) == expected
+
+
+# --- Regression tests for CLI command fixes (#84)
+
+
+def test_handle_play_allows_double_dash_in_folder_name():
+    """A folder name containing '--' is a valid path, not a stray CLI flag."""
+    args = Namespace(
+        input_file="/data/run--2/sample.h5-jpk",
+        channel="height_trace",
+        processing=None,
+        processing_file=None,
+        output_folder=None,
+        output_name=None,
+        scale_bar_nm=100,
+        fps=None,
+        zmin="auto",
+        zmax="auto",
+        cmap="afm_brown",
+    )
+    with patch("playnano.cli.handlers.play_pipeline_mode") as mock_play:
+        handle_play(args)
+    assert mock_play.call_args.kwargs["input_file"] == Path(
+        "/data/run--2/sample.h5-jpk"
+    )
+
+
+def test_play_scale_bar_zero_is_passed_through(monkeypatch):
+    """--scale-bar-nm 0 reaches the GUI as 0 (scale bar off), not 100."""
+    stack = SimpleNamespace(frame_metadata=[], image_shape=(4, 4))
+    monkeypatch.setattr(
+        actions.AFMImageStack, "load_data", lambda *a, **k: stack, raising=False
+    )
+    mock_gui = MagicMock()
+    monkeypatch.setattr(actions, "gui_entry", mock_gui)
+
+    actions.play_pipeline_mode("f", "c", None, None, None, None, 0, 5.0)
+    assert mock_gui.call_args.kwargs["scale_bar_nm"] == 0
+
+    actions.play_pipeline_mode("f", "c", None, None, None, None, None, 5.0)
+    assert mock_gui.call_args.kwargs["scale_bar_nm"] == 100
+
+
+@pytest.mark.parametrize(
+    "frame_metadata, image_shape, expected",
+    [
+        # Real timestamps win, even if line_rate would give a different answer
+        # (bidirectional scans take half the time line_rate / rows suggests).
+        (
+            [
+                {"timestamp": t, "frame_duration_s": 0.05, "line_rate": 1000.0}
+                for t in (0.0, 0.05, 0.10, 0.15)
+            ],
+            (100, 100),
+            20.0,
+        ),
+        # No timestamps: use the frame duration.
+        (
+            [{"timestamp": None, "frame_duration_s": 0.05} for _ in range(3)],
+            (100, 100),
+            20.0,
+        ),
+        # Only line_rate: fall back to line_rate / rows.
+        ([{"line_rate": 1000.0} for _ in range(3)], (100, 100), 10.0),
+        # Exactly 1 fps still plays in real time.
+        ([{"timestamp": t} for t in (0.0, 1.0, 2.0)], (100, 100), 1.0),
+        # Slow-scan series (30 s per frame) play at the default rate instead.
+        ([{"timestamp": t} for t in (0.0, 30.0, 60.0)], (100, 100), 5.0),
+        # Nothing usable.
+        ([{} for _ in range(3)], (100, 100), 5.0),
+        ([], (100, 100), 5.0),
+    ],
+)
+def test_default_playback_fps(frame_metadata, image_shape, expected):
+    """Default playback rate prefers real frame timing; slow series play at 5 fps."""
+    stack = SimpleNamespace(frame_metadata=frame_metadata, image_shape=image_shape)
+    assert actions._default_playback_fps(stack) == pytest.approx(expected)
+
+
+def test_wizard_unknown_export_format_keeps_session(monkeypatch, tmp_path):
+    """A mistyped export format reports an error instead of ending the wizard."""
+    from playnano.io.export_data import export_bundles as real_export_bundles
+
+    fake_file = tmp_path / "fake.afm"
+    fake_file.write_text("dummy")
+    # export: yes, format: png (unsupported), GIF: no
+    io = FakeIO(answers=["y", "png", "n"])
+    w = Wizard(str(fake_file), "height", None, None, None, io=io)
+    w.process_steps = [("gaussian_filter", {})]
+    monkeypatch.setattr(w, "run_processing_and_cache", lambda: MagicMock())
+    monkeypatch.setattr(actions, "export_bundles", real_export_bundles)
+
+    w.handle_run(["run"])  # must not raise SystemExit
+
+    assert any("Unsupported export format(s): png" in out for out in io.outputs)
+
+
+def test_gui_subcommand_removed(monkeypatch, capsys):
+    """The broken 'gui' subcommand is gone; 'play' opens the GUI."""
+    monkeypatch.setattr(sys, "argv", ["playnano", "gui", "data.h5"])
+    with pytest.raises(SystemExit) as exc:
+        entrypoint.main()
+    assert exc.value.code == 2
+    assert "invalid choice: 'gui'" in capsys.readouterr().err
+
+
+def test_packaged_entry_points_resolve():
+    """Every entry point declared in pyproject.toml names an importable object."""
+    tomllib = pytest.importorskip("tomllib")
+    import importlib
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    project = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]
+    for group in project.get("entry-points", {}).values():
+        for name, target in group.items():
+            module_name, _, attr = target.partition(":")
+            module = importlib.import_module(module_name)
+            assert hasattr(module, attr), f"entry point {name} -> {target}"

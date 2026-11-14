@@ -106,12 +106,8 @@ notebooks = ["jupyter"]
 [project.scripts]
 playnano = "playnano.cli.entrypoint:main"
 
-[project.entry-points."playnano.filters"]
-median_filter = "playnano.processing.filters:median_filter"
-
 [project.entry-points."playnano.analysis"]
 count_nonzero = "playnano.analysis.modules.count_nonzero:CountNonzeroModule"
-particle_detect = "playnano.analysis.modules.detection:ParticleDetector"
 
 [project.urls]
 Homepage = "https://github.com/derollins/playNano"
