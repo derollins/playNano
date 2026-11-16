@@ -52,6 +52,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not repeated. Each run now starts with empty results (#85).
 - `AnalysisPipeline.run(log_to=...)` failed if the folder did not exist, and `export_analysis_to_json` failed for a
   bare filename such as `results.json` (#85).
+- `align_frames(method="full_cross_correlation")` found no drift (all-zero shifts) on data with a height offset,
+  which is usual for AFM, so frames were left unaligned with no error. It now subtracts each frame's mean, as the FFT
+  method already did, and both methods find the same shifts. Re-run any processing that used this method.
+  `align_frames` is now version 0.2.0 (#86).
+- After `align_frames` or `rolling_frame_align` with `mode="crop"`, the `border_mask` in the metadata kept the
+  uncropped shape. With `mode="crop_square"` it had the right shape but covered the wrong region. The mask is now
+  cropped with the same bounds as the frames. `rolling_frame_align` is now version 0.1.1 (#86).
 
 ## [0.5.1] - 2026-11-13
 

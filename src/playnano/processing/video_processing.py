@@ -30,7 +30,7 @@ from playnano.utils.versioning import versioned_filter
 # -----------------------------------------------------------------------------#
 
 
-@versioned_filter("0.1.0")
+@versioned_filter("0.2.0")
 def align_frames(
     stack: np.ndarray,
     reference_frame: int = 0,
@@ -168,8 +168,11 @@ def align_frames(
             cc = fftconvolve(frame0[::-1, ::-1], ref0, mode="full")
             y_center, x_center = H - 1, W - 1
         elif method == "full_cross_correlation":
+            # Subtract each frame's mean, as the FFT branch does. Otherwise any
+            # height offset makes the zero-shift position the strongest match.
+            frame0 = frame - np.mean(frame)
             cc = correlate2d(
-                ref, frame, mode="full", boundary="fill", fillvalue=0
+                ref0, frame0, mode="full", boundary="fill", fillvalue=0
             ).astype(np.float32)
             y_center, x_center = H - 1, W - 1
         else:
@@ -242,17 +245,11 @@ def align_frames(
     if mode == "crop":
         aligned_stack, crop_meta = intersection_crop(aligned_stack)
         metadata["crop"] = crop_meta
-        if "bounds" in crop_meta:
-            y_min, y_max, x_min, x_max = crop_meta["bounds"]
-            border_mask = border_mask[y_min : y_max + 1, x_min : x_max + 1]
-            metadata["border_mask"] = border_mask
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode == "crop_square":
         aligned_stack, crop_meta = crop_square(aligned_stack)
         metadata["crop"] = crop_meta
-        H_sq, W_sq = aligned_stack.shape[1:]
-        r_start, c_start = crop_meta["offset"]
-        border_mask = border_mask[r_start : r_start + H_sq, c_start : c_start + W_sq]
-        metadata["border_mask"] = border_mask
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode != "pad":
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -262,7 +259,7 @@ def align_frames(
     return aligned_stack, metadata
 
 
-@versioned_filter("0.1.0")
+@versioned_filter("0.1.1")
 def rolling_frame_align(
     stack: np.ndarray,
     window: int = 5,
@@ -534,19 +531,11 @@ def rolling_frame_align(
     if mode == "crop":
         aligned_stack, crop_meta = intersection_crop(aligned_stack)
         metadata["crop"] = crop_meta
-        if "bounds" in crop_meta:
-            y_min, y_max, x_min, x_max = crop_meta["bounds"]
-            metadata["border_mask"] = metadata["border_mask"][
-                y_min : y_max + 1, x_min : x_max + 1
-            ]
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode == "crop_square":
         aligned_stack, crop_meta = crop_square(aligned_stack)
         metadata["crop"] = crop_meta
-        H_sq, W_sq = aligned_stack.shape[1:]
-        r_start, c_start = crop_meta["offset"]
-        metadata["border_mask"] = metadata["border_mask"][
-            r_start : r_start + H_sq, c_start : c_start + W_sq
-        ]
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode != "pad":
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -583,6 +572,33 @@ def _normalize_pad(pad):
         if len(pad) == 4:
             return tuple(pad)
     raise ValueError("pad must be int, (v, h), or (top, bottom, left, right)")
+
+
+def _crop_border_mask(border_mask: np.ndarray, crop_meta: dict) -> np.ndarray:
+    """
+    Crop an alignment ``border_mask`` to match a cropped stack.
+
+    Parameters
+    ----------
+    border_mask : ndarray of bool, shape (height, width)
+        Mask on the full aligned canvas.
+    crop_meta : dict
+        Metadata from :func:`intersection_crop` or :func:`crop_square`. Its
+        ``requested_bounds`` are the exclusive-end bounds the stack was cut to.
+
+    Returns
+    -------
+    ndarray of bool
+        Mask with the same height and width as the cropped stack. Area added by
+        padding beyond the canvas is False. If nothing was cropped, the mask is
+        returned unchanged.
+    """
+    bounds = crop_meta.get("requested_bounds")
+    if bounds is None:
+        return border_mask
+    y0, y1, x0, x1 = (int(b) for b in bounds)
+    cropped, _ = _crop_with_pad(border_mask[np.newaxis], y0, y1, x0, x1, False)
+    return cropped[0]
 
 
 def _crop_with_pad(stack, y0, y1, x0, x1, pad_value=np.nan):

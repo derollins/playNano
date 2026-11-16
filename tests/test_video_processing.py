@@ -496,3 +496,40 @@ def test_pipeline_variants(synthetic_stack_integration, pipeline):
     # if cropped square, ensure it’s square
     if pipeline == "align_crop_square":
         assert result.shape[1] == result.shape[2]
+
+
+# --- Regression tests for #86 --- #
+
+
+@pytest.fixture
+def drifting_offset_stack():
+    """Textured frames drifting by a fixed amount per frame, with a +100 offset."""
+    from scipy.ndimage import gaussian_filter
+
+    rng = np.random.default_rng(0)
+    big = gaussian_filter(rng.normal(size=(60, 60)), 2)
+    frames = []
+    for i in range(3):
+        y0, x0 = 10 + 2 * i, 10 - i
+        frames.append(big[y0 : y0 + 30, x0 : x0 + 30])
+    return np.stack(frames) + 100.0
+
+
+def test_full_cross_correlation_matches_fft_on_offset_data(drifting_offset_stack):
+    """A height offset must not hide the drift from the full method."""
+    _, meta_fft = align_frames(drifting_offset_stack, method="fft_cross_correlation")
+    _, meta_full = align_frames(drifting_offset_stack, method="full_cross_correlation")
+    expected = [[0, 0], [2, -1], [4, -2]]
+    assert meta_fft["shifts"].tolist() == expected
+    assert meta_full["shifts"].tolist() == expected
+
+
+@pytest.mark.parametrize("align", [align_frames, rolling_frame_align])
+@pytest.mark.parametrize("mode", ["crop", "crop_square"])
+def test_border_mask_matches_cropped_stack(drifting_offset_stack, align, mode):
+    """After cropping, border_mask has the stack's shape and covers it fully."""
+    aligned, meta = align(drifting_offset_stack, mode=mode)
+    mask = meta["border_mask"]
+    assert mask.shape == aligned.shape[1:]
+    # Every pixel of the cropped stack has data in every frame.
+    assert mask.all()
