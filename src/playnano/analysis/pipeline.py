@@ -3,6 +3,7 @@
 import importlib.metadata as metadata
 import logging
 from collections import defaultdict
+from pathlib import Path
 from typing import Any, Optional
 
 from playnano.afm_stack import AFMImageStack
@@ -309,8 +310,9 @@ class AnalysisPipeline:
                 "results_by_name": {},
                 "frame_times": None,
             }
-        if not hasattr(stack, "analysis") or not isinstance(stack.analysis, dict):
-            stack.analysis = {}
+        # Start each run with empty results, so steps from an earlier, longer run
+        # do not linger. A new dict leaves records returned earlier untouched.
+        stack.analysis = {}
 
         env = gather_environment_info()
         # If provenance already has environment from processing, you may choose to
@@ -401,6 +403,7 @@ class AnalysisPipeline:
                 "analysis": sanitize_analysis_for_logging(record["analysis"]),
                 "provenance": sanitize_analysis_for_logging(record["provenance"]),
             }
+            Path(log_to).parent.mkdir(parents=True, exist_ok=True)
             with open(log_to, "w") as file:
                 json.dump(safe_record, file, indent=2)
         # Add record

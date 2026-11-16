@@ -341,3 +341,34 @@ def test_run_module_wrong_type(monkeypatch, stack_with_times):
     pipeline.add("badmod")
     with pytest.raises(TypeError):
         pipeline.run(stack_with_times)
+
+
+def test_rerun_clears_previous_results(dummy_stack, dummy_module):
+    """A second, shorter run does not keep steps from the first run."""
+    pipeline = AnalysisPipeline()
+    pipeline._module_cache["dummy"] = dummy_module
+    pipeline.add("dummy")
+    pipeline.add("dummy")
+    first = pipeline.run(dummy_stack)
+    assert set(first["analysis"]) == {"step_1_dummy", "step_2_dummy"}
+
+    pipeline = AnalysisPipeline()
+    pipeline._module_cache["dummy"] = dummy_module
+    pipeline.add("dummy")
+    second = pipeline.run(dummy_stack)
+
+    assert set(second["analysis"]) == {"step_1_dummy"}
+    assert set(dummy_stack.analysis) == {"step_1_dummy"}
+    # The record returned by the first run is left as it was.
+    assert set(first["analysis"]) == {"step_1_dummy", "step_2_dummy"}
+
+
+def test_log_to_creates_missing_folders(tmp_path, dummy_stack, dummy_module):
+    """log_to under folders that do not exist yet creates them."""
+    pipeline = AnalysisPipeline()
+    pipeline._module_cache["dummy"] = dummy_module
+    pipeline.add("dummy")
+
+    log_path = tmp_path / "new" / "deeper" / "record.json"
+    pipeline.run(dummy_stack, log_to=str(log_path))
+    assert json.loads(log_path.read_text())["analysis"]["step_1_dummy"]["result"] == 42

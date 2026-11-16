@@ -421,6 +421,15 @@ def ensure_not_input_path(
 # --- SERIALIZATION AND TYPE CONVERSION ------------------------------------------------
 
 
+def _json_safe_key(key):
+    """Convert a dict key to a type JSON accepts (str, int, float, bool or None)."""
+    if isinstance(key, np.generic):
+        key = key.item()
+    if key is None or isinstance(key, (str, int, float, bool)):
+        return key
+    return str(key)
+
+
 def make_json_safe(obj):
     """Recursively convert NumPy types and non-JSON objects into serializable ones."""
     if isinstance(obj, np.ndarray):
@@ -430,7 +439,7 @@ def make_json_safe(obj):
     elif isinstance(obj, (np.floating, np.float32, np.float64)):
         return float(obj)
     elif isinstance(obj, dict):
-        return {k: make_json_safe(v) for k, v in obj.items()}
+        return {_json_safe_key(k): make_json_safe(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [make_json_safe(v) for v in obj]
     elif isinstance(obj, tuple):

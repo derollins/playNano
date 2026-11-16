@@ -41,6 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default playback speed in `playnano play` ignored bidirectional scanning, so some videos played at half speed. It
   now comes from the frame timestamps or frame durations, and only falls back to `line_rate`. Series recorded slower
   than 1 fps (e.g. slow-scan AFM) play at 5 fps instead of in real time (#84).
+- `playnano analyze` with `dbscan_clustering` failed after the analysis had finished
+  (`TypeError: keys must be str, int, float, bool or None, not int64`), so no results were saved. Cluster ids are now
+  plain integers, and the JSON sanitizers convert NumPy dict keys (#85).
+- Analysis HDF5 files did not reload as written: `None` came back as `'None'`, an empty dict as `[]`, `[0.0, 1.0]` as
+  integers, and a key named `values` crashed the loader. `export_to_hdf5` now records each value's type, and
+  `load_analysis_from_hdf5` uses it to rebuild the original structure. Lists of numbers or strings now load as Python
+  lists, not NumPy arrays. Files written by earlier versions still load as before (#85).
+- Running an analysis pipeline a second time on the same stack kept results from steps of the earlier run that were
+  not repeated. Each run now starts with empty results (#85).
+- `AnalysisPipeline.run(log_to=...)` failed if the folder did not exist, and `export_analysis_to_json` failed for a
+  bare filename such as `results.json` (#85).
 
 ## [0.5.1] - 2026-11-13
 

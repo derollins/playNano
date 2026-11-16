@@ -726,3 +726,92 @@ def test_plot_frame_histogram_saves_file():
         out_path = Path(tmpdir) / "hist.png"
         frames.plot_frame_histogram(df, column="n_features", save_to=out_path)
         assert out_path.exists()
+
+
+def _is_plain(value, kind):
+    """Check for a built-in int or float, not a NumPy scalar or a bool."""
+    return isinstance(value, kind) and not isinstance(value, (bool, np.generic))
+
+
+def test_hdf5_round_trip_is_exact(tmp_path):
+    """Values come back from export_to_hdf5 as they were saved."""
+    record = {
+        "none": None,
+        "empty_dict": {},
+        "empty_list": [],
+        "floats": [0.0, 1.0],
+        "ints": [1, 2],
+        "track_with_gap": [0, None, 2],
+        "strings": ["a", "b"],
+        "nested": {"values": 1, "value": "x", "empty": [3.5]},
+        "float_array": np.array([[1.5, 2.0], [3.0, 4.0]]),
+        "int_array": np.arange(3),
+        "text": "hi",
+        "flag": True,
+        "count": 3,
+        "whole_float": 2.0,
+        "pair": (1, 2),
+    }
+    out = tmp_path / "record.h5"
+    common.export_to_hdf5(record, out)
+    loaded = load_analysis_from_hdf5(out)
+
+    assert set(loaded) == set(record)
+    assert loaded["none"] is None
+    assert loaded["empty_dict"] == {}
+    assert loaded["empty_list"] == []
+    assert loaded["floats"] == [0.0, 1.0]
+    assert all(_is_plain(v, float) for v in loaded["floats"])
+    assert loaded["ints"] == [1, 2]
+    assert all(_is_plain(v, int) for v in loaded["ints"])
+    assert loaded["track_with_gap"] == [0, None, 2]
+    assert loaded["strings"] == ["a", "b"]
+    assert loaded["nested"] == {"values": 1, "value": "x", "empty": [3.5]}
+    np.testing.assert_array_equal(loaded["float_array"], record["float_array"])
+    assert loaded["float_array"].dtype == record["float_array"].dtype
+    np.testing.assert_array_equal(loaded["int_array"], record["int_array"])
+    assert loaded["text"] == "hi"
+    assert loaded["flag"] is True
+    assert loaded["count"] == 3 and _is_plain(loaded["count"], int)
+    assert loaded["whole_float"] == 2.0
+    assert _is_plain(loaded["whole_float"], float)
+    assert loaded["pair"] == [1, 2]
+
+
+def test_hdf5_round_trip_track_with_gap_flattens(tmp_path):
+    """A reloaded particle track with a missing frame still flattens."""
+    from playnano.analysis.utils.particles import flatten_particle_features
+
+    record = {
+        "tracks": {
+            "tracks": [{"id": 0, "frames": [0, 1, 2], "point_indices": [0, None, 0]}]
+        },
+        "detection": {
+            "features_per_frame": [
+                [{"area": 1.0, "centroid": (1.0, 1.0)}],
+                [],
+                [{"area": 2.0, "centroid": (2.0, 2.0)}],
+            ]
+        },
+    }
+    out = tmp_path / "record.h5"
+    common.export_to_hdf5(record, out)
+    loaded = load_analysis_from_hdf5(out)
+
+    df = flatten_particle_features(
+        loaded["tracks"], loaded["detection"], object_key="tracks"
+    )
+    assert df["frame"].tolist() == [0, 2]
+
+
+def test_sanitizers_convert_numpy_dict_keys():
+    """Convert NumPy dict keys so the result can be written to JSON."""
+    from playnano.utils.io_utils import make_json_safe as io_make_json_safe
+
+    data = {np.int64(3): 1, np.float64(0.5): 2, (1, 2): 3}
+    for cleaned in (
+        common.sanitize_analysis_for_logging(data),
+        io_make_json_safe(data),
+    ):
+        assert set(cleaned) == {3, 0.5, "(1, 2)"}
+        json.dumps(cleaned)

@@ -28,7 +28,9 @@ def export_analysis_to_json(out_path: str, analysis_record: dict[str, Any]) -> N
     OSError
         If the file cannot be written.
     """
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    parent = os.path.dirname(out_path)
+    if parent:  # a bare filename writes to the current folder
+        os.makedirs(parent, exist_ok=True)
     with open(out_path, "w") as f:
         json.dump(analysis_record, f, indent=2, cls=NumpyEncoder)
 

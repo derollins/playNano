@@ -210,6 +210,9 @@ class DBSCANClusteringModule(AnalysisModule):
         members = {}
         clusters_out = []
         for cid in unique_labels:
+            # Plain int, not np.int64: it is used as a dict key below, and JSON
+            # only accepts str, int, float, bool or None as keys.
+            cid = int(cid)
             idxs = np.where(labels == cid)[0].tolist()
             subset = data[idxs]
             center = subset.mean(axis=0)

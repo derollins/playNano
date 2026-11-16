@@ -1,5 +1,6 @@
 """Tests for built in analysis modules."""
 
+import json
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -4106,3 +4107,25 @@ def test_empty_extraction_output_returns_empty_manifest(parexmod, stack, mock_ex
     assert out["per_track"] == []
     assert out["video_paths"] == []
     assert out["summary"]["n_tracks_total"] == 0
+
+
+def test_dbscan_output_is_json_serialisable():
+    """DBSCAN cluster ids are plain ints, so its results can be written to JSON."""
+    per_frame = [
+        [{"centroid": (0.0, 0.0)}],
+        [{"centroid": (10.0, 0.0)}],
+    ]
+    stack = DummyStack([0.0, 1.0])
+    prev = make_prev(per_frame)
+
+    out = DBSCANClusteringModule().run(
+        stack, prev, eps=0.1, min_samples=1, normalise=True, time_weight=None
+    )
+
+    members = out["summary"]["members_per_cluster"]
+    assert all(isinstance(k, int) and not isinstance(k, np.generic) for k in members)
+    assert all(
+        isinstance(c["id"], int) and not isinstance(c["id"], np.generic)
+        for c in out["clusters"]
+    )
+    json.dumps(members)  # raised TypeError for np.int64 keys
