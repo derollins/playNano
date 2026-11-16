@@ -81,3 +81,10 @@ def test_gather_environment_info_contains_expected_keys():
     # Versions for key packages may or may not exist
     for pkg in ("numpy_version", "h5py_version", "scipy_version"):
         assert pkg in info or True  # at least present or silently missing
+
+
+def test_export_analysis_to_json_bare_filename(tmp_path, monkeypatch):
+    """A bare filename writes to the current folder instead of failing."""
+    monkeypatch.chdir(tmp_path)
+    export.export_analysis_to_json("results.json", {"a": 1})
+    assert json.loads((tmp_path / "results.json").read_text()) == {"a": 1}

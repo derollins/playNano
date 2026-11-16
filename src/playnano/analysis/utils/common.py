@@ -63,51 +63,165 @@ def safe_json_dumps(obj):
         return str(obj)
 
 
+#: HDF5 attribute recording what Python type each group was written from, so
+#: :func:`load_analysis_from_hdf5` can rebuild it exactly.
+TYPE_ATTR = "_playnano_type"
+
+
 def export_to_hdf5(
     record: Mapping[str, Any], out_path: Path, dataset_name: str = "analysis_record"
 ) -> None:
     """
     Save a nested dict/list/array structure to HDF5 with full breakdown.
 
-    - Dicts become groups.
-    - Lists of primitives become datasets.
-    - Lists of complex objects become subgroups item_0, item_1, etc.
-    - NumPy arrays become datasets.
+    - Dicts become groups, one subgroup per key. Keys are stored as strings.
+    - Lists of numbers, or of strings, become a ``values`` dataset.
+    - Other lists become subgroups ``item_0``, ``item_1``, etc.
+    - NumPy arrays become a ``values`` dataset with their original dtype.
+    - Scalars and strings are stored in a ``value`` attribute.
+
+    Each group also records the type it came from (attribute ``_playnano_type``),
+    so :func:`load_analysis_from_hdf5` returns the same structure: ``None``,
+    empty dicts, float lists and keys named ``values`` all survive the round trip.
+    Tuples and sets are stored as lists.
     """
+    out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    str_dtype = h5py.string_dtype(encoding="utf-8")
+
+    def is_number(item):
+        return isinstance(item, (int, float, np.number)) and not isinstance(
+            item, (bool, np.bool_)
+        )
+
     with h5py.File(out_path, "w") as h5file:
 
         def recurse(group, obj):
             if isinstance(obj, dict):
+                group.attrs[TYPE_ATTR] = "dict"
                 for key, value in obj.items():
                     recurse(group.create_group(str(key)), value)
 
-            elif isinstance(obj, list):
+            elif isinstance(obj, (list, tuple, set)):
+                obj = list(obj)
+                group.attrs[TYPE_ATTR] = "list"
                 if len(obj) == 0:
                     group.create_dataset("empty", data=[])
-                elif all(isinstance(item, (int, float, np.number)) for item in obj):
-                    group.create_dataset("values", data=np.array(obj, dtype=float))
-                elif all(isinstance(item, (str, bytes)) for item in obj):
-                    dt = h5py.string_dtype(encoding="utf-8")
-                    group.create_dataset("values", data=np.array(obj, dtype=dt))
+                elif all(is_number(item) for item in obj):
+                    # np.asarray keeps ints as ints and floats as floats.
+                    group.create_dataset("values", data=np.asarray(obj))
+                elif all(isinstance(item, str) for item in obj):
+                    group.create_dataset(
+                        "values", data=np.array(obj, dtype=object), dtype=str_dtype
+                    )
                 else:
                     for idx, item in enumerate(obj):
                         recurse(group.create_group(f"item_{idx}"), item)
 
             elif isinstance(obj, np.ndarray):
-                try:
+                if obj.dtype.kind in ("U", "O"):
+                    group.attrs[TYPE_ATTR] = "str_array"
+                    group.create_dataset(
+                        "values", data=obj.astype(str).astype(object), dtype=str_dtype
+                    )
+                else:
+                    group.attrs[TYPE_ATTR] = "array"
                     group.create_dataset("values", data=obj)
-                except TypeError:
-                    dt = h5py.string_dtype(encoding="utf-8")
-                    group.create_dataset("values", data=obj.astype(str), dtype=dt)
+
+            elif obj is None:
+                group.attrs[TYPE_ATTR] = "none"
 
             else:
                 try:
                     group.attrs["value"] = obj
+                    group.attrs[TYPE_ATTR] = "scalar"
                 except TypeError:
                     group.attrs["value"] = str(obj)
+                    group.attrs[TYPE_ATTR] = "str"
 
         recurse(h5file.create_group(dataset_name), record)
+
+
+def _sorted_items(group) -> list:
+    """Return the ``item_N`` children of a group in index order."""
+    keys = sorted(group.keys(), key=lambda x: int(x.split("_")[1]))
+    return [_load_group(group[k]) for k in keys]
+
+
+def _load_group(group) -> Any:
+    """Rebuild the value stored in an HDF5 group by :func:`export_to_hdf5`."""
+    kind = group.attrs.get(TYPE_ATTR)
+    if kind is None:
+        return _load_legacy_group(group)
+    if isinstance(kind, bytes):
+        kind = kind.decode("utf-8")
+    return _load_typed_group(group, kind)
+
+
+def _load_typed_group(group, kind: str) -> Any:
+    """Rebuild a value from a group that records its type."""
+    if kind == "dict":
+        return {k: _load_group(group[k]) for k in group.keys()}
+    if kind == "list":
+        if "values" in group:
+            ds = group["values"]
+            if h5py.check_string_dtype(ds.dtype) is not None:
+                return list(ds.asstr()[()])
+            return ds[()].tolist()
+        if "empty" in group:
+            return []
+        return _sorted_items(group)
+    if kind == "array":
+        return group["values"][()]
+    if kind == "str_array":
+        return np.array(group["values"].asstr()[()], dtype=str)
+    if kind == "none":
+        return None
+    if kind == "str":
+        return str(group.attrs["value"])
+    # "scalar"
+    val = group.attrs["value"]
+    if isinstance(val, bytes):
+        return val.decode("utf-8")
+    return val.item() if isinstance(val, np.generic) else val
+
+
+def _whole_float_to_int(val):
+    """Return ``int(val)`` for integer-valued NumPy numbers, else ``val``."""
+    if isinstance(val, (np.integer, np.floating)) and float(val).is_integer():
+        return int(val)
+    return val
+
+
+def _load_legacy_group(group) -> Any:
+    """
+    Rebuild a value from a group written before type records were added.
+
+    The type is inferred from the layout, and integer-valued floats are converted
+    to ints, as earlier versions did.
+    """
+    if "values" in group:
+        data = group["values"][()]
+        if isinstance(data, np.ndarray) and data.dtype.kind == "S":
+            return data.astype(str)
+        if isinstance(data, np.ndarray) and data.shape == ():
+            return _whole_float_to_int(data.item())
+        if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
+            if np.all(np.mod(data, 1) == 0):
+                data = data.astype(int)
+        return data
+
+    if "empty" in group:
+        return []
+
+    if "value" in group.attrs:
+        val = group.attrs["value"]
+        return _whole_float_to_int(val) if isinstance(val, np.floating) else val
+
+    keys = list(group.keys())
+    if all(k.startswith("item_") for k in keys):
+        return _sorted_items(group)
+    return {k: _load_group(group[k]) for k in keys}
 
 
 def load_analysis_from_hdf5(
@@ -116,8 +230,11 @@ def load_analysis_from_hdf5(
     """
     Load a nested dict/list/NumPy array structure from an HDF5 file.
 
-    This exactly reverses `export_to_hdf5`. Automatically converts integer-valued
-    NumPy floats to Python ints recursively for use as list indices.
+    This reverses `export_to_hdf5`. Files written by this version record the type
+    of every value, so dicts, lists, arrays, ``None`` and scalars come back as they
+    were saved. Files written by earlier versions have no type records; for those,
+    integer-valued floats are converted to Python ints (for use as list indices),
+    and ``None`` and empty dicts cannot be told apart from other values.
 
     Parameters
     ----------
@@ -145,55 +262,19 @@ def load_analysis_from_hdf5(
         If `dataset_name` is not found in the HDF5 file.
     """
 
-    def recurse(group):
-        """Recursively reconstruct dict/list/array from an HDF5 group."""
-        if "values" in group:
-            data = group["values"][()]
-            # Convert bytes to str if needed
-            if isinstance(data, np.ndarray) and data.dtype.kind == "S":
-                return data.astype(str)
-
-            # Scalar array
-            if isinstance(data, np.ndarray) and data.shape == ():
-                val = data.item()
-                return (
-                    int(val)
-                    if isinstance(val, (np.integer, np.floating))
-                    and float(val).is_integer()
-                    else val
-                )
-
-            # Full array: convert integer-valued floats to int
-            if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
-                if np.all(np.mod(data, 1) == 0):
-                    data = data.astype(int)
-            return data
-
-        if "empty" in group:
-            return []
-
-        if "value" in group.attrs:
-            val = group.attrs["value"]
-            return (
-                int(val)
-                if isinstance(val, np.floating) and float(val).is_integer()
-                else val
-            )
-
-        keys = list(group.keys())
-        if all(k.startswith("item_") for k in keys):
-            items = [
-                recurse(group[k])
-                for k in sorted(keys, key=lambda x: int(x.split("_")[1]))
-            ]
-            return items
-        else:
-            return {k: recurse(group[k]) for k in keys}
-
     with h5py.File(file_path, "r") as h5file:
         if dataset_name not in h5file:
             raise KeyError(f"Dataset '{dataset_name}' not found in HDF5 file.")
-        return recurse(h5file[dataset_name])
+        return _load_group(h5file[dataset_name])
+
+
+def _json_safe_key(key):
+    """Convert a dict key to a type JSON accepts (str, int, float, bool or None)."""
+    if isinstance(key, np.generic):
+        key = key.item()
+    if key is None or isinstance(key, (str, int, float, bool)):
+        return key
+    return str(key)
 
 
 def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=6):
@@ -211,7 +292,7 @@ def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=6):
 
     if isinstance(obj, dict):
         return {
-            k: sanitize_analysis_for_logging(
+            _json_safe_key(k): sanitize_analysis_for_logging(
                 v, path=f"{path}.{k}", _depth=_depth + 1, _max_depth=_max_depth
             )
             for k, v in obj.items()
