@@ -1321,3 +1321,24 @@ def test_paint_event_zero_division_branch(widget, qtbot, caplog):
         "Division by zero in scale bar calculation." in record.message
         for record in caplog.records
     )
+
+
+def test_scale_bar_zero_starts_hidden(qtbot):
+    """scale_bar_nm=0 starts with the scale bar off, but it can be switched on."""
+
+    def make_stack():
+        stack = MagicMock(width=16, height=16, data=np.random.rand(2, 10, 10))
+        stack.pixel_size_nm = 1.0
+        stack.frame_metadata = []
+        stack.time_for_frame = MagicMock(return_value=0.1)
+        return stack
+
+    wnd = MainWindow(make_stack(), scale_bar_nm=0)
+    qtbot.addWidget(wnd)
+    assert not wnd.show_scale_bar_box.isChecked()
+    assert wnd.scale_bar_nm == 100
+
+    wnd_default = MainWindow(make_stack())
+    qtbot.addWidget(wnd_default)
+    assert wnd_default.show_scale_bar_box.isChecked()
+    assert wnd_default.scale_bar_nm == 100

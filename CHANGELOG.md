@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default playback speed in `playnano play` ignored bidirectional scanning, so some videos played at half speed. It
   now comes from the frame timestamps or frame durations, and only falls back to `line_rate`. Series recorded slower
   than 1 fps (e.g. slow-scan AFM) play at 5 fps instead of in real time (#84).
+<<<<<<< HEAD
 - `playnano analyze` with `dbscan_clustering` failed after the analysis had finished
   (`TypeError: keys must be str, int, float, bool or None, not int64`), so no results were saved. Cluster ids are now
   plain integers, and the JSON sanitizers convert NumPy dict keys (#85).
@@ -52,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not repeated. Each run now starts with empty results (#85).
 - `AnalysisPipeline.run(log_to=...)` failed if the folder did not exist, and `export_analysis_to_json` failed for a
   bare filename such as `results.json` (#85).
+=======
+>>>>>>> dev
 
 ## [0.5.1] - 2026-11-13
 

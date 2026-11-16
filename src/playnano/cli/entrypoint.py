@@ -340,7 +340,7 @@ def main() -> None:
     analyze_parser.add_argument(
         "--output-folder",
         type=str,
-        help="Folder to write bundles and/or GIF (default='./output').",
+        help="Folder to write the analysis JSON and HDF5 files (default='./output').",
     )
     analyze_parser.add_argument(
         "--output-name", type=str, help="Base name for output files (no extension)."
@@ -349,12 +349,6 @@ def main() -> None:
 
     parser_env = subparsers.add_parser("env-info", help="Print environment info")
     parser_env.set_defaults(func=lambda args: print_env_info())
-
-    gui_parser = subparsers.add_parser("gui", help="Launch Qt GUI playback")
-    gui_parser.add_argument("input_file", help="Path to AFM file/folder")
-    gui_parser.set_defaults(
-        func=lambda args: __import__("playnano.gui.main").gui_entry(args)
-    )
 
     args = parser.parse_args()
     setup_logging(getattr(logging, args.log_level.upper()))
