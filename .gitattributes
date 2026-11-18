@@ -1,10 +1,33 @@
-# Enforce Unix-style line endings for source code and docs
-*.py     text eol=lf
-*.md     text eol=lf
-*.txt    text eol=lf
-*.yml    text eol=lf
-*.toml   text eol=lf
+# Store every text file with LF line endings and check it out with LF on
+# every platform, whatever the local core.autocrlf setting. Git detects
+# which files are text; the rules below mark known binary files explicitly.
+* text=auto eol=lf
 
-# Fonts are binary – no conversion
+# Windows-only scripts keep CRLF
+*.bat    text eol=crlf
+
+# Images and fonts
+*.png    binary
+*.ico    binary
 *.otf    binary
 *.ttf    binary
+
+# AFM data and saved arrays
+*.asd    binary
+*.jpk    binary
+*.h5-jpk binary
+*.h5     binary
+*.npy    binary
+*.npz    binary
+
+# Exported images, videos and documents
+*.tif    binary
+*.tiff   binary
+*.gif    binary
+*.mp4    binary
+*.avi    binary
+*.pdf    binary
+*.zip    binary
+
+# Test data, including SPM files with numeric extensions such as .102
+tests/resources/** binary
