@@ -67,6 +67,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   image, and `rolling_frame_align` returned a zero shift for every frame. This affected any data with missing pixels
   and any stack aligned again after `mode="pad"`. NaN pixels are now ignored when finding shifts and kept in the
   output, and a frame with no finite pixels raises `ValueError` (#91).
+- `.asd` files and folders of `.jpk` or `.spm` files failed to load with AFMReader 0.0.8
+  (`TypeError: cannot unpack non-iterable AFMScan object`), because its loaders now return an `AFMScan` object
+  instead of a tuple. playNano now accepts both, and requires `afmreader>=0.0.7,<0.0.9`, so a future AFMReader
+  release cannot break loading without warning (#96).
 
 ## [0.5.1] - 2026-11-13
 
