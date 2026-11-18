@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not repeated. Each run now starts with empty results (#85).
 - `AnalysisPipeline.run(log_to=...)` failed if the folder did not exist, and `export_analysis_to_json` failed for a
   bare filename such as `results.json` (#85).
+- The analysis JSON written by `playnano analyze`, the wizard and `AnalysisPipeline.run(log_to=...)` replaced
+  anything nested more than six levels deep, including plain numbers, with `"<... truncated depth 7 ...>"`. Every
+  bounding box from `particle_region_extraction` was lost this way. Values are now always written; the depth limit
+  is 50 and applies to containers only, with a warning if it is ever reached (#90).
 - `align_frames(method="full_cross_correlation")` found no drift (all-zero shifts) on data with a height offset,
   which is usual for AFM, so frames were left unaligned with no error. It now subtracts each frame's mean, as the FFT
   method already did, and both methods find the same shifts. Re-run any processing that used this method.

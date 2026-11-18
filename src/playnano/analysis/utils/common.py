@@ -277,8 +277,39 @@ def _json_safe_key(key):
     return str(key)
 
 
-def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=6):
-    """Return a JSON-safe version of any object, printing any functions it finds."""
+#: Nesting depth at which :func:`sanitize_analysis_for_logging` stops. Analysis
+#: results are far shallower than this; the limit only guards against runaway
+#: recursion.
+MAX_SANITIZE_DEPTH = 50
+
+
+def sanitize_analysis_for_logging(
+    obj, path="root", _depth=0, _max_depth=MAX_SANITIZE_DEPTH
+):
+    """
+    Return a JSON-safe version of any object, for the analysis JSON output.
+
+    Dicts, lists, tuples and sets are converted recursively. NumPy arrays are
+    replaced by a summary (shape, dtype, min, max, mean), functions by a
+    placeholder string, and NumPy scalars by Python scalars. Numbers and
+    strings are always kept, however deeply nested.
+
+    Parameters
+    ----------
+    obj : Any
+        The object to convert.
+    path : str, optional
+        Location of ``obj`` in the record, used in log messages.
+    _depth, _max_depth : int
+        Internal recursion counters. A container nested deeper than
+        ``_max_depth`` is replaced by a placeholder string and a warning is
+        logged.
+
+    Returns
+    -------
+    Any
+        A structure of dicts, lists, numbers, strings, booleans and None.
+    """
     import numpy as np
 
     if callable(obj):
@@ -287,7 +318,14 @@ def sanitize_analysis_for_logging(obj, path="root", _depth=0, _max_depth=6):
         )
         return f"<function {getattr(obj, '__name__', 'anonymous')}>"
 
-    if _depth > _max_depth:
+    # Only containers count towards the depth limit; scalars are always kept.
+    if isinstance(obj, (dict, list, tuple, set)) and _depth > _max_depth:
+        logger.warning(
+            "Analysis output at %s is nested more than %d levels deep; "
+            "it is replaced by a placeholder in the JSON.",
+            path,
+            _max_depth,
+        )
         return f"<... truncated depth {_depth} ...>"
 
     if isinstance(obj, dict):
