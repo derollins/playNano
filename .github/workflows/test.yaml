@@ -22,6 +22,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13']
+        afmreader: ['from-pyproject']
+        include:
+          # The default install gets the newest AFMReader allowed by
+          # pyproject.toml; also test the oldest supported version.
+          - os: ubuntu-latest
+            python-version: '3.12'
+            afmreader: 'afmreader==0.0.7'
       fail-fast: false
 
     steps:
@@ -43,8 +50,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
-          pip install numpy h5py Pillow matplotlib afmreader
           pip install pytest>=7.0 pytest-cov pytest-qt flake8 pre-commit
+
+      - name: Install a specific AFMReader version
+        if: matrix.afmreader != 'from-pyproject'
+        run: pip install "${{ matrix.afmreader }}"
 
       - name: Run tests with coverage
         run: python -m pytest --cov=playnano --cov-report=xml

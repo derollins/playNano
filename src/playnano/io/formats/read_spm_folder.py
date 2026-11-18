@@ -24,6 +24,7 @@ import numpy as np
 from AFMReader import spm
 
 from playnano.afm_stack import AFMImageStack
+from playnano.io.formats._afmreader import unpack_afmreader_result
 from playnano.utils.io_utils import build_frame_metadata
 
 logger = logging.getLogger(__name__)
@@ -183,7 +184,9 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     logger.info(f"Found {len(spm_files)} .spm files.")
 
     # --- Shape, dtype, and the fallback line rate from the first file ---
-    first_img, first_pixel_size_nm = spm.load_spm(spm_files[0], channel)
+    first_img, first_pixel_size_nm, _ = unpack_afmreader_result(
+        spm.load_spm(spm_files[0], channel)
+    )
     height_px, width_px = first_img.shape
     dtype = first_img.dtype
     num_frames = len(spm_files)
@@ -244,7 +247,7 @@ def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     frame_metadata = []
     for i, fpath in enumerate(spm_files):
         logger.debug(f"Loading {fpath.name}")
-        img, px_size_nm = spm.load_spm(fpath, channel)
+        img, px_size_nm, _ = unpack_afmreader_result(spm.load_spm(fpath, channel))
         if img.shape != (height_px, width_px):
             raise ValueError(f"Inconsistent image shape in {fpath}")
         image_stack[i] = img

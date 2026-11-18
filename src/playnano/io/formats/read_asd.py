@@ -28,6 +28,7 @@ import numpy as np
 from AFMReader.asd import load_asd
 
 from playnano.afm_stack import AFMImageStack
+from playnano.io.formats._afmreader import unpack_afmreader_result
 from playnano.utils.io_utils import (
     build_frame_metadata,
     convert_height_units_to_nm,
@@ -142,7 +143,9 @@ def load_asd_file(file_path: Path | str, channel: str) -> AFMImageStack:
     file_path = Path(file_path)
 
     # Read .asd data and header
-    image_stack, pixel_size_nm, asd_metadata = load_asd(file_path, channel)
+    image_stack, pixel_size_nm, asd_metadata = unpack_afmreader_result(
+        load_asd(file_path, channel)
+    )
     image_stack = _standardize_units_to_nm(image_stack, channel)
 
     # --- Timing ---
