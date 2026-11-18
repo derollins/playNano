@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -535,7 +537,9 @@
 <span class="sd">    OSError</span>
 <span class="sd">        If the file cannot be written.</span>
 <span class="sd">    """</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">out_path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>  <span class="c1"># a bare filename writes to the current folder</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">analysis_record</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">NumpyEncoder</span><span class="p">)</span></div>
 

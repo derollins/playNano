@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -719,6 +721,9 @@
         <span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">clusters_out</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">:</span>
+            <span class="c1"># Plain int, not np.int64: it is used as a dict key below, and JSON</span>
+            <span class="c1"># only accepts str, int, float, bool or None as keys.</span>
+            <span class="n">cid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span>
             <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="n">cid</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
             <span class="n">subset</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">idxs</span><span class="p">]</span>
             <span class="n">center</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>

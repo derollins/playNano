@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -529,6 +531,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFMReader</span><span class="w"> </span><span class="kn">import</span> <span class="n">spm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.formats._afmreader</span><span class="w"> </span><span class="kn">import</span> <span class="n">unpack_afmreader_result</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_frame_metadata</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -693,7 +696,9 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">spm_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> .spm files."</span><span class="p">)</span>
 
     <span class="c1"># --- Shape, dtype, and the fallback line rate from the first file ---</span>
-    <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">spm_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span>
+        <span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">spm_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span> <span class="o">=</span> <span class="n">first_img</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">first_img</span><span class="o">.</span><span class="n">dtype</span>
     <span class="n">num_frames</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spm_files</span><span class="p">)</span>
@@ -754,7 +759,7 @@
     <span class="n">frame_metadata</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spm_files</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+        <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span><span class="n">spm</span><span class="o">.</span><span class="n">load_spm</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">image_stack</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>

@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -533,6 +535,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">AFMReader.asd</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_asd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.formats._afmreader</span><span class="w"> </span><span class="kn">import</span> <span class="n">unpack_afmreader_result</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">build_frame_metadata</span><span class="p">,</span>
     <span class="n">convert_height_units_to_nm</span><span class="p">,</span>
@@ -649,7 +652,9 @@
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 
     <span class="c1"># Read .asd data and header</span>
-    <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">asd_metadata</span> <span class="o">=</span> <span class="n">load_asd</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">asd_metadata</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span>
+        <span class="n">load_asd</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="n">image_stack</span> <span class="o">=</span> <span class="n">_standardize_units_to_nm</span><span class="p">(</span><span class="n">image_stack</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
 
     <span class="c1"># --- Timing ---</span>
