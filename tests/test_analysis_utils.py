@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from playnano.afm_stack import AFMImageStack
+from playnano.analysis.pipeline import AnalysisPipeline
 from playnano.analysis.utils import common, frames, particles
 from playnano.analysis.utils.common import (
     NumpyEncoder,
@@ -815,3 +817,41 @@ def test_sanitizers_convert_numpy_dict_keys():
     ):
         assert set(cleaned) == {3, 0.5, "(1, 2)"}
         json.dumps(cleaned)
+
+
+def test_sanitizer_keeps_deeply_nested_values(caplog):
+    """Numbers and strings nested deeper than six levels are not replaced."""
+    deep = [1.5, "x"]
+    for i in range(10):
+        deep = {f"level_{i}": deep}
+    cleaned = common.sanitize_analysis_for_logging(deep)
+
+    text = json.dumps(cleaned)
+    assert "truncated" not in text
+    assert '[1.5, "x"]' in text
+    assert "nested more than" not in caplog.text
+
+
+def test_sanitizer_warns_when_limit_is_hit(caplog):
+    """Containers beyond the depth limit are replaced, with a warning."""
+    cleaned = common.sanitize_analysis_for_logging(
+        {"a": {"b": [1, 2]}, "n": 3}, _max_depth=1
+    )
+    assert cleaned["a"]["b"].startswith("<... truncated depth 2")
+    assert cleaned["n"] == 3
+    assert "nested more than 1 levels deep" in caplog.text
+
+
+def test_analysis_json_has_no_truncation_markers():
+    """A real detection, tracking and region extraction run is written in full."""
+    sample = Path(__file__).parent / "resources" / "sample_0.h5-jpk"
+    stack = AFMImageStack.load_data(sample)
+    pipeline = AnalysisPipeline()
+    pipeline.add("feature_detection", mask_fn="mask_mean_offset", min_size=5)
+    pipeline.add("particle_tracking", max_distance=10.0)
+    pipeline.add("particle_region_extraction")
+    record = pipeline.run(stack)
+
+    text = json.dumps(common.make_json_safe(record))
+    assert "truncated" not in text
+    assert "bbox_tight" in text
