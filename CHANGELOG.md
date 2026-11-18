@@ -63,6 +63,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - After `align_frames` or `rolling_frame_align` with `mode="crop"`, the `border_mask` in the metadata kept the
   uncropped shape. With `mode="crop_square"` it had the right shape but covered the wrong region. The mask is now
   cropped with the same bounds as the frames. `rolling_frame_align` is now version 0.1.1 (#86).
+- A single NaN pixel broke frame alignment, with no error. `align_frames` shifted that frame by almost the whole
+  image, and `rolling_frame_align` returned a zero shift for every frame. This affected any data with missing pixels
+  and any stack aligned again after `mode="pad"`. NaN pixels are now ignored when finding shifts and kept in the
+  output, and a frame with no finite pixels raises `ValueError` (#91).
 
 ## [0.5.1] - 2026-11-13
 
