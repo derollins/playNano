@@ -1417,7 +1417,7 @@ def test_unpack_afmreader_two_item_tuple():
 
 
 def test_unpack_afmreader_three_item_tuple():
-    """load_asd in AFMReader 0.0.7 returns (image, pixel_to_nm, metadata)."""
+    """Test that load_asd in AFMReader 0.0.7 returns (image, pixel_to_nm, metadata)."""
     image = np.ones((4, 2, 3))
     _, px, meta = unpack_afmreader_result((image, 0.5, {"num_frames": 4}))
     assert px == 0.5
@@ -1425,7 +1425,7 @@ def test_unpack_afmreader_three_item_tuple():
 
 
 def test_unpack_afmreader_afmscan():
-    """AFMReader 0.0.8 returns an AFMScan; missing metadata becomes {}."""
+    """Test thatAFMReader 0.0.8 returns an AFMScan; missing metadata becomes {}."""
     image = np.ones((2, 3))
     out_image, px, meta = unpack_afmreader_result(_afmscan_like(image, 2.0))
     np.testing.assert_array_equal(out_image, image)
