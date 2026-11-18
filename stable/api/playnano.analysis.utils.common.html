@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.utils.common module - playnano v0.5.1 documentation</title>
+        <title>playnano.analysis.utils.common module - playnano v0.5.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -466,6 +466,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -512,6 +514,14 @@
           <section id="module-playnano.analysis.utils.common">
 <span id="playnano-analysis-utils-common-module"></span><h1>playnano.analysis.utils.common module<a class="headerlink" href="#module-playnano.analysis.utils.common" title="Link to this heading">¶</a></h1>
 <p>Common utility functions for analysis.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="playnano.analysis.utils.common.MAX_SANITIZE_DEPTH">
+<span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">MAX_SANITIZE_DEPTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">50</span></em><a class="headerlink" href="#playnano.analysis.utils.common.MAX_SANITIZE_DEPTH" title="Link to this definition">¶</a></dt>
+<dd><p>Nesting depth at which <a class="reference internal" href="#playnano.analysis.utils.common.sanitize_analysis_for_logging" title="playnano.analysis.utils.common.sanitize_analysis_for_logging"><code class="xref py py-func docutils literal notranslate"><span class="pre">sanitize_analysis_for_logging()</span></code></a> stops. Analysis
+results are far shallower than this; the limit only guards against runaway
+recursion.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.utils.common.NumpyEncoder">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">NumpyEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/analysis/utils/common.html#NumpyEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.common.NumpyEncoder" title="Link to this definition">¶</a></dt>
@@ -546,24 +556,39 @@ scalar. Otherwise, the superclass’s default method is used.</p>
 
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="playnano.analysis.utils.common.TYPE_ATTR">
+<span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">TYPE_ATTR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_playnano_type'</span></em><a class="headerlink" href="#playnano.analysis.utils.common.TYPE_ATTR" title="Link to this definition">¶</a></dt>
+<dd><p>HDF5 attribute recording what Python type each group was written from, so
+<a class="reference internal" href="#playnano.analysis.utils.common.load_analysis_from_hdf5" title="playnano.analysis.utils.common.load_analysis_from_hdf5"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_analysis_from_hdf5()</span></code></a> can rebuild it exactly.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.common.export_to_hdf5">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">export_to_hdf5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.15)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'analysis_record'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/common.html#export_to_hdf5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.common.export_to_hdf5" title="Link to this definition">¶</a></dt>
 <dd><p>Save a nested dict/list/array structure to HDF5 with full breakdown.</p>
 <ul class="simple">
-<li><p>Dicts become groups.</p></li>
-<li><p>Lists of primitives become datasets.</p></li>
-<li><p>Lists of complex objects become subgroups item_0, item_1, etc.</p></li>
-<li><p>NumPy arrays become datasets.</p></li>
+<li><p>Dicts become groups, one subgroup per key. Keys are stored as strings.</p></li>
+<li><p>Lists of numbers, or of strings, become a <code class="docutils literal notranslate"><span class="pre">values</span></code> dataset.</p></li>
+<li><p>Other lists become subgroups <code class="docutils literal notranslate"><span class="pre">item_0</span></code>, <code class="docutils literal notranslate"><span class="pre">item_1</span></code>, etc.</p></li>
+<li><p>NumPy arrays become a <code class="docutils literal notranslate"><span class="pre">values</span></code> dataset with their original dtype.</p></li>
+<li><p>Scalars and strings are stored in a <code class="docutils literal notranslate"><span class="pre">value</span></code> attribute.</p></li>
 </ul>
+<p>Each group also records the type it came from (attribute <code class="docutils literal notranslate"><span class="pre">_playnano_type</span></code>),
+so <a class="reference internal" href="#playnano.analysis.utils.common.load_analysis_from_hdf5" title="playnano.analysis.utils.common.load_analysis_from_hdf5"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_analysis_from_hdf5()</span></code></a> returns the same structure: <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+empty dicts, float lists and keys named <code class="docutils literal notranslate"><span class="pre">values</span></code> all survive the round trip.
+Tuples and sets are stored as lists.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.common.load_analysis_from_hdf5">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">load_analysis_from_hdf5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'analysis_record'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/common.html#load_analysis_from_hdf5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.common.load_analysis_from_hdf5" title="Link to this definition">¶</a></dt>
 <dd><p>Load a nested dict/list/NumPy array structure from an HDF5 file.</p>
-<p>This exactly reverses <cite>export_to_hdf5</cite>. Automatically converts integer-valued
-NumPy floats to Python ints recursively for use as list indices.</p>
+<p>This reverses <cite>export_to_hdf5</cite>. Files written by this version record the type
+of every value, so dicts, lists, arrays, <code class="docutils literal notranslate"><span class="pre">None</span></code> and scalars come back as they
+were saved. Files written by earlier versions have no type records; for those,
+integer-valued floats are converted to Python ints (for use as list indices),
+and <code class="docutils literal notranslate"><span class="pre">None</span></code> and empty dicts cannot be told apart from other values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -620,8 +645,32 @@ that they contain only numbers, strings, lists, and dicts.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.common.sanitize_analysis_for_logging">
-<span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">sanitize_analysis_for_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'root'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/analysis/utils/common.html#sanitize_analysis_for_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.common.sanitize_analysis_for_logging" title="Link to this definition">¶</a></dt>
-<dd><p>Return a JSON-safe version of any object, printing any functions it finds.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.common.</span></span><span class="sig-name descname"><span class="pre">sanitize_analysis_for_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'root'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/analysis/utils/common.html#sanitize_analysis_for_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.common.sanitize_analysis_for_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Return a JSON-safe version of any object, for the analysis JSON output.</p>
+<p>Dicts, lists, tuples and sets are converted recursively. NumPy arrays are
+replaced by a summary (shape, dtype, min, max, mean), functions by a
+placeholder string, and NumPy scalars by Python scalars. Numbers and
+strings are always kept, however deeply nested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<em>Any</em>) – The object to convert.</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Location of <code class="docutils literal notranslate"><span class="pre">obj</span></code> in the record, used in log messages.</p></li>
+<li><p><strong>_depth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Internal recursion counters. A container nested deeper than
+<code class="docutils literal notranslate"><span class="pre">_max_depth</span></code> is replaced by a placeholder string and a warning is
+logged.</p></li>
+<li><p><strong>_max_depth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Internal recursion counters. A container nested deeper than
+<code class="docutils literal notranslate"><span class="pre">_max_depth</span></code> is replaced by a placeholder string and a warning is
+logged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A structure of dicts, lists, numbers, strings, booleans and None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -682,10 +731,12 @@ that they contain only numbers, strings, lists, and dicts.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">playnano.analysis.utils.common module</a><ul>
+<li><a class="reference internal" href="#playnano.analysis.utils.common.MAX_SANITIZE_DEPTH"><code class="docutils literal notranslate"><span class="pre">MAX_SANITIZE_DEPTH</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.utils.common.NumpyEncoder"><code class="docutils literal notranslate"><span class="pre">NumpyEncoder</span></code></a><ul>
 <li><a class="reference internal" href="#playnano.analysis.utils.common.NumpyEncoder.default"><code class="docutils literal notranslate"><span class="pre">NumpyEncoder.default()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#playnano.analysis.utils.common.TYPE_ATTR"><code class="docutils literal notranslate"><span class="pre">TYPE_ATTR</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.utils.common.export_to_hdf5"><code class="docutils literal notranslate"><span class="pre">export_to_hdf5()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.utils.common.load_analysis_from_hdf5"><code class="docutils literal notranslate"><span class="pre">load_analysis_from_hdf5()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.utils.common.make_json_safe"><code class="docutils literal notranslate"><span class="pre">make_json_safe()</span></code></a></li>
@@ -702,7 +753,7 @@ that they contain only numbers, strings, lists, and dicts.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=421b0634"></script>
+</div><script src="../_static/documentation_options.js?v=75e38c5e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

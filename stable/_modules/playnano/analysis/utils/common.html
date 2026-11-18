@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.utils.common - playnano v0.5.1 documentation</title>
+        <title>playnano.analysis.utils.common - playnano v0.5.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.1 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -577,6 +579,11 @@
 
 
 
+<span class="c1">#: HDF5 attribute recording what Python type each group was written from, so</span>
+<span class="c1">#: :func:`load_analysis_from_hdf5` can rebuild it exactly.</span>
+<span class="n">TYPE_ATTR</span> <span class="o">=</span> <span class="s2">"_playnano_type"</span>
+
+
 <div class="viewcode-block" id="export_to_hdf5">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.export_to_hdf5">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">export_to_hdf5</span><span class="p">(</span>
@@ -585,46 +592,155 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save a nested dict/list/array structure to HDF5 with full breakdown.</span>
 
-<span class="sd">    - Dicts become groups.</span>
-<span class="sd">    - Lists of primitives become datasets.</span>
-<span class="sd">    - Lists of complex objects become subgroups item_0, item_1, etc.</span>
-<span class="sd">    - NumPy arrays become datasets.</span>
+<span class="sd">    - Dicts become groups, one subgroup per key. Keys are stored as strings.</span>
+<span class="sd">    - Lists of numbers, or of strings, become a ``values`` dataset.</span>
+<span class="sd">    - Other lists become subgroups ``item_0``, ``item_1``, etc.</span>
+<span class="sd">    - NumPy arrays become a ``values`` dataset with their original dtype.</span>
+<span class="sd">    - Scalars and strings are stored in a ``value`` attribute.</span>
+
+<span class="sd">    Each group also records the type it came from (attribute ``_playnano_type``),</span>
+<span class="sd">    so :func:`load_analysis_from_hdf5` returns the same structure: ``None``,</span>
+<span class="sd">    empty dicts, float lists and keys named ``values`` all survive the round trip.</span>
+<span class="sd">    Tuples and sets are stored as lists.</span>
 <span class="sd">    """</span>
+    <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
     <span class="n">out_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">str_dtype</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_number</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
+        <span class="p">)</span>
+
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"dict"</span>
                 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)),</span> <span class="n">value</span><span class="p">)</span>
 
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"list"</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"empty"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">[])</span>
-                <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
-                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="n">is_number</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
+                    <span class="c1"># np.asarray keeps ints as ints and floats as floats.</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">):</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+                        <span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_dtype</span>
+                    <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
                         <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="sa">f</span><span class="s2">"item_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span> <span class="n">item</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"U"</span><span class="p">,</span> <span class="s2">"O"</span><span class="p">):</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"str_array"</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+                        <span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_dtype</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"array"</span>
                     <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                    <span class="n">dt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">string_dtype</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span>
-                    <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"none"</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"scalar"</span>
                 <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                     <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                    <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">TYPE_ATTR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"str"</span>
 
         <span class="n">recurse</span><span class="p">(</span><span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">),</span> <span class="n">record</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sorted_items</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the ``item_N`` children of a group in index order."""</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_load_group</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Rebuild the value stored in an HDF5 group by :func:`export_to_hdf5`."""</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">TYPE_ATTR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_load_legacy_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_load_typed_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_typed_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Rebuild a value from a group that records its type."""</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"dict"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">_load_group</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"list"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"values"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">check_string_dtype</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">asstr</span><span class="p">()[()])</span>
+            <span class="k">return</span> <span class="n">ds</span><span class="p">[()]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">"empty"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">_sorted_items</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"array"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">][()]</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"str_array"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]</span><span class="o">.</span><span class="n">asstr</span><span class="p">()[()],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"str"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">])</span>
+    <span class="c1"># "scalar"</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_whole_float_to_int</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return ``int(val)`` for integer-valued NumPy numbers, else ``val``."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">val</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_legacy_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Rebuild a value from a group written before type records were added.</span>
+
+<span class="sd">    The type is inferred from the layout, and integer-valued floats are converted</span>
+<span class="sd">    to ints, as earlier versions did.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="s2">"values"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">][()]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"S"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="k">return</span> <span class="n">_whole_float_to_int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">if</span> <span class="s2">"empty"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="s2">"value"</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">_whole_float_to_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"item_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_sorted_items</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">_load_group</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="load_analysis_from_hdf5">
@@ -635,8 +751,11 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load a nested dict/list/NumPy array structure from an HDF5 file.</span>
 
-<span class="sd">    This exactly reverses `export_to_hdf5`. Automatically converts integer-valued</span>
-<span class="sd">    NumPy floats to Python ints recursively for use as list indices.</span>
+<span class="sd">    This reverses `export_to_hdf5`. Files written by this version record the type</span>
+<span class="sd">    of every value, so dicts, lists, arrays, ``None`` and scalars come back as they</span>
+<span class="sd">    were saved. Files written by earlier versions have no type records; for those,</span>
+<span class="sd">    integer-valued floats are converted to Python ints (for use as list indices),</span>
+<span class="sd">    and ``None`` and empty dicts cannot be told apart from other values.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -664,62 +783,57 @@
 <span class="sd">        If `dataset_name` is not found in the HDF5 file.</span>
 <span class="sd">    """</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Recursively reconstruct dict/list/array from an HDF5 group."""</span>
-        <span class="k">if</span> <span class="s2">"values"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s2">"values"</span><span class="p">][()]</span>
-            <span class="c1"># Convert bytes to str if needed</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"S"</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-
-            <span class="c1"># Scalar array</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="k">return</span> <span class="p">(</span>
-                    <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span>
-                    <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">()</span>
-                    <span class="k">else</span> <span class="n">val</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Full array: convert integer-valued floats to int</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">data</span>
-
-        <span class="k">if</span> <span class="s2">"empty"</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[]</span>
-
-        <span class="k">if</span> <span class="s2">"value"</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">()</span>
-                <span class="k">else</span> <span class="n">val</span>
-            <span class="p">)</span>
-
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"item_"</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
-            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="p">]</span>
-            <span class="k">return</span> <span class="n">items</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">recurse</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">}</span>
-
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">dataset_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset '</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">' not found in HDF5 file."</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">recurse</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="n">_load_group</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">])</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_json_safe_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a dict key to a type JSON accepts (str, int, float, bool or None)."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">key</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="c1">#: Nesting depth at which :func:`sanitize_analysis_for_logging` stops. Analysis</span>
+<span class="c1">#: results are far shallower than this; the limit only guards against runaway</span>
+<span class="c1">#: recursion.</span>
+<span class="n">MAX_SANITIZE_DEPTH</span> <span class="o">=</span> <span class="mi">50</span>
 
 
 <div class="viewcode-block" id="sanitize_analysis_for_logging">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.common.html#playnano.analysis.utils.common.sanitize_analysis_for_logging">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">sanitize_analysis_for_logging</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"root"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Return a JSON-safe version of any object, printing any functions it finds."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sanitize_analysis_for_logging</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">"root"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">MAX_SANITIZE_DEPTH</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a JSON-safe version of any object, for the analysis JSON output.</span>
+
+<span class="sd">    Dicts, lists, tuples and sets are converted recursively. NumPy arrays are</span>
+<span class="sd">    replaced by a summary (shape, dtype, min, max, mean), functions by a</span>
+<span class="sd">    placeholder string, and NumPy scalars by Python scalars. Numbers and</span>
+<span class="sd">    strings are always kept, however deeply nested.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : Any</span>
+<span class="sd">        The object to convert.</span>
+<span class="sd">    path : str, optional</span>
+<span class="sd">        Location of ``obj`` in the record, used in log messages.</span>
+<span class="sd">    _depth, _max_depth : int</span>
+<span class="sd">        Internal recursion counters. A container nested deeper than</span>
+<span class="sd">        ``_max_depth`` is replaced by a placeholder string and a warning is</span>
+<span class="sd">        logged.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Any</span>
+<span class="sd">        A structure of dicts, lists, numbers, strings, booleans and None.</span>
+<span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
     <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -728,12 +842,19 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;function </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">'__name__'</span><span class="p">,</span><span class="w"> </span><span class="s1">'anonymous'</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span>
 
-    <span class="k">if</span> <span class="n">_depth</span> <span class="o">&gt;</span> <span class="n">_max_depth</span><span class="p">:</span>
+    <span class="c1"># Only containers count towards the depth limit; scalars are always kept.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">))</span> <span class="ow">and</span> <span class="n">_depth</span> <span class="o">&gt;</span> <span class="n">_max_depth</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"Analysis output at </span><span class="si">%s</span><span class="s2"> is nested more than </span><span class="si">%d</span><span class="s2"> levels deep; "</span>
+            <span class="s2">"it is replaced by a placeholder in the JSON."</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">_max_depth</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;... truncated depth </span><span class="si">{</span><span class="n">_depth</span><span class="si">}</span><span class="s2"> ...&gt;"</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="n">k</span><span class="p">:</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span>
+            <span class="n">_json_safe_key</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">sanitize_analysis_for_logging</span><span class="p">(</span>
                 <span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">_depth</span><span class="o">=</span><span class="n">_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_max_depth</span><span class="o">=</span><span class="n">_max_depth</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -827,7 +948,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=421b0634"></script>
+</div><script src="../../../../_static/documentation_options.js?v=75e38c5e"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

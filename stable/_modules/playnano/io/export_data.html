@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.export_data - playnano v0.5.1 documentation</title>
+        <title>playnano.io.export_data - playnano v0.5.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -465,6 +465,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.2.2.html">What’s New in <em>playNano</em> 0.2.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.3.0.html">What’s New in <em>playNano</em> 0.3.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 </ul>
 </li>
 </ul>
@@ -525,7 +527,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
@@ -534,6 +535,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ensure_not_input_path</span><span class="p">,</span>
     <span class="n">make_json_safe</span><span class="p">,</span>
     <span class="n">prepare_output_directory</span><span class="p">,</span>
     <span class="n">sanitize_output_name</span><span class="p">,</span>
@@ -940,14 +942,18 @@
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
-<span class="sd">    SystemExit</span>
-<span class="sd">        If an unsupported format string is provided.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If an unsupported format string is provided, or if an output file would</span>
+<span class="sd">        overwrite the file the stack was loaded from. Nothing is written in</span>
+<span class="sd">        either case.</span>
 <span class="sd">    """</span>
     <span class="n">valid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"tif"</span><span class="p">,</span> <span class="s2">"npz"</span><span class="p">,</span> <span class="s2">"h5"</span><span class="p">}</span>
     <span class="n">bad</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">formats</span><span class="p">)</span> <span class="o">-</span> <span class="n">valid</span>
     <span class="k">if</span> <span class="n">bad</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported format(s): </span><span class="si">{</span><span class="n">bad</span><span class="si">}</span><span class="s2">. Choose from </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unsupported export format(s): </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">bad</span><span class="p">))</span><span class="si">}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Choose from </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">valid</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
 
     <span class="n">output_folder</span> <span class="o">=</span> <span class="n">prepare_output_directory</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"output"</span><span class="p">)</span>
     <span class="n">output_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -960,12 +966,20 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">raw</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">k</span> <span class="o">!=</span> <span class="s2">"raw"</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">):</span>
         <span class="n">stem</span> <span class="o">+=</span> <span class="s2">"_filtered"</span>
 
+    <span class="n">out_paths</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"tif"</span><span class="p">:</span> <span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.ome.tif"</span><span class="p">,</span>
+        <span class="s2">"npz"</span><span class="p">:</span> <span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.npz"</span><span class="p">,</span>
+        <span class="s2">"h5"</span><span class="p">:</span> <span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.h5"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="n">ensure_not_input_path</span><span class="p">(</span><span class="n">out_paths</span><span class="p">[</span><span class="n">fmt</span><span class="p">],</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">file_path</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="s2">"tif"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.ome.tif"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+        <span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">out_paths</span><span class="p">[</span><span class="s2">"tif"</span><span class="p">],</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">"npz"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.npz"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+        <span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">out_paths</span><span class="p">[</span><span class="s2">"npz"</span><span class="p">],</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">"h5"</span> <span class="ow">in</span> <span class="n">formats</span><span class="p">:</span>
-        <span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">.h5"</span><span class="p">,</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span></div>
+        <span class="n">save_h5_bundle</span><span class="p">(</span><span class="n">out_paths</span><span class="p">[</span><span class="s2">"h5"</span><span class="p">],</span> <span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span></div>
 
 </pre></div>
         </article>
@@ -999,7 +1013,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=421b0634"></script>
+</div><script src="../../../_static/documentation_options.js?v=75e38c5e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
