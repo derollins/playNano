@@ -52,7 +52,7 @@ Example output:
 
 .. code-block:: text
 
-   playnano 0.5.1
+   playnano 0.5.2
 
 This is useful for debugging, reporting issues, and reproducibility.
 

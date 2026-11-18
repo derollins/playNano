@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-18
+
+This release restores loading of `.asd` files and `.jpk`/`.spm` folders with AFMReader 0.0.8 and fixes silent errors in
+frame alignment and analysis export. `playnano analyze` now writes to `./output` by default and `playnano gui` is removed.
+
 ### Changed
 
 - `playnano analyze` and the wizard's analysis export now write to `./output` when no `--output-folder` is given, as
@@ -640,7 +645,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.21...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -652,3 +657,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
 [0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
+[0.5.2]: https://github.com/derollins/playNano/releases/tag/v0.5.2
