@@ -1,0 +1,32 @@
+
+# What's New in *playNano* 0.2.2
+
+**Release date:** 2025-11-07
+
+This release includes several important bug fixes and improvements to data handling and visualization.
+
+## Fixed
+
+- GIF Export Normalization: Resolved a RuntimeWarning caused by invalid value casting during Z-scaling. The
+  normalization step now safely handles NaN, inf, and out-of-range values.
+- Feature Flattening Centroid Mapping: Corrected centroid_x and centroid_y assignment from (row, col) to (x, y)
+  format, ensuring accurate coordinate mapping for plotting and analysis.
+- Clear Step Data Corruption: Fixed a bug where the clear processing step unintentionally replaced stack.data with
+  an uninitialized array, leading to corrupted Z-values. It now correctly clears only the mask.
+
+## Changed
+
+- Normalization logic in GIF export now uses np.nan_to_num and np.clip to ensure all values are within the valid
+  range before casting to np.uint8.
+- Centroid assignment updated to:
+  - `centroid_x = centroid[1] (column -> x)`
+  - `centroid_y = centroid[0] (row -> y)`
+
+## Added
+
+- Safe normalization logic in create_gif_with_scale_and_timestamp for robust GIF frame generation.
+- Pytest coverage for:
+  - Centroid coordinate mapping
+  - Autodetection of object key (tracks vs clusters)
+  - Handling of out-of-range indices
+  - Column presence
