@@ -461,3 +461,19 @@ def test_main_no_command(monkeypatch, capsys):
     assert e.value.code == 0
     captured = capsys.readouterr()
     assert "usage:" in captured.err
+
+
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("exp_1.5nM_protein", "exp_1.5nM_protein"),
+        ("run.v2", "run.v2"),
+        ("exp_1.5nM.gif", "exp_1.5nM"),
+        ("exp_1.5nM.ome.tif", "exp_1.5nM"),
+        ("stack.H5", "stack"),
+        (".gif", "default"),
+    ],
+)
+def test_sanitize_output_name_keeps_dots(name, expected):
+    """Only known file extensions are removed; other dots stay in the name."""
+    assert sanitize_output_name(name, "default") == expected

@@ -24,6 +24,30 @@ FRAME_METADATA_KEYS = (
 
 HEIGHT_UNITS = ["m", "cm", "mm", "um", "nm", "pm"]
 
+#: File extensions removed from user-supplied output names. Anything else after a
+#: dot is kept, so names such as ``exp_1.5nM`` or ``run.v2`` stay intact.
+OUTPUT_EXTENSIONS = (
+    ".ome.tiff",
+    ".ome.tif",
+    ".tiff",
+    ".tif",
+    ".h5",
+    ".hdf5",
+    ".npz",
+    ".json",
+    ".gif",
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".mkv",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".csv",
+    ".yaml",
+    ".yml",
+)
+
 # --- FRAME METADATA ------------------------------------------------
 
 
@@ -283,7 +307,10 @@ def compute_zscale_range(
 
 def sanitize_output_name(name: str, default: str) -> str:
     """
-    Sanitize output file names by removing extensions and stripping whitespace.
+    Sanitize output file names by removing a file extension and stripping whitespace.
+
+    Only known output extensions (see ``OUTPUT_EXTENSIONS``) are removed, so dots
+    elsewhere in the name are kept: ``"exp_1.5nM.gif"`` becomes ``"exp_1.5nM"``.
 
     Parameters
     ----------
@@ -299,11 +326,14 @@ def sanitize_output_name(name: str, default: str) -> str:
     """
     if not name:
         return default
+    name = Path(name.strip()).name
+    lower = name.lower()
+    for ext in OUTPUT_EXTENSIONS:
+        if lower.endswith(ext):
+            name = name[: -len(ext)]
+            break
     name = name.strip()
-    # Remove extension if any
-    try:
-        name = Path(name).with_suffix("").name
-    except ValueError:
+    if not name:
         return default
 
     if any(c in name for c in INVALID_CHARS):
@@ -351,7 +381,53 @@ def prepare_output_directory(folder: str | None, default: str = "output") -> Pat
     return folder_path
 
 
+def ensure_not_input_path(
+    output_path: str | Path, input_path: str | Path | None
+) -> None:
+    """
+    Raise an error if writing to ``output_path`` would overwrite the input file.
+
+    Parameters
+    ----------
+    output_path : str or Path
+        File that is about to be written.
+    input_path : str, Path or None
+        File or folder the data was loaded from. If None, nothing is checked.
+
+    Raises
+    ------
+    ValueError
+        If ``output_path`` and ``input_path`` refer to the same file.
+    """
+    if input_path is None:
+        return
+    out = Path(output_path)
+    inp = Path(input_path)
+    same = out.resolve() == inp.resolve()
+    if not same:
+        # Catches the same file reached by a different path, such as a different
+        # letter case on Windows or macOS, or a link. Fails if either is missing.
+        try:
+            same = out.samefile(inp)
+        except OSError:
+            same = False
+    if same:
+        raise ValueError(
+            f"Refusing to overwrite the input file {inp}. Choose a different "
+            "--output-folder or --output-name."
+        )
+
+
 # --- SERIALIZATION AND TYPE CONVERSION ------------------------------------------------
+
+
+def _json_safe_key(key):
+    """Convert a dict key to a type JSON accepts (str, int, float, bool or None)."""
+    if isinstance(key, np.generic):
+        key = key.item()
+    if key is None or isinstance(key, (str, int, float, bool)):
+        return key
+    return str(key)
 
 
 def make_json_safe(obj):
@@ -363,7 +439,7 @@ def make_json_safe(obj):
     elif isinstance(obj, (np.floating, np.float32, np.float64)):
         return float(obj)
     elif isinstance(obj, dict):
-        return {k: make_json_safe(v) for k, v in obj.items()}
+        return {_json_safe_key(k): make_json_safe(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [make_json_safe(v) for v in obj]
     elif isinstance(obj, tuple):

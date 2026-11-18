@@ -15,6 +15,7 @@ import tifffile
 from AFMReader.jpk import load_jpk
 
 from playnano.afm_stack import AFMImageStack
+from playnano.io.formats._afmreader import unpack_afmreader_result
 from playnano.utils.io_utils import build_frame_metadata
 
 logger = logging.getLogger(__name__)
@@ -221,7 +222,9 @@ def load_jpk_folder(
     logger.info(f"Found {len(jpk_files)} .jpk files.")
 
     # Load first image to get shape, pixel size and scan rate
-    first_img, first_pixel_size_nm = load_jpk(jpk_files[0], channel)
+    first_img, first_pixel_size_nm, _ = unpack_afmreader_result(
+        load_jpk(jpk_files[0], channel)
+    )
 
     height_px, width_px = first_img.shape
     dtype = first_img.dtype
@@ -248,7 +251,7 @@ def load_jpk_folder(
     # Load all images
     for i, fpath in enumerate(jpk_files):
         logger.debug(f"Loading {fpath.name}")
-        img, px_size_nm = load_jpk(fpath, channel)
+        img, px_size_nm, _ = unpack_afmreader_result(load_jpk(fpath, channel))
         if img.shape != (height_px, width_px):
             raise ValueError(f"Inconsistent image shape in {fpath}")
         if flip_image:

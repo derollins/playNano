@@ -30,7 +30,7 @@ from playnano.utils.versioning import versioned_filter
 # -----------------------------------------------------------------------------#
 
 
-@versioned_filter("0.1.0")
+@versioned_filter("0.2.0")
 def align_frames(
     stack: np.ndarray,
     reference_frame: int = 0,
@@ -106,9 +106,13 @@ def align_frames(
         If ``method`` is not one of {"fft_cross_correlation", "full_cross_correlation"}.
     ValueError
         If ``reference_frame`` is not in the range [0, n_frames-1].
+    ValueError
+        If a frame has no finite pixels.
 
     Notes
     -----
+    - NaN and infinite pixels are ignored when finding shifts (they are filled
+      with the frame mean for the correlation only) and are kept in the output.
     - Using ``fft_cross_correlation`` reduces memory usage compared to full
     cross-correlation because it leverages the FFT algorithm and avoids creating
     large full correlation matrices.
@@ -144,12 +148,11 @@ def align_frames(
             f"reference_frame must be in [0, {n_frames-1}], got {reference_frame}"
         )
 
+    # NaN-free (and optionally smoothed) frames, used only to find the shifts
+    corr_stack, _ = _prepare_correlation_frames(stack, pre_filter_sigma)
+
     # Preprocess reference frame
-    ref = stack[reference_frame]
-    if pre_filter_sigma is not None:
-        ref = gaussian_filter(ref, sigma=pre_filter_sigma)
-    ref0 = ref.copy()
-    ref0 -= np.mean(ref0)
+    ref0 = corr_stack[reference_frame] - np.mean(corr_stack[reference_frame])
 
     shifts = np.zeros((n_frames, 2), dtype=int)
 
@@ -157,9 +160,7 @@ def align_frames(
         if i == reference_frame:
             continue
 
-        frame = stack[i]
-        if pre_filter_sigma is not None:
-            frame = gaussian_filter(frame, sigma=pre_filter_sigma)
+        frame = corr_stack[i]
 
         # Compute shift
         if method == "fft_cross_correlation":
@@ -168,8 +169,11 @@ def align_frames(
             cc = fftconvolve(frame0[::-1, ::-1], ref0, mode="full")
             y_center, x_center = H - 1, W - 1
         elif method == "full_cross_correlation":
+            # Subtract each frame's mean, as the FFT branch does. Otherwise any
+            # height offset makes the zero-shift position the strongest match.
+            frame0 = frame - np.mean(frame)
             cc = correlate2d(
-                ref, frame, mode="full", boundary="fill", fillvalue=0
+                ref0, frame0, mode="full", boundary="fill", fillvalue=0
             ).astype(np.float32)
             y_center, x_center = H - 1, W - 1
         else:
@@ -242,17 +246,11 @@ def align_frames(
     if mode == "crop":
         aligned_stack, crop_meta = intersection_crop(aligned_stack)
         metadata["crop"] = crop_meta
-        if "bounds" in crop_meta:
-            y_min, y_max, x_min, x_max = crop_meta["bounds"]
-            border_mask = border_mask[y_min : y_max + 1, x_min : x_max + 1]
-            metadata["border_mask"] = border_mask
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode == "crop_square":
         aligned_stack, crop_meta = crop_square(aligned_stack)
         metadata["crop"] = crop_meta
-        H_sq, W_sq = aligned_stack.shape[1:]
-        r_start, c_start = crop_meta["offset"]
-        border_mask = border_mask[r_start : r_start + H_sq, c_start : c_start + W_sq]
-        metadata["border_mask"] = border_mask
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode != "pad":
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -262,7 +260,7 @@ def align_frames(
     return aligned_stack, metadata
 
 
-@versioned_filter("0.1.0")
+@versioned_filter("0.1.1")
 def rolling_frame_align(
     stack: np.ndarray,
     window: int = 5,
@@ -346,11 +344,14 @@ def rolling_frame_align(
         If ``stack.ndim`` is not 3.
     ValueError
         If ``window`` < 1.
+    ValueError
+        If a frame has no finite pixels.
 
     Notes
     -----
     - The rolling reference is computed using the last `window` aligned frames,
-      ignoring NaN pixels.
+      ignoring NaN pixels. NaN pixels in the moving frame are masked out of the
+      correlation and kept in the output.
     - Shifts are integer-valued; no subpixel interpolation is performed.
     - Padding ensures all frames fit without clipping, but increases memory usage.
     - Internally, a deque ``aligned_refs`` tracks which patches of which frames
@@ -391,13 +392,9 @@ def rolling_frame_align(
     margin = max_shift if max_shift is not None else max(H, W) // 2
     canvas_H, canvas_W = H + 2 * margin, W + 2 * margin
 
-    # Pre-filter stack once if needed
-    if pre_filter_sigma is not None:
-        filtered_stack = np.empty_like(stack)
-        for i in range(n_frames):
-            filtered_stack[i] = gaussian_filter(stack[i], sigma=pre_filter_sigma)
-    else:
-        filtered_stack = stack
+    # NaN-free (and optionally smoothed) frames for correlation, plus a mask of
+    # the finite input pixels. Only finite pixels enter the rolling reference.
+    filtered_stack, valid = _prepare_correlation_frames(stack, pre_filter_sigma)
 
     rolling_sum = np.zeros((canvas_H, canvas_W), dtype=np.float32)
     rolling_count = np.zeros((canvas_H, canvas_W), dtype=np.uint32)
@@ -409,8 +406,10 @@ def rolling_frame_align(
     center_y, center_x = margin, margin
     y_end, x_end = center_y + H, center_x + W
 
-    rolling_sum[center_y:y_end, center_x:x_end] += filtered_stack[0]
-    rolling_count[center_y:y_end, center_x:x_end] += 1
+    rolling_sum[center_y:y_end, center_x:x_end] += np.where(
+        valid[0], filtered_stack[0], 0
+    )
+    rolling_count[center_y:y_end, center_x:x_end] += valid[0]
 
     # Store a full record (frame_idx + padded box + frame box)
     aligned_refs.append(
@@ -441,7 +440,7 @@ def rolling_frame_align(
             frame_corr,
             upsample_factor=1,
             reference_mask=ref_mask_bool,
-            moving_mask=np.ones_like(frame_corr, dtype=bool),
+            moving_mask=valid[i],
         )
         dy, dx = shift.astype(int)
 
@@ -478,10 +477,11 @@ def rolling_frame_align(
             continue  # skip empty patch
 
         patch = frame_corr[fy0:fy1, fx0:fx1]
+        patch_valid = valid[i, fy0:fy1, fx0:fx1]
 
-        # Update rolling accumulators
-        rolling_sum[y0c:y1c, x0c:x1c] += patch
-        rolling_count[y0c:y1c, x0c:x1c] += 1
+        # Update rolling accumulators (finite input pixels only)
+        rolling_sum[y0c:y1c, x0c:x1c] += np.where(patch_valid, patch, 0)
+        rolling_count[y0c:y1c, x0c:x1c] += patch_valid
         # store frame index & frame coords
         aligned_refs.append((i, y0c, y1c, x0c, x1c, fy0, fy1, fx0, fx1))
 
@@ -499,8 +499,11 @@ def rolling_frame_align(
                 old_fx1,
             ) = aligned_refs.popleft()
             old_patch = filtered_stack[frame_idx, old_fy0:old_fy1, old_fx0:old_fx1]
-            rolling_sum[old_y0:old_y1, old_x0:old_x1] -= old_patch
-            rolling_count[old_y0:old_y1, old_x0:old_x1] -= 1
+            old_valid = valid[frame_idx, old_fy0:old_fy1, old_fx0:old_fx1]
+            rolling_sum[old_y0:old_y1, old_x0:old_x1] -= np.where(
+                old_valid, old_patch, 0
+            )
+            rolling_count[old_y0:old_y1, old_x0:old_x1] -= old_valid
 
     # Compute final canvas
     min_dy, max_dy = shifts[:, 0].min(), shifts[:, 0].max()
@@ -534,19 +537,11 @@ def rolling_frame_align(
     if mode == "crop":
         aligned_stack, crop_meta = intersection_crop(aligned_stack)
         metadata["crop"] = crop_meta
-        if "bounds" in crop_meta:
-            y_min, y_max, x_min, x_max = crop_meta["bounds"]
-            metadata["border_mask"] = metadata["border_mask"][
-                y_min : y_max + 1, x_min : x_max + 1
-            ]
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode == "crop_square":
         aligned_stack, crop_meta = crop_square(aligned_stack)
         metadata["crop"] = crop_meta
-        H_sq, W_sq = aligned_stack.shape[1:]
-        r_start, c_start = crop_meta["offset"]
-        metadata["border_mask"] = metadata["border_mask"][
-            r_start : r_start + H_sq, c_start : c_start + W_sq
-        ]
+        metadata["border_mask"] = _crop_border_mask(border_mask, crop_meta)
     elif mode != "pad":
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -583,6 +578,82 @@ def _normalize_pad(pad):
         if len(pad) == 4:
             return tuple(pad)
     raise ValueError("pad must be int, (v, h), or (top, bottom, left, right)")
+
+
+def _prepare_correlation_frames(
+    stack: np.ndarray, pre_filter_sigma: Optional[float] = None
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Make NaN-free frames for finding alignment shifts.
+
+    A single NaN makes a whole cross-correlation NaN, so non-finite pixels are
+    replaced by the mean of the frame's finite pixels. The optional Gaussian
+    pre-filter runs after this, so it cannot spread NaN. The result is used
+    only to find shifts; aligned output still uses the original data.
+
+    Parameters
+    ----------
+    stack : ndarray, shape (n_frames, height, width)
+        Input frames.
+    pre_filter_sigma : float, optional
+        Standard deviation of the Gaussian filter to apply to each frame.
+
+    Returns
+    -------
+    frames : ndarray, shape (n_frames, height, width)
+        Frames with no NaN or infinite values. This is ``stack`` itself when
+        there is nothing to fill or filter.
+    valid : ndarray of bool, shape (n_frames, height, width)
+        True where the input pixel was finite.
+
+    Raises
+    ------
+    ValueError
+        If a frame has no finite pixels.
+    """
+    valid = np.isfinite(stack)
+    all_valid = valid.all(axis=(1, 2))
+    if all_valid.all() and pre_filter_sigma is None:
+        return stack, valid
+
+    frames = stack.copy()
+    for i in range(stack.shape[0]):
+        if not all_valid[i]:
+            if not valid[i].any():
+                raise ValueError(
+                    f"Frame {i} has no finite pixels, so it cannot be aligned."
+                )
+            frames[i][~valid[i]] = frames[i][valid[i]].mean()
+        if pre_filter_sigma is not None:
+            frames[i] = gaussian_filter(frames[i], sigma=pre_filter_sigma)
+    return frames, valid
+
+
+def _crop_border_mask(border_mask: np.ndarray, crop_meta: dict) -> np.ndarray:
+    """
+    Crop an alignment ``border_mask`` to match a cropped stack.
+
+    Parameters
+    ----------
+    border_mask : ndarray of bool, shape (height, width)
+        Mask on the full aligned canvas.
+    crop_meta : dict
+        Metadata from :func:`intersection_crop` or :func:`crop_square`. Its
+        ``requested_bounds`` are the exclusive-end bounds the stack was cut to.
+
+    Returns
+    -------
+    ndarray of bool
+        Mask with the same height and width as the cropped stack. Area added by
+        padding beyond the canvas is False. If nothing was cropped, the mask is
+        returned unchanged.
+    """
+    bounds = crop_meta.get("requested_bounds")
+    if bounds is None:
+        return border_mask
+    y0, y1, x0, x1 = (int(b) for b in bounds)
+    cropped, _ = _crop_with_pad(border_mask[np.newaxis], y0, y1, x0, x1, False)
+    return cropped[0]
 
 
 def _crop_with_pad(stack, y0, y1, x0, x1, pad_value=np.nan):

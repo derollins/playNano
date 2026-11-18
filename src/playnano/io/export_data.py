@@ -20,7 +20,6 @@ from __future__ import annotations
 import copy
 import json
 import logging
-import sys
 from pathlib import Path
 
 import h5py
@@ -29,6 +28,7 @@ import tifffile
 
 from playnano.afm_stack import AFMImageStack
 from playnano.utils.io_utils import (
+    ensure_not_input_path,
     make_json_safe,
     prepare_output_directory,
     sanitize_output_name,
@@ -421,14 +421,18 @@ def export_bundles(
 
     Raises
     ------
-    SystemExit
-        If an unsupported format string is provided.
+    ValueError
+        If an unsupported format string is provided, or if an output file would
+        overwrite the file the stack was loaded from. Nothing is written in
+        either case.
     """
     valid = {"tif", "npz", "h5"}
     bad = set(formats) - valid
     if bad:
-        logger.error(f"Unsupported format(s): {bad}. Choose from {valid}.")
-        sys.exit(1)
+        raise ValueError(
+            f"Unsupported export format(s): {', '.join(sorted(bad))}. "
+            f"Choose from {', '.join(sorted(valid))}."
+        )
 
     output_folder = prepare_output_directory(output_folder, default="output")
     output_folder.mkdir(parents=True, exist_ok=True)
@@ -441,9 +445,17 @@ def export_bundles(
     if not raw and any(k != "raw" for k in afm_stack.processed):
         stem += "_filtered"
 
+    out_paths = {
+        "tif": output_folder / f"{stem}.ome.tif",
+        "npz": output_folder / f"{stem}.npz",
+        "h5": output_folder / f"{stem}.h5",
+    }
+    for fmt in formats:
+        ensure_not_input_path(out_paths[fmt], afm_stack.file_path)
+
     if "tif" in formats:
-        save_ome_tiff_stack(output_folder / f"{stem}.ome.tif", afm_stack, raw)
+        save_ome_tiff_stack(out_paths["tif"], afm_stack, raw)
     if "npz" in formats:
-        save_npz_bundle(output_folder / f"{stem}.npz", afm_stack, raw)
+        save_npz_bundle(out_paths["npz"], afm_stack, raw)
     if "h5" in formats:
-        save_h5_bundle(output_folder / f"{stem}.h5", afm_stack, raw)
+        save_h5_bundle(out_paths["h5"], afm_stack, raw)

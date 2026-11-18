@@ -8,6 +8,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-18
+
+This release restores loading of `.asd` files and `.jpk`/`.spm` folders with AFMReader 0.0.8 and fixes silent errors in
+frame alignment and analysis export. `playnano analyze` now writes to `./output` by default and `playnano gui` is removed.
+
+### Changed
+
+- `playnano analyze` and the wizard's analysis export now write to `./output` when no `--output-folder` is given, as
+  the help text already said. Previously they wrote to the current folder (#84).
+- `export_bundles` raises `ValueError` for an unsupported format instead of calling `sys.exit(1)`, so scripts and the
+  wizard can handle the error (#84).
+
+### Removed
+
+- The `playnano gui` subcommand. It always failed with `AttributeError` and was never documented; use
+  `playnano play` to open the GUI (#84).
+- The `median_filter` (`playnano.filters`) and `particle_detect` (`playnano.analysis`) entry points, which named
+  functions and modules that do not exist (#84).
+
+### Fixed
+
+- `CITATION.cff` failed schema validation, so Zenodo could not archive the v0.5.1 release ("Citation metadata load
+  failed"). The licence is now the SPDX identifier `GPL-3.0-or-later` (was `GPLv3+`), the preferred citation type is
+  `software` (was `misc`), and the University of Leeds affiliation is on the author entry instead of a separate,
+  nameless author. The author's ORCID is now included.
+- `playnano analyze` could overwrite its input: run beside an `.h5` bundle with no output options, it replaced the
+  bundle with the analysis results. `analyze`, the wizard's analysis export and `export_bundles` now refuse to write
+  over the input file, and `analyze` checks this before loading any data (#84).
+- Output names lost everything after the first dot that was not an extension: `exp_1.5nM_protein` became `exp_1`.
+  Only known file extensions are now removed (#84).
+- `playnano play` rejected any input path containing `--`, such as `run--2/sample.h5-jpk`. Only a flag after a space
+  (a sign of a broken Windows quote) is now rejected (#84).
+- An unsupported export format in the wizard ended the whole session. It now reports the error and carries on (#84).
+- `playnano play --scale-bar-nm 0` showed a 100 nm scale bar. The GUI now starts with the scale bar switched off
+  (#84).
+- Default playback speed in `playnano play` ignored bidirectional scanning, so some videos played at half speed. It
+  now comes from the frame timestamps or frame durations, and only falls back to `line_rate`. Series recorded slower
+  than 1 fps (e.g. slow-scan AFM) play at 5 fps instead of in real time (#84).
+- `playnano analyze` with `dbscan_clustering` failed after the analysis had finished
+  (`TypeError: keys must be str, int, float, bool or None, not int64`), so no results were saved. Cluster ids are now
+  plain integers, and the JSON sanitizers convert NumPy dict keys (#85).
+- Analysis HDF5 files did not reload as written: `None` came back as `'None'`, an empty dict as `[]`, `[0.0, 1.0]` as
+  integers, and a key named `values` crashed the loader. `export_to_hdf5` now records each value's type, and
+  `load_analysis_from_hdf5` uses it to rebuild the original structure. Lists of numbers or strings now load as Python
+  lists, not NumPy arrays. Files written by earlier versions still load as before (#85).
+- Running an analysis pipeline a second time on the same stack kept results from steps of the earlier run that were
+  not repeated. Each run now starts with empty results (#85).
+- `AnalysisPipeline.run(log_to=...)` failed if the folder did not exist, and `export_analysis_to_json` failed for a
+  bare filename such as `results.json` (#85).
+- The analysis JSON written by `playnano analyze`, the wizard and `AnalysisPipeline.run(log_to=...)` replaced
+  anything nested more than six levels deep, including plain numbers, with `"<... truncated depth 7 ...>"`. Every
+  bounding box from `particle_region_extraction` was lost this way. Values are now always written; the depth limit
+  is 50 and applies to containers only, with a warning if it is ever reached (#90).
+- `align_frames(method="full_cross_correlation")` found no drift (all-zero shifts) on data with a height offset,
+  which is usual for AFM, so frames were left unaligned with no error. It now subtracts each frame's mean, as the FFT
+  method already did, and both methods find the same shifts. Re-run any processing that used this method.
+  `align_frames` is now version 0.2.0 (#86).
+- After `align_frames` or `rolling_frame_align` with `mode="crop"`, the `border_mask` in the metadata kept the
+  uncropped shape. With `mode="crop_square"` it had the right shape but covered the wrong region. The mask is now
+  cropped with the same bounds as the frames. `rolling_frame_align` is now version 0.1.1 (#86).
+- A single NaN pixel broke frame alignment, with no error. `align_frames` shifted that frame by almost the whole
+  image, and `rolling_frame_align` returned a zero shift for every frame. This affected any data with missing pixels
+  and any stack aligned again after `mode="pad"`. NaN pixels are now ignored when finding shifts and kept in the
+  output, and a frame with no finite pixels raises `ValueError` (#91).
+- `.asd` files and folders of `.jpk` or `.spm` files failed to load with AFMReader 0.0.8
+  (`TypeError: cannot unpack non-iterable AFMScan object`), because its loaders now return an `AFMScan` object
+  instead of a tuple. playNano now accepts both, and requires `afmreader>=0.0.7,<0.0.9`, so a future AFMReader
+  release cannot break loading without warning (#96).
+
 ## [0.5.1] - 2026-11-13
 
 ### Added
@@ -576,7 +645,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.21...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -588,3 +657,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.4.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.4.0.post1
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
 [0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
+[0.5.2]: https://github.com/derollins/playNano/releases/tag/v0.5.2

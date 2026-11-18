@@ -4,6 +4,7 @@ import logging
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import h5py
@@ -11,6 +12,8 @@ import numpy as np
 import pytest
 
 from playnano.afm_stack import AFMImageStack
+from playnano.io.formats import read_asd, read_jpk_folder, read_spm_folder
+from playnano.io.formats._afmreader import unpack_afmreader_result
 from playnano.io.formats.read_aris import (
     _aris_global_pixel_to_nm_scaling_h5,
     _get_channel_names,
@@ -1389,3 +1392,92 @@ def test_load_aris_timestamp_mismatch(tmp_path):
 
     with pytest.raises(ValueError):
         load_aris(file_path, "height_trace")
+
+
+# --- AFMReader 0.0.7 (tuple) and 0.0.8 (AFMScan) results ---
+
+
+def _afmscan_like(image, pixel_to_nm, metadata=None):
+    """Mimic AFMReader 0.0.8's AFMScan, whatever version is installed."""
+    return SimpleNamespace(
+        image=image,
+        pixel_to_nanometre_scaling=pixel_to_nm,
+        z_units="nm",
+        metadata=metadata,
+    )
+
+
+def test_unpack_afmreader_two_item_tuple():
+    """load_jpk and load_spm in AFMReader 0.0.7 return (image, pixel_to_nm)."""
+    image = np.ones((2, 3))
+    out_image, px, meta = unpack_afmreader_result((image, 1.5))
+    np.testing.assert_array_equal(out_image, image)
+    assert px == 1.5
+    assert meta == {}
+
+
+def test_unpack_afmreader_three_item_tuple():
+    """Test that load_asd in AFMReader 0.0.7 returns (image, pixel_to_nm, metadata)."""
+    image = np.ones((4, 2, 3))
+    _, px, meta = unpack_afmreader_result((image, 0.5, {"num_frames": 4}))
+    assert px == 0.5
+    assert meta == {"num_frames": 4}
+
+
+def test_unpack_afmreader_afmscan():
+    """Test thatAFMReader 0.0.8 returns an AFMScan; missing metadata becomes {}."""
+    image = np.ones((2, 3))
+    out_image, px, meta = unpack_afmreader_result(_afmscan_like(image, 2.0))
+    np.testing.assert_array_equal(out_image, image)
+    assert px == 2.0
+    assert meta == {}
+
+
+@pytest.mark.parametrize("bad", [np.ones((2, 2)), (np.ones((2, 2)),), None])
+def test_unpack_afmreader_rejects_unknown_result(bad):
+    """An unexpected result names the AFMReader version instead of failing to unpack."""
+    with pytest.raises(TypeError, match="playNano supports AFMReader"):
+        unpack_afmreader_result(bad)
+
+
+@pytest.mark.parametrize(
+    ("owner", "func_name", "loader", "path", "channel"),
+    [
+        (read_asd, "load_asd", read_asd.load_asd_file, "asd_sample_0.asd", "TP"),
+        (
+            read_jpk_folder,
+            "load_jpk",
+            read_jpk_folder.load_jpk_folder,
+            "jpk_folder_0",
+            "height_trace",
+        ),
+        (
+            read_spm_folder.spm,
+            "load_spm",
+            read_spm_folder.load_spm_folder,
+            "spm_folder_0",
+            "Height",
+        ),
+    ],
+    ids=["asd", "jpk", "spm"],
+)
+@pytest.mark.parametrize("style", ["tuple", "afmscan"])
+def test_readers_accept_both_afmreader_result_types(
+    monkeypatch, resource_path, owner, func_name, loader, path, channel, style
+):
+    """Each reader gives the same stack from a 0.0.7 tuple or a 0.0.8 AFMScan."""
+    expected = loader(resource_path / path, channel)
+    real = getattr(owner, func_name)
+
+    def fake(*args, **kwargs):
+        image, px, meta = unpack_afmreader_result(real(*args, **kwargs))
+        if style == "afmscan":
+            return _afmscan_like(image, px, meta)
+        return (image, px, meta) if func_name == "load_asd" else (image, px)
+
+    monkeypatch.setattr(owner, func_name, fake)
+    result = loader(resource_path / path, channel)
+
+    assert result.pixel_size_nm == expected.pixel_size_nm
+    np.testing.assert_array_equal(result.data, expected.data)
+    assert len(result.frame_metadata) == len(expected.frame_metadata)
