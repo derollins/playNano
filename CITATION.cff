@@ -24,8 +24,8 @@ keywords:
   - image analysis
   - nanoscience
 license: GPL-3.0-or-later
-version: 0.5.1
-date-released: '2026-11-13'
+version: 0.5.2
+date-released: '2026-11-18'
 preferred-citation:
   type: software
   authors:
