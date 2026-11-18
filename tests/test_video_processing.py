@@ -533,3 +533,57 @@ def test_border_mask_matches_cropped_stack(drifting_offset_stack, align, mode):
     assert mask.shape == aligned.shape[1:]
     # Every pixel of the cropped stack has data in every frame.
     assert mask.all()
+
+
+# --- Regression tests for #91 --- #
+
+
+@pytest.fixture
+def drifting_stack():
+    """Four textured 80x80 frames drifting by (-1, +1) pixels per frame."""
+    from scipy.ndimage import gaussian_filter
+
+    base = gaussian_filter(np.random.default_rng(0).normal(size=(80, 80)), 3)
+    return np.stack([np.roll(base, (i, -i), (0, 1)) for i in range(4)])
+
+
+EXPECTED_DRIFT = [[0, 0], [-1, 1], [-2, 2], [-3, 3]]
+
+
+@pytest.mark.parametrize(
+    "align, kwargs",
+    [
+        (align_frames, {"method": "fft_cross_correlation"}),
+        (align_frames, {"method": "full_cross_correlation"}),
+        (align_frames, {"pre_filter_sigma": 1.0}),
+        (rolling_frame_align, {}),
+        (rolling_frame_align, {"pre_filter_sigma": 1.0}),
+    ],
+)
+def test_nan_pixels_do_not_change_shifts(drifting_stack, align, kwargs):
+    """A few NaN pixels are ignored when finding shifts, and kept in the output."""
+    stack = drifting_stack.copy()
+    stack[1, 0, 0] = np.nan
+    stack[2, 40:43, 40:43] = np.nan
+
+    aligned, meta = align(stack, **kwargs)
+
+    assert meta["shifts"].tolist() == EXPECTED_DRIFT
+    assert np.isnan(aligned[1]).any()
+
+
+@pytest.mark.parametrize("align", [align_frames, rolling_frame_align])
+def test_nan_bordered_stack_is_aligned(drifting_stack, align):
+    """Frames with a NaN border, as left by padding, still have their drift found."""
+    padded = np.pad(drifting_stack, ((0, 0), (4, 4), (4, 4)), constant_values=np.nan)
+    _, meta = align(padded)
+    assert meta["shifts"].tolist() == EXPECTED_DRIFT
+
+
+@pytest.mark.parametrize("align", [align_frames, rolling_frame_align])
+def test_all_nan_frame_raises(drifting_stack, align):
+    """A frame with no finite pixels cannot be aligned."""
+    stack = drifting_stack.copy()
+    stack[2] = np.nan
+    with pytest.raises(ValueError, match="Frame 2 has no finite pixels"):
+        align(stack)
