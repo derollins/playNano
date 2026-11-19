@@ -8,6 +8,12 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
+# Deploys run one at a time: a tag build and a main build started close
+# together queue instead of racing, so neither overwrites the other mid-way.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('docs-pr-{0}', github.ref) || 'docs-deploy' }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,6 +26,13 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+
+      # sphinx-multiversion only builds local branches (smv_remote_whitelist
+      # is empty). A tag checkout has none, so without this the tag build
+      # published a site with no main/ docs and broke the root redirect (#82).
+      - name: Create local main branch for sphinx-multiversion
+        if: github.event_name != 'pull_request'
+        run: git show-ref --verify --quiet refs/heads/main || git branch main origin/main
 
       - name: Set up Python
         uses: actions/setup-python@v5

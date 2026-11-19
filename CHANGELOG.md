@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Publishing a release removed the `main` documentation from the website, so the docs home page gave a 404 until
+  the `main` docs were rebuilt by hand. Every docs build now includes `main`, deploys no longer overlap, and the
+  `Keep Main Docs Alive` workflow, which failed with an expired token, has been removed (#82).
+
 ## [0.5.2] - 2026-11-18
 
 This release restores loading of `.asd` files and `.jpk`/`.spm` folders with AFMReader 0.0.8 and fixes silent errors in
@@ -645,7 +651,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.21...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.2...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
