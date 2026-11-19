@@ -14,6 +14,7 @@ authors:
     orcid: 'https://orcid.org/0009-0008-5324-7679'
 repository-code: 'https://github.com/derollins/playNano'
 url: 'https://derollins.github.io/playNano/'
+doi: 10.5281/zenodo.24354757
 abstract: >-
   playNano is an open-source toolkit for reading,
   processing, and analyzing AFM video data.
@@ -34,4 +35,5 @@ preferred-citation:
       orcid: 'https://orcid.org/0009-0008-5324-7679'
   title: 'playNano: AFM Video Reader and Analysis Toolkit'
   year: 2026
+  doi: 10.5281/zenodo.24354757
   url: 'https://github.com/derollins/playNano'
