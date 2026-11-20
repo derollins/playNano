@@ -626,6 +626,44 @@ analysis_module_name:param1=value1,param2=value2</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.utils.parse_param_value">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_param_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/utils.html#parse_param_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.utils.parse_param_value" title="Link to this definition">¶</a></dt>
+<dd><p>Convert one parameter value from the command line into a Python value.</p>
+<p>Used for <code class="docutils literal notranslate"><span class="pre">--processing</span></code> and <code class="docutils literal notranslate"><span class="pre">--analysis-steps</span></code> strings and for values
+typed into the wizard, so all three read values the same way.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The value as typed, for example <code class="docutils literal notranslate"><span class="pre">&quot;2&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1e3&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;[0,</span> <span class="pre">1]&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;none&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> for <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> and <code class="docutils literal notranslate"><span class="pre">None</span></code> for
+<code class="docutils literal notranslate"><span class="pre">none</span></code>/<code class="docutils literal notranslate"><span class="pre">null</span></code> (any case); otherwise a Python literal (number, list,
+tuple, dict or quoted string) if the text is one, a float for <code class="docutils literal notranslate"><span class="pre">nan</span></code>
+or <code class="docutils literal notranslate"><span class="pre">inf</span></code>, and the text itself otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Python literal syntax is used rather than YAML because PyYAML follows
+YAML 1.1, which reads <code class="docutils literal notranslate"><span class="pre">1e3</span></code> as a string and <code class="docutils literal notranslate"><span class="pre">on</span></code>/<code class="docutils literal notranslate"><span class="pre">off</span></code>/<code class="docutils literal notranslate"><span class="pre">yes</span></code>/<code class="docutils literal notranslate"><span class="pre">no</span></code>
+as booleans. To keep a value that looks like a number as text, quote it:
+<code class="docutils literal notranslate"><span class="pre">name='1'</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"1e3"</span><span class="p">)</span>
+<span class="go">1000.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"[0, 1]"</span><span class="p">)</span>
+<span class="go">[0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"None"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"otsu"</span><span class="p">)</span>
+<span class="go">'otsu'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="playnano.cli.utils.parse_processing_file">
 <span class="sig-prename descclassname"><span class="pre">playnano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/cli/utils.html#parse_processing_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.utils.parse_processing_file" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</p>
@@ -754,6 +792,7 @@ e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”<
 <li><a class="reference internal" href="#playnano.cli.utils.is_valid_step"><code class="docutils literal notranslate"><span class="pre">is_valid_step()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_analysis_file"><code class="docutils literal notranslate"><span class="pre">parse_analysis_file()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_analysis_string"><code class="docutils literal notranslate"><span class="pre">parse_analysis_string()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.utils.parse_param_value"><code class="docutils literal notranslate"><span class="pre">parse_param_value()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_processing_file"><code class="docutils literal notranslate"><span class="pre">parse_processing_file()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_processing_string"><code class="docutils literal notranslate"><span class="pre">parse_processing_string()</span></code></a></li>
 </ul>

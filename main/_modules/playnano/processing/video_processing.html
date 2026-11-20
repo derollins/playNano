@@ -1204,7 +1204,9 @@
 <div class="viewcode-block" id="intersection_crop">
 <a class="viewcode-back" href="../../../api/playnano.processing.video_processing.html#playnano.processing.video_processing.intersection_crop">[docs]</a>
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.2.0"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">intersection_crop</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">intersection_crop</span><span class="p">(</span>
+    <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Crop aligned stack to the largest common intersection region (finite across frames).</span>
 
@@ -1278,7 +1280,9 @@
 <div class="viewcode-block" id="crop_square">
 <a class="viewcode-back" href="../../../api/playnano.processing.video_processing.html#playnano.processing.video_processing.crop_square">[docs]</a>
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.2.0"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">crop_square</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">crop_square</span><span class="p">(</span>
+    <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Crop aligned stack to the largest centered square region.</span>
 

@@ -552,6 +552,12 @@ colon-separated key-value pairs or <code class="docutils literal notranslate"><s
 <span class="w">    </span>--output-name<span class="w"> </span>sample_processed
 </pre></div>
 </div>
+<p>Parameter values are read as Python values: <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">-2</span></code>, <code class="docutils literal notranslate"><span class="pre">2.5</span></code> and <code class="docutils literal notranslate"><span class="pre">1e3</span></code> are
+numbers, <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> are booleans, <code class="docutils literal notranslate"><span class="pre">none</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, and lists or tuples
+are written in brackets, for example <code class="docutils literal notranslate"><span class="pre">drop_frames:indices_to_drop=[0,1]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">intersection_crop:pad=(2,3)</span></code>. Anything else is text. To pass text that looks
+like a number, quote it: <code class="docutils literal notranslate"><span class="pre">name='1'</span></code>. <code class="docutils literal notranslate"><span class="pre">--analysis-steps</span></code> and values typed into
+the <code class="docutils literal notranslate"><span class="pre">wizard</span></code> follow the same rules.</p>
 <p>Alternatively, pipelines can be defined in YAML for better readability and reuse:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_plane</span>
@@ -563,6 +569,8 @@ colon-separated key-value pairs or <code class="docutils literal notranslate"><s
 <span class="w">    </span><span class="nt">sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
 </pre></div>
 </div>
+<p>In YAML files, write numbers in scientific notation with a dot, such as <code class="docutils literal notranslate"><span class="pre">1.0e3</span></code>;
+YAML reads <code class="docutils literal notranslate"><span class="pre">1e3</span></code> as text.</p>
 <p>Run it via:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--processing-file<span class="w"> </span>pipeline.yaml<span class="w"> </span><span class="se">\</span>
