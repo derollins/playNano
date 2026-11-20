@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   did; at other levels `analyze` no longer prints one (#102).
 - The wizard's `save` wrote tuples and NumPy values with Python-specific YAML tags, so `load` failed with
   `ConstructorError`. It now writes plain YAML, as `asave` already did (#103).
+- Step parameters in `--processing` and `--analysis-steps` strings were split on every comma, so list values such as
+  `drop_frames:indices_to_drop=[0,1]` failed, `[0]` stayed a string, and `1e3` and `none` were not converted. Values
+  are now read as Python values: lists and tuples in brackets, numbers including `1e3`, `true`/`false` and
+  `none`/`null`. To keep a value that looks like a number as text, quote it (`name='1'`) (#104).
+- Values typed into the wizard were left as text for `float | None`, list, tuple and unannotated parameters. They
+  are now converted, so `pad` for `intersection_crop` and `crop_square` accepts `2` or `2,3` (#104).
 
 ## [0.5.2] - 2026-11-18
 

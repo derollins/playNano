@@ -689,7 +689,9 @@ def _crop_with_pad(stack, y0, y1, x0, x1, pad_value=np.nan):
 
 
 @versioned_filter("0.2.0")
-def intersection_crop(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
+def intersection_crop(
+    stack: np.ndarray, pad: int | tuple[int, ...] = 0
+) -> tuple[np.ndarray, dict]:
     """
     Crop aligned stack to the largest common intersection region (finite across frames).
 
@@ -760,7 +762,9 @@ def intersection_crop(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
 
 
 @versioned_filter("0.2.0")
-def crop_square(stack: np.ndarray, pad=0) -> tuple[np.ndarray, dict]:
+def crop_square(
+    stack: np.ndarray, pad: int | tuple[int, ...] = 0
+) -> tuple[np.ndarray, dict]:
     """
     Crop aligned stack to the largest centered square region.
 

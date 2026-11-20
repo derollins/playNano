@@ -21,6 +21,8 @@ import yaml
 import playnano.cli.actions as actions
 from playnano.cli.actions import Wizard, analyze_pipeline_mode
 from playnano.cli.handlers import handle_analyze
+from playnano.cli.utils import parse_processing_string
+from playnano.processing.core import process_stack
 
 SAMPLE_H5JPK = Path(__file__).parent / "resources" / "sample_0.h5-jpk"
 
@@ -206,3 +208,14 @@ def test_wizard_save_then_load_round_trips_non_yaml_types(tmp_path):
     sigma = wiz.process_steps[1][1]["sigma"]
     # np.float64 is a float subclass, so also check it is not a NumPy scalar
     assert isinstance(sigma, float) and not isinstance(sigma, np.generic)
+
+
+# --- a list value from --processing reaches the step (#104) ---
+
+
+def test_processing_string_list_value_runs():
+    """A list value from ``--processing`` reaches the step and works."""
+    full = process_stack(SAMPLE_H5JPK, "height_trace", [])
+    steps = parse_processing_string("drop_frames:indices_to_drop=[0,1]")
+    dropped = process_stack(SAMPLE_H5JPK, "height_trace", steps)
+    assert dropped.data.shape[0] == full.data.shape[0] - 2

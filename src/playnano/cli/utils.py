@@ -1,12 +1,15 @@
 """Utility functions for the playNano CLI."""
 
+import ast
 import inspect
 import json
 import logging
 import numbers
+import types
+from collections.abc import Sequence
 from importlib import metadata
 from pathlib import Path
-from typing import Any, Mapping, Union, get_args, get_origin
+from typing import Any, Callable, Mapping, Union, get_args, get_origin
 
 import numpy as np
 import yaml
@@ -78,6 +81,158 @@ def is_valid_analysis_step(name: str) -> bool:
     )
 
 
+_NONE_WORDS = ("none", "null")
+_NONE_TYPE = type(None)
+
+
+def parse_param_value(text: str) -> Any:
+    """
+    Convert one parameter value from the command line into a Python value.
+
+    Used for ``--processing`` and ``--analysis-steps`` strings and for values
+    typed into the wizard, so all three read values the same way.
+
+    Parameters
+    ----------
+    text : str
+        The value as typed, for example ``"2"``, ``"1e3"``, ``"[0, 1]"`` or
+        ``"none"``.
+
+    Returns
+    -------
+    Any
+        ``True``/``False`` for ``true``/``false`` and ``None`` for
+        ``none``/``null`` (any case); otherwise a Python literal (number, list,
+        tuple, dict or quoted string) if the text is one, a float for ``nan``
+        or ``inf``, and the text itself otherwise.
+
+    Notes
+    -----
+    Python literal syntax is used rather than YAML because PyYAML follows
+    YAML 1.1, which reads ``1e3`` as a string and ``on``/``off``/``yes``/``no``
+    as booleans. To keep a value that looks like a number as text, quote it:
+    ``name='1'``.
+
+    Examples
+    --------
+    >>> parse_param_value("1e3")
+    1000.0
+    >>> parse_param_value("[0, 1]")
+    [0, 1]
+    >>> parse_param_value("None")
+    >>> parse_param_value("otsu")
+    'otsu'
+    """
+    value = text.strip()
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    if lowered in _NONE_WORDS:
+        return None
+    try:
+        return ast.literal_eval(value)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        pass
+    for convert in (int, float):
+        try:
+            return convert(value)
+        except ValueError:
+            continue
+    return value
+
+
+def _split_top_level(text: str, sep: str) -> list[str]:
+    """
+    Split ``text`` on ``sep``, ignoring separators inside brackets or quotes.
+
+    ``"a=[0,1],b=2"`` split on ``","`` gives ``["a=[0,1]", "b=2"]``.
+    """
+    parts: list[str] = []
+    current: list[str] = []
+    depth = 0
+    quote: str | None = None
+    for ch in text:
+        if quote:
+            if ch == quote:
+                quote = None
+        elif ch in "'\"":
+            quote = ch
+        elif ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth = max(depth - 1, 0)
+        elif ch == sep and depth == 0:
+            parts.append("".join(current))
+            current = []
+            continue
+        current.append(ch)
+    parts.append("".join(current))
+    return parts
+
+
+def _parse_step_string(
+    text: str,
+    is_valid: Callable[[str], bool],
+    unknown_message: str,
+    step_label: str,
+) -> list[tuple[str, dict[str, object]]]:
+    """
+    Parse ``"step:key=value,key=value; step2"`` into ``[(name, kwargs), ...]``.
+
+    Shared by :func:`parse_processing_string` and
+    :func:`parse_analysis_string`. Steps are separated by ``;`` and
+    parameters by ``,``, except inside brackets or quotes, so list and tuple
+    values such as ``indices_to_drop=[0,1]`` stay whole. Each value is
+    converted with :func:`parse_param_value`.
+
+    Parameters
+    ----------
+    text : str
+        The step string.
+    is_valid : callable
+        Returns True if a step name is known.
+    unknown_message : str
+        Start of the error message for an unknown step name.
+    step_label : str
+        How a step is named in the error for a malformed parameter.
+
+    Returns
+    -------
+    list of tuple
+        ``(step_name, kwargs)`` for each step, in order.
+
+    Raises
+    ------
+    ValueError
+        If a step name is unknown or a parameter is not ``key=value``.
+    """
+    steps: list[tuple[str, dict[str, object]]] = []
+    for segment in _split_top_level(text, ";"):
+        segment = segment.strip()
+        if not segment:
+            continue
+        step_name, _, params_part = segment.partition(":")
+        step_name = step_name.strip()
+        if not is_valid(step_name):
+            raise ValueError(f"{unknown_message}: '{step_name}'")
+        kwargs: dict[str, object] = {}
+        for pair in _split_top_level(params_part, ","):
+            pair = pair.strip()
+            if not pair:
+                continue
+            if "=" not in pair:
+                raise ValueError(
+                    f"Invalid parameter expression '{pair}' in {step_label} "
+                    f"'{step_name}'"
+                )
+            key, val_str = pair.split("=", 1)
+            kwargs[key.strip()] = parse_param_value(val_str)
+        steps.append((step_name, kwargs))
+    return steps
+
+
 def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, object]]]:
     """
     Parse a semicolon-delimited string of processing steps into a structured list.
@@ -116,61 +271,9 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
         ('threshold_mask', {'threshold': 2})
     ]
     """
-    steps: list[tuple[str, dict[str, object]]] = []
-
-    # Split the input string into individual steps using ';' as the delimiter
-    for segment in processing_str.split(";"):
-        segment = segment.strip()
-        if not segment:
-            continue  # Skip empty segments
-
-        # Check if the step includes parameters (indicated by ':')
-        if ":" in segment:
-            step_name, params_part = segment.split(":", 1)
-            step_name = step_name.strip()
-
-            # Validate the step name
-            if not is_valid_step(step_name):
-                raise ValueError(f"Unknown processing step: '{step_name}'")
-
-            kwargs: dict[str, object] = {}
-
-            # Split parameters by ',' and parse each key=value pair
-            for pair in params_part.split(","):
-                pair = pair.strip()
-                if not pair:
-                    continue  # Skip empty parameter entries
-
-                if "=" not in pair:
-                    raise ValueError(
-                        f"Invalid parameter expression '{pair}' in step '{step_name}'"
-                    )
-
-                key, val_str = pair.split("=", 1)
-                key = key.strip()
-                val_str = val_str.strip()
-
-                # Attempt to convert the value to a boolean, int, or float
-                if val_str.lower() in ("true", "false"):
-                    val = val_str.lower() == "true"
-                else:
-                    try:
-                        val = float(val_str) if "." in val_str else int(val_str)
-                    except ValueError:
-                        val = val_str  # Leave as string if not numeric
-
-                kwargs[key] = val
-
-            steps.append((step_name, kwargs))
-
-        else:
-            # Step without parameters
-            step_name = segment
-            if not is_valid_step(step_name):
-                raise ValueError(f"Unknown processing step: '{step_name}'")
-            steps.append((step_name, {}))
-
-    return steps
+    return _parse_step_string(
+        processing_str, is_valid_step, "Unknown processing step", "step"
+    )
 
 
 def parse_processing_file(path: str) -> list[tuple[str, dict[str, object]]]:
@@ -255,60 +358,9 @@ def parse_analysis_string(analysis_str: str) -> list[tuple[str, dict[str, object
       [("log_blob_detection", {"min_sigma":1.0,"max_sigma":5.0}),
        ("x_means_clustering", {"time_weight": 0.2})]
     """
-    steps: list[tuple[str, dict[str, object]]] = []
-    # Split on ';' (also accept ',' as alternate, just in case)
-    for segment in analysis_str.split(";"):
-        segment = segment.strip()
-        if not segment:
-            continue
-
-        # If the segment contains ':', separate name from params
-        if ":" in segment:
-            name_part, params_part = segment.split(":", 1)
-            step_name = name_part.strip()
-            if not is_valid_analysis_step(step_name):
-                raise ValueError(f"Unknown analysis step: '{step_name}'")
-
-            # Parse params: they can be separated by ',' or ';' (but usually commas)
-            kwargs: dict[str, object] = {}
-            for pair in params_part.replace(";", ",").split(","):
-                pair = pair.strip()
-                if not pair:
-                    continue
-                if "=" not in pair:
-                    raise ValueError(
-                        f"Invalid parameter expression '{pair}' in analysis step '{step_name}'"  # noqa
-                    )  # noqa
-                key, val_str = pair.split("=", 1)
-                key = key.strip()
-                val_str = val_str.strip()
-
-                # Convert to float or int if possible
-                if val_str.lower() in ("true", "false"):
-                    # Allow boolean parameters if needed
-                    val = val_str.lower() == "true"
-                else:
-                    try:
-                        if "." in val_str:
-                            val = float(val_str)
-                        else:
-                            val = int(val_str)
-                    except ValueError:
-                        val = val_str  # leave it as string if it’s not numeric
-
-                kwargs[key] = val
-
-            steps.append((step_name, kwargs))
-
-        else:
-            # No colon → just the filter name
-            step_name = segment
-            if not is_valid_analysis_step(step_name):
-                raise ValueError(f"Unknown analysis step: '{step_name}'")
-
-            steps.append((step_name, {}))
-
-    return steps
+    return _parse_step_string(
+        analysis_str, is_valid_analysis_step, "Unknown analysis step", "analysis step"
+    )
 
 
 def parse_analysis_file(path: str) -> list[tuple[str, dict[str, object]]]:
@@ -478,64 +530,58 @@ def _cast_input(s: str, expected_type: Any, default: Any):
     -----
     - Boolean conversion recognizes '1', 'true', 'yes', 'y', 't'
       (case-insensitive) as True.
-    - Tuple and list types assume comma-separated values in the string.
-    - `Optional[T]` and `Union[T, NoneType]` are treated as `T`.
-    - For generic types like `list[int]`, the element type hint is ignored,
-      but the container conversion still applies.
+    - Tuple and list types (also ``list[int]``, ``tuple[int, ...]``,
+      ``Sequence[str]``) accept
+      ``1,2`` or ``[1, 2]``; each item is converted with `parse_param_value`.
+    - `Optional[T]`, `Union[T, None]` and ``T | None`` are treated as `T`, and
+      ``none``/``null`` gives None.
+    - Unions of several types, other annotations and missing annotations use
+      `parse_param_value`; `str` keeps the text as typed.
     """
     if s == "":
         return default
 
-    # handle missing annotations
+    # no annotation: read the value as the command-line strings do
     if expected_type is None or expected_type is inspect._empty:
-        return s
+        return parse_param_value(s)
 
     origin = get_origin(expected_type)
-    args = get_args(expected_type)
 
-    # Union / Optional
-    if origin is None and isinstance(expected_type, type):
-        base = expected_type
-    else:
-        base = None
+    # Union / Optional, including the ``float | None`` form
+    if origin in (Union, types.UnionType):
+        args = get_args(expected_type)
+        options = [a for a in args if a is not _NONE_TYPE]
+        if len(options) < len(args) and s.strip().lower() in _NONE_WORDS:
+            return None
+        if len(options) == 1:
+            return _cast_input(s, options[0], default)
+        return parse_param_value(s)
 
-    if origin is Union:
-        # try each non-None option in order
-        non_none = [a for a in args if not isinstance(a, type(None))]
-        for opt in non_none:
-            try:
-                return _cast_input(s, opt, default)
-            except Exception:
-                continue
-        # fallback
-        return default if type(None) in args else s
+    # sequences: "1,2" or "[1, 2]", with each item converted
+    if expected_type in (list, tuple) or origin in (list, tuple, Sequence):
+        container = tuple if tuple in (expected_type, origin) else list
+        parsed = parse_param_value(s)
+        if isinstance(parsed, (list, tuple)):
+            return container(parsed)
+        items = [item for item in _split_top_level(s, ",") if item.strip()]
+        return container(parse_param_value(item) for item in items)
 
-    # Handle plain tuple/list types
-    if origin is None:
-        if expected_type is tuple:
-            items = [item.strip() for item in s.split(",") if item.strip()]
-            return tuple(items)
-        if expected_type is list:
-            items = [item.strip() for item in s.split(",") if item.strip()]
-            return items
-
-    # simple types
-    try:
-        if base is bool:
-            s2 = s.lower()
-            return s2 in ("1", "true", "yes", "y", "t")
-        if base is int:
-            return int(s)
-        if base is float:
-            return float(s)
-        if base is str:
-            return s
-    except Exception:
-        # fall through to return default/string
+    if expected_type is str:
         return s
+    if expected_type is bool:
+        return s.strip().lower() in ("1", "true", "yes", "y", "t")
+    if expected_type in (int, float):
+        try:
+            return expected_type(s)
+        except ValueError:
+            value = parse_param_value(s)
+            if expected_type is float and isinstance(value, (int, float)):
+                return float(value)
+            if expected_type is int and isinstance(value, float) and value.is_integer():
+                return int(value)
+            return value
 
-    # fallback
-    return s
+    return parse_param_value(s)
 
 
 def ask_for_analysis_params(module_name: str) -> dict[str, Any]:

@@ -5,10 +5,12 @@ import builtins
 import inspect
 import json
 import logging
+import math
 import sys
 import tempfile
 from argparse import Namespace
 from collections import UserDict
+from collections.abc import Sequence
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Optional, Union
@@ -28,6 +30,7 @@ from playnano.cli.utils import (
     FILTER_MAP,
     MASK_MAP,
     _ask_with_spec,
+    _cast_input,
     _get_analysis_class,
     _get_processing_callable,
     _normalize_loaded,
@@ -39,6 +42,7 @@ from playnano.cli.utils import (
     is_valid_step,
     parse_analysis_file,
     parse_analysis_string,
+    parse_param_value,
     parse_processing_file,
     parse_processing_string,
 )
@@ -2762,7 +2766,7 @@ def test_io_say(capsys):
         ("", float, 1.23, 1.23),
         ("True", bool, False, True),
         ("no", bool, True, False),
-        ("1,2,3", list, None, ["1", "2", "3"]),
+        ("1,2,3", list, None, [1, 2, 3]),
         ("a,b", tuple, None, ("a", "b")),
         ("4", Optional[int], None, 4),
         ("", Optional[int], 9, 9),
@@ -2892,3 +2896,162 @@ def test_packaged_entry_points_resolve():
             module_name, _, attr = target.partition(":")
             module = importlib.import_module(module_name)
             assert hasattr(module, attr), f"entry point {name} -> {target}"
+
+
+# --- Step parameters from strings and wizard prompts ---
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("2", 2),
+        ("-2", -2),
+        ("2.5", 2.5),
+        ("1e3", 1000.0),
+        ("-1.5e-2", -0.015),
+        ("007", 7),
+        ("[0,1]", [0, 1]),
+        ("(2, 3)", (2, 3)),
+        ("true", True),
+        ("FALSE", False),
+        ("none", None),
+        ("Null", None),
+        ("otsu", "otsu"),
+        ("'1'", "1"),
+        # YAML 1.1 would turn these into True, False and 90
+        ("on", "on"),
+        ("off", "off"),
+        ("1:30", "1:30"),
+        ("  4  ", 4),
+    ],
+)
+def test_parse_param_value(text, expected):
+    """Values are read as Python literals, with true/false/none words."""
+    value = parse_param_value(text)
+    assert value == expected
+    assert type(value) is type(expected)
+
+
+def test_parse_param_value_nan():
+    """``nan`` becomes a float NaN."""
+    assert math.isnan(parse_param_value("nan"))
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (
+            "drop_frames:indices_to_drop=[0,1]",
+            [("drop_frames", {"indices_to_drop": [0, 1]})],
+        ),
+        (
+            "drop_frames:indices_to_drop=[0]",
+            [("drop_frames", {"indices_to_drop": [0]})],
+        ),
+        (
+            "mask_threshold:threshold=1e3; remove_plane",
+            [("mask_threshold", {"threshold": 1000.0}), ("remove_plane", {})],
+        ),
+        (
+            "mask_threshold:threshold=-2",
+            [("mask_threshold", {"threshold": -2})],
+        ),
+        (
+            "gaussian_filter:sigma=none",
+            [("gaussian_filter", {"sigma": None})],
+        ),
+        (
+            "intersection_crop:pad=(2, 3); gaussian_filter:sigma=2.0,truncate=4",
+            [
+                ("intersection_crop", {"pad": (2, 3)}),
+                ("gaussian_filter", {"sigma": 2.0, "truncate": 4}),
+            ],
+        ),
+    ],
+)
+def test_parse_processing_string_values(text, expected):
+    """Lists stay whole, and 1e3, negatives and none are converted."""
+    assert parse_processing_string(text) == expected
+
+
+def test_parse_analysis_string_values():
+    """``--analysis-steps`` uses the same rules as ``--processing``."""
+    steps = parse_analysis_string(
+        "log_blob_detection:min_sigma=1e-1,max_sigma=5;"
+        "particle_tracking:coord_columns=['centroid_x', 'centroid_y']"
+    )
+    assert steps == [
+        ("log_blob_detection", {"min_sigma": 0.1, "max_sigma": 5}),
+        ("particle_tracking", {"coord_columns": ["centroid_x", "centroid_y"]}),
+    ]
+
+
+def test_parse_strings_keep_their_error_messages():
+    """The shared parser keeps each command's error messages."""
+    with pytest.raises(ValueError, match="Unknown processing step: 'nope'"):
+        parse_processing_string("nope")
+    with pytest.raises(ValueError, match="Unknown analysis step: 'nope'"):
+        parse_analysis_string("nope:x=1")
+    with pytest.raises(
+        ValueError, match="Invalid parameter expression '1' in step 'drop_frames'"
+    ):
+        parse_processing_string("drop_frames:1")
+    with pytest.raises(
+        ValueError,
+        match="Invalid parameter expression 'x' in analysis step 'count_nonzero'",
+    ):
+        parse_analysis_string("count_nonzero:x")
+
+
+@pytest.mark.parametrize(
+    ("text", "annotation", "expected"),
+    [
+        ("1.5", float | None, 1.5),
+        ("none", float | None, None),
+        ("1.5", Optional[float], 1.5),
+        ("2", None, 2),
+        ("otsu", None, "otsu"),
+        ("1,2", list[int], [1, 2]),
+        ("[1, 2]", list[int], [1, 2]),
+        ("1,2", tuple[int, int], (1, 2)),
+        ("centroid_x,centroid_y", Sequence[str], ["centroid_x", "centroid_y"]),
+        ("2", int | tuple[int, ...], 2),
+        ("2,3", int | tuple[int, ...], (2, 3)),
+        ("1e3", float, 1000.0),
+        ("1e3", int, 1000),
+        ("1", str, "1"),
+        ("auto", float | str | None, "auto"),
+        ("0.5", float | str | None, 0.5),
+    ],
+)
+def test_wizard_cast_input(text, annotation, expected):
+    """Wizard prompts convert values by annotation, including ``X | None``."""
+    value = _cast_input(text, annotation, None)
+    assert value == expected
+    assert type(value) is type(expected)
+
+
+def test_wizard_pad_prompt_gives_a_tuple_that_saves_and_loads(tmp_path, monkeypatch):
+    """``pad`` typed as ``2,3`` becomes (2, 3) and survives save and load."""
+    monkeypatch.setattr(builtins, "input", lambda prompt="": "2,3")
+    kwargs = ask_for_processing_params("intersection_crop")
+    assert kwargs == {"pad": (2, 3)}
+
+    said = []
+
+    def no_registered_step(name):
+        raise KeyError(name)
+
+    wiz = SimpleNamespace(
+        process_steps=[("intersection_crop", kwargs)],
+        processed_stack=None,
+        processed_steps_snapshot=[],
+        afm_stack=SimpleNamespace(_resolve_step=no_registered_step),
+        io=SimpleNamespace(say=said.append),
+    )
+    out = tmp_path / "steps.yaml"
+    Wizard.handle_save(wiz, ["save", str(out)])
+    wiz.process_steps = []
+    Wizard.handle_load(wiz, ["load", str(out)])
+
+    assert wiz.process_steps == [("intersection_crop", {"pad": [2, 3]})], said
