@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-20
+
+This release fixes `polynomial_flatten` at high orders and on data with NaN pixels, CLI parameter parsing, wizard
+`save`, and `playnano analyze` output names and exit codes. It also corrects the documentation examples.
+
 ### Fixed
 
 - Publishing a release removed the `main` documentation from the website, so the docs home page gave a 404 until
@@ -702,7 +707,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.3...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -715,3 +720,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
 [0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
 [0.5.2]: https://github.com/derollins/playNano/releases/tag/v0.5.2
+[0.5.3]: https://github.com/derollins/playNano/releases/tag/v0.5.3
