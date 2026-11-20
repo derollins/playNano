@@ -1,7 +1,7 @@
 """
 Module to decode and load .aris high-speed AFM data files into an AFMImageStack object.
 
-The Asylum Reseach ARIS files contain multiple frames that may differ in pixel
+The Asylum Research ARIS files contain multiple frames that may differ in pixel
 resolution. The global pixel size (from the first frame) is stored in
 `pixel_size_nm`, while per-frame overrides are stored in each entry of
 `frame_metadata` under the key `frame_pixel_size_nm`.

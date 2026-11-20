@@ -4,8 +4,10 @@ on:
   push:
     branches: [ main ]
     tags: [ 'v*' ]
+  # PRs to dev are built too (single-version, no deploy), so broken pages are
+  # found before release.
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
   workflow_dispatch: {}
 
 # Deploys run one at a time: a tag build and a main build started close

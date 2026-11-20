@@ -59,9 +59,11 @@ html_sidebars = {
     "**": [
         "sidebar/brand.html",
         "sidebar/search.html",
-        "sidebar/navigation.html",
-        "sidebar/scroll-start.html",
+        # The switcher sits above the (long) navigation so it is always visible,
+        # and the navigation goes inside the scrolling area, as in Furo's default.
         "sidebar/versions.html",
+        "sidebar/scroll-start.html",
+        "sidebar/navigation.html",
         "sidebar/scroll-end.html",
     ]
 }
@@ -149,13 +151,15 @@ def _try_import_pkg():
 def _write_generated_module_list(module_names, import_name):
     if not module_names:
         return
-    path = Path("_generated") / "generated_module_list.rst"
+    # Write next to conf.py, so the list is regenerated whichever folder
+    # sphinx-build is run from (CI runs it from the repository root).
+    path = Path(conf_dir) / "_generated" / "generated_module_list.rst"
     path.parent.mkdir(parents=True, exist_ok=True)
-    rel_api = os.path.relpath(Path("html") / "api", path.parent).replace(os.sep, "/")
 
     with path.open("w", encoding="utf-8") as f:
         for name in module_names:
-            link = f"{rel_api}/playnano.analysis.modules.html#module-playnano.analysis.modules.{name}"
+            # A cross reference resolves to the API page wherever it is built.
+            link = f":mod:`{name} <playnano.analysis.modules.{name}>`"
             summary = "No description available."
             if import_name:
                 try:
@@ -165,7 +169,7 @@ def _write_generated_module_list(module_names, import_name):
                     summary = (mod.__doc__ or "").strip().splitlines()[0]
                 except:
                     pass
-            f.write(f"- `{name} <{link}>`_\n  - {summary}\n")
+            f.write(f"- {link} - {summary}\n")
 
 
 # ------------------------------------------------------------------------------

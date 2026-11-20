@@ -60,14 +60,18 @@ Notes & troubleshooting
      pip install --force-reinstall PySide6-Essentials
 
 - **AFMReader**
-  Required for reading some vendor formats (``.jpk``, ``.spm``, ``.asd``). If it is not available from PyPI in your environment, install it from GitHub:
+  Required for reading some vendor formats (``.jpk``, ``.spm``, ``.asd``). It is installed
+  automatically from PyPI. playNano supports AFMReader 0.0.7 and 0.0.8; to install a
+  supported version by hand, use:
 
   .. code-block:: bash
 
-     pip install git+https://github.com/AFM-SPM/AFMReader.git
+     pip install "afmreader>=0.0.7,<0.0.9"
 
-- **GIF export / metadata**
-  Some input files must include metadata (e.g. ``line_rate``). If GIF export fails, check console logs for missing metadata.
+- **Exports and metadata**
+  GIF and video exports use the frame timestamps for their annotations when the file
+  provides them, and frame numbers otherwise. If an export fails, rerun with
+  ``--log-level DEBUG`` and check the console log.
 
 Verification
 ^^^^^^^^^^^^
@@ -106,14 +110,9 @@ the latest development version and make changes to the codebase.
    # 3) Install the package (from the project root)
    pip install -e .
 
-There are additionally optional dependencies that can be installed for particular tasks.
-To work on the documentation, or run the example notebooks, you can install these as
-"extras" using pip.
-
-If you are developing or contributing, install the full set of extras, especially the
-dev group (which includes linting and testing tools).
-
-You can also install optional extras for docs, notebooks, or development:
+Optional dependencies for the documentation, the example notebooks and development are
+available as pip "extras". If you are contributing, install at least the ``dev`` extra,
+which includes the linting and testing tools:
 
 .. code-block:: bash
 
@@ -169,13 +168,16 @@ dependencies.
 
    conda env create -f environment.yaml
    conda activate playnano_env
+   pip install -e .   # install playNano itself, from the project root
 
-This will install:
+The environment file installs:
 
-- Python 3.11 and core scientific libraries (NumPy, SciPy, Pillow, Matplotlib)
-- AFM-specific tools: ``afmreader``
+- Python 3.11 and the core scientific libraries (NumPy, SciPy, pandas, h5py, Pillow,
+  Matplotlib, scikit-learn, scikit-image, OpenCV)
+- AFM-specific tools: ``afmreader`` (installed with pip)
 - GUI support via ``PySide6-Essentials`` (installed with pip)
-- Compatibility pins (e.g. ``h5py=3.8.*``) to avoid known issues
+
+It does not install playNano itself, which is why the last command is needed.
 
 .. note::
 
@@ -194,19 +196,17 @@ Dependencies
 
 This project requires the following Python packages:
 
-- `numpy`
-- `pandas`
-- `h5py`
-- `Pillow`
-- `matplotlib`
-- `opencv-python-headless`
-- `imageio`
-- `imageio-ffmpeg`
-- `scipy`
-- `scikit-learn`
-- `scikit-image`
-- `python-dateutil`
-- `tifffile`
-- `pyyaml`
-- `PySide6-Essentials` — for the GUI (the core Qt modules of PySide6)
-- [`AFMReader`](https://github.com/AFM-SPM/AFMReader) — for reading `.jpk`, `.spm` and `.asd` files
+- ``numpy``
+- ``pandas``
+- ``h5py``
+- ``Pillow``
+- ``matplotlib``
+- ``opencv-python-headless``
+- ``scipy``
+- ``scikit-learn``
+- ``scikit-image``
+- ``python-dateutil``
+- ``tifffile``
+- ``pyyaml``
+- ``PySide6-Essentials`` — for the GUI (the core Qt modules of PySide6)
+- `AFMReader <https://github.com/AFM-SPM/AFMReader>`_ — for reading ``.jpk``, ``.spm`` and ``.asd`` files

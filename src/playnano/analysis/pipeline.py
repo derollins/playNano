@@ -104,8 +104,8 @@ class AnalysisPipeline:
 
         Examples
         --------
-        >>> pipeline.add("particle_detect", threshold=5, min_size=10)
-        >>> pipeline.add("track_particles", max_jump=3)
+        >>> pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=5)
+        >>> pipeline.add("particle_tracking", max_distance=3)
         """
         self.steps.append((module_name, params))
 
@@ -287,7 +287,7 @@ class AnalysisPipeline:
         --------
         >>> pipeline = AnalysisPipeline()
         >>> pipeline.add("count_nonzero")
-        >>> pipeline.add("feature_detection", mask_fn="threshold_mask", min_size=5)
+        >>> pipeline.add("feature_detection", mask_fn="mask_threshold", min_size=5)
         >>> record = pipeline.run(stack, log_to="out.json")
         >>> # Access the outputs:
         >>> record["analysis"]["step_1_count_nonzero"]
@@ -378,7 +378,7 @@ class AnalysisPipeline:
             # allow downstream modules to use latest result
             previous_latest[module_name] = outputs
 
-        # Build the updated provedence record
+        # Build the updated provenance record
         stack.provenance["analysis"]["steps"] = step_results
         stack.provenance["analysis"]["results_by_name"] = dict(results_by_name)
 

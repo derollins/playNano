@@ -38,13 +38,13 @@ module :mod:`playnano.processing.masked_filters` that contains masked variants o
      - Fit and subtract a 2D polynomial surface of the given order (removes tilt and curvature). NaN pixels are ignored in the fit and stay NaN. Can be masked (:func:`~playnano.processing.masked_filters.polynomial_flatten_masked`).
      - order (int), default: 2
    * - :func:`~playnano.processing.filters.row_median_align`
-     - Subtract row-wise median to remove horizontal banding. Can be masked (:func:`~playnano.processing.masked_filters.row_median_align`).
+     - Subtract row-wise median to remove horizontal banding. Can be masked (:func:`~playnano.processing.masked_filters.row_median_align_masked`).
      - None
    * - :func:`~playnano.processing.filters.zero_mean`
-     - Subtract global mean (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_mean`).
+     - Subtract global mean (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_mean_masked`).
      - None
    * - :func:`~playnano.processing.filters.zero_median`
-     - Subtract global median (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_median`).
+     - Subtract global median (optionally masked). Can be masked (:func:`~playnano.processing.masked_filters.zero_median_masked`).
      - None
    * - :func:`~playnano.processing.filters.gaussian_filter`
      - Apply Gaussian smoothing.
@@ -80,7 +80,7 @@ analysis.
      - factor (float), default: 1.0
    * - :func:`~playnano.processing.mask_generators.mask_morphological`
      - Applies binary closing to ``|data| > threshold`` using a square structuring element.
-     - threshold (float), default: 3, structure_size (int), default: 3
+     - threshold (float), default: 0.0, structure_size (int), default: 3
    * - :func:`~playnano.processing.mask_generators.mask_adaptive`
      - Block-wise adaptive thresholding.
      - block_size (int), default: 15, offset (float), default: 0.0
@@ -111,10 +111,10 @@ metadata dictionaries.
      - window (int, default: 5), mode (str, default: "pad"), debug (bool, default: False), max_shift (int, optional), pre_filter_sigma (float, optional), max_jump (int, optional)
    * - :func:`~playnano.processing.video_processing.intersection_crop`
      - Crop aligned stack to largest common intersection region. Returns cropped stack and metadata.
-     - stack (ndarray, 3D)
+     - pad (int, or a tuple of 2 or 4 ints), default: 0
    * - :func:`~playnano.processing.video_processing.crop_square`
      - Crop aligned stack to the largest centered square. Returns metadata including original, intersection, new shapes and offset.
-     - stack (ndarray, 3D)
+     - pad (int, or a tuple of 2 or 4 ints), default: 0
    * - :func:`~playnano.processing.video_processing.replace_nan`
      - Replace NaN values in 2D/3D stacks using several strategies: zero, mean, median, global_mean, constant.
      - mode (str, default: "zero"), value (float, optional, required if mode="constant")
@@ -125,10 +125,10 @@ AFM Stack Editing (Frame Selection)
 :mod:`playnano.processing.stack_edit`
 
 These functions operate on 3D AFM stacks (n_frames, height, width) to remove
-or select frames. Only `drop_frames` performs actual edits; the other functions
-generate indices to drop for use with `drop_frames`. This is managed by the
-:meth:`~playnano.processing.pipeline.ProcessingPipeline._handle_stack_edit_step`
-method.
+or select frames. Only ``drop_frames`` performs actual edits; the other functions
+generate indices to drop for use with ``drop_frames``. The
+:class:`~playnano.processing.pipeline.ProcessingPipeline` applies the result and
+updates the frame metadata and timestamps.
 
 .. list-table::
    :header-rows: 1
