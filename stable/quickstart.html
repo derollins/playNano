@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Quickstart - playnano v0.5.2 documentation</title>
+        <title>Quickstart - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -526,8 +527,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 </div>
 </section>
 <section id="install-playnano-from-pypi">
-<h2>2. Install playNano from PyPi<a class="headerlink" href="#install-playnano-from-pypi" title="Link to this heading">¶</a></h2>
-<p>Install the latest release of <strong>playNano</strong> from PyPi using pip.</p>
+<h2>2. Install playNano from PyPI<a class="headerlink" href="#install-playnano-from-pypi" title="Link to this heading">¶</a></h2>
+<p>Install the latest release of <strong>playNano</strong> from PyPI using pip.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>playnano
 </pre></div>
 </div>
@@ -548,7 +549,7 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import
 </pre></div>
 </div>
 <p>This opens a sample AFM file when run in the project root. Change the path to your
-own data to view other files. There is a preset processing pipeline can be
+own data to view other files. A preset processing pipeline can be
 applied by pressing the “F” key or the “Apply Filters” button in the GUI. You can
 find out more about using the GUI in <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a>.</p>
 </section>
@@ -556,7 +557,7 @@ find out more about using the GUI in <a class="reference internal" href="gui.htm
 <h3>Batch process, analysis and export (no GUI):<a class="headerlink" href="#batch-process-analysis-and-export-no-gui" title="Link to this heading">¶</a></h3>
 <p>For batch processing and analysis the processing and analysis pipelines are run through separate commands.
 To run these commands on example data, these commands can be run from the project root.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--processing<span class="w"> </span><span class="s2">"remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--export<span class="w"> </span>h5,tif,npz<span class="w"> </span>--make-gif<span class="w"> </span>--draw-ts<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>sample_processed
 </pre></div>
@@ -570,7 +571,7 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
 </div>
 <p>Run analysis (detection + tracking):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>./results/sample_processed_filtered.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3"</span>
+<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_mean_offset,factor=0.5;particle_tracking:max_distance=3"</span>
 </pre></div>
 </div>
 </section>
@@ -646,7 +647,7 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
             <ul>
 <li><a class="reference internal" href="#">Quickstart</a><ul>
 <li><a class="reference internal" href="#create-a-conda-environment-recommended">1. Create a conda environment (recommended)</a></li>
-<li><a class="reference internal" href="#install-playnano-from-pypi">2. Install playNano from PyPi</a></li>
+<li><a class="reference internal" href="#install-playnano-from-pypi">2. Install playNano from PyPI</a></li>
 <li><a class="reference internal" href="#quick-verification">3. Quick verification</a></li>
 <li><a class="reference internal" href="#most-common-actions-one-liners">4. Most common actions (one-liners)</a><ul>
 <li><a class="reference internal" href="#launch-interactive-gui">Launch interactive GUI:</a></li>
@@ -665,7 +666,7 @@ generate an animated GIF (from <code class="docutils literal notranslate"><span 
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

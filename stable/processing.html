@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Processing - playnano v0.5.2 documentation</title>
+        <title>Processing - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -541,21 +542,28 @@ sequentially, and all parameters, versions, and outputs are logged for traceabil
 <p>Processing can be applied directly from the CLI (<code class="docutils literal notranslate"><span class="pre">process</span></code> subcommand) or in the
 interactive GUI (<code class="docutils literal notranslate"><span class="pre">play</span></code> command). In both cases, processing steps are defined using
 a semicolon-separated string or a YAML file.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">--processing</span></code> argument accepts a semicolon-separated list of steps. Each step
-is either a data operation, a mask generator, with optional parameters passed via
-colon-separated key-value pairs or <code class="docutils literal notranslate"><span class="pre">clear</span></code> that resets masks. For example:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--processing</span></code> argument accepts a semicolon-separated list of steps. Each step is
+the name of an operation (a filter, mask, video operation or stack edit), or <code class="docutils literal notranslate"><span class="pre">clear</span></code> to
+reset the mask. Parameters follow the name after a colon, as comma-separated
+<code class="docutils literal notranslate"><span class="pre">key=value</span></code> pairs. For example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--processing<span class="w"> </span><span class="s2">"remove_plane;threshold_mask:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--processing<span class="w"> </span><span class="s2">"remove_plane;mask_threshold:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--export<span class="w"> </span>tif,npz<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--make-gif<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output-folder<span class="w"> </span>./results<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output-name<span class="w"> </span>sample_processed
 </pre></div>
 </div>
+<p>Parameter values are read as Python values: <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">-2</span></code>, <code class="docutils literal notranslate"><span class="pre">2.5</span></code> and <code class="docutils literal notranslate"><span class="pre">1e3</span></code> are
+numbers, <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> are booleans, <code class="docutils literal notranslate"><span class="pre">none</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, and lists or tuples
+are written in brackets, for example <code class="docutils literal notranslate"><span class="pre">drop_frames:indices_to_drop=[0,1]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">intersection_crop:pad=(2,3)</span></code>. Anything else is text. To pass text that looks
+like a number, quote it: <code class="docutils literal notranslate"><span class="pre">name='1'</span></code>. <code class="docutils literal notranslate"><span class="pre">--analysis-steps</span></code> and values typed into
+the <code class="docutils literal notranslate"><span class="pre">wizard</span></code> follow the same rules.</p>
 <p>Alternatively, pipelines can be defined in YAML for better readability and reuse:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">filters</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_plane</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">threshold_mask</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polynomial_flatten</span>
 <span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
@@ -563,6 +571,8 @@ colon-separated key-value pairs or <code class="docutils literal notranslate"><s
 <span class="w">    </span><span class="nt">sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
 </pre></div>
 </div>
+<p>In YAML files, write numbers in scientific notation with a dot, such as <code class="docutils literal notranslate"><span class="pre">1.0e3</span></code>;
+YAML reads <code class="docutils literal notranslate"><span class="pre">1e3</span></code> as text.</p>
 <p>Run it via:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--processing-file<span class="w"> </span>pipeline.yaml<span class="w"> </span><span class="se">\</span>
@@ -602,9 +612,10 @@ filters or analysis. Masks are combined via logical OR. Use <code class="docutil
 <li><p><strong>Video Processing (3D stack operations)</strong> — apply transformations across full
 time-series stacks, such as alignment or drift correction. Operate on 3D arrays and
 may record metadata.</p></li>
-<li><p><strong>Stack Edits (AFMImageStack-level operations)</strong> — modify dataset structure (e.g.
-cropping, frame removal). Return a new 3D array, with metadata and timestamps
-updated automatically.</p></li>
+<li><p><strong>Stack Edits (AFMImageStack-level operations)</strong> — remove frames (<code class="docutils literal notranslate"><span class="pre">drop_frames</span></code>,
+<code class="docutils literal notranslate"><span class="pre">drop_frame_range</span></code>, <code class="docutils literal notranslate"><span class="pre">select_frames</span></code>, <code class="docutils literal notranslate"><span class="pre">drop_final_frames</span></code>). The helpers return
+the indices of the frames to drop, and the pipeline removes those frames and updates
+the metadata and timestamps to match.</p></li>
 </ul>
 </section>
 <section id="step-naming-and-provenance">
@@ -612,8 +623,8 @@ updated automatically.</p></li>
 <p>Each step is named as <code class="docutils literal notranslate"><span class="pre">step_&lt;index&gt;_&lt;operation_name&gt;</span></code> and its output is stored in
 <a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.processed" title="playnano.afm_stack.AFMImageStack.processed"><code class="xref py py-attr docutils literal notranslate"><span class="pre">processed</span></code></a> (for data) or
 <a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.masks" title="playnano.afm_stack.AFMImageStack.masks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">masks</span></code></a> (for binary masks).</p>
-<p>Provenance information is stored in
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">provenance[&quot;processing&quot;]</span></code> and includes:</p>
+<p>Provenance information is stored in <code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;processing&quot;]</span></code> (see
+<a class="reference internal" href="api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.provenance" title="playnano.afm_stack.AFMImageStack.provenance"><code class="xref py py-attr docutils literal notranslate"><span class="pre">provenance</span></code></a>) and includes:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">steps</span></code> — ordered list of step records (parameters, versions, timestamps, etc.)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">keys_by_name</span></code> — maps operation names to their snapshot keys.</p></li>
@@ -658,38 +669,32 @@ it appears in the same CLI/API list as the built-in filters.</p>
 <p>Several projects also have the required entry points and can be installed to add new
 filters:</p>
 <ul class="simple">
-<li><p><strong>Python-Nanolocz_Library</strong> (<code class="docutils literal notranslate"><span class="pre">pnanolocz</span></code>) — collection of AFM processing functions,
+<li><p><strong>Python-NanoLocz-Library</strong> (<code class="docutils literal notranslate"><span class="pre">pnanolocz</span></code>) — collection of AFM processing functions,
 including flattening and filtering with automated routines.
 <a class="reference external" href="https://github.com/derollins/Python-Nanolocz-Library">https://github.com/derollins/Python-Nanolocz-Library</a></p></li>
 </ul>
 </section>
 </section>
-<section id="id1">
-<h2>CLI / GUI Usage<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<p>The processing pipeline can defined in the CLI and run in the CLI or the GUI.</p>
+<section id="building-a-pipeline-with-the-wizard">
+<h2>Building a Pipeline with the Wizard<a class="headerlink" href="#building-a-pipeline-with-the-wizard" title="Link to this heading">¶</a></h2>
+<p>The processing pipeline can be defined in the CLI and run in the CLI or the GUI.</p>
 <p>The <strong>playNano</strong> wizard allows processing pipelines to be built interactively.
 To launch this you use the <code class="docutils literal notranslate"><span class="pre">wizard</span></code> subcommand followed by a path to the file you
 are processing and flags that define the output folder and file name (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>).
 Once built the pipeline can be saved as yaml file that can be used in future runs or
 run immediately within the wizard.</p>
 <p>Run the wizard with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>wizard<span class="w"> </span>.test/resources/sample_0.h5-jpk<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>processed_sample
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>wizard<span class="w"> </span>./tests/resources/sample_0.h5-jpk<span class="w"> </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>processed_sample
 </pre></div>
 </div>
 <p>Once the data is loaded, use the <code class="docutils literal notranslate"><span class="pre">add</span></code> command followed by the name of a filter, mask
-or mask to add steps to the pipeline. The wizard will then prompt you to enter optional or
+or video operation to add steps to the pipeline. The wizard will then prompt you to enter optional or
 required parameters. Once the pipeline is complete use the <code class="docutils literal notranslate"><span class="pre">save</span></code> with the path to a <code class="docutils literal notranslate"><span class="pre">.yaml</span></code>
 file to save the pipeline.</p>
 <p>Once constructed and saved the processing pipeline that has been built can be run with the
 <code class="docutils literal notranslate"><span class="pre">run</span></code> command which will run the processing pipeline, step-by-step, with the configured
 parameters. The wizard will then ask if you would like to export the processed data as <code class="docutils literal notranslate"><span class="pre">.npz</span></code>,
 <code class="docutils literal notranslate"><span class="pre">.h5</span></code> or <code class="docutils literal notranslate"><span class="pre">.ome-tiff</span></code> and then if you would like to generate a <code class="docutils literal notranslate"><span class="pre">.gif</span></code>.</p>
-<dl class="simple">
-<dt>Programmatic usage</dt><dd><p>“””Process a 2D array and return a filtered version.”””
-…</p>
-</dd>
-</dl>
-<p>Installed plugins appear alongside built-in filters in the CLI and GUI.</p>
 </section>
 <section id="programmatic-usage">
 <h2>Programmatic Usage<a class="headerlink" href="#programmatic-usage" title="Link to this heading">¶</a></h2>
@@ -717,7 +722,7 @@ snapshots can be accessed through <code class="docutils literal notranslate"><sp
 <li><p><strong>OME-TIFF</strong> - multi-frame TIFF, compatible with ImageJ/Fiji.</p></li>
 <li><p><strong>NPZ</strong> - numpy zipped archive containing arrays and metadata.</p></li>
 <li><p><strong>HDF5</strong> - self-contained bundle including data, processed snapshots and provenance.</p></li>
-<li><p><strong>GIF</strong> - annotated animated GIF (requires timing metadata for correct frame rates).</p></li>
+<li><p><strong>GIF</strong> - annotated animated GIF (frame timestamps are drawn when available).</p></li>
 </ul>
 <p>Use the CLI flags <code class="docutils literal notranslate"><span class="pre">--export</span></code>, <code class="docutils literal notranslate"><span class="pre">--make-gif</span></code>, <code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> and <code class="docutils literal notranslate"><span class="pre">--output-name</span></code> to
 control export behaviour (See <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a> for CLI flag details).</p>
@@ -747,20 +752,21 @@ You can use the following commands to explore what was generated:</p>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['step_1_remove_plane', 'step_2_polynomial_flatten']
-['step_3_threshold_mask']
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>['raw', 'step_1_remove_plane', 'step_2_polynomial_flatten']
+['step_3_mask_threshold']
 1 filter remove_plane
 2 filter polynomial_flatten
-3 mask threshold_mask
+3 mask mask_threshold
 </pre></div>
 </div>
-<p>This indicates two filters and one mask were applied in sequence.
+<p>This output is for a pipeline of <code class="docutils literal notranslate"><span class="pre">remove_plane</span></code>, <code class="docutils literal notranslate"><span class="pre">polynomial_flatten</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mask_threshold</span></code>: two filters and one mask, applied in sequence, plus the <code class="docutils literal notranslate"><span class="pre">raw</span></code>
+snapshot of the data before processing.
 You can access a specific result directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">flattened</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"step_2_polynomial_flatten"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">flattened</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>flattened = stack.processed[“step_2_polynomial_flatten”]
-print(flattened.shape)</p>
 <p>which returns a NumPy array representing the processed frame or stack at that step.</p>
 </section>
 </section>
@@ -769,7 +775,8 @@ print(flattened.shape)</p>
 <ul class="simple">
 <li><p>If a <code class="docutils literal notranslate"><span class="pre">raw</span></code> snapshot is missing, check if it was loaded from an existing bundle.</p></li>
 <li><p>If a plugin does not appear in the CLI, verify that its entry point group is
-<code class="docutils literal notranslate"><span class="pre">playnano.filters</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">playnano.filters</span></code> (2D frame operations) or <code class="docutils literal notranslate"><span class="pre">playnano.video_processing</span></code>
+(3D stack operations).</p></li>
 <li><p>For large datasets, prefer exporting HDF5 bundles instead of large JSON logs.</p></li>
 </ul>
 <section id="see-also">
@@ -853,7 +860,7 @@ print(flattened.shape)</p>
 <li><a class="reference internal" href="#plugins">Plugins</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id1">CLI / GUI Usage</a></li>
+<li><a class="reference internal" href="#building-a-pipeline-with-the-wizard">Building a Pipeline with the Wizard</a></li>
 <li><a class="reference internal" href="#programmatic-usage">Programmatic Usage</a></li>
 <li><a class="reference internal" href="#saved-data-exports">Saved data &amp; exports</a><ul>
 <li><a class="reference internal" href="#what-the-pipeline-records">What the pipeline records</a></li>
@@ -875,7 +882,7 @@ print(flattened.shape)</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

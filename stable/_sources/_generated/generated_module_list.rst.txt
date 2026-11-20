@@ -1,14 +1,10 @@
-- `count_nonzero <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.count_nonzero>`_
-  - Analysis module for counting non-zero data points in an array.
-- `dbscan_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.dbscan_clustering>`_
-  - DBSCAN clustering on features over the entire stack in 3D (x, y, time).
-- `feature_detection <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.feature_detection>`_
-  - Threshold-based feature detection for AFM image stacks.
-- `k_means_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.k_means_clustering>`_
-  - K-Means clustering on features over the entire stack in 3D (x, y, time).
-- `log_blob_detection <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.log_blob_detection>`_
-  - Module for LoG blob detection.
-- `particle_tracking <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.particle_tracking>`_
-  - Module for linking particle features across frames to build trajectories.
-- `x_means_clustering <../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.x_means_clustering>`_
-  - Module for X-Means clustering as part of the playNano analysis pipeline.
+- :mod:`count_nonzero <playnano.analysis.modules.count_nonzero>` - Analysis module for counting non-zero data points in an array.
+- :mod:`dbscan_clustering <playnano.analysis.modules.dbscan_clustering>` - DBSCAN clustering on features over the entire stack in 3D (x, y, time).
+- :mod:`feature_detection <playnano.analysis.modules.feature_detection>` - Threshold-based feature detection for AFM image stacks.
+- :mod:`k_means_clustering <playnano.analysis.modules.k_means_clustering>` - K-Means clustering on features over the entire stack in 3D (x, y, time).
+- :mod:`log_blob_detection <playnano.analysis.modules.log_blob_detection>` - Module for LoG blob detection.
+- :mod:`particle_region_extraction <playnano.analysis.modules.particle_region_extraction>` - Particle region extraction module for the playNano analysis pipeline.
+- :mod:`particle_region_media_export <playnano.analysis.modules.particle_region_media_export>` - Particle region export module for the playNano analysis pipeline.
+- :mod:`particle_tracking <playnano.analysis.modules.particle_tracking>` - Module for linking particle features across frames to build trajectories.
+- :mod:`tracked_particle_boundary_size <playnano.analysis.modules.tracked_particle_boundary_size>` - Particle boundary size analysis module for the playNano analysis pipeline.
+- :mod:`x_means_clustering <playnano.analysis.modules.x_means_clustering>` - Module for X-Means clustering as part of the playNano analysis pipeline.

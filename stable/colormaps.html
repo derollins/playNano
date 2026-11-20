@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Colormaps - playnano v0.5.2 documentation</title>
+        <title>Colormaps - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -573,7 +574,6 @@ alongside built-in options such as <code class="docutils literal notranslate"><s
 <p><span class="caption-text">The three native playNano colourmaps rendered across the full data range.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>—</p>
 </section>
 <section id="afm-brown">
 <span id="colormap-afm-brown"></span><h2>afm_brown<a class="headerlink" href="#afm-brown" title="Link to this heading">¶</a></h2>
@@ -623,7 +623,6 @@ the scale, and its visual stability makes it well-suited to HS-AFM video
 exports where z-scale consistency between frames is important. It is also similar
 enough to traditional AFM colour schemes to be visually familiar and easily accepted
 by users used to older AFM colour scales.</p>
-<p>—</p>
 </section>
 <section id="playnano-gold">
 <span id="colormap-playnano-gold"></span><h2>playnano_gold<a class="headerlink" href="#playnano-gold" title="Link to this heading">¶</a></h2>
@@ -667,7 +666,6 @@ takes priority over strict perceptual linearity, this is the stronger choice.</p
 <p><strong>When to use</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">playnano_gold</span></code> suits complex, feature-rich samples where the full height
 range needs to be visually separated.</p>
-<p>—</p>
 </section>
 <section id="classic-afm">
 <span id="colormap-classic-afm"></span><h2>classic_afm<a class="headerlink" href="#classic-afm" title="Link to this heading">¶</a></h2>
@@ -711,7 +709,6 @@ behaviour that <code class="docutils literal notranslate"><span class="pre">afm_
 <p>Use <code class="docutils literal notranslate"><span class="pre">classic_afm</span></code> only when reproducing the look of figures generated with
 other AFM software, or when comparing directly with existing published data
 that used a similar colourmap.</p>
-<p>—</p>
 </section>
 <section id="usage">
 <span id="colormap-usage"></span><h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
@@ -720,20 +717,21 @@ that used a similar colourmap.</p>
 <p>All three colourmaps are available as <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>
 <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="(in Matplotlib v3.11.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearSegmentedColormap</span></code></a> objects via
 <a class="reference internal" href="api/playnano.utils.colormaps.html#module-playnano.utils.colormaps" title="playnano.utils.colormaps"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.utils.colormaps</span></code></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span><span class="w"> </span><span class="nn">playnano</span>  <span class="c1"># register_custom_colormaps() is called on import</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">playnano</span>  <span class="c1"># register_custom_colormaps() is called on import</span>
 
- <span class="c1"># All three are now available by name for matplotlib functions like imshow():</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown"</span><span class="p">)</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">)</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"classic_afm"</span><span class="p">)</span>
+<span class="c1"># All three are now available by name for matplotlib functions like imshow():</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"classic_afm"</span><span class="p">)</span>
 
- <span class="c1"># Reversed versions are also registered automatically</span>
- <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown_r"</span><span class="p">)</span>
+<span class="c1"># Reversed versions are also registered automatically</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">height_data</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"afm_brown_r"</span><span class="p">)</span>
 
- <span class="c1"># Additionally, they can be used within the playNano export functions</span>
- <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
+<span class="c1"># Additionally, they can be used within the playNano export functions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
 
- <span class="n">export_gif</span><span class="p">(</span>
+<span class="n">export_gif</span><span class="p">(</span>
     <span class="n">stack</span><span class="p">,</span>
     <span class="n">make_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">output_folder</span><span class="o">=</span><span class="s2">"exports"</span><span class="p">,</span>
@@ -743,7 +741,7 @@ that used a similar colourmap.</p>
     <span class="n">zmin</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">zmax</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-   <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">draw_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -758,13 +756,12 @@ alternative colourmap can be set via the <code class="docutils literal notransla
 </div>
 <p>In the GUI, the colourmap and z-scale can be adjusted interactively from the
 display controls before export.</p>
-<p>—</p>
 </section>
 </section>
 <section id="background-perceptual-linearity-in-afm-visualisation">
 <span id="colormap-background"></span><h2>Background: perceptual linearity in AFM visualisation<a class="headerlink" href="#background-perceptual-linearity-in-afm-visualisation" title="Link to this heading">¶</a></h2>
 <p>Conventional AFM colourmaps such as Matplotlib’s <code class="docutils literal notranslate"><span class="pre">afmhot</span></code> and the traditional
-colormap reprduced in <code class="docutils literal notranslate"><span class="pre">classic_afm</span></code>, were not designed with perceptual uniformity
+colormap reproduced in <code class="docutils literal notranslate"><span class="pre">classic_afm</span></code>, were not designed with perceptual uniformity
 in mind. Two common consequences are:</p>
 <ul class="simple">
 <li><p><strong>The black plateau</strong> — a long stretch of near-zero lightness at the low end
@@ -905,7 +902,7 @@ key perceptual metrics:</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

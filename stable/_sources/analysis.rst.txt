@@ -9,6 +9,7 @@ that are stored on the AFM stack and recorded with full provenance for audit
 and reproducibility.
 
 This page covers:
+
 - quick CLI and Python examples
 - YAML schema for pipeline files
 - how results are saved and inspected
@@ -24,7 +25,7 @@ Run an inline analysis pipeline from the CLI:
 
    playnano analyze data/processed_sample.h5 \
       --analysis-steps "feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3" \
-      --output-folder ./results      --output-name tracked_particles
+      --output-folder ./results --output-name tracked_particles
 
 Or load the pipeline from a YAML/JSON file:
 
@@ -51,11 +52,11 @@ Overview & behaviour
 - Each analysis step is executed by an ``AnalysisModule`` (built-in or plugin).
 - The pipeline records per-step provenance (parameters, timestamps, version and
   stored result keys) under ``stack.provenance['analysis']``.
-- If ``log_to`` is provided to programmatic runs or the CLI, a **sanitised JSON**
-  summary is written (arrays and complex objects are summarised for JSON friendliness).
-- Some analysis modules have requirements such as being proceeded by cirtain other
-  analysis modules, i.e. tracking modules require the detections of particles prior to
-  tracking in order to have particles to track.
+- In Python, ``AnalysisPipeline.run(stack, log_to="file.json")`` also writes a
+  **sanitised JSON** record (arrays and complex objects are converted for JSON). The CLI
+  always writes both a JSON and an HDF5 file.
+- Some analysis modules must be preceded by certain other analysis modules; for example,
+  tracking modules need particles to have been detected first.
 
 Available analysis modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +69,7 @@ See the generated list of installed modules:
 CLI usage
 ---------
 
-The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.
+The analysis pipeline can be run from the CLI or programmatically, but not currently from the GUI.
 
 This is the general form of the analyze subcommand for CLI use:
 
@@ -103,12 +104,12 @@ Top-level key must be ``analysis``:
        threshold: 4.5
      - name: particle_tracking
        max_distance: 2.5
-       min_length: 5
 
 Each entry:
 
 - **name** (str, required) - analysis module name.
-- **parameters** - module-specific kwargs passed through to the module.
+- any other keys - module-specific parameters, written directly on the step and passed
+  to the module as keyword arguments.
 
 Validation notes
 ^^^^^^^^^^^^^^^^
@@ -133,8 +134,8 @@ Construct and run a pipeline from Python:
    stack = AFMImageStack.load_data("data/processed_sample.h5", channel="height_trace")
 
    ap = AnalysisPipeline()
-   ap.add("detect_particles", threshold=5)
-   ap.add("track_particles", max_distance=3.0)
+   ap.add("feature_detection", mask_fn="mask_threshold", threshold=5)
+   ap.add("particle_tracking", max_distance=3.0)
 
    # run and optionally write a sanitised JSON log
    record = ap.run(stack, log_to="analysis.json")
@@ -152,9 +153,10 @@ Outputs & exports
   - ``stack.provenance["analysis"]`` : detailed provenance about the run.
   - ``stack.provenance["environment"]`` : runtime environment metadata (OS, Python, packages).
 
-- CLI/utility functions may optionally export:
-  - A sanitised JSON summary (human- and machine-readable).
-  - HDF5 bundle with full data + provenance.
+- The CLI and the wizard export:
+
+  - A sanitised JSON record (human- and machine-readable).
+  - An HDF5 file with the full results and provenance.
 
 Inspecting results
 ------------------
@@ -171,7 +173,7 @@ Common programmatic patterns:
        print(step["index"], step["name"], step["analysis_key"], step.get("version"))
 
    # 3) Access outputs for a named module
-   for rec in stack.provenance["analysis"]["results_by_name"].get("detect_particles", []):
+   for rec in stack.provenance["analysis"]["results_by_name"].get("feature_detection", []):
        key = rec["analysis_key"]
        outputs = rec["outputs"]
        # use outputs (dict/list/array) directly

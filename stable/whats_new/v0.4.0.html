@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>What’s New in playNano 0.4.0 - playnano v0.5.2 documentation</title>
+        <title>What’s New in playNano 0.4.0 - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -537,7 +538,7 @@ alongside GIF:</p>
 <p>All three formats share a unified rendering pipeline in the new
 <code class="docutils literal notranslate"><span class="pre">playnano.io.render_utils</span></code> module, which enforces a minimum output resolution (512 px),
 ensures scale bars are physically accurate regardless of frame size, and keeps annotation
-proportions consistent across resolutions. See :doc:<code class="docutils literal notranslate"><span class="pre">exporting</span></code> for full details.</p>
+proportions consistent across resolutions. See <a class="reference internal" href="../exporting.html"><span class="doc">Exporting Data</span></a> for full details.</p>
 </li>
 <li><p><strong>Native Colormaps:</strong> Three perceptually designed colormaps are now bundled and
 registered globally as Matplotlib colormaps on import:</p>
@@ -547,7 +548,7 @@ plateau and flicker artefacts common in traditional AFM colour schemes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">playnano_gold</span></code> — full dynamic range (L* 0–100), high contrast for complex topography.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">classic_afm</span></code> — non-linear legacy map for continuity with existing workflows.</p></li>
 </ul>
-<p>Reversed variants (<code class="docutils literal notranslate"><span class="pre">_r</span></code>) are registered automatically. See :doc:<code class="docutils literal notranslate"><span class="pre">colormaps</span></code> for
+<p>Reversed variants (<code class="docutils literal notranslate"><span class="pre">_r</span></code>) are registered automatically. See <a class="reference internal" href="../colormaps.html"><span class="doc">Colormaps</span></a> for
 background, usage, and a comparison with <code class="docutils literal notranslate"><span class="pre">afmhot</span></code>.</p>
 </li>
 <li><p><strong>Vertical Flip Filter:</strong> A new built-in processing filter <code class="docutils literal notranslate"><span class="pre">vertical_flip</span></code> reverses
@@ -646,17 +647,17 @@ per-frame variation is now recorded rather than raising a <code class="docutils 
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>New :doc:<code class="docutils literal notranslate"><span class="pre">colormaps</span></code> page covering the three native colormaps, their perceptual
+<li><p>New <a class="reference internal" href="../colormaps.html"><span class="doc">Colormaps</span></a> page covering the three native colormaps, their perceptual
 properties, usage in the CLI and GUI, and background on perceptual linearity in
 AFM visualisation.</p></li>
-<li><p>:doc:<code class="docutils literal notranslate"><span class="pre">exporting</span></code> restructured into <strong>Animated Exports</strong> (GIF, video, image sequence)
+<li><p><a class="reference internal" href="../exporting.html"><span class="doc">Exporting Data</span></a> restructured into <strong>Animated Exports</strong> (GIF, video, image sequence)
 and <strong>Data Exports</strong> (OME-TIFF, NPZ, HDF5) sections, with full CLI and programmatic
 usage for each format.</p></li>
-<li><p>:doc:<code class="docutils literal notranslate"><span class="pre">cli</span></code> updated with global options (<code class="docutils literal notranslate"><span class="pre">--version</span></code>, <code class="docutils literal notranslate"><span class="pre">--log-level</span></code>), new <code class="docutils literal notranslate"><span class="pre">process</span></code> and
+<li><p><a class="reference internal" href="../cli.html"><span class="doc">Command Line Interface (CLI)</span></a> updated with global options (<code class="docutils literal notranslate"><span class="pre">--version</span></code>, <code class="docutils literal notranslate"><span class="pre">--log-level</span></code>), new <code class="docutils literal notranslate"><span class="pre">process</span></code> and
 <code class="docutils literal notranslate"><span class="pre">play</span></code> flags, and corrected help text for FPS defaults.</p></li>
-<li><p>:doc:<code class="docutils literal notranslate"><span class="pre">gui</span></code> updated to document the colormap selector, unified animated export panel, and
+<li><p><a class="reference internal" href="../gui.html"><span class="doc">GUI: Interactive Playback</span></a> updated to document the colormap selector, unified animated export panel, and
 revised annotation controls.</p></li>
-<li><p>:doc:<code class="docutils literal notranslate"><span class="pre">introduction</span></code> and :doc:<code class="docutils literal notranslate"><span class="pre">index</span></code> updated to include <code class="docutils literal notranslate"><span class="pre">.aris</span></code> in the list of supported
+<li><p><a class="reference internal" href="../introduction.html"><span class="doc">Introduction</span></a> and <a class="reference internal" href="../index.html"><span class="doc">playNano Documentation</span></a> updated to include <code class="docutils literal notranslate"><span class="pre">.aris</span></code> in the list of supported
 formats.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">processing-operations-reference</span></code> updated to include <code class="docutils literal notranslate"><span class="pre">vertical_flip</span></code>.</p></li>
 <li><p>API reference reorganised into captioned sections: Core, IO &amp; Data Formats, Processing
@@ -769,7 +770,7 @@ invalid string; <code class="docutils literal notranslate"><span class="pre">pro
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

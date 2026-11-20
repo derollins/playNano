@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.utils module - playnano v0.5.2 documentation</title>
+        <title>playnano.cli.utils module - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -626,6 +627,44 @@ analysis_module_name:param1=value1,param2=value2</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.utils.parse_param_value">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_param_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/utils.html#parse_param_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.utils.parse_param_value" title="Link to this definition">¶</a></dt>
+<dd><p>Convert one parameter value from the command line into a Python value.</p>
+<p>Used for <code class="docutils literal notranslate"><span class="pre">--processing</span></code> and <code class="docutils literal notranslate"><span class="pre">--analysis-steps</span></code> strings and for values
+typed into the wizard, so all three read values the same way.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The value as typed, for example <code class="docutils literal notranslate"><span class="pre">&quot;2&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1e3&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;[0,</span> <span class="pre">1]&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;none&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> for <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> and <code class="docutils literal notranslate"><span class="pre">None</span></code> for
+<code class="docutils literal notranslate"><span class="pre">none</span></code>/<code class="docutils literal notranslate"><span class="pre">null</span></code> (any case); otherwise a Python literal (number, list,
+tuple, dict or quoted string) if the text is one, a float for <code class="docutils literal notranslate"><span class="pre">nan</span></code>
+or <code class="docutils literal notranslate"><span class="pre">inf</span></code>, and the text itself otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Python literal syntax is used rather than YAML because PyYAML follows
+YAML 1.1, which reads <code class="docutils literal notranslate"><span class="pre">1e3</span></code> as a string and <code class="docutils literal notranslate"><span class="pre">on</span></code>/<code class="docutils literal notranslate"><span class="pre">off</span></code>/<code class="docutils literal notranslate"><span class="pre">yes</span></code>/<code class="docutils literal notranslate"><span class="pre">no</span></code>
+as booleans. To keep a value that looks like a number as text, quote it:
+<code class="docutils literal notranslate"><span class="pre">name='1'</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"1e3"</span><span class="p">)</span>
+<span class="go">1000.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"[0, 1]"</span><span class="p">)</span>
+<span class="go">[0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"None"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_param_value</span><span class="p">(</span><span class="s2">"otsu"</span><span class="p">)</span>
+<span class="go">'otsu'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="playnano.cli.utils.parse_processing_file">
 <span class="sig-prename descclassname"><span class="pre">playnano.cli.utils.</span></span><span class="sig-name descname"><span class="pre">parse_processing_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/cli/utils.html#parse_processing_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.utils.parse_processing_file" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</p>
@@ -635,7 +674,7 @@ analysis_module_name:param1=value1,param2=value2</p>
 <li><p>name: remove_plane</p></li>
 <li><p>name: gaussian_filter
 sigma: 2.0</p></li>
-<li><p>name: threshold_mask
+<li><p>name: mask_threshold
 threshold: 2</p></li>
 <li><p>name: polynomial_flatten
 order: 2</p></li>
@@ -657,7 +696,7 @@ Parameters are specified as key=value pairs.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>processing_str</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Semicolon-delimited string specifying processing steps.
 Each step may have optional parameters (separated by commas) after a colon,
-e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”</p>
+e.g., “remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2”</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of tuples, each containing:
@@ -678,12 +717,12 @@ e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”<
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_processing_string</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="s2">"remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"</span>
+<span class="gp">... </span>    <span class="s2">"remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="go">[</span>
 <span class="go">    ('remove_plane', {}),</span>
 <span class="go">    ('gaussian_filter', {'sigma': 2.0}),</span>
-<span class="go">    ('threshold_mask', {'threshold': 2})</span>
+<span class="go">    ('mask_threshold', {'threshold': 2})</span>
 <span class="go">]</span>
 </pre></div>
 </div>
@@ -754,6 +793,7 @@ e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”<
 <li><a class="reference internal" href="#playnano.cli.utils.is_valid_step"><code class="docutils literal notranslate"><span class="pre">is_valid_step()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_analysis_file"><code class="docutils literal notranslate"><span class="pre">parse_analysis_file()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_analysis_string"><code class="docutils literal notranslate"><span class="pre">parse_analysis_string()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.utils.parse_param_value"><code class="docutils literal notranslate"><span class="pre">parse_param_value()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_processing_file"><code class="docutils literal notranslate"><span class="pre">parse_processing_file()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.cli.utils.parse_processing_string"><code class="docutils literal notranslate"><span class="pre">parse_processing_string()</span></code></a></li>
 </ul>
@@ -767,7 +807,7 @@ e.g., “remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2”<
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

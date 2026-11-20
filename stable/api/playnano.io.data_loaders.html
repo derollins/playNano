@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.data_loaders module - playnano v0.5.2 documentation</title>
+        <title>playnano.io.data_loaders module - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -516,25 +517,25 @@
 <p>Data loaders for AFM image stacks exported by <strong>playNano</strong>.</p>
 <p>This module provides readers for serialized AFMImageStack bundles created
 by the export routines (<code class="docutils literal notranslate"><span class="pre">.npz</span></code>, <code class="docutils literal notranslate"><span class="pre">.h5</span></code>, and OME-TIFF). Each loader
-reconstructs a <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> with correct
+reconstructs a <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> with correct
 data, pixel size, channel name, and per-frame metadata (timestamps,
 frame_pixel_size_nm etc.)
 All loaders restore provenance and any stored processing or mask data.</p>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <dl class="simple">
-<dt>load_npz_bundle</dt><dd><p>Load a <cite>.npz</cite> bundle into an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code>.</p>
+<dt>load_npz_bundle</dt><dd><p>Load a <cite>.npz</cite> bundle into an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>.</p>
 </dd>
-<dt>load_h5_bundle</dt><dd><p>Load a <cite>.h5</cite> bundle into an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code>.</p>
+<dt>load_h5_bundle</dt><dd><p>Load a <cite>.h5</cite> bundle into an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>.</p>
 </dd>
-<dt>load_ome_tiff_stack</dt><dd><p>Load an OME-TIFF bundle into an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code>.</p>
+<dt>load_ome_tiff_stack</dt><dd><p>Load an OME-TIFF bundle into an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>.</p>
 </dd>
 </dl>
 </section>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.data_loaders.load_h5_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.data_loaders.</span></span><span class="sig-name descname"><span class="pre">load_h5_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/data_loaders.html#load_h5_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.data_loaders.load_h5_bundle" title="Link to this definition">¶</a></dt>
-<dd><p>Load an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> from an HDF5 bundle.</p>
+<dd><p>Load an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> from an HDF5 bundle.</p>
 <section id="expected-hdf5-structure">
 <h2>Expected HDF5 structure<a class="headerlink" href="#expected-hdf5-structure" title="Link to this heading">¶</a></h2>
 <dl class="simple">
@@ -554,7 +555,7 @@ All loaders restore provenance and any stored processing or mask data.</p>
 </dd>
 </dl>
 <p>Files with the structure are produced by
-<code class="xref py py-func docutils literal notranslate"><span class="pre">playNano.io.export_data.save_h5_bundle()</span></code>.</p>
+<a class="reference internal" href="playnano.io.export_data.html#playnano.io.export_data.save_h5_bundle" title="playnano.io.export_data.save_h5_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_h5_bundle()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">param path<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Path to the <cite>.h5</cite> file.</p>
@@ -563,7 +564,7 @@ All loaders restore provenance and any stored processing or mask data.</p>
 <dd class="field-even"><p>pathlib.Path</p>
 </dd>
 <dt class="field-odd">param channel<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Provided for API compatibility with <code class="xref py py-func docutils literal notranslate"><span class="pre">load_afm_stack()</span></code>
+<dd class="field-odd"><p>Provided for API compatibility with <a class="reference internal" href="playnano.io.loader.html#playnano.io.loader.load_afm_stack" title="playnano.io.loader.load_afm_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_afm_stack()</span></code></a>
 but ignored when reading the bundle.</p>
 </dd>
 <dt class="field-even">type channel<span class="colon">:</span></dt>
@@ -574,7 +575,7 @@ but ignored when reading the bundle.</p>
 and masks restored.</p>
 </dd>
 <dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>playNano.afm_stack.AFMImageStack</p>
+<dd class="field-even"><p>playnano.afm_stack.AFMImageStack</p>
 </dd>
 <dt class="field-odd">raises ValueError<span class="colon">:</span></dt>
 <dd class="field-odd"><p>If required datasets are missing or JSON decoding fails.
@@ -588,7 +589,7 @@ and masks restored.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.data_loaders.load_npz_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.data_loaders.</span></span><span class="sig-name descname"><span class="pre">load_npz_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/data_loaders.html#load_npz_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.data_loaders.load_npz_bundle" title="Link to this definition">¶</a></dt>
-<dd><p>Load an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> from a <cite>.npz</cite> bundle.</p>
+<dd><p>Load an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> from a <cite>.npz</cite> bundle.</p>
 <p>The <cite>.npz</cite> file must contain the following keys:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> : <code class="docutils literal notranslate"><span class="pre">float32</span></code> array of shape <code class="docutils literal notranslate"><span class="pre">(n_frames,</span> <span class="pre">H,</span> <span class="pre">W)</span></code></p></li>
@@ -600,12 +601,12 @@ and masks restored.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">masks__&lt;mask&gt;</span></code> : optional boolean mask arrays</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">state_backups_json</span></code> : optional JSON-encoded dict of saved states</p></li>
 </ul>
-<p>This is the structure produced by <code class="xref py py-func docutils literal notranslate"><span class="pre">playNano.io.export_data.save_npz_bundle()</span></code>.</p>
+<p>This is the structure produced by <a class="reference internal" href="playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_npz_bundle()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Path to the <cite>.npz</cite> file.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;height_trace&quot;</em>) – Provided for API compatibility with <code class="xref py py-func docutils literal notranslate"><span class="pre">load_afm_stack()</span></code>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;height_trace&quot;</em>) – Provided for API compatibility with <a class="reference internal" href="playnano.io.loader.html#playnano.io.loader.load_afm_stack" title="playnano.io.loader.load_afm_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_afm_stack()</span></code></a>
 but ignored when reading the bundle.</p></li>
 </ul>
 </dd>
@@ -614,7 +615,7 @@ but ignored when reading the bundle.</p></li>
 <code class="docutils literal notranslate"><span class="pre">.processed</span></code>, <code class="docutils literal notranslate"><span class="pre">.masks</span></code>, and <code class="docutils literal notranslate"><span class="pre">.provenance</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>playNano.afm_stack.AFMImageStack</p>
+<dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">playnano.afm_stack.AFMImageStack</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If required keys are missing or JSON blobs cannot be decoded.</p>
@@ -625,7 +626,7 @@ but ignored when reading the bundle.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.data_loaders.load_ome_tiff_stack">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.data_loaders.</span></span><span class="sig-name descname"><span class="pre">load_ome_tiff_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/data_loaders.html#load_ome_tiff_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.data_loaders.load_ome_tiff_stack" title="Link to this definition">¶</a></dt>
-<dd><p>Load an OME-TIFF bundle into an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code>.</p>
+<dd><p>Load an OME-TIFF bundle into an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a>.</p>
 <p>Attempts to parse OME-XML and custom metadata tags to reconstruct
 pixel size, timestamps, and provenance. Falls back gracefully if
 certain metadata are unavailable.</p>
@@ -633,7 +634,7 @@ certain metadata are unavailable.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Path to the <cite>.ome.tif</cite> file created by
-<code class="xref py py-func docutils literal notranslate"><span class="pre">save_ome_tiff_stack()</span></code>.</p></li>
+<a class="reference internal" href="playnano.io.export_data.html#playnano.io.export_data.save_ome_tiff_stack" title="playnano.io.export_data.save_ome_tiff_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_ome_tiff_stack()</span></code></a>.</p></li>
 <li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Fallback channel name if none is found in OME metadata.</p></li>
 </ul>
 </dd>
@@ -649,7 +650,7 @@ certain metadata are unavailable.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>playNano.afm_stack.AFMImageStack</p>
+<dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">playnano.afm_stack.AFMImageStack</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the image array shape is unsupported or essential metadata
@@ -731,7 +732,7 @@ certain metadata are unavailable.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

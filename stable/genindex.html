@@ -6,7 +6,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_light.svg" as="image">
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
-    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 --><title>Index - playnano v0.5.2 documentation</title>
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 --><title>Index - playnano v0.5.3 documentation</title>
 <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -162,7 +162,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -208,9 +208,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -397,7 +394,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -471,6 +471,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -559,6 +560,10 @@
 <section id="B" class="genindex-section">
   <h2>B</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule">BoundarySizeModule (class in playnano.analysis.modules.tracked_particle_boundary_size)</a>
+</li>
+    </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/playnano.utils.io_utils.html#playnano.utils.io_utils.build_frame_metadata">build_frame_metadata() (in module playnano.utils.io_utils)</a>
 </li>
@@ -846,7 +851,13 @@
 </li>
           <li><a href="api/playnano.analysis.modules.log_blob_detection.html#module-playnano.analysis.modules.log_blob_detection">playnano.analysis.modules.log_blob_detection</a>
 </li>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#module-playnano.analysis.modules.particle_region_extraction">playnano.analysis.modules.particle_region_extraction</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#module-playnano.analysis.modules.particle_region_media_export">playnano.analysis.modules.particle_region_media_export</a>
+</li>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#module-playnano.analysis.modules.particle_tracking">playnano.analysis.modules.particle_tracking</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#module-playnano.analysis.modules.tracked_particle_boundary_size">playnano.analysis.modules.tracked_particle_boundary_size</a>
 </li>
           <li><a href="api/playnano.analysis.modules.x_means_clustering.html#module-playnano.analysis.modules.x_means_clustering">playnano.analysis.modules.x_means_clustering</a>
 </li>
@@ -956,7 +967,13 @@
 </li>
           <li><a href="api/playnano.analysis.modules.log_blob_detection.html#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name">(playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule property)</a>
 </li>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.name">(playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule property)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.name">(playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule property)</a>
+</li>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.name">(playnano.analysis.modules.particle_tracking.ParticleTrackingModule property)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.name">(playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule property)</a>
 </li>
           <li><a href="api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.name">(playnano.analysis.modules.x_means_clustering.XMeansClusteringModule property)</a>
 </li>
@@ -993,11 +1010,17 @@
 </li>
         <li><a href="api/playnano.cli.utils.html#playnano.cli.utils.parse_analysis_string">parse_analysis_string() (in module playnano.cli.utils)</a>
 </li>
+        <li><a href="api/playnano.cli.utils.html#playnano.cli.utils.parse_param_value">parse_param_value() (in module playnano.cli.utils)</a>
+</li>
         <li><a href="api/playnano.cli.utils.html#playnano.cli.utils.parse_processing_file">parse_processing_file() (in module playnano.cli.utils)</a>
 </li>
         <li><a href="api/playnano.cli.utils.html#playnano.cli.utils.parse_processing_string">parse_processing_string() (in module playnano.cli.utils)</a>
 </li>
         <li><a href="api/playnano.io.formats.read_spm_folder.html#playnano.io.formats.read_spm_folder.parse_spm_header">parse_spm_header() (in module playnano.io.formats.read_spm_folder)</a>
+</li>
+        <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule">ParticleRegionExtractionModule (class in playnano.analysis.modules.particle_region_extraction)</a>
+</li>
+        <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule">ParticleRegionMediaExportModule (class in playnano.analysis.modules.particle_region_media_export)</a>
 </li>
         <li><a href="api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule">ParticleTrackingModule (class in playnano.analysis.modules.particle_tracking)</a>
 </li>
@@ -1081,10 +1104,31 @@
 </li>
         </ul></li>
         <li>
+    playnano.analysis.modules.particle_region_extraction
+
+        <ul>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#module-playnano.analysis.modules.particle_region_extraction">module</a>
+</li>
+        </ul></li>
+        <li>
+    playnano.analysis.modules.particle_region_media_export
+
+        <ul>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#module-playnano.analysis.modules.particle_region_media_export">module</a>
+</li>
+        </ul></li>
+        <li>
     playnano.analysis.modules.particle_tracking
 
         <ul>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#module-playnano.analysis.modules.particle_tracking">module</a>
+</li>
+        </ul></li>
+        <li>
+    playnano.analysis.modules.tracked_particle_boundary_size
+
+        <ul>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#module-playnano.analysis.modules.tracked_particle_boundary_size">module</a>
 </li>
         </ul></li>
         <li>
@@ -1178,6 +1222,8 @@
           <li><a href="api/playnano.io.html#module-playnano.io">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     playnano.io.data_loaders
 
@@ -1199,8 +1245,6 @@
           <li><a href="api/playnano.io.formats.html#module-playnano.io.formats">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     playnano.io.formats.read_aris
 
@@ -1436,7 +1480,13 @@
         <ul>
           <li><a href="api/playnano.analysis.modules.k_means_clustering.html#playnano.analysis.modules.k_means_clustering.KMeansClusteringModule.requires">(playnano.analysis.modules.k_means_clustering.KMeansClusteringModule attribute)</a>
 </li>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.requires">(playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule attribute)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.requires">(playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule attribute)</a>
+</li>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.requires">(playnano.analysis.modules.particle_tracking.ParticleTrackingModule attribute)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.requires">(playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule attribute)</a>
 </li>
           <li><a href="api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.requires">(playnano.analysis.modules.x_means_clustering.XMeansClusteringModule attribute)</a>
 </li>
@@ -1470,7 +1520,13 @@
 </li>
           <li><a href="api/playnano.analysis.modules.log_blob_detection.html#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run">(playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule method)</a>
 </li>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run">(playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule method)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run">(playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule method)</a>
+</li>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run">(playnano.analysis.modules.particle_tracking.ParticleTrackingModule method)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run">(playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule method)</a>
 </li>
           <li><a href="api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.run">(playnano.analysis.modules.x_means_clustering.XMeansClusteringModule method)</a>
 </li>
@@ -1552,7 +1608,13 @@
 </li>
           <li><a href="api/playnano.analysis.modules.log_blob_detection.html#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.version">(playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule attribute)</a>
 </li>
+          <li><a href="api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.version">(playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule attribute)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.version">(playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule attribute)</a>
+</li>
           <li><a href="api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.version">(playnano.analysis.modules.particle_tracking.ParticleTrackingModule attribute)</a>
+</li>
+          <li><a href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.version">(playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule attribute)</a>
 </li>
           <li><a href="api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.version">(playnano.analysis.modules.x_means_clustering.XMeansClusteringModule attribute)</a>
 </li>
@@ -1639,7 +1701,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

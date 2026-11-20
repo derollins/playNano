@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Exporting Data - playnano v0.5.2 documentation</title>
+        <title>Exporting Data - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -569,7 +570,7 @@ reconstruction (<a class="reference internal" href="#export-ome-tiff"><span clas
 <td><p>Yes</p></td>
 <td><p>Yes</p></td>
 <td><p>No</p></td>
-<td><p>Limited</p></td>
+<td><p>Yes (TIFF tag 65000)</p></td>
 <td><p>No</p></td>
 </tr>
 <tr class="row-even"><td><p>NPZ</p></td>
@@ -595,26 +596,26 @@ reconstruction (<a class="reference internal" href="#export-ome-tiff"><span clas
 <p>Exports are most commonly produced when running the <code class="docutils literal notranslate"><span class="pre">process</span></code> subcommand.
 You can specify one or more export formats and control filenames and output
 directories with these options:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--export<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--make-gif<span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--export<span class="w"> </span>npz,h5<span class="w"> </span>--make-gif<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
 </pre></div>
 </div>
 <section id="cli-flags">
 <h3>CLI Flags<a class="headerlink" href="#cli-flags" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--export</span></code> — Choose one or more formats (<code class="docutils literal notranslate"><span class="pre">tif</span></code>, <code class="docutils literal notranslate"><span class="pre">npz</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> — Generate an annotated GIF (requires timing metadata).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--export</span></code> — Comma-separated formats: <code class="docutils literal notranslate"><span class="pre">tif</span></code>, <code class="docutils literal notranslate"><span class="pre">npz</span></code> and/or <code class="docutils literal notranslate"><span class="pre">h5</span></code> (for example <code class="docutils literal notranslate"><span class="pre">--export</span> <span class="pre">npz,h5</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> — Generate an annotated GIF.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> — Destination directory (default: <code class="docutils literal notranslate"><span class="pre">output/</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--output-name</span></code> — Base name for exported files (default: derived from input).</p></li>
 </ul>
 <p>The visual export annotations can be further customised using <code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code>,
 <code class="docutils literal notranslate"><span class="pre">--zmin</span></code>, and <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> options; see <a class="reference internal" href="#export-animated"><span class="std std-ref">Animated Exports</span></a> for details.</p>
-<p>The frame rate can be set using <code class="docutils literal notranslate"><span class="pre">--fps</span></code>, the deafult without the tag is 5.0.</p>
+<p>The frame rate can be set using <code class="docutils literal notranslate"><span class="pre">--fps</span></code>, in frames per second; the default is 5.0.</p>
 <p>For full syntax, see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a>.
 Files can also be exported from the GUI window; see <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> for details.</p>
 <p><strong>Example</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>sample_data<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--export<span class="w"> </span>tif<span class="w"> </span>npz<span class="w"> </span>hdf5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
+<span class="w">    </span>--export<span class="w"> </span>tif,npz,h5<span class="w"> </span>--output-folder<span class="w"> </span>exports<span class="w"> </span>--output-name<span class="w"> </span>test_stack
 </pre></div>
 </div>
 <p>This processes an AFM stack using the <code class="docutils literal notranslate"><span class="pre">remove_plane</span></code> filter and exports
@@ -623,24 +624,25 @@ OME-TIFF, NPZ, and HDF5 bundles to <code class="docutils literal notranslate"><s
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>exports/
  ├── test_stack_filtered.ome.tif
  ├── test_stack_filtered.npz
- ├── test_stack_filtered.h5
- └── test_stack_filtered.gif
+ └── test_stack_filtered.h5
 </pre></div>
 </div>
 <p>Files include the suffix <code class="docutils literal notranslate"><span class="pre">_filtered</span></code> when exported from a processed stack.
-Raw exports can also be produced using the <code class="docutils literal notranslate"><span class="pre">--raw</span></code> flag.</p>
-<p>—</p>
-</section>
+Add <code class="docutils literal notranslate"><span class="pre">--make-gif</span></code> to the same command to also write <code class="docutils literal notranslate"><span class="pre">test_stack_filtered.gif</span></code>.
+To export the data as loaded, for example to convert a file to OME-TIFF, leave out
+<code class="docutils literal notranslate"><span class="pre">--processing</span></code>. After processing, the CLI exports only the processed data; to export
+the raw snapshot of a processed stack, use <code class="docutils literal notranslate"><span class="pre">raw=True</span></code> in Python (see <a class="reference internal" href="#export-data"><span class="std std-ref">Data Exports</span></a>)
+or the GUI. All data exports store heights as 32-bit floats.</p>
 </section>
 </section>
 <section id="animated-exports">
-<span id="export-animated"></span><h1>Animated Exports<a class="headerlink" href="#animated-exports" title="Link to this heading">¶</a></h1>
+<span id="export-animated"></span><h2>Animated Exports<a class="headerlink" href="#animated-exports" title="Link to this heading">¶</a></h2>
 <p>GIF, video, and image sequence exports are designed for presentation,
 communication, and visual inspection. All three support frame annotations
 (timestamps and scale bars) and share a common approach to colourmap and
 z-scale configuration.</p>
 <section id="colourmaps-and-z-scale">
-<span id="export-colourmaps"></span><h2>Colourmaps and Z-Scale<a class="headerlink" href="#colourmaps-and-z-scale" title="Link to this heading">¶</a></h2>
+<span id="export-colourmaps"></span><h3>Colourmaps and Z-Scale<a class="headerlink" href="#colourmaps-and-z-scale" title="Link to this heading">¶</a></h3>
 <p>All animated exports use <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code> as the default colourmap — a perceptually
 linear, monotone-lightness map developed for playNano that avoids the brightness
 discontinuities and dark plateaus common in traditional AFM colourmaps. Any
@@ -651,10 +653,9 @@ by default, but can be overridden with explicit <code class="docutils literal no
 Within the GUI, both the colourmap and z-scale can be adjusted interactively
 before export, and the exported file reflects those settings.</p>
 <p>See <a class="reference internal" href="colormaps.html#colormaps"><span class="std std-ref">Colormaps</span></a> for full details on the native colourmaps.</p>
-<p>—</p>
 </section>
 <section id="gif-export">
-<span id="export-gif"></span><h2>GIF Export<a class="headerlink" href="#gif-export" title="Link to this heading">¶</a></h2>
+<span id="export-gif"></span><h3>GIF Export<a class="headerlink" href="#gif-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.gif</span></code> (annotated animation)</p>
 <p><a class="reference internal" href="api/playnano.io.gif_export.html#playnano.io.gif_export.export_gif" title="playnano.io.gif_export.export_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.export_gif()</span></code></a> creates annotated GIFs.</p>
 <p>GIF exports provide a compact visualisation of the AFM video or processed
@@ -665,7 +666,7 @@ stack, suitable for quick inspection and presentation.</p>
 <li><p><strong>Scale bar</strong> — physical calibration (default 100 nm) derived from per-frame pixel size metadata.</p></li>
 </ul>
 <section id="gif-export-options-cli">
-<h3>GIF Export Options (CLI)<a class="headerlink" href="#gif-export-options-cli" title="Link to this heading">¶</a></h3>
+<h4>GIF Export Options (CLI)<a class="headerlink" href="#gif-export-options-cli" title="Link to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-gif<span class="w"> </span>--output-name<span class="w"> </span>my_video<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
 </pre></div>
@@ -676,8 +677,9 @@ stack, suitable for quick inspection and presentation.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Set the frame rate for the animation in seconds (default: 5.0).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Frame rate in frames per second (default: 5.0).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--draw-ts</span></code> — Draw each frame’s timestamp (off by default in the CLI).</p></li>
 </ul>
 <p>GIFs can be combined with the usual <code class="docutils literal notranslate"><span class="pre">--export</span></code> options to produce NPZ, HDF5,
 or TIFF bundles simultaneously.</p>
@@ -688,7 +690,7 @@ or TIFF bundles simultaneously.</p>
 </div>
 </section>
 <section id="programmatic-gif-export">
-<h3>Programmatic GIF Export<a class="headerlink" href="#programmatic-gif-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic GIF Export<a class="headerlink" href="#programmatic-gif-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.gif_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_gif</span>
 
 <span class="n">export_gif</span><span class="p">(</span>
@@ -702,15 +704,14 @@ or TIFF bundles simultaneously.</p>
     <span class="n">zmin</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">zmax</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">draw_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>—</p>
 </section>
 </section>
 <section id="video-export">
-<span id="export-video"></span><h2>Video Export<a class="headerlink" href="#video-export" title="Link to this heading">¶</a></h2>
+<span id="export-video"></span><h3>Video Export<a class="headerlink" href="#video-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> or <code class="docutils literal notranslate"><span class="pre">.avi</span></code> (annotated video)</p>
 <p><a class="reference internal" href="api/playnano.io.video_export.html#playnano.io.video_export.export_video" title="playnano.io.video_export.export_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.video_export.export_video()</span></code></a> creates annotated videos.</p>
 <p>Video exports provide a high-quality visualisation of the AFM video or
@@ -722,24 +723,25 @@ format, and support the same annotations and colourmap options as GIFs.</p>
 <li><p><strong>Scale bar</strong> — physical calibration (default 100 nm) derived from per-frame pixel size metadata.</p></li>
 </ul>
 <section id="video-export-options-cli">
-<h3>Video Export Options (CLI)<a class="headerlink" href="#video-export-options-cli" title="Link to this heading">¶</a></h3>
+<h4>Video Export Options (CLI)<a class="headerlink" href="#video-export-options-cli" title="Link to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-video<span class="w"> </span>--output-name<span class="w"> </span>my_video<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
 </pre></div>
 </div>
 <p><strong>Flags</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--make-video</span></code> — Generate an animated video after processing default is MP4 but can add a string to
-specify the format, i.e. <code class="docutils literal notranslate"><span class="pre">--make-video</span> <span class="pre">avi</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--make-video</span></code> — Generate a video after processing. The default format is MP4; give
+a format to change it, for example <code class="docutils literal notranslate"><span class="pre">--make-video</span> <span class="pre">avi</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Set the frame rate for the animation in seconds (default: 5.0).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> — Frame rate in frames per second (default: 5.0).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--draw-ts</span></code> — Draw each frame’s timestamp (off by default in the CLI).</p></li>
 </ul>
 </section>
 <section id="programmatic-video-export">
-<h3>Programmatic Video Export<a class="headerlink" href="#programmatic-video-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic Video Export<a class="headerlink" href="#programmatic-video-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.video_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_video</span>
 
 <span class="n">export_video</span><span class="p">(</span>
@@ -747,22 +749,21 @@ specify the format, i.e. <code class="docutils literal notranslate"><span class=
     <span class="n">make_video</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">output_folder</span><span class="o">=</span><span class="s2">"exports"</span><span class="p">,</span>
     <span class="n">output_name</span><span class="o">=</span><span class="s2">"sample"</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span> <span class="c1">#or "avi"</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span>  <span class="c1"># or "avi"</span>
     <span class="n">cmap_name</span><span class="o">=</span><span class="s2">"playnano_gold"</span><span class="p">,</span>  <span class="c1"># any matplotlib-registered colormap</span>
     <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">fps</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
     <span class="n">zmin</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">zmax</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">draw_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>—</p>
 </section>
 </section>
 <section id="image-sequence-export">
-<span id="export-image-sequence"></span><h2>Image Sequence Export<a class="headerlink" href="#image-sequence-export" title="Link to this heading">¶</a></h2>
+<span id="export-image-sequence"></span><h3>Image Sequence Export<a class="headerlink" href="#image-sequence-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.png</span></code> (individual frames in a folder)</p>
 <p>Image sequence exports save each frame of the AFM video or processed stack as
 a separate PNG file. This is useful for extracting specific frames for
@@ -774,7 +775,7 @@ publications or for importing into external tools.</p>
 drawn onto each frame if enabled in the GUI.</p></li>
 </ul>
 <section id="image-sequence-export-options-cli">
-<h3>Image Sequence Export Options (CLI)<a class="headerlink" href="#image-sequence-export-options-cli" title="Link to this heading">¶</a></h3>
+<h4>Image Sequence Export Options (CLI)<a class="headerlink" href="#image-sequence-export-options-cli" title="Link to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>input_folder<span class="w"> </span>--make-sequence<span class="w"> </span>--output-name<span class="w"> </span>my_frames<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scale-bar-nm<span class="w"> </span><span class="m">50</span><span class="w"> </span>--zmin<span class="w"> </span>auto<span class="w"> </span>--zmax<span class="w"> </span>auto<span class="w"> </span>--cmap<span class="w"> </span>playnano_gold
 </pre></div>
@@ -785,11 +786,11 @@ drawn onto each frame if enabled in the GUI.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> — Integer length of the scale bar in nanometres (default: 100).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> — Minimum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmax</span></code> — Maximum z-scale value; float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default: auto).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: DEFAULT_CMAP).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> — Name of the colormap to use (default: <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code>).</p></li>
 </ul>
 </section>
 <section id="programmatic-image-sequence-export">
-<h3>Programmatic Image Sequence Export<a class="headerlink" href="#programmatic-image-sequence-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic Image Sequence Export<a class="headerlink" href="#programmatic-image-sequence-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.image_sequence_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_image_sequence</span>
 
 <span class="n">export_image_sequence</span><span class="p">(</span>
@@ -797,28 +798,26 @@ drawn onto each frame if enabled in the GUI.</p></li>
     <span class="n">make_sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">output_folder</span><span class="o">=</span><span class="s2">"exports"</span><span class="p">,</span>
     <span class="n">output_name</span><span class="o">=</span><span class="s2">"sample"</span><span class="p">,</span>
-    <span class="n">fmt</span><span class="o">=</span><span class="s2">"png"</span><span class="p">,</span> <span class="c1">#or "jpg"</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">"png"</span><span class="p">,</span>  <span class="c1"># or "jpg"</span>
     <span class="n">cmap_name</span><span class="o">=</span><span class="s2">"viridis"</span><span class="p">,</span>  <span class="c1"># any matplotlib-registered colormap</span>
     <span class="n">scale_bar_nm</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">zmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">zmax</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">draw_ts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">draw_scale_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">draw_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>—</p>
 </section>
 </section>
 </section>
 <section id="data-exports">
-<span id="export-data"></span><h1>Data Exports<a class="headerlink" href="#data-exports" title="Link to this heading">¶</a></h1>
+<span id="export-data"></span><h2>Data Exports<a class="headerlink" href="#data-exports" title="Link to this heading">¶</a></h2>
 <p>HDF5, NPZ, and OME-TIFF exports are designed for data archiving, round-trip
 reconstruction, and interoperability with external analysis tools. These formats
 do not include visual annotations but carry structured data, masks, and provenance.</p>
-<p>—</p>
 <section id="ome-tiff-export">
-<span id="export-ome-tiff"></span><h2>OME-TIFF Export<a class="headerlink" href="#ome-tiff-export" title="Link to this heading">¶</a></h2>
+<span id="export-ome-tiff"></span><h3>OME-TIFF Export<a class="headerlink" href="#ome-tiff-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code> (single multi-frame image stack)</p>
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_ome_tiff_stack" title="playnano.io.export_data.save_ome_tiff_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_ome_tiff_stack()</span></code></a> exports OME-TIFF files.</p>
 <p>The OME-TIFF export stores the processed AFM video as a single stack of frames
@@ -844,7 +843,7 @@ dictionaries.</p>
 <li><p>Sharing of processed image stacks.</p></li>
 </ul>
 <section id="programmatic-ome-tiff-export">
-<h3>Programmatic OME-TIFF Export<a class="headerlink" href="#programmatic-ome-tiff-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic OME-TIFF Export<a class="headerlink" href="#programmatic-ome-tiff-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_ome_tiff_stack</span>
 
@@ -858,35 +857,40 @@ dictionaries.</p>
 filtered layers are not included; use <a class="reference internal" href="#export-hdf5"><span class="std std-ref">HDF5 Export</span></a> or <a class="reference internal" href="#export-npz"><span class="std std-ref">NPZ Export</span></a>
 for multi-layer outputs.</p>
 </div>
-<p>—</p>
 </section>
 </section>
 <section id="npz-export">
-<span id="export-npz"></span><h2>NPZ Export<a class="headerlink" href="#npz-export" title="Link to this heading">¶</a></h2>
+<span id="export-npz"></span><h3>NPZ Export<a class="headerlink" href="#npz-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.npz</span></code> (NumPy compressed archive)</p>
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_npz_bundle()</span></code></a> exports NPZ bundles.</p>
 <p><strong>Contents</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> — raw or processed image stack.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">processed__&lt;step&gt;</span></code> — processed frame arrays.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processed__&lt;step&gt;</span></code> — processed frame arrays, including <code class="docutils literal notranslate"><span class="pre">processed__raw</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">masks__&lt;mask&gt;</span></code> — Boolean mask arrays.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamps</span></code> — frame times in seconds.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code> — per-frame metadata including timestamps and pixel sizes in nanometres.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> — full processing and analysis history.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state_backups_json</span></code> — saved frame metadata from before any frames were removed
+(present when the stack has it).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> — pixel size in nanometres.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> — data channel name.</p></li>
 </ul>
 <p><strong>Example structure</strong></p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>data
-processed__step_1_flatten
-masks__feature_mask
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>channel
+data
 frame_metadata_json
-provenance_json
+masks__step_2_mask_threshold
 pixel_size_nm
-channel
+processed__raw
+processed__step_1_remove_plane
+provenance_json
+state_backups_json
+timestamps
 </pre></div>
 </div>
 <section id="programmatic-npz-export">
-<h3>Programmatic NPZ Export<a class="headerlink" href="#programmatic-npz-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic NPZ Export<a class="headerlink" href="#programmatic-npz-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_npz_bundle</span>
 
@@ -900,18 +904,18 @@ channel
 <span class="n">stack</span> <span class="o">=</span> <span class="n">load_npz_bundle</span><span class="p">(</span><span class="s2">"exports/stack_filtered.npz"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>—</p>
 </section>
 </section>
 <section id="hdf5-export">
-<span id="export-hdf5"></span><h2>HDF5 Export<a class="headerlink" href="#hdf5-export" title="Link to this heading">¶</a></h2>
+<span id="export-hdf5"></span><h3>HDF5 Export<a class="headerlink" href="#hdf5-export" title="Link to this heading">¶</a></h3>
 <p><strong>Format:</strong> <code class="docutils literal notranslate"><span class="pre">.h5</span></code> (hierarchical data container)</p>
 <p><a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.save_h5_bundle" title="playnano.io.export_data.save_h5_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.export_data.save_h5_bundle()</span></code></a> exports HDF5 bundles.</p>
 <p><strong>Contents</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">/data</span></code> — raw or processed image stack.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/processed/&lt;step&gt;</span></code> — filtered or analysis layers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/processed/&lt;step&gt;</span></code> — processed frame arrays, including <code class="docutils literal notranslate"><span class="pre">/processed/raw</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/masks/&lt;mask&gt;</span></code> — Boolean masks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/timestamps</span></code> — frame times in seconds.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/frame_metadata_json</span></code> — per-frame metadata including timestamps and pixel sizes in nanometres.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/provenance_json</span></code> — full processing and analysis history.</p></li>
 </ul>
@@ -922,8 +926,10 @@ channel
 </ul>
 <p><strong>Example structure</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/data
-/processed/step_1_flatten
-/masks/feature_mask
+/processed/raw
+/processed/step_1_remove_plane
+/masks/step_2_mask_threshold
+/timestamps
 /frame_metadata_json
 /provenance_json
 .attrs:
@@ -932,7 +938,7 @@ channel
 </pre></div>
 </div>
 <section id="programmatic-hdf5-export">
-<h3>Programmatic HDF5 Export<a class="headerlink" href="#programmatic-hdf5-export" title="Link to this heading">¶</a></h3>
+<h4>Programmatic HDF5 Export<a class="headerlink" href="#programmatic-hdf5-export" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_h5_bundle</span>
 
@@ -941,19 +947,18 @@ channel
 </pre></div>
 </div>
 <p><strong>Reloading</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_h5_bundle</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.data_loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_h5_bundle</span>
 
 <span class="n">stack</span> <span class="o">=</span> <span class="n">load_h5_bundle</span><span class="p">(</span><span class="s2">"exports/stack_filtered.h5"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>—</p>
 </section>
 </section>
 </section>
 <section id="advanced-programmatic-usage">
-<h1>Advanced / Programmatic Usage<a class="headerlink" href="#advanced-programmatic-usage" title="Link to this heading">¶</a></h1>
+<h2>Advanced / Programmatic Usage<a class="headerlink" href="#advanced-programmatic-usage" title="Link to this heading">¶</a></h2>
 <section id="unified-data-export">
-<h2>Unified Data Export<a class="headerlink" href="#unified-data-export" title="Link to this heading">¶</a></h2>
+<h3>Unified Data Export<a class="headerlink" href="#unified-data-export" title="Link to this heading">¶</a></h3>
 <p>Use <a class="reference internal" href="api/playnano.io.export_data.html#playnano.io.export_data.export_bundles" title="playnano.io.export_data.export_bundles"><code class="xref py py-func docutils literal notranslate"><span class="pre">export_bundles()</span></code></a> to export multiple formats
 in a single call.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -969,10 +974,9 @@ in a single call.</p>
 </pre></div>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">raw=True</span></code> to export unprocessed snapshots only.</p>
-<p>—</p>
 </section>
 <section id="notes">
-<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h2>
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>NPZ and HDF5 exports contain processed layers, masks, timestamps, and full
 provenance for round-trip reconstruction.</p></li>
@@ -982,18 +986,19 @@ or processed layers.</p></li>
 <li><p>Use NPZ for lightweight interoperability within Python.</p></li>
 <li><p>GIFs and videos are primarily for communication, figures, and quick inspection.</p></li>
 </ul>
-<p>—</p>
 </section>
 <section id="provenance-tracking">
-<h2>Provenance Tracking<a class="headerlink" href="#provenance-tracking" title="Link to this heading">¶</a></h2>
-<p>All data exports except OME-TIFF include a provenance record that lists:</p>
+<h3>Provenance Tracking<a class="headerlink" href="#provenance-tracking" title="Link to this heading">¶</a></h3>
+<p>All data exports include a provenance record that lists:</p>
 <ul class="simple">
-<li><p>Each processing step and its parameters.</p></li>
-<li><p>Input/output file names and timestamps.</p></li>
-<li><p>Versions of filters, plugins, and the playNano package.</p></li>
+<li><p>Each processing (and analysis) step, its parameters, version and timestamp.</p></li>
+<li><p>The environment: Python, operating system, and playNano and dependency versions.</p></li>
 </ul>
-<p>Provenance is stored in <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> (NPZ/HDF5) or as an attribute in
-<code class="docutils literal notranslate"><span class="pre">AFMImageStack.provenance</span></code>.</p>
+<p>The record does not include input or output file names. When a bundle is loaded
+again, the file it was read from is added under <code class="docutils literal notranslate"><span class="pre">bundle</span></code>.</p>
+<p>Provenance is stored in <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> (NPZ/HDF5) or as JSON in TIFF tag 65000
+(OME-TIFF), and is available in Python as <code class="docutils literal notranslate"><span class="pre">AFMImageStack.provenance</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -1059,8 +1064,6 @@ or processed layers.</p></li>
 <li><a class="reference internal" href="#cli-flags">CLI Flags</a></li>
 </ul>
 </li>
-</ul>
-</li>
 <li><a class="reference internal" href="#animated-exports">Animated Exports</a><ul>
 <li><a class="reference internal" href="#colourmaps-and-z-scale">Colourmaps and Z-Scale</a></li>
 <li><a class="reference internal" href="#gif-export">GIF Export</a><ul>
@@ -1102,6 +1105,8 @@ or processed layers.</p></li>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 
           </div>
         </div>
@@ -1110,7 +1115,7 @@ or processed layers.</p></li>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

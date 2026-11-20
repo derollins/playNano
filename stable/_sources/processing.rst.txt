@@ -34,18 +34,26 @@ Processing can be applied directly from the CLI (``process`` subcommand) or in t
 interactive GUI (``play`` command). In both cases, processing steps are defined using
 a semicolon-separated string or a YAML file.
 
-The ``--processing`` argument accepts a semicolon-separated list of steps. Each step
-is either a data operation, a mask generator, with optional parameters passed via
-colon-separated key-value pairs or ``clear`` that resets masks. For example:
+The ``--processing`` argument accepts a semicolon-separated list of steps. Each step is
+the name of an operation (a filter, mask, video operation or stack edit), or ``clear`` to
+reset the mask. Parameters follow the name after a colon, as comma-separated
+``key=value`` pairs. For example:
 
 .. code-block:: bash
 
    playnano process ./tests/resources/sample_0.h5-jpk \
-       --processing "remove_plane;threshold_mask:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0" \
+       --processing "remove_plane;mask_threshold:threshold=1.5;row_median_align;gaussian_filter:sigma=2.0" \
        --export tif,npz \
        --make-gif \
        --output-folder ./results \
        --output-name sample_processed
+
+Parameter values are read as Python values: ``2``, ``-2``, ``2.5`` and ``1e3`` are
+numbers, ``true``/``false`` are booleans, ``none`` is ``None``, and lists or tuples
+are written in brackets, for example ``drop_frames:indices_to_drop=[0,1]`` or
+``intersection_crop:pad=(2,3)``. Anything else is text. To pass text that looks
+like a number, quote it: ``name='1'``. ``--analysis-steps`` and values typed into
+the ``wizard`` follow the same rules.
 
 Alternatively, pipelines can be defined in YAML for better readability and reuse:
 
@@ -53,12 +61,15 @@ Alternatively, pipelines can be defined in YAML for better readability and reuse
 
    filters:
      - name: remove_plane
-     - name: threshold_mask
+     - name: mask_threshold
        threshold: 2
      - name: polynomial_flatten
        order: 2
      - name: gaussian_filter
        sigma: 2.0
+
+In YAML files, write numbers in scientific notation with a dot, such as ``1.0e3``;
+YAML reads ``1e3`` as text.
 
 Run it via:
 
@@ -106,9 +117,10 @@ Operation Types
 - **Video Processing (3D stack operations)** — apply transformations across full
   time-series stacks, such as alignment or drift correction. Operate on 3D arrays and
   may record metadata.
-- **Stack Edits (AFMImageStack-level operations)** — modify dataset structure (e.g.
-  cropping, frame removal). Return a new 3D array, with metadata and timestamps
-  updated automatically.
+- **Stack Edits (AFMImageStack-level operations)** — remove frames (``drop_frames``,
+  ``drop_frame_range``, ``select_frames``, ``drop_final_frames``). The helpers return
+  the indices of the frames to drop, and the pipeline removes those frames and updates
+  the metadata and timestamps to match.
 
 Step Naming and Provenance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,8 +129,8 @@ Each step is named as ``step_<index>_<operation_name>`` and its output is stored
 :attr:`~playnano.afm_stack.AFMImageStack.processed` (for data) or
 :attr:`~playnano.afm_stack.AFMImageStack.masks` (for binary masks).
 
-Provenance information is stored in
-:attr:`~playnano.afm_stack.AFMImageStack.provenance["processing"]` and includes:
+Provenance information is stored in ``stack.provenance["processing"]`` (see
+:attr:`~playnano.afm_stack.AFMImageStack.provenance`) and includes:
 
 - ``steps`` — ordered list of step records (parameters, versions, timestamps, etc.)
 - ``keys_by_name`` — maps operation names to their snapshot keys.
@@ -173,14 +185,14 @@ https://github.com/derollins/playNano-plugins
 Several projects also have the required entry points and can be installed to add new
 filters:
 
-- **Python-Nanolocz_Library** (``pnanolocz``) — collection of AFM processing functions,
+- **Python-NanoLocz-Library** (``pnanolocz``) — collection of AFM processing functions,
   including flattening and filtering with automated routines.
   https://github.com/derollins/Python-Nanolocz-Library
 
-CLI / GUI Usage
----------------
+Building a Pipeline with the Wizard
+-----------------------------------
 
-The processing pipeline can defined in the CLI and run in the CLI or the GUI.
+The processing pipeline can be defined in the CLI and run in the CLI or the GUI.
 
 The **playNano** wizard allows processing pipelines to be built interactively.
 To launch this you use the ``wizard`` subcommand followed by a path to the file you
@@ -192,10 +204,10 @@ Run the wizard with:
 
 .. code-block:: bash
 
-  playnano wizard .test/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
+  playnano wizard ./tests/resources/sample_0.h5-jpk --output-folder ./results --output-name processed_sample
 
 Once the data is loaded, use the ``add`` command followed by the name of a filter, mask
-or mask to add steps to the pipeline. The wizard will then prompt you to enter optional or
+or video operation to add steps to the pipeline. The wizard will then prompt you to enter optional or
 required parameters. Once the pipeline is complete use the ``save`` with the path to a ``.yaml``
 file to save the pipeline.
 
@@ -203,12 +215,6 @@ Once constructed and saved the processing pipeline that has been built can be ru
 ``run`` command which will run the processing pipeline, step-by-step, with the configured
 parameters. The wizard will then ask if you would like to export the processed data as ``.npz``,
 ``.h5`` or ``.ome-tiff`` and then if you would like to generate a ``.gif``.
-
-Programmatic usage
-       """Process a 2D array and return a filtered version."""
-       ...
-
-Installed plugins appear alongside built-in filters in the CLI and GUI.
 
 Programmatic Usage
 ------------------
@@ -241,7 +247,7 @@ The processing system supports exporting processed results and snapshots to:
 - **OME-TIFF** - multi-frame TIFF, compatible with ImageJ/Fiji.
 - **NPZ** - numpy zipped archive containing arrays and metadata.
 - **HDF5** - self-contained bundle including data, processed snapshots and provenance.
-- **GIF** - annotated animated GIF (requires timing metadata for correct frame rates).
+- **GIF** - annotated animated GIF (frame timestamps are drawn when available).
 
 Use the CLI flags ``--export``, ``--make-gif``, ``--output-folder`` and ``--output-name`` to
 control export behaviour (See :doc:`cli` for CLI flag details).
@@ -278,19 +284,21 @@ You can use the following commands to explore what was generated:
 
 .. code-block:: text
 
-  ['step_1_remove_plane', 'step_2_polynomial_flatten']
-  ['step_3_threshold_mask']
+  ['raw', 'step_1_remove_plane', 'step_2_polynomial_flatten']
+  ['step_3_mask_threshold']
   1 filter remove_plane
   2 filter polynomial_flatten
-  3 mask threshold_mask
+  3 mask mask_threshold
 
-This indicates two filters and one mask were applied in sequence.
+This output is for a pipeline of ``remove_plane``, ``polynomial_flatten`` and
+``mask_threshold``: two filters and one mask, applied in sequence, plus the ``raw``
+snapshot of the data before processing.
 You can access a specific result directly:
 
 .. code-block:: python
 
-flattened = stack.processed["step_2_polynomial_flatten"]
-print(flattened.shape)
+   flattened = stack.processed["step_2_polynomial_flatten"]
+   print(flattened.shape)
 
 which returns a NumPy array representing the processed frame or stack at that step.
 
@@ -299,7 +307,8 @@ Tips & Troubleshooting
 
 - If a ``raw`` snapshot is missing, check if it was loaded from an existing bundle.
 - If a plugin does not appear in the CLI, verify that its entry point group is
-  ``playnano.filters``.
+  ``playnano.filters`` (2D frame operations) or ``playnano.video_processing``
+  (3D stack operations).
 - For large datasets, prefer exporting HDF5 bundles instead of large JSON logs.
 
 See also

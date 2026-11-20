@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient31">
+      <stop
+         style="stop-color:#95480f;stop-opacity:1;"
+         offset="0"
+         id="stop31" />
+      <stop
+         style="stop-color:#e59819;stop-opacity:1;"
+         offset="0.50216448"
+         id="stop33" />
+      <stop
+         style="stop-color:#ffeeaa;stop-opacity:1;"
+         offset="1"
+         id="stop32" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient31"
+       id="linearGradient32"
+       x1="5.2916665"
+       y1="13.229167"
+       x2="23.8125"
+       y2="13.229167"
+       gradientUnits="userSpaceOnUse" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath35">
+      <path
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.164;stroke-linecap:square;stroke-miterlimit:0;stroke-dasharray:none;paint-order:markers fill stroke"
+         d="M 23.123331,12.835356 5.9808346,3.0396435 A 0.46063101,0.46063101 149.87244 0 0 5.2916666,3.4395832 V 23.018749 a 0.460631,0.460631 30.127559 0 0 0.689168,0.39994 L 23.123331,13.622976 a 0.45357143,0.45357143 90 0 0 0,-0.78762 z"
+         id="path35" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1">
+    <path
+       id="rect13-8"
+       style="stroke-width:0.173745;stroke-linecap:square;stroke-miterlimit:0;paint-order:markers fill stroke;fill:url(#linearGradient32);fill-opacity:1"
+       d="M 5.2916665,22.698465 H 23.8125 V 23.8125 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671054 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671051 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671052 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.671053 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710522 H 23.8125 V 10.444079 H 5.2916665 Z m 0,-1.6710529 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710525 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710529 H 23.8125 v 1.114035 H 5.2916665 Z m 0,-1.6710522 H 23.8125 v 1.114035 H 5.2916665 Z"
+       clip-path="url(#clipPath35)" />
+  </g>
+</svg>

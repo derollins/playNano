@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Installation - playnano v0.5.2 documentation</title>
+        <title>Installation - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -567,13 +568,17 @@ pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span
 </div>
 </li>
 <li><p><strong>AFMReader</strong>
-Required for reading some vendor formats (<code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.spm</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code>). If it is not available from PyPI in your environment, install it from GitHub:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/AFM-SPM/AFMReader.git
+Required for reading some vendor formats (<code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.spm</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code>). It is installed
+automatically from PyPI. playNano supports AFMReader 0.0.7 and 0.0.8; to install a
+supported version by hand, use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"afmreader&gt;=0.0.7,&lt;0.0.9"</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>GIF export / metadata</strong>
-Some input files must include metadata (e.g. <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>). If GIF export fails, check console logs for missing metadata.</p></li>
+<li><p><strong>Exports and metadata</strong>
+GIF and video exports use the frame timestamps for their annotations when the file
+provides them, and frame numbers otherwise. If an export fails, rerun with
+<code class="docutils literal notranslate"><span class="pre">--log-level</span> <span class="pre">DEBUG</span></code> and check the console log.</p></li>
 </ul>
 <section id="verification">
 <h3>Verification<a class="headerlink" href="#verification" title="Link to this heading">¶</a></h3>
@@ -605,12 +610,9 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
-<p>There are additionally optional dependencies that can be installed for particular tasks.
-To work on the documentation, or run the example notebooks, you can install these as
-“extras” using pip.</p>
-<p>If you are developing or contributing, install the full set of extras, especially the
-dev group (which includes linting and testing tools).</p>
-<p>You can also install optional extras for docs, notebooks, or development:</p>
+<p>Optional dependencies for the documentation, the example notebooks and development are
+available as pip “extras”. If you are contributing, install at least the <code class="docutils literal notranslate"><span class="pre">dev</span></code> extra,
+which includes the linting and testing tools:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[docs]"</span><span class="w">       </span><span class="c1"># docs build dependencies (Sphinx, theme, nbsphinx)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[notebooks]"</span><span class="w">  </span><span class="c1"># notebook/demo dependencies (Jupyter)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w">        </span><span class="c1"># developer dependencies (linting, testing, pre-commit)</span>
@@ -652,15 +654,17 @@ use the provided <code class="docutils literal notranslate"><span class="pre">en
 dependencies.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yaml
 conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w">   </span><span class="c1"># install playNano itself, from the project root</span>
 </pre></div>
 </div>
-<p>This will install:</p>
+<p>The environment file installs:</p>
 <ul class="simple">
-<li><p>Python 3.11 and core scientific libraries (NumPy, SciPy, Pillow, Matplotlib)</p></li>
-<li><p>AFM-specific tools: <code class="docutils literal notranslate"><span class="pre">afmreader</span></code></p></li>
+<li><p>Python 3.11 and the core scientific libraries (NumPy, SciPy, pandas, h5py, Pillow,
+Matplotlib, scikit-learn, scikit-image, OpenCV)</p></li>
+<li><p>AFM-specific tools: <code class="docutils literal notranslate"><span class="pre">afmreader</span></code> (installed with pip)</p></li>
 <li><p>GUI support via <code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> (installed with pip)</p></li>
-<li><p>Compatibility pins (e.g. <code class="docutils literal notranslate"><span class="pre">h5py=3.8.*</span></code>) to avoid known issues</p></li>
 </ul>
+<p>It does not install playNano itself, which is why the last command is needed.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The environment uses the <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> channel for reliable binary support across platforms.</p>
@@ -678,22 +682,20 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
 <p>This project requires the following Python packages:</p>
 <ul class="simple">
-<li><p><cite>numpy</cite></p></li>
-<li><p><cite>pandas</cite></p></li>
-<li><p><cite>h5py</cite></p></li>
-<li><p><cite>Pillow</cite></p></li>
-<li><p><cite>matplotlib</cite></p></li>
-<li><p><cite>opencv-python-headless</cite></p></li>
-<li><p><cite>imageio</cite></p></li>
-<li><p><cite>imageio-ffmpeg</cite></p></li>
-<li><p><cite>scipy</cite></p></li>
-<li><p><cite>scikit-learn</cite></p></li>
-<li><p><cite>scikit-image</cite></p></li>
-<li><p><cite>python-dateutil</cite></p></li>
-<li><p><cite>tifffile</cite></p></li>
-<li><p><cite>pyyaml</cite></p></li>
-<li><p><cite>PySide6-Essentials</cite> — for the GUI (the core Qt modules of PySide6)</p></li>
-<li><p>[<cite>AFMReader</cite>](<a class="reference external" href="https://github.com/AFM-SPM/AFMReader">https://github.com/AFM-SPM/AFMReader</a>) — for reading <cite>.jpk</cite>, <cite>.spm</cite> and <cite>.asd</cite> files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h5py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Pillow</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opencv-python-headless</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scipy</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scikit-image</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">python-dateutil</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tifffile</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pyyaml</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PySide6-Essentials</span></code> — for the GUI (the core Qt modules of PySide6)</p></li>
+<li><p><a class="reference external" href="https://github.com/AFM-SPM/AFMReader">AFMReader</a> — for reading <code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.spm</span></code> and <code class="docutils literal notranslate"><span class="pre">.asd</span></code> files</p></li>
 </ul>
 </section>
 </section>
@@ -781,7 +783,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>playnano_env
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

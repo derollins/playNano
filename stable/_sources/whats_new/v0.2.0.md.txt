@@ -22,8 +22,8 @@ This release introduces video processing, stack editing, multi-version documenta
   - `AFMImageStack` now registers and resolves new processing groups:
     - `video_processing` and `stack_edit` modules added.
   - Added internal state backup mechanism (`state_backups` attribute) for preserving
-    origonal metadata.
-  - Moved the versioning module for functions from the processing subpakage to the utils subpackage.
+    original metadata.
+  - Moved the versioning module for functions from the processing subpackage to the utils subpackage.
 
 - **Docs Generation**
   - Automatic inclusion of `playnano.analysis.utils.loader`, `playnano.processing.video_processing`, and

@@ -14,9 +14,7 @@ data, and a modular analysis system that supports both built-in and custom exten
    :width: 420px
    :align: center
 
-Welcome to **playNano** - a Python toolkit for loading, processing, analysing
-and exporting high-speed AFM (HS-AFM) time-series data (`.h5-jpk`, `.jpk`,
-`.spm`, `.asd` and `.aris`).
+It reads ``.h5-jpk``, ``.jpk``, ``.spm``, ``.asd`` and ``.aris`` files.
 This documentation covers installation, command-line usage, the PySide6 GUI,
 processing filters, data export, analysis pipelines, and the API reference.
 
@@ -25,16 +23,20 @@ Quick links
 
 - :doc:`introduction` - overview of playNano's motivation, design, and core workflow
 - :doc:`installation` - how to install playNano (pip / conda)
-- :doc:`quickstart` - 1-minute example: open a file, apply a filter, export GIF
+- :doc:`quickstart` - five-minute example: open a file, apply a filter, export a GIF
 - :doc:`cli` - full command-line reference and examples
 - :doc:`gui` - GUI walkthrough, keyboard shortcuts and export workflow
 - :doc:`processing` - filters, masks and pipeline behaviour
-   - :doc:`processing-operations-reference` - reference of all built-in processing operations
+
+  - :doc:`processing-operations-reference` - reference of all built-in processing operations
+
 - :doc:`exporting` - exporting data and GIFs from CLI, GUI, or programmatically
 - :doc:`colormaps` - overview of playNano's native colormaps and how to use them
 - :doc:`analysis` - running analysis modules and provenance
-   - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
-- :doc:`whats_new/v0.5.2` - highlights of the latest release
+
+  - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
+
+- :doc:`whats_new/v0.5.3` - highlights of the latest release
 - :doc:`changelog` - release notes and history
 
 Quickstart (example)
@@ -43,7 +45,7 @@ Quickstart (example)
 .. code-block:: bash
 
    # show a file in the interactive GUI
-   playnano play ./test/resources/sample_0.h5-jpk
+   playnano play ./tests/resources/sample_0.h5-jpk
 
 .. note::
    See :doc:`quickstart` for step-by-step examples.
@@ -54,7 +56,7 @@ User Guide Overview
 The **User Guide** is divided into two parts:
 
 **Getting started**
-~~~~~~~~~~~~~~~~~~~
+
 - :doc:`introduction` - overview of playNano's motivation, design, and core workflow.
 - :doc:`quickstart` - a standalone, five-minute overview showing how to load,
   process, and export AFM data.
@@ -62,7 +64,7 @@ The **User Guide** is divided into two parts:
   workflows and parameter exploration.
 
 **Practical Guides**
-~~~~~~~~~~~~~~~~~~~~
+
 - :doc:`installation` - detailed installation and environment setup.
 - :doc:`cli` - running batch processing, exports, and automation from the command line.
 - :doc:`gui` - exploring AFM stacks interactively and exporting results.

@@ -1,0 +1,82 @@
+# What's New in *playNano* 0.5.3
+
+**Release date:** 2026-11-20
+
+This is a bug-fix release, and upgrading is recommended for all users. It fixes
+`polynomial_flatten` on large frames and on data with missing pixels, values in
+`--processing` and `--analysis-steps` strings, the wizard's `save`, and
+`playnano analyze` output names and exit codes. Almost every documentation example
+has been checked and corrected.
+
+## Before You Upgrade
+
+- **Re-run `polynomial_flatten` at order 3 or higher.** On frames of a few hundred
+  pixels or more, the fit silently left background behind. Results at these orders
+  change; results at orders 1 and 2 do not.
+- **Scripts that check exit codes:** `playnano` with no subcommand now exits with
+  code 2, and `playnano analyze` exits with code 1 if any output file could not be
+  written.
+- **Step values are now read as Python values.** In `--processing` and
+  `--analysis-steps` strings, `[0,1]` is a list, `true` is `True` and `none` is
+  `None`. To pass text that looks like a number, quote it: `name='1'`.
+
+## Fixed
+
+### Processing
+
+- **High-Order Flattening:** `polynomial_flatten` and `polynomial_flatten_masked`
+  fitted with raw pixel coordinates, so at order 3 and above on large frames some
+  polynomial terms were dropped without warning. On a 512 px frame at order 4 the
+  residual background was 0.187 instead of the noise level of 0.010. Coordinates
+  are now scaled to −1…1 before fitting. Both filters are now version 0.2.0.
+- **NaN Pixels:** A single NaN pixel made `polynomial_flatten` return an image that
+  was entirely NaN, and made `remove_plane` fail. All four plane and polynomial
+  filters now leave NaN pixels out of the fit and keep them NaN in the output.
+  `remove_plane` and `remove_plane_masked` are now version 0.1.1.
+
+### Command line
+
+- **List and Number Values:** Step strings were split on every comma, so
+  `drop_frames:indices_to_drop=[0,1]` failed, and values such as `[0]`, `1e3` and
+  `none` were not converted. Lists, tuples, numbers, `true`/`false` and
+  `none`/`null` now work in `--processing` and `--analysis-steps`.
+- **Wizard Values:** Values typed into the wizard for list, tuple, optional and
+  unannotated parameters stayed as text. They are now converted, so `pad` for
+  `intersection_crop` and `crop_square` accepts `2` or `2,3`.
+- **Wizard `save`:** Saved pipelines containing tuples or NumPy values could not be
+  loaded again. `save` now writes plain YAML.
+- **`analyze` Output Names:** `--output-name ../name` wrote outside the output
+  folder, and `run.json` became `run.json.json`. Names are now handled as in
+  `process`.
+- **Exit Codes:** `playnano analyze` reported success when the HDF5 file could not
+  be written. It now writes every file it can, then exits with code 1 and names the
+  files that failed. `playnano` with no subcommand still shows the help, and now
+  exits with code 2.
+- **Tracebacks:** With `--log-level DEBUG`, errors from `play`, `process` and
+  `wizard` now include the traceback.
+
+### Documentation
+
+- **Working Examples:** Examples used step names that do not exist
+  (`threshold_mask`, `detect_particles`, `track_particles`), `--export npz hdf5`
+  instead of `--export npz,h5`, `draw_scale_bar` instead of `draw_scale`, and a
+  wrong loader import. All examples were rerun and now work.
+- **Reference Content:** Bundle contents, provenance, operation defaults and the
+  installation page were corrected.
+- **Converting Files:** The exporting guide now shows how to convert HS-AFM files to
+  OME-TIFF, NPZ or HDF5 from the CLI: run `playnano process` without
+  `--processing`.
+- **Website:** The version switcher is now at the top of the sidebar, where it can
+  be reached at normal zoom, and publishing a release no longer removes the `main`
+  documentation.
+
+## Changed
+
+- The plane and polynomial filters no longer need scikit-learn, so importing the
+  processing filters is faster.
+- The conda environment file is now `environment.yaml` (it was misspelled), and it
+  no longer limits NumPy to versions below 2.0.
+- Tests, pre-commit checks and the documentation build also run on the `dev`
+  branch.
+
+For the full list of changes, see the **Changelog**.

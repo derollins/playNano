@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>GUI: Interactive Playback - playnano v0.5.2 documentation</title>
+        <title>GUI: Interactive Playback - playnano v0.5.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.2 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -210,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -399,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
@@ -546,7 +547,9 @@ bundles (NPZ, OME-TIFF, HDF5).</p></li>
 <span class="w">    </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">[</span>--scale-bar-nm<span class="w"> </span>SCALE_BAR_INT<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="o">[</span>--zmin<span class="w"> </span>MIN_Z<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">[</span>--zmax<span class="w"> </span>MAX_Z<span class="o">]</span>
+<span class="w">    </span><span class="o">[</span>--zmax<span class="w"> </span>MAX_Z<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">[</span>--cmap<span class="w"> </span>COLORMAP_NAME<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">[</span>--fps<span class="w"> </span>FRAMES_PER_SECOND<span class="o">]</span>
 </pre></div>
 </div>
 <section id="arguments-common-options">
@@ -567,9 +570,13 @@ Base folder/name for exports created from the GUI.</p></li>
 Length of the scale bar drawn on images (set <code class="docutils literal notranslate"><span class="pre">0</span></code> to disable).</p></li>
 <li><p><strong>–zmin</strong>, <strong>–zmax</strong> (<em>float</em> or <em>str</em>, optional)
 Initial display z-limits. Use the string <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> to automatically set 1st / 99th percentiles.</p></li>
+<li><p><strong>–cmap</strong> (<em>str</em>, default: <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code>)
+Initial colormap for the viewer and animated exports.</p></li>
 <li><p><strong>–fps</strong> (<em>float</em>, optional)
-Inital frame rate in the viewer, if left blank the frame rate is calculate from <cite>line_rate`</cite> value in
-the <cite>frame_metadata</cite> dictionary of the first frame.</p></li>
+Initial frame rate in the viewer. If it is not given, the frame rate is calculated from
+the frame timestamps (or <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>) in the file’s metadata, so the video plays in
+real time. Recordings slower than 1 frame per second, and files without timing
+information, play at 5 frames per second.</p></li>
 </ul>
 </section>
 </section>
@@ -580,11 +587,14 @@ the <cite>frame_metadata</cite> dictionary of the first frame.</p></li>
 <ul class="simple">
 <li><p><strong>Viewer Panel (left)</strong> - rendered AFM frames (raw or processed) with overlays.
 Playback controls and filter buttons are located below the viewer.</p></li>
-<li><p><strong>Right-side tabs</strong> - includes:
-- <strong>Z-Scale Histogram</strong> with draggable vertical lines and spin-boxes for zmin (red) and zmax (blue).
-- <strong>Colormap Selection</strong> for viewer and exports.
-- <strong>Animated Export</strong>: choose raw/processed and save an annotated animated GIF, video or image sequence.
-- <strong>Data Export</strong>: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.</p></li>
+<li><p><strong>Right-side tabs</strong> - includes:</p>
+<ul>
+<li><p><strong>Z-Scale Histogram</strong> with draggable vertical lines and spin-boxes for zmin (red) and zmax (blue).</p></li>
+<li><p><strong>Colormap Selection</strong> for viewer and exports.</p></li>
+<li><p><strong>Animated Export</strong>: choose raw/processed and save an annotated animated GIF, video or image sequence.</p></li>
+<li><p><strong>Data Export</strong>: pick formats (NPZ, OME-TIFF, HDF5) and export raw or processed data.</p></li>
+</ul>
+</li>
 </ul>
 <section id="keyboard-shortcuts">
 <h3>Keyboard shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Link to this heading">¶</a></h3>
@@ -613,8 +623,8 @@ default, and export options for processed data become available.</p></li>
 <ul class="simple">
 <li><p><strong>Animated data</strong>: (GIF, MP4, AVI, folder of PNGs) - the exported file/folder name / save location
 is derived from <code class="docutils literal notranslate"><span class="pre">--output-name</span></code> / <code class="docutils literal notranslate"><span class="pre">--output-folder</span></code> respectively or defaults to an <code class="docutils literal notranslate"><span class="pre">output</span></code>
-subfolder in the working directory. Animated export requires some metadata (for example <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>)
-to create timing information - if that metadata is missing export may fail (check logs).</p></li>
+subfolder in the working directory. Timestamps are drawn from the frame metadata when it is
+available.</p></li>
 <li><p><strong>Data bundles</strong>: (NPZ, OME-TIFF, HDF5) - exports include processing metadata, provenance information,
 and snapshots (raw + intermediate processed steps, when available).</p></li>
 </ul>
@@ -643,11 +653,17 @@ lines or spinboxes, the exported frames reflect those settings.</p></li>
 <section id="how-to-control-annotations">
 <h4>How to control annotations<a class="headerlink" href="#how-to-control-annotations" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>Use the viewer checkboxes to toggle annotations before export:
-- Uncheck <strong>Show Timestamp</strong> to remove timestamps from the exported animation.
-- Uncheck <strong>Show Scale Bar</strong> (or set <code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code>) to remove the scale bar.</p></li>
-<li><p>Choose <strong>Save Raw</strong> or <strong>Save Processed</strong> in the animated data export panel to pick the data source.
-- The <em>RAW</em> label that appears in the viewer when raw data is selected is not included in the exported animation.</p></li>
+<li><p>Use the viewer checkboxes to toggle annotations before export:</p>
+<ul>
+<li><p>Uncheck <strong>Show Timestamp</strong> to remove timestamps from the exported animation.</p></li>
+<li><p>Uncheck <strong>Show Scale Bar</strong> (or set <code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code>) to remove the scale bar.</p></li>
+</ul>
+</li>
+<li><p>Choose <strong>Save Raw</strong> or <strong>Save Processed</strong> in the animated data export panel to pick the data source.</p>
+<ul>
+<li><p>The <em>RAW</em> label that appears in the viewer when raw data is selected is not included in the exported animation.</p></li>
+</ul>
+</li>
 <li><p>Use the histogram or spinboxes to set the precise z-range that will be used in the exported animation.</p></li>
 </ul>
 </section>
@@ -662,9 +678,8 @@ conda-forge in the same environment; see <a class="reference internal" href="ins
 environment that has both.</p></li>
 <li><p><strong>Headless Linux / CI</strong>: GUI tests or GUI runs on headless systems require a
 virtual framebuffer (<code class="docutils literal notranslate"><span class="pre">xvfb-run</span></code>) or setting up an off-screen QPA platform plugin.</p></li>
-<li><p><strong>GIF export issues</strong>: check the console output for missing metadata (<code class="docutils literal notranslate"><span class="pre">line_rate</span></code>,
-timestamps). Export will still succeed for static stacks, but timing annotations
-may be incorrect or omitted without frame timing metadata.</p></li>
+<li><p><strong>GIF export issues</strong>: check the console output. Exports do not need timing metadata;
+without frame timestamps, the timestamp annotation shows frame numbers instead.</p></li>
 </ul>
 </section>
 <section id="notes-links">
@@ -764,7 +779,7 @@ may be incorrect or omitted without frame timing metadata.</p></li>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=75e38c5e"></script>
+</div><script src="_static/documentation_options.js?v=d19b0847"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

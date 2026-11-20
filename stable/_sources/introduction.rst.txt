@@ -67,8 +67,8 @@ Whole-video acquisition settings that do not change between frames
 recorded on the stack under ``stack.acquisition``, distinct from the
 per-frame dicts.
 
-This unified layout means downstream code in processing, analysis,
-export modules, can read from ``stack.frame_metadata[i]["timestamp"]``,
+This unified layout means downstream code in processing, analysis
+and export modules can read from ``stack.frame_metadata[i]["timestamp"]``,
 ``stack.acquisition["bidirectional"]``, and so on without branching on
 format.
 
