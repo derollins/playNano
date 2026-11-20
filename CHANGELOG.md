@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The plane and polynomial filters no longer use scikit-learn, so importing the processing filters is faster (#105).
+- The conda environment file is renamed from `enviroment.yaml` to `environment.yaml`, the name the installation guide
+  already used, and no longer limits NumPy to versions below 2.0, matching `pyproject.toml` (#106).
+- Tests and pre-commit checks now also run on pushes to `dev`. The test workflow no longer asks for write permissions,
+  and a failed coverage upload (for example from a fork without a token) no longer fails the tests. Removed the
+  unused `count_nonzero` entry point (it is built in), the unused setuptools settings and `--cov-append` (#106).
 
 ## [0.5.2] - 2026-11-18
 
