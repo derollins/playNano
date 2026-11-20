@@ -191,14 +191,15 @@ class AFMImageStack:
           5. Plugin from entry points "playnano.video_processing"
           6. Filter from FILTER_MAP
           7. Video filter from VIDEO_FILTER_MAP
-          8. Stack edit function from STEP_EDIT_MAP (only ``drop_frames`` actually edits
-             the stack, the other functions return lists of indices to be passed to
-             ``drop_frames`` - this is done within the ProcesssingPipeline)
+          8. Stack edit function from STACK_EDIT_MAP (only ``drop_frames``
+             actually edits the stack, the other functions return lists of
+             indices to be passed to ``drop_frames`` - this is done within the
+             ProcessingPipeline)
 
         Parameters
         ----------
         step : str
-            Name of the processing step (e.g., 'remove_plane', 'threshold_mask',
+            Name of the processing step (e.g., 'remove_plane', 'mask_threshold',
             'clear').
 
         Returns
@@ -833,7 +834,7 @@ class AFMImageStack:
         Parameters
         ----------
         steps : list of str
-            Sequence of step names (e.g. ["remove_plane", "threshold_mask",
+            Sequence of step names (e.g. ["remove_plane", "mask_threshold",
             "gaussian_filter"]).
         **kwargs
             Forwarded to each mask/filter function.

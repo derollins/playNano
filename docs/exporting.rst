@@ -37,7 +37,7 @@ The following table summarises the key features of each export format:
 +------------------+---------+----------------+-----------+---------------------------+-------------+
 | PNG (folder)     | Yes     | Yes            | No        | No                        | Yes         |
 +------------------+---------+----------------+-----------+---------------------------+-------------+
-| OME-TIFF         | Yes     | Yes            | No        | Limited                   | No          |
+| OME-TIFF         | Yes     | Yes            | No        | Yes (TIFF tag 65000)      | No          |
 +------------------+---------+----------------+-----------+---------------------------+-------------+
 | NPZ              | Yes     | Yes            | Yes       | Full                      | No          |
 +------------------+---------+----------------+-----------+---------------------------+-------------+
@@ -55,21 +55,21 @@ directories with these options:
 
 .. code-block:: bash
 
-   playnano process input_folder --export npz hdf5 --make-gif \
+   playnano process input_folder --export npz,h5 --make-gif \
        --output-folder exports --output-name test_stack
 
 CLI Flags
 ^^^^^^^^^
 
-- ``--export`` — Choose one or more formats (``tif``, ``npz``, ``hdf5``).
-- ``--make-gif`` — Generate an annotated GIF (requires timing metadata).
+- ``--export`` — Comma-separated formats: ``tif``, ``npz`` and/or ``h5`` (for example ``--export npz,h5``).
+- ``--make-gif`` — Generate an annotated GIF.
 - ``--output-folder`` — Destination directory (default: ``output/``).
 - ``--output-name`` — Base name for exported files (default: derived from input).
 
 The visual export annotations can be further customised using ``--scale-bar-nm``,
 ``--zmin``, and ``--zmax`` options; see :ref:`export-animated` for details.
 
-The frame rate can be set using ``--fps``, the deafult without the tag is 5.0.
+The frame rate can be set using ``--fps``, in frames per second; the default is 5.0.
 
 For full syntax, see :doc:`cli`.
 Files can also be exported from the GUI window; see :doc:`gui` for details.
@@ -79,7 +79,7 @@ Files can also be exported from the GUI window; see :doc:`gui` for details.
 .. code-block:: bash
 
    playnano process sample_data --processing "remove_plane" \
-       --export tif npz hdf5 --output-folder exports --output-name test_stack
+       --export tif,npz,h5 --output-folder exports --output-name test_stack
 
 This processes an AFM stack using the ``remove_plane`` filter and exports
 OME-TIFF, NPZ, and HDF5 bundles to ``exports/``.
@@ -91,18 +91,18 @@ OME-TIFF, NPZ, and HDF5 bundles to ``exports/``.
    exports/
     ├── test_stack_filtered.ome.tif
     ├── test_stack_filtered.npz
-    ├── test_stack_filtered.h5
-    └── test_stack_filtered.gif
+    └── test_stack_filtered.h5
 
 Files include the suffix ``_filtered`` when exported from a processed stack.
-Raw exports can also be produced using the ``--raw`` flag.
+Add ``--make-gif`` to the same command to also write ``test_stack_filtered.gif``.
+Raw (unprocessed) exports are not available from the CLI; use ``raw=True`` in Python
+(see :ref:`export-data`) or the GUI.
 
----
 
 .. _export-animated:
 
 Animated Exports
-================
+----------------
 
 GIF, video, and image sequence exports are designed for presentation,
 communication, and visual inspection. All three support frame annotations
@@ -112,7 +112,7 @@ z-scale configuration.
 .. _export-colourmaps:
 
 Colourmaps and Z-Scale
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 All animated exports use ``afm_brown`` as the default colourmap — a perceptually
 linear, monotone-lightness map developed for playNano that avoids the brightness
@@ -127,12 +127,11 @@ before export, and the exported file reflects those settings.
 
 See :ref:`colormaps` for full details on the native colourmaps.
 
----
 
 .. _export-gif:
 
 GIF Export
-----------
+^^^^^^^^^^
 
 **Format:** ``.gif`` (annotated animation)
 
@@ -147,7 +146,7 @@ stack, suitable for quick inspection and presentation.
 - **Scale bar** — physical calibration (default 100 nm) derived from per-frame pixel size metadata.
 
 GIF Export Options (CLI)
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
@@ -160,8 +159,9 @@ GIF Export Options (CLI)
 - ``--scale-bar-nm`` — Integer length of the scale bar in nanometres (default: 100).
 - ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
 - ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
-- ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
-- ``--fps`` — Set the frame rate for the animation in seconds (default: 5.0).
+- ``--cmap`` — Name of the colormap to use (default: ``afm_brown``).
+- ``--fps`` — Frame rate in frames per second (default: 5.0).
+- ``--draw-ts`` — Draw each frame's timestamp (off by default in the CLI).
 
 GIFs can be combined with the usual ``--export`` options to produce NPZ, HDF5,
 or TIFF bundles simultaneously.
@@ -174,7 +174,7 @@ or TIFF bundles simultaneously.
        --make-gif --output-name test_stack --scale-bar-nm 150 --zmin 0 --zmax 20
 
 Programmatic GIF Export
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -191,15 +191,14 @@ Programmatic GIF Export
        zmin="auto",
        zmax="auto",
        draw_ts=False,
-       draw_scale_bar=True,
+       draw_scale=True,
    )
 
----
 
 .. _export-video:
 
 Video Export
-------------
+^^^^^^^^^^^^
 
 **Format:** ``.mp4`` or ``.avi`` (annotated video)
 
@@ -215,7 +214,7 @@ format, and support the same annotations and colourmap options as GIFs.
 - **Scale bar** — physical calibration (default 100 nm) derived from per-frame pixel size metadata.
 
 Video Export Options (CLI)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
@@ -224,16 +223,17 @@ Video Export Options (CLI)
 
 **Flags**
 
-- ``--make-video`` — Generate an animated video after processing default is MP4 but can add a string to
-  specify the format, i.e. ``--make-video avi``.
+- ``--make-video`` — Generate a video after processing. The default format is MP4; give
+  a format to change it, for example ``--make-video avi``.
 - ``--scale-bar-nm`` — Integer length of the scale bar in nanometres (default: 100).
 - ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
 - ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
-- ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
-- ``--fps`` — Set the frame rate for the animation in seconds (default: 5.0).
+- ``--cmap`` — Name of the colormap to use (default: ``afm_brown``).
+- ``--fps`` — Frame rate in frames per second (default: 5.0).
+- ``--draw-ts`` — Draw each frame's timestamp (off by default in the CLI).
 
 Programmatic Video Export
-^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -244,22 +244,21 @@ Programmatic Video Export
        make_video=True,
        output_folder="exports",
        output_name="sample",
-       fmt="mp4", #or "avi"
+       fmt="mp4",  # or "avi"
        cmap_name="playnano_gold",  # any matplotlib-registered colormap
        scale_bar_nm=100,
        fps=6.0,
        zmin="auto",
        zmax="auto",
        draw_ts=True,
-       draw_scale_bar=True,
+       draw_scale=True,
    )
 
----
 
 .. _export-image-sequence:
 
 Image Sequence Export
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 **Format:** ``.png`` (individual frames in a folder)
 
@@ -274,7 +273,7 @@ publications or for importing into external tools.
   drawn onto each frame if enabled in the GUI.
 
 Image Sequence Export Options (CLI)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
@@ -287,10 +286,10 @@ Image Sequence Export Options (CLI)
 - ``--scale-bar-nm`` — Integer length of the scale bar in nanometres (default: 100).
 - ``--zmin`` — Minimum z-scale value; float or ``auto`` (default: auto).
 - ``--zmax`` — Maximum z-scale value; float or ``auto`` (default: auto).
-- ``--cmap`` — Name of the colormap to use (default: DEFAULT_CMAP).
+- ``--cmap`` — Name of the colormap to use (default: ``afm_brown``).
 
 Programmatic Image Sequence Export
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -301,32 +300,30 @@ Programmatic Image Sequence Export
        make_sequence=True,
        output_folder="exports",
        output_name="sample",
-       fmt="png", #or "jpg"
+       fmt="png",  # or "jpg"
        cmap_name="viridis",  # any matplotlib-registered colormap
        scale_bar_nm=100,
        zmin=0,
        zmax=3,
        draw_ts=True,
-       draw_scale_bar=True,
+       draw_scale=True,
    )
 
----
 
 .. _export-data:
 
 Data Exports
-============
+------------
 
 HDF5, NPZ, and OME-TIFF exports are designed for data archiving, round-trip
 reconstruction, and interoperability with external analysis tools. These formats
 do not include visual annotations but carry structured data, masks, and provenance.
 
----
 
 .. _export-ome-tiff:
 
 OME-TIFF Export
----------------
+^^^^^^^^^^^^^^^
 
 **Format:** ``.ome.tif`` (single multi-frame image stack)
 
@@ -356,7 +353,7 @@ analysis tools.
 - Sharing of processed image stacks.
 
 Programmatic OME-TIFF Export
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -372,12 +369,11 @@ Programmatic OME-TIFF Export
    filtered layers are not included; use :ref:`export-hdf5` or :ref:`export-npz`
    for multi-layer outputs.
 
----
 
 .. _export-npz:
 
 NPZ Export
-----------
+^^^^^^^^^^
 
 **Format:** ``.npz`` (NumPy compressed archive)
 
@@ -386,10 +382,13 @@ NPZ Export
 **Contents**
 
 - ``data`` — raw or processed image stack.
-- ``processed__<step>`` — processed frame arrays.
+- ``processed__<step>`` — processed frame arrays, including ``processed__raw``.
 - ``masks__<mask>`` — Boolean mask arrays.
+- ``timestamps`` — frame times in seconds.
 - ``frame_metadata_json`` — per-frame metadata including timestamps and pixel sizes in nanometres.
 - ``provenance_json`` — full processing and analysis history.
+- ``state_backups_json`` — saved frame metadata from before any frames were removed
+  (present when the stack has it).
 - ``pixel_size_nm`` — pixel size in nanometres.
 - ``channel`` — data channel name.
 
@@ -397,16 +396,19 @@ NPZ Export
 
 .. code-block:: text
 
-   data
-   processed__step_1_flatten
-   masks__feature_mask
-   frame_metadata_json
-   provenance_json
-   pixel_size_nm
    channel
+   data
+   frame_metadata_json
+   masks__step_2_mask_threshold
+   pixel_size_nm
+   processed__raw
+   processed__step_1_remove_plane
+   provenance_json
+   state_backups_json
+   timestamps
 
 Programmatic NPZ Export
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -424,12 +426,11 @@ Programmatic NPZ Export
 
    stack = load_npz_bundle("exports/stack_filtered.npz")
 
----
 
 .. _export-hdf5:
 
 HDF5 Export
------------
+^^^^^^^^^^^
 
 **Format:** ``.h5`` (hierarchical data container)
 
@@ -438,8 +439,9 @@ HDF5 Export
 **Contents**
 
 - ``/data`` — raw or processed image stack.
-- ``/processed/<step>`` — filtered or analysis layers.
+- ``/processed/<step>`` — processed frame arrays, including ``/processed/raw``.
 - ``/masks/<mask>`` — Boolean masks.
+- ``/timestamps`` — frame times in seconds.
 - ``/frame_metadata_json`` — per-frame metadata including timestamps and pixel sizes in nanometres.
 - ``/provenance_json`` — full processing and analysis history.
 
@@ -453,8 +455,10 @@ HDF5 Export
 .. code-block:: text
 
    /data
-   /processed/step_1_flatten
-   /masks/feature_mask
+   /processed/raw
+   /processed/step_1_remove_plane
+   /masks/step_2_mask_threshold
+   /timestamps
    /frame_metadata_json
    /provenance_json
    .attrs:
@@ -462,7 +466,7 @@ HDF5 Export
      channel
 
 Programmatic HDF5 Export
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -476,17 +480,16 @@ Programmatic HDF5 Export
 
 .. code-block:: python
 
-   from playnano.io.loaders import load_h5_bundle
+   from playnano.io.data_loaders import load_h5_bundle
 
    stack = load_h5_bundle("exports/stack_filtered.h5")
 
----
 
 Advanced / Programmatic Usage
-=============================
+-----------------------------
 
 Unified Data Export
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 Use :func:`~playnano.io.export_data.export_bundles` to export multiple formats
 in a single call.
@@ -506,10 +509,9 @@ in a single call.
 
 Use ``raw=True`` to export unprocessed snapshots only.
 
----
 
 Notes
------
+^^^^^
 
 - NPZ and HDF5 exports contain processed layers, masks, timestamps, and full
   provenance for round-trip reconstruction.
@@ -519,16 +521,17 @@ Notes
 - Use NPZ for lightweight interoperability within Python.
 - GIFs and videos are primarily for communication, figures, and quick inspection.
 
----
 
 Provenance Tracking
--------------------
+^^^^^^^^^^^^^^^^^^^
 
-All data exports except OME-TIFF include a provenance record that lists:
+All data exports include a provenance record that lists:
 
-- Each processing step and its parameters.
-- Input/output file names and timestamps.
-- Versions of filters, plugins, and the playNano package.
+- Each processing (and analysis) step, its parameters, version and timestamp.
+- The environment: Python, operating system, and playNano and dependency versions.
 
-Provenance is stored in ``provenance_json`` (NPZ/HDF5) or as an attribute in
-``AFMImageStack.provenance``.
+The record does not include input or output file names. When a bundle is loaded
+again, the file it was read from is added under ``bundle``.
+
+Provenance is stored in ``provenance_json`` (NPZ/HDF5) or as JSON in TIFF tag 65000
+(OME-TIFF), and is available in Python as ``AFMImageStack.provenance``.

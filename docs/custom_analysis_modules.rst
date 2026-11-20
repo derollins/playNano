@@ -51,19 +51,20 @@ declare this using the ``requires`` class attribute:
 .. code-block:: python
 
    class MyDependentModule(AnalysisModule):
-       requires = ["detect_particles"]
+       requires = ["feature_detection"]
 
        @property
        def name(self):
            return "my_dependent"
 
        def run(self, stack, previous_results=None, **params):
-           particles = previous_results["detect_particles"]["coords"]
-           return {"n_particles": len(particles)}
+           # previous_results is keyed by module name, holding that module's latest outputs
+           features = previous_results["feature_detection"]["features_per_frame"]
+           return {"n_particles": sum(len(frame) for frame in features)}
 
 This ensures the pipeline provides access to upstream results.
 
-This isn't fully fleshed out so if you encounter any issues please raise and issue on GitHub.
+This isn't fully fleshed out so if you encounter any issues please raise an issue on GitHub.
 https://github.com/derollins/playNano/issues
 
 Registering the Module

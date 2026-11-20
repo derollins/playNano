@@ -61,7 +61,7 @@ playNano/
 │   ├── processing/        # Processing pipeline, 2D filters, 3D stack filters, masks, and stack edits.
 │   ├── analysis/          # Analysis pipeline, built-in modules, and utilities.
 │   ├── io/
-│   │   └── formats/       # File format readers (asd, jpk, spm, h5)
+│   │   └── formats/       # File format readers (asd, aris, jpk, h5-jpk, spm)
 │   ├── cli/               # Command-line interface and interactive wizard
 │   └── gui/               # Qt-based viewer
 ├── tests/                 # Test suite
@@ -84,7 +84,7 @@ timestamp information and any processing or analysis outputs.
 handles provenance recording and step sequencing.
 
 **Analysis** reads from `AFMImageStack` and writes results into
-`AFMImageStack.analysis_results`. Each analysis module is a self-contained class
+`AFMImageStack.analysis`. Each analysis module is a self-contained class
 inheriting from `AnalysisModule`. `AnalysisPipeline` handles sequencing and passes
 results between dependent modules via `previous_results`.
 
@@ -258,7 +258,7 @@ section linking related modules, a `.. versionadded::` directive, and an `Author
 ## Branching and Pull Requests
 
 - **Base all pull requests on `dev`**, not `main`. The `main` branch is reserved for releases.
-- **Urgent** bug fixes and documentation changes can be merged directly into main under cirtain circumstaces.
+- **Urgent** bug fixes and documentation changes can be merged directly into main under certain circumstances.
 - Use a descriptive branch name, e.g. `feature/morph-opening` or `fix/tracking-none-index`.
 - Keep pull requests focused — one feature or fix per PR where possible.
 - CI (tests and pre-commit) runs automatically on pull requests to both `dev` and `main`.
@@ -318,7 +318,7 @@ point. Plugins can be installed into any playNano environment without modifying 
 package.
 
 Full documentation is available in the
-[custom analysis modules guide](https://derollins.github.io/playNano/custom_analysis_modules.html).
+[custom analysis modules guide](https://derollins.github.io/playNano/main/custom_analysis_modules.html).
 
 The key requirements for any analysis module are:
 
@@ -349,7 +349,7 @@ independently via Python entry points. Two entry point groups are supported:
 - `playnano.video_processing` — for **3D stack operations** (stack → stack)
 
 Full documentation including `pyproject.toml` examples is available in the
-[processing documentation](https://derollins.github.io/playNano/processing.html).
+[processing documentation](https://derollins.github.io/playNano/main/processing.html).
 
 ---
 

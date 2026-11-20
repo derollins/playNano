@@ -165,10 +165,10 @@ def main() -> None:
         "--processing",
         type=str,
         help=(
-            "One-line processing string. Semicolon-delimited steps, where each step is"
+            "One-line processing string. Semicolon-delimited steps, where each step is "
             "'filter_name' or 'filter_name:param=value'. "
             "Example: "
-            '"remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"'
+            '"remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"'
         ),
     )
     group.add_argument(
@@ -282,7 +282,10 @@ def main() -> None:
     process_parser.add_argument(
         "--draw-ts",
         action="store_true",
-        help="Toggle drawing of timestamps on GIF/video/sequence (default=True).",
+        help=(
+            "Draw frame timestamps on the GIF, video or image sequence "
+            "(off by default)."
+        ),
     )
     process_parser.add_argument(
         "--cmap",
@@ -296,10 +299,10 @@ def main() -> None:
         "--processing",
         type=str,
         help=(
-            "One-line processing string. Semicolon-delimited steps, where each step is"
+            "One-line processing string. Semicolon-delimited steps, where each step is "
             "'filter_name' or 'filter_name:param=value'. "
             "Example: "
-            '"remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"'
+            '"remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"'
         ),
     )
     filter_group.add_argument(

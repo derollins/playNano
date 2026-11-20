@@ -1,7 +1,7 @@
 Notebooks
 =========
 
-Within the `notebooks/` directory, you will find as series of [Jupyter Notebooks](https://www.jupyter.org)
+Within the ``notebooks/`` directory, you will find a series of `Jupyter Notebooks <https://jupyter.org>`_
 that demonstrate how to use **playNano** programmatically in an interactive environment. These notebooks cover
 the entire workflow from loading and processing data to analysis and export.
 
@@ -11,17 +11,17 @@ the entire workflow from loading and processing data to analysis and export.
    :width: 400px
 
 These are useful as it allows the user to explore interactively and with rapid feedback the parameters that may
-need adjusting in order to process a high-speed dataset. The notebooks can be found in the notebook/ directory after
+need adjusting in order to process a high-speed dataset. The notebooks can be found in the ``notebooks/`` directory after
 cloning the GitHub repository.
 
-To access these notebooks you will need to clone the **playNano** repository from [GitHub](https://github.com/derollins/playNano)
-and install the optional notebook dependencies using ``pip install .[notebooks]``.
+To access these notebooks you will need to clone the **playNano** repository from `GitHub <https://github.com/derollins/playNano>`_
+and install the optional notebook dependencies using ``pip install -e ".[notebooks]"``.
 
 .. code-block:: bash
 
     git clone https://github.com/derollins/playNano.git   # Clone the repository
     cd playNano
-    pip install -e . [notebooks]  # Install the package and notebook dependencies
+    pip install -e ".[notebooks]"  # Install the package and notebook dependencies
 
 **Current notebooks:**
 

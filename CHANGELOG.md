@@ -38,6 +38,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with `ValueError: Input y contains NaN`. All four plane and polynomial filters now leave NaN pixels out of the fit
   and keep them NaN in the output. `remove_plane` and `remove_plane_masked` are now version 0.1.1; their results are
   otherwise unchanged (#105).
+- Many documentation examples failed when copied: the CLI and analysis guides used step names that do not exist
+  (`threshold_mask`, `detect_particles`, `track_particles`), `--export npz hdf5` instead of `--export npz,h5`, a
+  `--raw` flag the CLI does not have, `draw_scale_bar` instead of `draw_scale`, and `playnano.io.loaders` instead of
+  `playnano.io.data_loaders`. All examples were rerun and now work. The same wrong names are fixed in docstrings and
+  `--help` text, and `--help` now says `--draw-ts` is off by default (#107).
+- Corrected reference information in the documentation: the contents of NPZ and HDF5 bundles, OME-TIFF provenance
+  (stored in TIFF tag 65000), the default `mask_morphological` threshold (0.0), the `pad` parameter of
+  `intersection_crop` and `crop_square`, links to the `_masked` filters, and claims that exports need `line_rate`
+  metadata (#107).
+- The analysis module list in the documentation was not regenerated when the docs were built from the repository
+  root, as CI does, and its links pointed to pages that do not exist. It is now written next to `conf.py` and links
+  to each module's API page. Three analysis modules were missing from the API reference. Headings on the exporting
+  and colourmaps pages render at the right levels, and nested lists render correctly. The README licence badge now
+  links to `COPYING` (#107).
 
 ### Changed
 
@@ -47,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests and pre-commit checks now also run on pushes to `dev`. The test workflow no longer asks for write permissions,
   and a failed coverage upload (for example from a fork without a token) no longer fails the tests. Removed the
   unused `count_nonzero` entry point (it is built in), the unused setuptools settings and `--cov-append` (#106).
+- The documentation is now also built for pull requests to `dev`, so broken pages are found before a release (#107).
 
 ## [0.5.2] - 2026-11-18
 
@@ -569,8 +584,8 @@ This release introduces video processing, stack editing, multi-version documenta
   - `AFMImageStack` now registers and resolves new processing groups:
     - `video_processing` and `stack_edit` modules added.
   - Added internal state backup mechanism (`state_backups` attribute) for preserving
-    origonal metadata.
-  - Moved the versioning module for functions from the processing subpakage to the utils subpackage.
+    original metadata.
+  - Moved the versioning module for functions from the processing subpackage to the utils subpackage.
 
 - **Docs Generation**
   - Automatic inclusion of `playNano.analysis.utils.loader`, `playNano.processing.video_processing`, and

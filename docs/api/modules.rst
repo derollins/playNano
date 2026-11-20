@@ -56,7 +56,10 @@ API Reference
    playnano.analysis.modules.feature_detection
    playnano.analysis.modules.k_means_clustering
    playnano.analysis.modules.log_blob_detection
+   playnano.analysis.modules.particle_region_extraction
+   playnano.analysis.modules.particle_region_media_export
    playnano.analysis.modules.particle_tracking
+   playnano.analysis.modules.tracked_particle_boundary_size
    playnano.analysis.modules.x_means_clustering
    playnano.analysis.utils
    playnano.analysis.utils.common
