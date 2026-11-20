@@ -29,6 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `none`/`null`. To keep a value that looks like a number as text, quote it (`name='1'`) (#104).
 - Values typed into the wizard were left as text for `float | None`, list, tuple and unannotated parameters. They
   are now converted, so `pad` for `intersection_crop` and `crop_square` accepts `2` or `2,3` (#104).
+- `polynomial_flatten` and `polynomial_flatten_masked` fitted with raw pixel coordinates, so at order 3 and above on
+  large frames the fit silently dropped terms and left background behind: on a 512 px frame at order 4 the residual
+  was 0.187 instead of the noise level of 0.010, and at 1024 px order 3 already failed. Coordinates are now scaled to
+  −1…1 before fitting. Results at order 3+ on frames of a few hundred pixels or more change; re-run affected
+  processing. Both are now version 0.2.0 (#105).
+- A single NaN pixel made `polynomial_flatten` return an image that was entirely NaN, and made `remove_plane` fail
+  with `ValueError: Input y contains NaN`. All four plane and polynomial filters now leave NaN pixels out of the fit
+  and keep them NaN in the output. `remove_plane` and `remove_plane_masked` are now version 0.1.1; their results are
+  otherwise unchanged (#105).
+
+### Changed
+
+- The plane and polynomial filters no longer use scikit-learn, so importing the processing filters is faster (#105).
 
 ## [0.5.2] - 2026-11-18
 
