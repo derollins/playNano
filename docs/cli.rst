@@ -52,7 +52,7 @@ Example output:
 
 .. code-block:: text
 
-   playnano 0.5.2
+   playnano 0.5.3
 
 (The version shown is the one you have installed.)
 
