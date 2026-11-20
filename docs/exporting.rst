@@ -95,8 +95,10 @@ OME-TIFF, NPZ, and HDF5 bundles to ``exports/``.
 
 Files include the suffix ``_filtered`` when exported from a processed stack.
 Add ``--make-gif`` to the same command to also write ``test_stack_filtered.gif``.
-Raw (unprocessed) exports are not available from the CLI; use ``raw=True`` in Python
-(see :ref:`export-data`) or the GUI.
+To export the data as loaded, for example to convert a file to OME-TIFF, leave out
+``--processing``. After processing, the CLI exports only the processed data; to export
+the raw snapshot of a processed stack, use ``raw=True`` in Python (see :ref:`export-data`)
+or the GUI. All data exports store heights as 32-bit floats.
 
 
 .. _export-animated:

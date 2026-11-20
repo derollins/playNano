@@ -59,9 +59,11 @@ html_sidebars = {
     "**": [
         "sidebar/brand.html",
         "sidebar/search.html",
-        "sidebar/navigation.html",
-        "sidebar/scroll-start.html",
+        # The switcher sits above the (long) navigation so it is always visible,
+        # and the navigation goes inside the scrolling area, as in Furo's default.
         "sidebar/versions.html",
+        "sidebar/scroll-start.html",
+        "sidebar/navigation.html",
         "sidebar/scroll-end.html",
     ]
 }

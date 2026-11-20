@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to each module's API page. Three analysis modules were missing from the API reference. Headings on the exporting
   and colourmaps pages render at the right levels, and nested lists render correctly. The README licence badge now
   links to `COPYING` (#107).
+- The documentation version switcher was below the long navigation tree, outside the scrolling part of the
+  sidebar, so it could not be reached at normal zoom. It is now at the top of the sidebar (#107).
 
 ### Changed
 
