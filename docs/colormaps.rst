@@ -56,7 +56,6 @@ Overview
 
    The three native playNano colourmaps rendered across the full data range.
 
----
 
 .. _colormap-afm-brown:
 
@@ -101,7 +100,6 @@ exports where z-scale consistency between frames is important. It is also simila
 enough to traditional AFM colour schemes to be visually familiar and easily accepted
 by users used to older AFM colour scales.
 
----
 
 .. _colormap-playnano-gold:
 
@@ -140,7 +138,6 @@ takes priority over strict perceptual linearity, this is the stronger choice.
 ``playnano_gold`` suits complex, feature-rich samples where the full height
 range needs to be visually separated.
 
----
 
 .. _colormap-classic-afm:
 
@@ -179,7 +176,6 @@ Use ``classic_afm`` only when reproducing the look of figures generated with
 other AFM software, or when comparing directly with existing published data
 that used a similar colourmap.
 
----
 
 .. _colormap-usage:
 
@@ -195,6 +191,7 @@ All three colourmaps are available as ``matplotlib``
 
 .. code-block:: python
 
+    import matplotlib.pyplot as plt
     import playnano  # register_custom_colormaps() is called on import
 
     # All three are now available by name for matplotlib functions like imshow():
@@ -209,17 +206,17 @@ All three colourmaps are available as ``matplotlib``
     from playnano.io.gif_export import export_gif
 
     export_gif(
-       stack,
-       make_gif=True,
-       output_folder="exports",
-       output_name="sample",
-       scale_bar_nm=100,
-       cmap_name="playnano_gold",  # or "afm_brown", "classic_afm"
-       zmin="auto",
-       zmax="auto",
-       draw_ts=True,
-      draw_scale_bar=False,
-   )
+        stack,
+        make_gif=True,
+        output_folder="exports",
+        output_name="sample",
+        scale_bar_nm=100,
+        cmap_name="playnano_gold",  # or "afm_brown", "classic_afm"
+        zmin="auto",
+        zmax="auto",
+        draw_ts=True,
+        draw_scale=False,
+    )
 
 CLI and GUI
 ^^^^^^^^^^^
@@ -235,7 +232,6 @@ alternative colourmap can be set via the ``--cmap`` flag:
 In the GUI, the colourmap and z-scale can be adjusted interactively from the
 display controls before export.
 
----
 
 .. _colormap-background:
 
@@ -243,7 +239,7 @@ Background: perceptual linearity in AFM visualisation
 ------------------------------------------------------
 
 Conventional AFM colourmaps such as Matplotlib's ``afmhot`` and the traditional
-colormap reprduced in ``classic_afm``, were not designed with perceptual uniformity
+colormap reproduced in ``classic_afm``, were not designed with perceptual uniformity
 in mind. Two common consequences are:
 
 - **The black plateau** — a long stretch of near-zero lightness at the low end

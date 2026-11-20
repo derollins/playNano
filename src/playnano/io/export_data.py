@@ -2,7 +2,7 @@
 Tools for exporting AFM image stacks in multiple formats.
 
 This module provides utilities for serializing
-:class:`~playNano.afm_stack.AFMImageStack` objects
+:class:`~playnano.afm_stack.AFMImageStack` objects
 into round-trip-safe formats: OME-TIFF, NPZ, and HDF5.
 Each export preserves pixel data, metadata, masks, provenance, and processing history.
 
@@ -76,7 +76,7 @@ def save_ome_tiff_stack(
     path: Path, afm_stack: AFMImageStack, raw: bool = False
 ) -> None:
     """
-    Save an :class:`~playNano.afm_stack.AFMImageStack` as an OME-TIFF file.
+    Save an :class:`~playnano.afm_stack.AFMImageStack` as an OME-TIFF file.
 
     The OME-TIFF export embeds image data, pixel calibration, timestamps,
     and provenance metadata into a single, standards-compliant file suitable
@@ -196,7 +196,7 @@ def save_ome_tiff_stack(
 
 def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
     """
-    Save :class:`~playNano.afm_stack.AFMImageStack` with metadata as a `.npz` bundle.
+    Save :class:`~playnano.afm_stack.AFMImageStack` with metadata as a `.npz` bundle.
 
     The NPZ archive consolidates the AFM stack data, metadata, provenance,
     masks, and processed layers for full round-trip reconstruction.
@@ -232,10 +232,10 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
       ``state_backups['frame_metadata_before_edit']`` (if available),
       otherwise from ``.frame_metadata``.
     - Provenance is serialized using
-      :func:`~playNano.utils.io_utils.make_json_safe`
+      :func:`~playnano.utils.io_utils.make_json_safe`
       to ensure JSON compatibility.
     - The saved file can be reloaded via
-      :func:`~playNano.io.import_data.load_npz_bundle`.
+      :func:`~playnano.io.import_data.load_npz_bundle`.
 
     Examples
     --------

@@ -5,7 +5,7 @@ channels:
 
 dependencies:
   - python=3.11
-  - numpy>=1.23,<2.0
+  - numpy>=1.23
   - pandas
   - h5py
   - pillow

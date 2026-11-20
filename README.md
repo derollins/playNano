@@ -20,7 +20,7 @@
 [![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/playNano)
-[![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-blue)](COPYING)
 ![CI](https://github.com/derollins/playNano/actions/workflows/pre-commit.yaml/badge.svg)
 [![Tests](https://github.com/derollins/playNano/actions/workflows/test.yaml/badge.svg)](https://github.com/derollins/playNano/actions/workflows/test.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -91,7 +91,7 @@ a new virtual environment.
  conda activate playnano_env  # Activate the virtual environment
  ```
 
-The simplest way to install **playNano** is through PyPi using the command:
+The simplest way to install **playNano** is through PyPI using the command:
 
 ```bash
 pip install playnano
@@ -115,7 +115,7 @@ For development setup see [CONTRIBUTING.md](CONTRIBUTING.md).
 playnano play ./tests/resources/sample_0.h5-jpk # This command opens example data if run in the project root
 ```
 
-Replace the path with the location of your data (file for asd/h5-jpk or folder for spm/jpk)
+Replace the path with the location of your data (file for asd/h5-jpk/aris or folder for spm/jpk).
 This opens an interactive window that can be used to view the videos and configure formatting, annotations and
 colormaps, for the display and animated exports.
 
@@ -162,7 +162,7 @@ To access and use the [Notebooks](https://derollins.github.io/playNano/main/note
 repository and install the required dependencies `pip install -e .[notebooks]` see the docs page for more
 details and full instructions: <https://derollins.github.io/playNano/main/notebooks.html>
 
-Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks\ folder. These
+Once installed use `jupyter notebook` to open jupyter notebook and navigate to the notebooks/ folder. These
 notebooks allow the user to experiment with using **playNano** programmatically and allows the user to test
 pipelines interactively and with rapid feedback on the parameters that may need adjusting in order to process
 a high-speed dataset.
@@ -178,23 +178,23 @@ on how to contribute analysis modules and processing plugins either directly or 
 
 These are some software packages that have helped and inspired this project:
 
-### [Topostats](https://github.com/AFM-SPM/TopoStats)
+### [TopoStats](https://github.com/AFM-SPM/TopoStats)
 
 A general AFM image processing programme written in Python that batch processes AFM images.
-Topostats is able to flatten raw AFM images, mask objects and provides advanced analysis tools
+TopoStats is able to flatten raw AFM images, mask objects and provides advanced analysis tools
 including U-net based masking.
 
 ### [AFMReader](https://github.com/AFM-SPM/AFMReader)
 
-Spun out of Topostats, AFMReader is Python library for loading a variety of AFM file formats. It opens
-each as a tuple containing a NumPy array and a float referring to the planar pixel to nanometer conversion
-factor. Within playNano this library is used to open the folder-based AFM video formats.
+Spun out of TopoStats, AFMReader is a Python library for loading a variety of AFM file formats. It returns
+each image as a NumPy array with the planar pixel-to-nanometre conversion factor. Within playNano this
+library is used to open `.asd` files and the folder-based AFM video formats (`.jpk`, `.spm`).
 
 ### [NanoLocz](https://github.com/George-R-Heath/NanoLocz)
 
 A free MATLAB app with an interactive GUI that is able to load, process and analyse AFM images and
 high-speed AFM videos. Featuring mask analysis, particle detection and tracking, it also
-integrates Localization  AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
+integrates Localization AFM [(L-AFM)](https://www.nature.com/articles/s41586-021-03551-x).
 
 NOW AVAILABLE: The masking, levelling and auto levelling routines rewritten in Python can be found
 here: [Python-NanoLocz-Library](https://github.com/derollins/Python-Nanolocz-Library).

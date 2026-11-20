@@ -21,7 +21,7 @@ Available subcommands
 - ``process`` - Batch mode: apply filters and export images/bundles/GIFs.
 - ``analyze`` - Run a pipeline of analysis modules (detection/tracking) on a stack and export results.
 - ``wizard``  - Interactive REPL for constructing processing/analysis pipelines.
-- ``env-info``- Print environment information useful for debugging.
+- ``env-info`` - Print environment information useful for debugging.
 
 The CLI maps to the Python entry point ``playnano.cli.entrypoint:main``.
 
@@ -52,7 +52,9 @@ Example output:
 
 .. code-block:: text
 
-   playnano 0.5.2
+   playnano 0.5.3
+
+(The version shown is the one you have installed.)
 
 This is useful for debugging, reporting issues, and reproducibility.
 
@@ -63,8 +65,8 @@ Set the global logging verbosity for the CLI.
 
 .. code-block:: bash
 
-   playnano --log-level DEBUG play data.afm
-   playnano --log-level WARNING process data.afm --make-gif
+   playnano --log-level DEBUG play data.h5-jpk
+   playnano --log-level WARNING process data.h5-jpk --make-gif
 
 Allowed values are:
 
@@ -84,8 +86,8 @@ Batch mode operations
 
 Processing and analysis can be run in a non-interactive batch mode without a GUI or wizard.
 
-Batch processing mode- `process`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Batch processing mode - ``process``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Apply filters and export without user interaction.
 
@@ -104,6 +106,7 @@ Apply filters and export without user interaction.
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
      [--zmax MAXIMUM] \
+     [--draw-ts] \
      [--cmap COLORMAP_NAME] \
      [--fps FRAMES_PER_SECOND]
 
@@ -121,7 +124,8 @@ Primary options
 - ``--scale-bar-nm`` - integer length (nm) for scale bar in GIF (0 disables).
 - ``--zmin`` / ``--zmax`` - initial z-range; can be a float or ``auto`` (1st/99th percentiles).
 - ``--cmap`` - name of colormap to use for animated visualisation export (default=afm_brown).
-- ``--fps`` - the frame rate (in seconds) for GIF and video exports.
+- ``--fps`` - frame rate, in frames per second, for GIF and video exports (default 5).
+- ``--draw-ts`` - draw each frame's timestamp on the GIF, video or image sequence (off by default).
 
 .. note::
 
@@ -139,7 +143,7 @@ Example pipeline YAML (see :doc:`processing` for details):
      - name: remove_plane
      - name: gaussian_filter
        sigma: 2.0
-     - name: threshold_mask
+     - name: mask_threshold
        threshold: 2
      - name: polynomial_flatten
        order: 2
@@ -153,7 +157,7 @@ Run an analysis pipeline on a loaded AFM stack and export the results.
 
    playnano analyze /path/to/processed_sample.h5 \
      [--channel CHANNEL] \
-     (--analysis-steps "detect_particles:threshold=5;track_particles:max_distance=3.0" \
+     (--analysis-steps "feature_detection:mask_fn=mask_threshold,threshold=5;particle_tracking:max_distance=3.0" \
       | --analysis-file analysis.yaml) \
      [--output-folder OUTPUT_DIR] \
      [--output-name BASE_NAME]
@@ -170,7 +174,7 @@ Inline example:
 .. code-block:: bash
 
    playnano analyze sample_flat.h5 \
-     --analysis-steps "detect_particles:threshold=4.5;track_particles:max_distance=2.5" \
+     --analysis-steps "feature_detection:mask_fn=mask_threshold,threshold=4.5;particle_tracking:max_distance=2.5" \
      --output-folder ./analysis_results --output-name run1
 
 Analysis pipeline schema
@@ -181,16 +185,18 @@ Example YAML (see :doc:`analysis` for full reference):
 .. code-block:: yaml
 
    analysis:
-     - name: detect_particles
+     - name: feature_detection
        mask_fn: mask_threshold
        threshold: 5
-     - name: track_particles
+     - name: particle_tracking
        max_distance: 3.0
 
 **Outputs**
 
+Both files are always written:
+
 - ``<output>.json`` - sanitized analysis record (suitable for downstream parsing).
-- ``<output>.h5`` - full analysis bundle (if HDF5 export requested).
+- ``<output>.h5`` - full analysis record in HDF5.
 
 Wizard mode (interactive)
 -------------------------
@@ -210,24 +216,31 @@ Processing pipeline commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - ``add <filter>`` - add a processing step (REPL prompts for parameters).
+- ``clear`` - add a step that clears the current mask.
+- ``remove <index>`` - remove a step (indices start at 1, as shown by ``list``).
+- ``move <old_index> <new_index>`` - move a step to a new position.
 - ``list`` - show the current processing pipeline steps.
 - ``save <path.yaml>`` - save the current processing pipeline as YAML.
+- ``load <path.yaml>`` - replace the pipeline with one saved by ``save``.
 - ``run`` - execute the processing pipeline on the supplied input.
 
 Analysis pipeline commands (prefixed with ``a``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- ``aadd <analysis_step>`` - add an analysis step (REPL prompts for parameters).
+- ``aadd <analysis_step>`` - add an analysis step (REPL prompts for parameters), or
+  ``aadd <step>:<param>=<value>,...`` to give the parameters inline.
+- ``aremove <index>`` and ``amove <old_index> <new_index>`` - remove or move a step.
 - ``alist`` - show the current analysis pipeline steps.
 - ``asave <path.yaml>`` - save the current analysis pipeline as YAML.
-- ``arun`` - run the analysis pipeline (runs any processing steps as configured if
-    AFM stack contains only raw data).
+- ``aload <path>`` - load an analysis pipeline from YAML or JSON.
+- ``arun`` - run the analysis pipeline (runs any processing steps first if the
+  AFM stack contains only raw data).
 
 Other utility commands
 ~~~~~~~~~~~~~~~~~~~~~~
 
 - ``help`` - show available REPL commands.
-- ``quit`` - exit the wizard (this is a single, global quit that closes the entire session).
+- ``quit`` (or ``exit``) - exit the wizard (this is a single, global quit that closes the entire session).
 
 Play (GUI) mode
 ---------------
@@ -245,7 +258,7 @@ Open the PySide6 GUI viewer:
      [--scale-bar-nm SCALE_BAR_INT] \
      [--zmin MINIMUM] \
      [--zmax MAXIMUM] \
-     [--cmap COLORMAP_NAME]
+     [--cmap COLORMAP_NAME] \
      [--fps INITIAL_FRAMES_PER_SECOND]
 
 GUI highlights
@@ -302,7 +315,7 @@ Tips & troubleshooting
 - If the CLI command is not found, ensure your environment is activated and that
   you installed the package (``pip install -e .``) in that environment.
 
-- If GIF export fails, check the input metadata (e.g. ``line_rate``) and the console logs.
+- If an export fails, rerun with ``--log-level DEBUG`` to see the full error in the console log.
 
 - For GUI installation problems, see the PySide6 notes in :doc:`installation`.
 

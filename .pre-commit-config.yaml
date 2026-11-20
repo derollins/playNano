@@ -36,7 +36,7 @@ repos:
     hooks:
       - id: black
         language_version: python3.11
-        exclude: ^(docs/|src/playnano/fonts/|LICENSE)$
+        exclude: ^(docs/|src/playnano/resources/fonts/|LICENSE)$
 
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0

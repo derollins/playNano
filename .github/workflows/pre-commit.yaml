@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
@@ -30,12 +31,6 @@ jobs:
 
       - name: Install pre-commit
         run: pip install pre-commit
-
-      - name: Install markdownlint-cli
-        run: npm install -g markdownlint-cli
-
-      - name: Clear pre-commit cache
-        run: pre-commit clean
 
       - name: Cache pre-commit
         uses: actions/cache@v4

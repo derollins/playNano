@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-20
+
+This release fixes `polynomial_flatten` at high orders and on data with NaN pixels, CLI parameter parsing, wizard
+`save`, and `playnano analyze` output names and exit codes. It also corrects the documentation examples.
+
 ### Fixed
 
 - Publishing a release removed the `main` documentation from the website, so the docs home page gave a 404 until
@@ -29,6 +34,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `none`/`null`. To keep a value that looks like a number as text, quote it (`name='1'`) (#104).
 - Values typed into the wizard were left as text for `float | None`, list, tuple and unannotated parameters. They
   are now converted, so `pad` for `intersection_crop` and `crop_square` accepts `2` or `2,3` (#104).
+- `polynomial_flatten` and `polynomial_flatten_masked` fitted with raw pixel coordinates, so at order 3 and above on
+  large frames the fit silently dropped terms and left background behind: on a 512 px frame at order 4 the residual
+  was 0.187 instead of the noise level of 0.010, and at 1024 px order 3 already failed. Coordinates are now scaled to
+  −1…1 before fitting. Results at order 3+ on frames of a few hundred pixels or more change; re-run affected
+  processing. Both are now version 0.2.0 (#105).
+- A single NaN pixel made `polynomial_flatten` return an image that was entirely NaN, and made `remove_plane` fail
+  with `ValueError: Input y contains NaN`. All four plane and polynomial filters now leave NaN pixels out of the fit
+  and keep them NaN in the output. `remove_plane` and `remove_plane_masked` are now version 0.1.1; their results are
+  otherwise unchanged (#105).
+- Many documentation examples failed when copied: the CLI and analysis guides used step names that do not exist
+  (`threshold_mask`, `detect_particles`, `track_particles`), `--export npz hdf5` instead of `--export npz,h5`, a
+  `--raw` flag the CLI does not have, `draw_scale_bar` instead of `draw_scale`, and `playnano.io.loaders` instead of
+  `playnano.io.data_loaders`. All examples were rerun and now work. The same wrong names are fixed in docstrings and
+  `--help` text, and `--help` now says `--draw-ts` is off by default (#107).
+- Corrected reference information in the documentation: the contents of NPZ and HDF5 bundles, OME-TIFF provenance
+  (stored in TIFF tag 65000), the default `mask_morphological` threshold (0.0), the `pad` parameter of
+  `intersection_crop` and `crop_square`, links to the `_masked` filters, and claims that exports need `line_rate`
+  metadata (#107).
+- The analysis module list in the documentation was not regenerated when the docs were built from the repository
+  root, as CI does, and its links pointed to pages that do not exist. It is now written next to `conf.py` and links
+  to each module's API page. Three analysis modules were missing from the API reference. Headings on the exporting
+  and colourmaps pages render at the right levels, and nested lists render correctly. The README licence badge now
+  links to `COPYING` (#107).
+- The documentation version switcher was below the long navigation tree, outside the scrolling part of the
+  sidebar, so it could not be reached at normal zoom. It is now at the top of the sidebar (#107).
+
+### Changed
+
+- The plane and polynomial filters no longer use scikit-learn, so importing the processing filters is faster (#105).
+- The conda environment file is renamed from `enviroment.yaml` to `environment.yaml`, the name the installation guide
+  already used, and no longer limits NumPy to versions below 2.0, matching `pyproject.toml` (#106).
+- Tests and pre-commit checks now also run on pushes to `dev`. The test workflow no longer asks for write permissions,
+  and a failed coverage upload (for example from a fork without a token) no longer fails the tests. Removed the
+  unused `count_nonzero` entry point (it is built in), the unused setuptools settings and `--cov-append` (#106).
+- The documentation is now also built for pull requests to `dev`, so broken pages are found before a release (#107).
 
 ## [0.5.2] - 2026-11-18
 
@@ -551,8 +591,8 @@ This release introduces video processing, stack editing, multi-version documenta
   - `AFMImageStack` now registers and resolves new processing groups:
     - `video_processing` and `stack_edit` modules added.
   - Added internal state backup mechanism (`state_backups` attribute) for preserving
-    origonal metadata.
-  - Moved the versioning module for functions from the processing subpakage to the utils subpackage.
+    original metadata.
+  - Moved the versioning module for functions from the processing subpackage to the utils subpackage.
 
 - **Docs Generation**
   - Automatic inclusion of `playNano.analysis.utils.loader`, `playNano.processing.video_processing`, and
@@ -667,7 +707,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.3...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -680,3 +720,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.5.0]: https://github.com/derollins/playNano/releases/tag/v0.5.0
 [0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
 [0.5.2]: https://github.com/derollins/playNano/releases/tag/v0.5.2
+[0.5.3]: https://github.com/derollins/playNano/releases/tag/v0.5.3

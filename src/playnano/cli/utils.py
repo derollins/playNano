@@ -245,7 +245,7 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
     processing_str : str
         Semicolon-delimited string specifying processing steps.
         Each step may have optional parameters (separated by commas) after a colon,
-        e.g., "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
+        e.g., "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"
 
     Returns
     -------
@@ -263,12 +263,12 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
     [('gaussian_filter', {'sigma': 2.0, 'truncate': 4.0})]
 
     >>> parse_processing_string(
-    ...     "remove_plane; gaussian_filter:sigma=2.0; threshold_mask:threshold=2"
+    ...     "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"
     ... )
     [
         ('remove_plane', {}),
         ('gaussian_filter', {'sigma': 2.0}),
-        ('threshold_mask', {'threshold': 2})
+        ('mask_threshold', {'threshold': 2})
     ]
     """
     return _parse_step_string(
@@ -285,7 +285,7 @@ def parse_processing_file(path: str) -> list[tuple[str, dict[str, object]]]:
         - name: remove_plane
         - name: gaussian_filter
           sigma: 2.0
-        - name: threshold_mask
+        - name: mask_threshold
           threshold: 2
         - name: polynomial_flatten
           order: 2

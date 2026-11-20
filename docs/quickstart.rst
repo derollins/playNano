@@ -16,10 +16,10 @@ open the terminal (Anaconda PowerShell Prompt for Windows).
    conda create -n playnano_env python=3.11
    conda activate playnano_env
 
-2. Install playNano from PyPi
+2. Install playNano from PyPI
 -----------------------------
 
-Install the latest release of **playNano** from PyPi using pip.
+Install the latest release of **playNano** from PyPI using pip.
 
 .. code-block:: bash
 
@@ -46,7 +46,7 @@ To open a sample file in the GUI, run:
    playnano play ./tests/resources/sample_0.h5-jpk  # Opens GUI with loaded file
 
 This opens a sample AFM file when run in the project root. Change the path to your
-own data to view other files. There is a preset processing pipeline can be
+own data to view other files. A preset processing pipeline can be
 applied by pressing the "F" key or the "Apply Filters" button in the GUI. You can
 find out more about using the GUI in :doc:`gui`.
 
@@ -58,7 +58,7 @@ To run these commands on example data, these commands can be run from the projec
 
 .. code-block:: bash
 
-   playnano process ./tests/resources/sample_0.h5-jpk\
+   playnano process ./tests/resources/sample_0.h5-jpk \
      --processing "remove_plane;mask_mean_offset:factor=1;row_median_align;polynomial_flatten:order=2" \
      --export h5,tif,npz --make-gif --draw-ts --output-folder ./results --output-name sample_processed
 
@@ -74,7 +74,7 @@ Run analysis (detection + tracking):
 .. code-block:: bash
 
    playnano analyze ./results/sample_processed_filtered.h5 \
-     --analysis-steps "feature_detection:mask_fn=mask_mean_offset,factor=0.5,threshold=5;particle_tracking:max_distance=3"
+     --analysis-steps "feature_detection:mask_fn=mask_mean_offset,factor=0.5;particle_tracking:max_distance=3"
 
 5. Where to go next
 -------------------

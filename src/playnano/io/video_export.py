@@ -5,9 +5,9 @@ This module provides functions for generating  MP4, AVI, MOV, or MKV video files
 AFM image stacks, with optional timestamps and scale bars. Frames can be normalised
 automatically or scaled using a fixed z-range.
 
-The rendered frame pipeline is identical to :mod:`~playNano.io.gif_export`:
+The rendered frame pipeline is identical to :mod:`~playnano.io.gif_export`:
 frames are colourised with a matplotlib colormap and annotated via
-:mod:`~playNano.io.render_utils` before being written to a container format using
+:mod:`~playnano.io.render_utils` before being written to a container format using
 :mod:`cv2`.
 
 Dependencies

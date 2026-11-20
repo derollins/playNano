@@ -512,3 +512,114 @@ def test_zero_median_masked_shape_mismatch():
     mask = np.ones((3, 3), dtype=bool)
     with pytest.raises(ValueError, match="Mask must have same shape"):
         zero_median_masked(data, mask)
+
+
+# --- Polynomial and plane fits: scaled coordinates and NaN pixels (#105) ---
+
+
+def _polynomial_surface(n: int, order: int, seed: int = 0) -> np.ndarray:
+    """Return an exact polynomial surface of total degree ``order`` on n x n."""
+    rng = np.random.default_rng(seed)
+    y, x = np.mgrid[0:n, 0:n] / (n - 1)  # 0..1, so no term dominates
+    surface = np.zeros((n, n))
+    for total in range(order + 1):
+        for i in range(total + 1):
+            surface += rng.normal() * x**i * y ** (total - i)
+    return surface * 10.0
+
+
+@pytest.mark.parametrize(
+    ("n", "order"),
+    [(128, o) for o in range(1, 7)]
+    + [(512, o) for o in range(1, 7)]
+    + [(1024, o) for o in (2, 3, 4)],
+)
+@pytest.mark.parametrize("masked", [False, True])
+def test_polynomial_flatten_removes_exact_surface(n, order, masked):
+    """An exact polynomial of the fitted order is removed to round-off level."""
+    data = _polynomial_surface(n, order)
+    if masked:
+        mask = np.zeros_like(data, dtype=bool)
+        mask[n // 3 : n // 2, n // 3 : n // 2] = True
+        flattened = polynomial_flatten_masked(data, mask, order=order)
+    else:
+        flattened = filters.polynomial_flatten(data, order=order)
+    assert np.abs(flattened).max() < 1e-8 * np.abs(data).max()
+
+
+@pytest.mark.parametrize("order", [2, 3, 4, 5, 6])
+def test_polynomial_flatten_residual_is_noise_on_large_frame(order):
+    """On a 512 px frame the residual is the noise, at every order."""
+    rng = np.random.default_rng(0)
+    n = 512
+    y, x = np.mgrid[0:n, 0:n]
+    curve = 1e-5 * (x - n * 0.4) ** 2 + 2e-5 * (y - n * 0.6) ** 2
+    data = curve + rng.normal(scale=0.01, size=(n, n))
+    assert filters.polynomial_flatten(data, order=order).std() == pytest.approx(
+        0.01, rel=0.02
+    )
+
+
+def test_remove_plane_matches_previous_scikit_learn_fit():
+    """``remove_plane`` gives the same result as the old scikit-learn fit."""
+    rng = np.random.default_rng(1)
+    h, w = 37, 53
+    X, Y = np.meshgrid(np.arange(w), np.arange(h))
+    data = 0.3 * X - 0.7 * Y + 4 + rng.normal(size=(h, w))
+    features = np.stack([X.ravel(), Y.ravel()], axis=1)
+    model = LinearRegression().fit(features, data.ravel())
+    expected = data - model.predict(features).reshape(h, w)
+
+    np.testing.assert_allclose(filters.remove_plane(data), expected, atol=1e-9)
+
+    mask = np.zeros_like(data, dtype=bool)
+    mask[10:20, 10:30] = True
+    model = LinearRegression().fit(features[~mask.ravel()], data[~mask])
+    expected = data - model.predict(features).reshape(h, w)
+    np.testing.assert_allclose(remove_plane_masked(data, mask), expected, atol=1e-9)
+
+
+@pytest.mark.parametrize(
+    "flatten",
+    [
+        lambda d: filters.remove_plane(d),
+        lambda d: filters.polynomial_flatten(d, order=3),
+        lambda d: remove_plane_masked(d, np.zeros(d.shape, dtype=bool)),
+        lambda d: polynomial_flatten_masked(d, np.zeros(d.shape, dtype=bool), 3),
+    ],
+    ids=["remove_plane", "polynomial_flatten", "remove_plane_masked", "poly_masked"],
+)
+def test_flatten_ignores_nan_pixels(flatten):
+    """Leave NaN pixels out of the fit and keep them NaN; flatten the rest."""
+    data = _polynomial_surface(64, 1)  # a plane, exact for every order >= 1
+    data[5, 7] = np.nan
+    data[40:44, 0] = np.nan
+
+    flattened = flatten(data)
+
+    assert np.array_equal(np.isnan(flattened), np.isnan(data))
+    assert np.nanmax(np.abs(flattened)) < 1e-9
+
+
+def test_flatten_with_too_few_finite_pixels_raises():
+    """Too few usable pixels gives a clear error, counting NaN and masked."""
+    data = np.full((10, 10), np.nan)
+    data[0, :5] = 1.0  # 5 finite pixels; order 2 needs 6
+    with pytest.raises(ValueError, match="5 found, at least 6 needed"):
+        filters.polynomial_flatten(data, order=2)
+
+    data = np.arange(100.0).reshape(10, 10)
+    mask = np.ones_like(data, dtype=bool)
+    mask[0, :2] = False
+    mask[5, 5] = False
+    data[5, 5] = np.nan  # 2 usable pixels; a plane needs 3
+    with pytest.raises(ValueError, match="2 found, at least 3 needed"):
+        remove_plane_masked(data, mask)
+
+
+def test_flatten_filter_versions():
+    """Changed fits have new versions, recorded in processing provenance."""
+    assert filters.remove_plane.__version__ == "0.1.1"
+    assert remove_plane_masked.__version__ == "0.1.1"
+    assert filters.polynomial_flatten.__version__ == "0.2.0"
+    assert polynomial_flatten_masked.__version__ == "0.2.0"

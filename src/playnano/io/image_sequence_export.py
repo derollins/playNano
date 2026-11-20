@@ -5,7 +5,7 @@ This module provides functions for saving each frame of an AFM image stack as
 an individual PNG or JPEG file inside a dedicated output folder. Frames can be
 normalised automatically or scaled with a fixed z-range, and are annotated with
 optional timestamps and scale bars using the shared rendering pipeline in
-:mod:`~playNano.io.render_utils`
+:mod:`~playnano.io.render_utils`
 
 Dependencies
 ------------
