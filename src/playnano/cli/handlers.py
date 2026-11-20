@@ -5,6 +5,7 @@ import logging
 import re
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 from playnano.cli.actions import (
     Wizard,
@@ -12,6 +13,24 @@ from playnano.cli.actions import (
     play_pipeline_mode,
     process_pipeline_mode,
 )
+
+logger = logging.getLogger(__name__)
+
+
+def _exit_with_error(exc: Exception) -> NoReturn:
+    """
+    Log a command's error and exit with status 1.
+
+    The traceback is included when logging is at DEBUG level
+    (``--log-level DEBUG``), and left out otherwise.
+
+    Parameters
+    ----------
+    exc : Exception
+        The error that stopped the command.
+    """
+    logger.error(exc, exc_info=logger.isEnabledFor(logging.DEBUG))
+    sys.exit(1)
 
 
 def handle_play(args: argparse.Namespace) -> None:
@@ -76,8 +95,7 @@ def handle_play(args: argparse.Namespace) -> None:
             fps=args.fps,
         )
     except Exception as e:
-        logging.getLogger(__name__).error(e)
-        sys.exit(1)
+        _exit_with_error(e)
 
 
 def handle_process(args: argparse.Namespace) -> None:
@@ -128,8 +146,7 @@ def handle_process(args: argparse.Namespace) -> None:
             fps=args.fps,
         )
     except Exception as e:
-        logging.getLogger(__name__).error(e)
-        sys.exit(1)
+        _exit_with_error(e)
 
 
 def handle_wizard(args: argparse.Namespace) -> None:
@@ -172,8 +189,7 @@ def handle_wizard(args: argparse.Namespace) -> None:
             cmap=args.cmap,
         ).run()
     except Exception as e:
-        logging.getLogger(__name__).error(e)
-        sys.exit(1)
+        _exit_with_error(e)
 
 
 def handle_analyze(args: argparse.Namespace) -> None:
@@ -188,5 +204,4 @@ def handle_analyze(args: argparse.Namespace) -> None:
             output_name=args.output_name,
         )
     except Exception as e:
-        logging.getLogger(__name__).error(e, exc_info=True)
-        sys.exit(1)
+        _exit_with_error(e)

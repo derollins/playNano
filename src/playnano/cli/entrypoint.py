@@ -61,7 +61,7 @@ def main() -> None:
     - Set up argument parsing for 'play', 'process' and 'wizard' subcommands,
     each with their own options.
     - Configure logging level based on user input.
-    - Show help and exit if no subcommand is provided.
+    - Show help and exit with code 2 if no subcommand is provided.
     - Call the handler function associated with the chosen subcommand.
 
     Usage:
@@ -354,9 +354,10 @@ def main() -> None:
     setup_logging(getattr(logging, args.log_level.upper()))
 
     if args.command is None:
-        # No subcommand: just show help and exit
+        # No subcommand is a usage error: show help and exit with code 2, as
+        # argparse does for other usage errors.
         parser.print_help(file=sys.stderr)
-        sys.exit(0)
+        sys.exit(2)
 
     # Dispatch to the chosen subcommand
     try:

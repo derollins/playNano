@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Publishing a release removed the `main` documentation from the website, so the docs home page gave a 404 until
   the `main` docs were rebuilt by hand. Every docs build now includes `main`, deploys no longer overlap, and the
   `Keep Main Docs Alive` workflow, which failed with an expired token, has been removed (#82).
+- `playnano analyze` and the wizard's analysis export used `--output-name` as given, so `../name` wrote outside the
+  output folder and `run.json` became `run.json.json`. They now treat the name as `process` does: any folder part is
+  dropped and a known extension is removed (#102).
+- `playnano analyze` exited with code 0 when the HDF5 file could not be written. It now writes every file it can,
+  then exits with code 1 and names the files that failed (#102).
+- `playnano` with no subcommand exited with code 0; it now exits with code 2, like other usage errors. With
+  `--log-level DEBUG`, errors from `play`, `process` and `wizard` now include the traceback, as `analyze` errors
+  did; at other levels `analyze` no longer prints one (#102).
 
 ## [0.5.2] - 2026-11-18
 
