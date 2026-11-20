@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -529,7 +530,7 @@ and an interactive wizard for building pipelines.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">process</span></code> - Batch mode: apply filters and export images/bundles/GIFs.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">analyze</span></code> - Run a pipeline of analysis modules (detection/tracking) on a stack and export results.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">wizard</span></code>  - Interactive REPL for constructing processing/analysis pipelines.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">env-info</span></code>- Print environment information useful for debugging.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">env-info</span></code> - Print environment information useful for debugging.</p></li>
 </ul>
 <p>The CLI maps to the Python entry point <code class="docutils literal notranslate"><span class="pre">playnano.cli.entrypoint:main</span></code>.</p>
 </section>
@@ -552,16 +553,17 @@ playnano<span class="w"> </span>analyze<span class="w"> </span>processed.h5<span
 </pre></div>
 </div>
 <p>Example output:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>playnano 0.5.2
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>playnano 0.5.3
 </pre></div>
 </div>
+<p>(The version shown is the one you have installed.)</p>
 <p>This is useful for debugging, reporting issues, and reproducibility.</p>
 </section>
 <section id="log-level">
 <h3><code class="docutils literal notranslate"><span class="pre">--log-level</span></code><a class="headerlink" href="#log-level" title="Link to this heading">¶</a></h3>
 <p>Set the global logging verbosity for the CLI.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>--log-level<span class="w"> </span>DEBUG<span class="w"> </span>play<span class="w"> </span>data.afm
-playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span class="w"> </span>process<span class="w"> </span>data.afm<span class="w"> </span>--make-gif
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>--log-level<span class="w"> </span>DEBUG<span class="w"> </span>play<span class="w"> </span>data.h5-jpk
+playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span class="w"> </span>process<span class="w"> </span>data.h5-jpk<span class="w"> </span>--make-gif
 </pre></div>
 </div>
 <p>Allowed values are:</p>
@@ -582,7 +584,7 @@ playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span 
 <h2>Batch mode operations<a class="headerlink" href="#batch-mode-operations" title="Link to this heading">¶</a></h2>
 <p>Processing and analysis can be run in a non-interactive batch mode without a GUI or wizard.</p>
 <section id="batch-processing-mode-process">
-<h3>Batch processing mode- <cite>process</cite><a class="headerlink" href="#batch-processing-mode-process" title="Link to this heading">¶</a></h3>
+<h3>Batch processing mode - <code class="docutils literal notranslate"><span class="pre">process</span></code><a class="headerlink" href="#batch-processing-mode-process" title="Link to this heading">¶</a></h3>
 <p>Apply filters and export without user interaction.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>process<span class="w"> </span>/path/to/sample.h5-jpk<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
@@ -597,6 +599,7 @@ playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span 
 <span class="w">  </span><span class="o">[</span>--scale-bar-nm<span class="w"> </span>SCALE_BAR_INT<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--zmin<span class="w"> </span>MINIMUM<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--zmax<span class="w"> </span>MAXIMUM<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">[</span>--draw-ts<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--cmap<span class="w"> </span>COLORMAP_NAME<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--fps<span class="w"> </span>FRAMES_PER_SECOND<span class="o">]</span>
 </pre></div>
@@ -615,7 +618,8 @@ playnano<span class="w"> </span>--log-level<span class="w"> </span>WARNING<span 
 <li><p><code class="docutils literal notranslate"><span class="pre">--scale-bar-nm</span></code> - integer length (nm) for scale bar in GIF (0 disables).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> / <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> - initial z-range; can be a float or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (1st/99th percentiles).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--cmap</span></code> - name of colormap to use for animated visualisation export (default=afm_brown).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> - the frame rate (in seconds) for GIF and video exports.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fps</span></code> - frame rate, in frames per second, for GIF and video exports (default 5).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--draw-ts</span></code> - draw each frame’s timestamp on the GIF, video or image sequence (off by default).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -630,7 +634,7 @@ Use one or the other (or neither to run with no processing).</p>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_plane</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gaussian_filter</span>
 <span class="w">    </span><span class="nt">sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">threshold_mask</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polynomial_flatten</span>
 <span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
@@ -643,7 +647,7 @@ Use one or the other (or neither to run with no processing).</p>
 <p>Run an analysis pipeline on a loaded AFM stack and export the results.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>/path/to/processed_sample.h5<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--channel<span class="w"> </span>CHANNEL<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">"detect_particles:threshold=5;track_particles:max_distance=3.0"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_threshold,threshold=5;particle_tracking:max_distance=3.0"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>analysis.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-folder<span class="w"> </span>OUTPUT_DIR<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--output-name<span class="w"> </span>BASE_NAME<span class="o">]</span>
@@ -658,7 +662,7 @@ Use one or the other (or neither to run with no processing).</p>
 </ul>
 <p>Inline example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>sample_flat.h5<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"detect_particles:threshold=4.5;track_particles:max_distance=2.5"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_threshold,threshold=4.5;particle_tracking:max_distance=2.5"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-folder<span class="w"> </span>./analysis_results<span class="w"> </span>--output-name<span class="w"> </span>run1
 </pre></div>
 </div>
@@ -667,17 +671,18 @@ Use one or the other (or neither to run with no processing).</p>
 <h4>Analysis pipeline schema<a class="headerlink" href="#analysis-pipeline-schema" title="Link to this heading">¶</a></h4>
 <p>Example YAML (see <a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a> for full reference):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">analysis</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect_particles</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature_detection</span>
 <span class="w">    </span><span class="nt">mask_fn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mask_threshold</span>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">track_particles</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
 <span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0</span>
 </pre></div>
 </div>
 <p><strong>Outputs</strong></p>
+<p>Both files are always written:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;output&gt;.json</span></code> - sanitized analysis record (suitable for downstream parsing).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;output&gt;.h5</span></code> - full analysis bundle (if HDF5 export requested).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;output&gt;.h5</span></code> - full analysis record in HDF5.</p></li>
 </ul>
 </section>
 </section>
@@ -696,29 +701,33 @@ configurations.</p>
 <h4>Processing pipeline commands<a class="headerlink" href="#processing-pipeline-commands" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">add</span> <span class="pre">&lt;filter&gt;</span></code> - add a processing step (REPL prompts for parameters).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">clear</span></code> - add a step that clears the current mask.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">remove</span> <span class="pre">&lt;index&gt;</span></code> - remove a step (indices start at 1, as shown by <code class="docutils literal notranslate"><span class="pre">list</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">move</span> <span class="pre">&lt;old_index&gt;</span> <span class="pre">&lt;new_index&gt;</span></code> - move a step to a new position.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">list</span></code> - show the current processing pipeline steps.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">save</span> <span class="pre">&lt;path.yaml&gt;</span></code> - save the current processing pipeline as YAML.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load</span> <span class="pre">&lt;path.yaml&gt;</span></code> - replace the pipeline with one saved by <code class="docutils literal notranslate"><span class="pre">save</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">run</span></code> - execute the processing pipeline on the supplied input.</p></li>
 </ul>
 </section>
 <section id="analysis-pipeline-commands-prefixed-with-a">
 <h4>Analysis pipeline commands (prefixed with <code class="docutils literal notranslate"><span class="pre">a</span></code>)<a class="headerlink" href="#analysis-pipeline-commands-prefixed-with-a" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">aadd</span> <span class="pre">&lt;analysis_step&gt;</span></code> - add an analysis step (REPL prompts for parameters).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aadd</span> <span class="pre">&lt;analysis_step&gt;</span></code> - add an analysis step (REPL prompts for parameters), or
+<code class="docutils literal notranslate"><span class="pre">aadd</span> <span class="pre">&lt;step&gt;:&lt;param&gt;=&lt;value&gt;,...</span></code> to give the parameters inline.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aremove</span> <span class="pre">&lt;index&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">amove</span> <span class="pre">&lt;old_index&gt;</span> <span class="pre">&lt;new_index&gt;</span></code> - remove or move a step.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">alist</span></code> - show the current analysis pipeline steps.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">asave</span> <span class="pre">&lt;path.yaml&gt;</span></code> - save the current analysis pipeline as YAML.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">arun</span></code> - run the analysis pipeline (runs any processing steps as configured if</dt><dd><p>AFM stack contains only raw data).</p>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aload</span> <span class="pre">&lt;path&gt;</span></code> - load an analysis pipeline from YAML or JSON.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arun</span></code> - run the analysis pipeline (runs any processing steps first if the
+AFM stack contains only raw data).</p></li>
 </ul>
 </section>
 <section id="other-utility-commands">
 <h4>Other utility commands<a class="headerlink" href="#other-utility-commands" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">help</span></code> - show available REPL commands.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">quit</span></code> - exit the wizard (this is a single, global quit that closes the entire session).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quit</span></code> (or <code class="docutils literal notranslate"><span class="pre">exit</span></code>) - exit the wizard (this is a single, global quit that closes the entire session).</p></li>
 </ul>
 </section>
 </section>
@@ -735,7 +744,7 @@ configurations.</p>
 <span class="w">  </span><span class="o">[</span>--scale-bar-nm<span class="w"> </span>SCALE_BAR_INT<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--zmin<span class="w"> </span>MINIMUM<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--zmax<span class="w"> </span>MAXIMUM<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">[</span>--cmap<span class="w"> </span>COLORMAP_NAME<span class="o">]</span>
+<span class="w">  </span><span class="o">[</span>--cmap<span class="w"> </span>COLORMAP_NAME<span class="o">]</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span><span class="o">[</span>--fps<span class="w"> </span>INITIAL_FRAMES_PER_SECOND<span class="o">]</span>
 </pre></div>
 </div>
@@ -789,7 +798,7 @@ When <code class="docutils literal notranslate"><span class="pre">auto</span></c
 <ul class="simple">
 <li><p>If the CLI command is not found, ensure your environment is activated and that
 you installed the package (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>) in that environment.</p></li>
-<li><p>If GIF export fails, check the input metadata (e.g. <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>) and the console logs.</p></li>
+<li><p>If an export fails, rerun with <code class="docutils literal notranslate"><span class="pre">--log-level</span> <span class="pre">DEBUG</span></code> to see the full error in the console log.</p></li>
 <li><p>For GUI installation problems, see the PySide6 notes in <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>.</p></li>
 </ul>
 </section>
@@ -870,7 +879,7 @@ you installed the package (<code class="docutils literal notranslate"><span clas
 </ul>
 </li>
 <li><a class="reference internal" href="#batch-mode-operations">Batch mode operations</a><ul>
-<li><a class="reference internal" href="#batch-processing-mode-process">Batch processing mode- <cite>process</cite></a><ul>
+<li><a class="reference internal" href="#batch-processing-mode-process">Batch processing mode - <code class="docutils literal notranslate"><span class="pre">process</span></code></a><ul>
 <li><a class="reference internal" href="#primary-options">Primary options</a></li>
 <li><a class="reference internal" href="#processing-pipeline-schema">Processing pipeline schema</a></li>
 </ul>
@@ -918,6 +927,6 @@ you installed the package (<code class="docutils literal notranslate"><span clas
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

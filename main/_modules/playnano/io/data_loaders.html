@@ -194,7 +194,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
@@ -204,9 +209,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -393,7 +395,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -467,15 +472,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -510,7 +511,7 @@
 
 <span class="sd">This module provides readers for serialized AFMImageStack bundles created</span>
 <span class="sd">by the export routines (``.npz``, ``.h5``, and OME-TIFF). Each loader</span>
-<span class="sd">reconstructs a :class:`~playNano.afm_stack.AFMImageStack` with correct</span>
+<span class="sd">reconstructs a :class:`~playnano.afm_stack.AFMImageStack` with correct</span>
 <span class="sd">data, pixel size, channel name, and per-frame metadata (timestamps,</span>
 <span class="sd">frame_pixel_size_nm etc.)</span>
 <span class="sd">All loaders restore provenance and any stored processing or mask data.</span>
@@ -518,11 +519,11 @@
 <span class="sd">Functions</span>
 <span class="sd">---------</span>
 <span class="sd">load_npz_bundle</span>
-<span class="sd">    Load a `.npz` bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
+<span class="sd">    Load a `.npz` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
 <span class="sd">load_h5_bundle</span>
-<span class="sd">    Load a `.h5` bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
+<span class="sd">    Load a `.h5` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
 <span class="sd">load_ome_tiff_stack</span>
-<span class="sd">    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
+<span class="sd">    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -542,7 +543,7 @@
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_npz_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_npz_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an :class:`~playNano.afm_stack.AFMImageStack` from a `.npz` bundle.</span>
+<span class="sd">    Load an :class:`~playnano.afm_stack.AFMImageStack` from a `.npz` bundle.</span>
 
 <span class="sd">    The `.npz` file must contain the following keys:</span>
 
@@ -555,19 +556,19 @@
 <span class="sd">    - ``masks__&lt;mask&gt;`` : optional boolean mask arrays</span>
 <span class="sd">    - ``state_backups_json`` : optional JSON-encoded dict of saved states</span>
 
-<span class="sd">    This is the structure produced by :func:`playNano.io.export_data.save_npz_bundle`.</span>
+<span class="sd">    This is the structure produced by :func:`playnano.io.export_data.save_npz_bundle`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
 <span class="sd">        Path to the `.npz` file.</span>
 <span class="sd">    channel : str, default="height_trace"</span>
-<span class="sd">        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`</span>
+<span class="sd">        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`</span>
 <span class="sd">        but ignored when reading the bundle.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playNano.afm_stack.AFMImageStack</span>
+<span class="sd">    playnano.afm_stack.AFMImageStack</span>
 <span class="sd">        Reconstructed AFM image stack with attributes populated:</span>
 <span class="sd">        ``.processed``, ``.masks``, and ``.provenance``.</span>
 
@@ -644,7 +645,7 @@
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_h5_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_h5_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an :class:`~playNano.afm_stack.AFMImageStack` from an HDF5 bundle.</span>
+<span class="sd">    Load an :class:`~playnano.afm_stack.AFMImageStack` from an HDF5 bundle.</span>
 
 <span class="sd">    Expected HDF5 structure</span>
 <span class="sd">    -----------------------</span>
@@ -660,19 +661,19 @@
 <span class="sd">        - ``channel`` : string</span>
 
 <span class="sd">    Files with the structure are produced by</span>
-<span class="sd">    :func:`playNano.io.export_data.save_h5_bundle`.</span>
+<span class="sd">    :func:`playnano.io.export_data.save_h5_bundle`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
 <span class="sd">        Path to the `.h5` file.</span>
 <span class="sd">    channel : str, default="height_trace"</span>
-<span class="sd">        Provided for API compatibility with :func:`~playNano.io.loader.load_afm_stack`</span>
+<span class="sd">        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`</span>
 <span class="sd">        but ignored when reading the bundle.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playNano.afm_stack.AFMImageStack</span>
+<span class="sd">    playnano.afm_stack.AFMImageStack</span>
 <span class="sd">        Fully reconstructed AFM image stack with provenance, processed steps,</span>
 <span class="sd">        and masks restored.</span>
 
@@ -740,7 +741,7 @@
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_ome_tiff_stack">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_ome_tiff_stack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an OME-TIFF bundle into an :class:`~playNano.afm_stack.AFMImageStack`.</span>
+<span class="sd">    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
 
 <span class="sd">    Attempts to parse OME-XML and custom metadata tags to reconstruct</span>
 <span class="sd">    pixel size, timestamps, and provenance. Falls back gracefully if</span>
@@ -750,13 +751,13 @@
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
 <span class="sd">        Path to the `.ome.tif` file created by</span>
-<span class="sd">        :func:`~playNano.io.export_data.save_ome_tiff_stack`.</span>
+<span class="sd">        :func:`~playnano.io.export_data.save_ome_tiff_stack`.</span>
 <span class="sd">    channel : str, optional</span>
 <span class="sd">        Fallback channel name if none is found in OME metadata.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playNano.afm_stack.AFMImageStack</span>
+<span class="sd">    playnano.afm_stack.AFMImageStack</span>
 <span class="sd">        Reconstructed AFMImageStack with:</span>
 
 <span class="sd">        - ``data`` : 3D ``float32`` array ``(T, H, W)``</span>
@@ -897,6 +898,6 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="../../../_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

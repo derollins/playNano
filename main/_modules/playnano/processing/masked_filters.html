@@ -194,7 +194,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
@@ -204,9 +209,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -393,7 +395,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -467,15 +472,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -510,9 +511,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolynomialFeatures</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.processing.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">_fit_polynomial_surface</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.versioning</span><span class="w"> </span><span class="kn">import</span> <span class="n">versioned_filter</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -520,7 +520,7 @@
 
 <div class="viewcode-block" id="remove_plane_masked">
 <a class="viewcode-back" href="../../../api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.remove_plane_masked">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.1"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">remove_plane_masked</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fit a 2D plane on background only and subtract it from the full image.</span>
@@ -542,30 +542,25 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If mask.shape != data.shape.</span>
+<span class="sd">        If mask.shape != data.shape, or fewer than 3 background pixels are</span>
+<span class="sd">        finite.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    NaN and infinite pixels are left out of the fit and stay NaN or infinite</span>
+<span class="sd">    in the output. Version 0.1.1 fits with NumPy instead of scikit-learn</span>
+<span class="sd">    (same result) and handles NaN pixels instead of raising.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mask must have same shape as data."</span><span class="p">)</span>
-    <span class="n">bg_idx</span> <span class="o">=</span> <span class="o">~</span><span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bg_idx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not enough background pixels to fit a plane."</span><span class="p">)</span>
-
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span><span class="o">.</span><span class="n">T</span>
-    <span class="n">Zf</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">bg_idx</span><span class="p">],</span> <span class="n">Zf</span><span class="p">[</span><span class="n">bg_idx</span><span class="p">])</span>
-    <span class="n">plane</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span> <span class="o">-</span> <span class="n">plane</span></div>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span> <span class="o">-</span> <span class="n">_fit_polynomial_surface</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fit_mask</span><span class="o">=~</span><span class="n">mask</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="polynomial_flatten_masked">
 <a class="viewcode-back" href="../../../api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.polynomial_flatten_masked">[docs]</a>
-<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
+<span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.2.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">polynomial_flatten_masked</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -593,42 +588,22 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If mask.shape != data.shape or order is not a positive integer.</span>
+<span class="sd">        If mask.shape != data.shape, order is not a positive integer, or there</span>
+<span class="sd">        are fewer finite background pixels than polynomial terms.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    NaN and infinite pixels are left out of the fit and stay NaN or infinite</span>
+<span class="sd">    in the output. Version 0.2.0 scales x and y to [-1, 1] before fitting, so</span>
+<span class="sd">    orders of 3 and above fit correctly on large frames.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mask must have same shape as data."</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Polynomial order must be a positive integer."</span><span class="p">)</span>
 
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
-    <span class="c1"># Generate coordinate grid for surface fitting</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="c1"># Prepare design matrix with all polynomial terms up to the given order</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">poly</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
-        <span class="n">A</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to generate polynomial features: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-
-    <span class="n">bg_idx</span> <span class="o">=</span> <span class="o">~</span><span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">bg_idx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not enough background pixels to perform polynomial fit."</span><span class="p">)</span>
-
-    <span class="c1"># Solve for least-squares polynomial surface</span>
-    <span class="n">Zf</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">coeff</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">bg_idx</span><span class="p">],</span> <span class="n">Zf</span><span class="p">[</span><span class="n">bg_idx</span><span class="p">],</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Least squares fitting failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-
-    <span class="c1"># Reconstruct the fitted surface and subtract it</span>
-    <span class="n">Z_fit</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">coeff</span>
-    <span class="n">flattened</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-</span> <span class="n">Z_fit</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">flattened</span></div>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span> <span class="o">-</span> <span class="n">_fit_polynomial_surface</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">fit_mask</span><span class="o">=~</span><span class="n">mask</span><span class="p">)</span></div>
 
 
 
@@ -806,6 +781,6 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../../_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="../../../_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

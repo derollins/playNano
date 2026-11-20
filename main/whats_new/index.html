@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="What’s New in playNano 0.1.0" href="v0.1.0.html"><link rel="prev" title="playnano.io.render_utils module" href="../api/playnano.io.render_utils.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="What’s New in playNano 0.1.0" href="v0.1.0.html"><link rel="prev" title="playnano.analysis.modules.tracked_particle_boundary_size module" href="../api/playnano.analysis.modules.tracked_particle_boundary_size.html">
         <link rel="prefetch" href="../_static/logo/playnano_logo_light.svg" as="image">
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -525,6 +526,7 @@ For the full, detailed history, see the <strong>Changelog</strong> in the docs s
 <li class="toctree-l1"><a class="reference internal" href="v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </div>
 </section>
@@ -543,14 +545,14 @@ For the full, detailed history, see the <strong>Changelog</strong> in the docs s
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../api/playnano.io.render_utils.html">
+          <a class="prev-page" href="../api/playnano.analysis.modules.tracked_particle_boundary_size.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">playnano.io.render_utils module</div>
+                <div class="title">playnano.analysis.modules.tracked_particle_boundary_size module</div>
                 
               </div>
             </a>
@@ -583,6 +585,6 @@ For the full, detailed history, see the <strong>Changelog</strong> in the docs s
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="../_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

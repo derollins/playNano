@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -519,18 +520,20 @@ feature detection and particle tracking on AFM image stacks.
 Analysis steps produce structured results (counts, tables, tracks, summaries)
 that are stored on the AFM stack and recorded with full provenance for audit
 and reproducibility.</p>
-<p>This page covers:
-- quick CLI and Python examples
-- YAML schema for pipeline files
-- how results are saved and inspected
-- advanced implementation details (module loading, exact provenance fields)
-- extending the system with custom modules</p>
+<p>This page covers:</p>
+<ul class="simple">
+<li><p>quick CLI and Python examples</p></li>
+<li><p>YAML schema for pipeline files</p></li>
+<li><p>how results are saved and inspected</p></li>
+<li><p>advanced implementation details (module loading, exact provenance fields)</p></li>
+<li><p>extending the system with custom modules</p></li>
+</ul>
 <section id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
 <p>Run an inline analysis pipeline from the CLI:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>data/processed_sample.h5<span class="w"> </span><span class="se">\</span>
 <span class="w">   </span>--analysis-steps<span class="w"> </span><span class="s2">"feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking:max_distance=3"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">   </span>--output-folder<span class="w"> </span>./results<span class="w">      </span>--output-name<span class="w"> </span>tracked_particles
+<span class="w">   </span>--output-folder<span class="w"> </span>./results<span class="w"> </span>--output-name<span class="w"> </span>tracked_particles
 </pre></div>
 </div>
 <p>Or load the pipeline from a YAML/JSON file:</p>
@@ -556,36 +559,32 @@ on derived results rather than on image arrays.</p></li>
 <li><p>Each analysis step is executed by an <code class="docutils literal notranslate"><span class="pre">AnalysisModule</span></code> (built-in or plugin).</p></li>
 <li><p>The pipeline records per-step provenance (parameters, timestamps, version and
 stored result keys) under <code class="docutils literal notranslate"><span class="pre">stack.provenance['analysis']</span></code>.</p></li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">log_to</span></code> is provided to programmatic runs or the CLI, a <strong>sanitised JSON</strong>
-summary is written (arrays and complex objects are summarised for JSON friendliness).</p></li>
-<li><p>Some analysis modules have requirements such as being proceeded by cirtain other
-analysis modules, i.e. tracking modules require the detections of particles prior to
-tracking in order to have particles to track.</p></li>
+<li><p>In Python, <code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.run(stack,</span> <span class="pre">log_to=&quot;file.json&quot;)</span></code> also writes a
+<strong>sanitised JSON</strong> record (arrays and complex objects are converted for JSON). The CLI
+always writes both a JSON and an HDF5 file.</p></li>
+<li><p>Some analysis modules must be preceded by certain other analysis modules; for example,
+tracking modules need particles to have been detected first.</p></li>
 </ul>
 <section id="available-analysis-modules">
 <h3>Available analysis modules<a class="headerlink" href="#available-analysis-modules" title="Link to this heading">¶</a></h3>
 <p>See the generated list of installed modules:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.count_nonzero">count_nonzero</a>
-- Analysis module for counting non-zero data points in an array.</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.dbscan_clustering">dbscan_clustering</a>
-- DBSCAN clustering on features over the entire stack in 3D (x, y, time).</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.feature_detection">feature_detection</a>
-- Threshold-based feature detection for AFM image stacks.</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.k_means_clustering">k_means_clustering</a>
-- K-Means clustering on features over the entire stack in 3D (x, y, time).</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.log_blob_detection">log_blob_detection</a>
-- Module for LoG blob detection.</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.particle_tracking">particle_tracking</a>
-- Module for linking particle features across frames to build trajectories.</p></li>
-<li><p><a class="reference external" href="../html/api/playnano.analysis.modules.html#module-playnano.analysis.modules.x_means_clustering">x_means_clustering</a>
-- Module for X-Means clustering as part of the playNano analysis pipeline.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.count_nonzero.html#module-playnano.analysis.modules.count_nonzero" title="playnano.analysis.modules.count_nonzero"><code class="xref py py-mod docutils literal notranslate"><span class="pre">count_nonzero</span></code></a> - Analysis module for counting non-zero data points in an array.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.dbscan_clustering.html#module-playnano.analysis.modules.dbscan_clustering" title="playnano.analysis.modules.dbscan_clustering"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dbscan_clustering</span></code></a> - DBSCAN clustering on features over the entire stack in 3D (x, y, time).</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html#module-playnano.analysis.modules.feature_detection" title="playnano.analysis.modules.feature_detection"><code class="xref py py-mod docutils literal notranslate"><span class="pre">feature_detection</span></code></a> - Threshold-based feature detection for AFM image stacks.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html#module-playnano.analysis.modules.k_means_clustering" title="playnano.analysis.modules.k_means_clustering"><code class="xref py py-mod docutils literal notranslate"><span class="pre">k_means_clustering</span></code></a> - K-Means clustering on features over the entire stack in 3D (x, y, time).</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html#module-playnano.analysis.modules.log_blob_detection" title="playnano.analysis.modules.log_blob_detection"><code class="xref py py-mod docutils literal notranslate"><span class="pre">log_blob_detection</span></code></a> - Module for LoG blob detection.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html#module-playnano.analysis.modules.particle_region_extraction" title="playnano.analysis.modules.particle_region_extraction"><code class="xref py py-mod docutils literal notranslate"><span class="pre">particle_region_extraction</span></code></a> - Particle region extraction module for the playNano analysis pipeline.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html#module-playnano.analysis.modules.particle_region_media_export" title="playnano.analysis.modules.particle_region_media_export"><code class="xref py py-mod docutils literal notranslate"><span class="pre">particle_region_media_export</span></code></a> - Particle region export module for the playNano analysis pipeline.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html#module-playnano.analysis.modules.particle_tracking" title="playnano.analysis.modules.particle_tracking"><code class="xref py py-mod docutils literal notranslate"><span class="pre">particle_tracking</span></code></a> - Module for linking particle features across frames to build trajectories.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html#module-playnano.analysis.modules.tracked_particle_boundary_size" title="playnano.analysis.modules.tracked_particle_boundary_size"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tracked_particle_boundary_size</span></code></a> - Particle boundary size analysis module for the playNano analysis pipeline.</p></li>
+<li><p><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html#module-playnano.analysis.modules.x_means_clustering" title="playnano.analysis.modules.x_means_clustering"><code class="xref py py-mod docutils literal notranslate"><span class="pre">x_means_clustering</span></code></a> - Module for X-Means clustering as part of the playNano analysis pipeline.</p></li>
 </ul>
 </section>
 </section>
 <section id="cli-usage">
 <h2>CLI usage<a class="headerlink" href="#cli-usage" title="Link to this heading">¶</a></h2>
-<p>The analysis pipeline can be run from the pipeline or programmatically but not currently from the GUI.</p>
+<p>The analysis pipeline can be run from the CLI or programmatically, but not currently from the GUI.</p>
 <p>This is the general form of the analyze subcommand for CLI use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>analyze<span class="w"> </span>&lt;input_file&gt;<span class="w"> </span><span class="se">\</span>
 <span class="w">   </span><span class="o">(</span>--analysis-steps<span class="w"> </span><span class="s1">'step1:arg=val;step2:arg=val'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--analysis-file<span class="w"> </span>pipeline.yaml<span class="o">)</span><span class="w"> </span><span class="se">\</span>
@@ -611,13 +610,13 @@ tracking in order to have particles to track.</p></li>
 <span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.5</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">particle_tracking</span>
 <span class="w">    </span><span class="nt">max_distance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.5</span>
-<span class="w">    </span><span class="nt">min_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </pre></div>
 </div>
 <p>Each entry:</p>
 <ul class="simple">
 <li><p><strong>name</strong> (str, required) - analysis module name.</p></li>
-<li><p><strong>parameters</strong> - module-specific kwargs passed through to the module.</p></li>
+<li><p>any other keys - module-specific parameters, written directly on the step and passed
+to the module as keyword arguments.</p></li>
 </ul>
 </section>
 <section id="validation-notes">
@@ -640,8 +639,8 @@ tracking in order to have particles to track.</p></li>
 <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">"data/processed_sample.h5"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">)</span>
 
 <span class="n">ap</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"detect_particles"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"track_particles"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">ap</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_tracking"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
 
 <span class="c1"># run and optionally write a sanitised JSON log</span>
 <span class="n">record</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">"analysis.json"</span><span class="p">)</span>
@@ -662,9 +661,12 @@ tracking in order to have particles to track.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;environment&quot;]</span></code> : runtime environment metadata (OS, Python, packages).</p></li>
 </ul>
 </li>
-<li><p>CLI/utility functions may optionally export:
-- A sanitised JSON summary (human- and machine-readable).
-- HDF5 bundle with full data + provenance.</p></li>
+<li><p>The CLI and the wizard export:</p>
+<ul>
+<li><p>A sanitised JSON record (human- and machine-readable).</p></li>
+<li><p>An HDF5 file with the full results and provenance.</p></li>
+</ul>
+</li>
 </ul>
 </section>
 <section id="inspecting-results">
@@ -678,7 +680,7 @@ tracking in order to have particles to track.</p></li>
     <span class="nb">print</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">"index"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="n">step</span><span class="p">[</span><span class="s2">"analysis_key"</span><span class="p">],</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"version"</span><span class="p">))</span>
 
 <span class="c1"># 3) Access outputs for a named module</span>
-<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"results_by_name"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detect_particles"</span><span class="p">,</span> <span class="p">[]):</span>
+<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"results_by_name"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="p">[]):</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"analysis_key"</span><span class="p">]</span>
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="s2">"outputs"</span><span class="p">]</span>
     <span class="c1"># use outputs (dict/list/array) directly</span>
@@ -866,6 +868,6 @@ or that a plugin exposing the correct entry point is installed.</p></li>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

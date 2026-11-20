@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -515,7 +516,7 @@
 <span id="playnano-io-export-data-module"></span><h1>playnano.io.export_data module<a class="headerlink" href="#module-playnano.io.export_data" title="Link to this heading">¶</a></h1>
 <p>Tools for exporting AFM image stacks in multiple formats.</p>
 <p>This module provides utilities for serializing
-<code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> objects
+<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> objects
 into round-trip-safe formats: OME-TIFF, NPZ, and HDF5.
 Each export preserves pixel data, metadata, masks, provenance, and processing history.</p>
 <section id="supported-formats">
@@ -650,7 +651,7 @@ if exporting raw data, otherwise from <cite>.frame_metadata</cite>.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.save_npz_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">save_npz_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#save_npz_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.save_npz_bundle" title="Link to this definition">¶</a></dt>
-<dd><p>Save <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> with metadata as a <cite>.npz</cite> bundle.</p>
+<dd><p>Save <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> with metadata as a <cite>.npz</cite> bundle.</p>
 <p>The NPZ archive consolidates the AFM stack data, metadata, provenance,
 masks, and processed layers for full round-trip reconstruction.</p>
 <section id="id1">
@@ -694,7 +695,7 @@ attribute.</p></li>
 <code class="docutils literal notranslate"><span class="pre">state_backups['frame_metadata_before_edit']</span></code> (if available),
 otherwise from <code class="docutils literal notranslate"><span class="pre">.frame_metadata</span></code>.</p></li>
 <li><p>Provenance is serialized using
-<code class="xref py py-func docutils literal notranslate"><span class="pre">make_json_safe()</span></code>
+<a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.make_json_safe" title="playnano.utils.io_utils.make_json_safe"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_json_safe()</span></code></a>
 to ensure JSON compatibility.</p></li>
 <li><p>The saved file can be reloaded via
 <code class="xref py py-func docutils literal notranslate"><span class="pre">load_npz_bundle()</span></code>.</p></li>
@@ -712,7 +713,7 @@ to ensure JSON compatibility.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.save_ome_tiff_stack">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">save_ome_tiff_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#save_ome_tiff_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.save_ome_tiff_stack" title="Link to this definition">¶</a></dt>
-<dd><p>Save an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> as an OME-TIFF file.</p>
+<dd><p>Save an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> as an OME-TIFF file.</p>
 <p>The OME-TIFF export embeds image data, pixel calibration, timestamps,
 and provenance metadata into a single, standards-compliant file suitable
 for downstream analysis in microscopy or image-processing software.</p>
@@ -852,6 +853,6 @@ data in <code class="docutils literal notranslate"><span class="pre">.data</span
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="../_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

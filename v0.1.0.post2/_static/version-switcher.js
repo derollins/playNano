@@ -75,6 +75,10 @@
       }
       const current = currentVersionFromUrl(versions);
       mount.appendChild(buildSelect(versions, current));
+      // The block is hidden until there is a list to show (local builds have no
+      // versions.json, so they show no empty "Version" heading).
+      const block = document.getElementById("version-switcher");
+      if (block) block.hidden = false;
     })
     .catch(err => { console.error("[version-switcher] Failed to load versions.json:", err); });
 })();

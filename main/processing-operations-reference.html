@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -545,23 +546,23 @@ module <a class="reference internal" href="api/playnano.processing.masked_filter
 </thead>
 <tbody>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.remove_plane" title="playnano.processing.filters.remove_plane"><code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane()</span></code></a></p></td>
-<td><p>Removes a best-fit plane from the frame using least squares. Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane()</span></code>).</p></td>
+<td><p>Removes a best-fit plane from the frame using least squares. NaN pixels are ignored in the fit and stay NaN. Can be masked (<a class="reference internal" href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.remove_plane_masked" title="playnano.processing.masked_filters.remove_plane_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane_masked()</span></code></a>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.polynomial_flatten" title="playnano.processing.filters.polynomial_flatten"><code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_flatten()</span></code></a></p></td>
-<td><p>Fit and subtract a 2D plane (tilt removal). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_flatten()</span></code>).</p></td>
+<td><p>Fit and subtract a 2D polynomial surface of the given order (removes tilt and curvature). NaN pixels are ignored in the fit and stay NaN. Can be masked (<a class="reference internal" href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.polynomial_flatten_masked" title="playnano.processing.masked_filters.polynomial_flatten_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_flatten_masked()</span></code></a>).</p></td>
 <td><p>order (int), default: 2</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.row_median_align" title="playnano.processing.filters.row_median_align"><code class="xref py py-func docutils literal notranslate"><span class="pre">row_median_align()</span></code></a></p></td>
-<td><p>Subtract row-wise median to remove horizontal banding. Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">row_median_align()</span></code>).</p></td>
+<td><p>Subtract row-wise median to remove horizontal banding. Can be masked (<a class="reference internal" href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.row_median_align_masked" title="playnano.processing.masked_filters.row_median_align_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">row_median_align_masked()</span></code></a>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.zero_mean" title="playnano.processing.filters.zero_mean"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_mean()</span></code></a></p></td>
-<td><p>Subtract global mean (optionally masked). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">zero_mean()</span></code>).</p></td>
+<td><p>Subtract global mean (optionally masked). Can be masked (<a class="reference internal" href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.zero_mean_masked" title="playnano.processing.masked_filters.zero_mean_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_mean_masked()</span></code></a>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.zero_median" title="playnano.processing.filters.zero_median"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_median()</span></code></a></p></td>
-<td><p>Subtract global median (optionally masked). Can be masked (<code class="xref py py-func docutils literal notranslate"><span class="pre">zero_median()</span></code>).</p></td>
+<td><p>Subtract global median (optionally masked). Can be masked (<a class="reference internal" href="api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.zero_median_masked" title="playnano.processing.masked_filters.zero_median_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">zero_median_masked()</span></code></a>).</p></td>
 <td><p>None</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.filters.html#playnano.processing.filters.gaussian_filter" title="playnano.processing.filters.gaussian_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian_filter()</span></code></a></p></td>
@@ -610,7 +611,7 @@ analysis.</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.mask_generators.html#playnano.processing.mask_generators.mask_morphological" title="playnano.processing.mask_generators.mask_morphological"><code class="xref py py-func docutils literal notranslate"><span class="pre">mask_morphological()</span></code></a></p></td>
 <td><p>Applies binary closing to <code class="docutils literal notranslate"><span class="pre">|data|</span> <span class="pre">&gt;</span> <span class="pre">threshold</span></code> using a square structuring element.</p></td>
-<td><p>threshold (float), default: 3, structure_size (int), default: 3</p></td>
+<td><p>threshold (float), default: 0.0, structure_size (int), default: 3</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.mask_generators.html#playnano.processing.mask_generators.mask_adaptive" title="playnano.processing.mask_generators.mask_adaptive"><code class="xref py py-func docutils literal notranslate"><span class="pre">mask_adaptive()</span></code></a></p></td>
 <td><p>Block-wise adaptive thresholding.</p></td>
@@ -651,11 +652,11 @@ metadata dictionaries.</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.video_processing.html#playnano.processing.video_processing.intersection_crop" title="playnano.processing.video_processing.intersection_crop"><code class="xref py py-func docutils literal notranslate"><span class="pre">intersection_crop()</span></code></a></p></td>
 <td><p>Crop aligned stack to largest common intersection region. Returns cropped stack and metadata.</p></td>
-<td><p>stack (ndarray, 3D)</p></td>
+<td><p>pad (int, or a tuple of 2 or 4 ints), default: 0</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/playnano.processing.video_processing.html#playnano.processing.video_processing.crop_square" title="playnano.processing.video_processing.crop_square"><code class="xref py py-func docutils literal notranslate"><span class="pre">crop_square()</span></code></a></p></td>
 <td><p>Crop aligned stack to the largest centered square. Returns metadata including original, intersection, new shapes and offset.</p></td>
-<td><p>stack (ndarray, 3D)</p></td>
+<td><p>pad (int, or a tuple of 2 or 4 ints), default: 0</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/playnano.processing.video_processing.html#playnano.processing.video_processing.replace_nan" title="playnano.processing.video_processing.replace_nan"><code class="xref py py-func docutils literal notranslate"><span class="pre">replace_nan()</span></code></a></p></td>
 <td><p>Replace NaN values in 2D/3D stacks using several strategies: zero, mean, median, global_mean, constant.</p></td>
@@ -669,10 +670,10 @@ metadata dictionaries.</p>
 <h2>AFM Stack Editing (Frame Selection)<a class="headerlink" href="#afm-stack-editing-frame-selection" title="Link to this heading">¶</a></h2>
 <p><a class="reference internal" href="api/playnano.processing.stack_edit.html#module-playnano.processing.stack_edit" title="playnano.processing.stack_edit"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.processing.stack_edit</span></code></a></p>
 <p>These functions operate on 3D AFM stacks (n_frames, height, width) to remove
-or select frames. Only <cite>drop_frames</cite> performs actual edits; the other functions
-generate indices to drop for use with <cite>drop_frames</cite>. This is managed by the
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">_handle_stack_edit_step()</span></code>
-method.</p>
+or select frames. Only <code class="docutils literal notranslate"><span class="pre">drop_frames</span></code> performs actual edits; the other functions
+generate indices to drop for use with <code class="docutils literal notranslate"><span class="pre">drop_frames</span></code>. The
+<a class="reference internal" href="api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline" title="playnano.processing.pipeline.ProcessingPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessingPipeline</span></code></a> applies the result and
+updates the frame metadata and timestamps.</p>
 <div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
 <colgroup>
@@ -785,6 +786,6 @@ method.</p>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>

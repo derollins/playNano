@@ -42,7 +42,9 @@ The GUI is launched via the ``playnano play`` command:
        [--output-name BASE_NAME] \
        [--scale-bar-nm SCALE_BAR_INT] \
        [--zmin MIN_Z] \
-       [--zmax MAX_Z]
+       [--zmax MAX_Z] \
+       [--cmap COLORMAP_NAME] \
+       [--fps FRAMES_PER_SECOND]
 
 Arguments & common options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -69,9 +71,14 @@ Arguments & common options
 - **--zmin**, **--zmax** (*float* or *str*, optional)
   Initial display z-limits. Use the string ``"auto"`` to automatically set 1st / 99th percentiles.
 
+- **--cmap** (*str*, default: ``afm_brown``)
+  Initial colormap for the viewer and animated exports.
+
 - **--fps** (*float*, optional)
-  Inital frame rate in the viewer, if left blank the frame rate is calculate from `line_rate`` value in
-  the `frame_metadata` dictionary of the first frame.
+  Initial frame rate in the viewer. If it is not given, the frame rate is calculated from
+  the frame timestamps (or ``line_rate``) in the file's metadata, so the video plays in
+  real time. Recordings slower than 1 frame per second, and files without timing
+  information, play at 5 frames per second.
 
 Main window
 -----------
@@ -85,6 +92,7 @@ Main window
   Playback controls and filter buttons are located below the viewer.
 
 - **Right-side tabs** - includes:
+
   - **Z-Scale Histogram** with draggable vertical lines and spin-boxes for zmin (red) and zmax (blue).
   - **Colormap Selection** for viewer and exports.
   - **Animated Export**: choose raw/processed and save an annotated animated GIF, video or image sequence.
@@ -115,8 +123,8 @@ Export behaviour & filenames
 
 - **Animated data**: (GIF, MP4, AVI, folder of PNGs) - the exported file/folder name / save location
   is derived from ``--output-name`` / ``--output-folder`` respectively or defaults to an ``output``
-  subfolder in the working directory. Animated export requires some metadata (for example ``line_rate``)
-  to create timing information - if that metadata is missing export may fail (check logs).
+  subfolder in the working directory. Timestamps are drawn from the frame metadata when it is
+  available.
 - **Data bundles**: (NPZ, OME-TIFF, HDF5) - exports include processing metadata, provenance information,
   and snapshots (raw + intermediate processed steps, when available).
 
@@ -148,9 +156,11 @@ How to control annotations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Use the viewer checkboxes to toggle annotations before export:
+
   - Uncheck **Show Timestamp** to remove timestamps from the exported animation.
   - Uncheck **Show Scale Bar** (or set ``--scale-bar-nm`` to ``0``) to remove the scale bar.
 - Choose **Save Raw** or **Save Processed** in the animated data export panel to pick the data source.
+
   - The *RAW* label that appears in the viewer when raw data is selected is not included in the exported animation.
 - Use the histogram or spinboxes to set the precise z-range that will be used in the exported animation.
 
@@ -165,9 +175,8 @@ Troubleshooting & tips
 - **Headless Linux / CI**: GUI tests or GUI runs on headless systems require a
   virtual framebuffer (``xvfb-run``) or setting up an off-screen QPA platform plugin.
 
-- **GIF export issues**: check the console output for missing metadata (``line_rate``,
-  timestamps). Export will still succeed for static stacks, but timing annotations
-  may be incorrect or omitted without frame timing metadata.
+- **GIF export issues**: check the console output. Exports do not need timing metadata;
+  without frame timestamps, the timestamp annotation shows frame numbers instead.
 
 Notes & links
 -------------

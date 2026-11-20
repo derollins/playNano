@@ -195,7 +195,12 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
-<div id="searchbox"></div><div class="sidebar-tree">
+<div id="searchbox"></div><div class="sidebar-tree" id="version-switcher" hidden>
+  <div class="sidebar-item">
+    <div class="sidebar-item__title">Version</div>
+    <div id="version-switcher-placeholder"></div>
+  </div>
+</div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -205,9 +210,6 @@
 <li class="toctree-l1"><a class="reference internal" href="processing.html">Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing-operations-reference.html">Processing Operations Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exporting.html">Exporting Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_analysis_modules.html">Custom Analysis Modules</a></li>
@@ -394,7 +396,10 @@
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a><input aria-label="Toggle navigation of playnano.analysis.utils package" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -468,15 +473,11 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.4.0.html">What’s New in <em>playNano</em> 0.4.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
 </ul>
 </li>
 </ul>
 
-</div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <div class="sidebar-item">
-    <div class="sidebar-item__title">Version</div>
-    <div id="version-switcher-placeholder"></div>
-  </div>
 </div></div>
       </div>
       
@@ -521,9 +522,7 @@ The toolkit includes a command-line interface (CLI), an interactive GUI for view
 data, and a modular analysis system that supports both built-in and custom extensions.</p>
 <a class="reference internal image-reference" href="_images/GUI_window.png"><img alt="playNano GUI" class="align-center" src="_images/GUI_window.png" style="width: 420px;" />
 </a>
-<p>Welcome to <strong>playNano</strong> - a Python toolkit for loading, processing, analysing
-and exporting high-speed AFM (HS-AFM) time-series data (<cite>.h5-jpk</cite>, <cite>.jpk</cite>,
-<cite>.spm</cite>, <cite>.asd</cite> and <cite>.aris</cite>).
+<p>It reads <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.jpk</span></code>, <code class="docutils literal notranslate"><span class="pre">.spm</span></code>, <code class="docutils literal notranslate"><span class="pre">.asd</span></code> and <code class="docutils literal notranslate"><span class="pre">.aris</span></code> files.
 This documentation covers installation, command-line usage, the PySide6 GUI,
 processing filters, data export, analysis pipelines, and the API reference.</p>
 <section id="quick-links">
@@ -531,33 +530,29 @@ processing filters, data export, analysis pipelines, and the API reference.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="introduction.html"><span class="doc">Introduction</span></a> - overview of playNano’s motivation, design, and core workflow</p></li>
 <li><p><a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> - how to install playNano (pip / conda)</p></li>
-<li><p><a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> - 1-minute example: open a file, apply a filter, export GIF</p></li>
+<li><p><a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> - five-minute example: open a file, apply a filter, export a GIF</p></li>
 <li><p><a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a> - full command-line reference and examples</p></li>
 <li><p><a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a> - GUI walkthrough, keyboard shortcuts and export workflow</p></li>
-<li><dl class="simple">
-<dt><a class="reference internal" href="processing.html"><span class="doc">Processing</span></a> - filters, masks and pipeline behaviour</dt><dd><ul>
+<li><p><a class="reference internal" href="processing.html"><span class="doc">Processing</span></a> - filters, masks and pipeline behaviour</p>
+<ul>
 <li><p><a class="reference internal" href="processing-operations-reference.html"><span class="doc">Processing Operations Reference</span></a> - reference of all built-in processing operations</p></li>
 </ul>
-</dd>
-</dl>
 </li>
 <li><p><a class="reference internal" href="exporting.html"><span class="doc">Exporting Data</span></a> - exporting data and GIFs from CLI, GUI, or programmatically</p></li>
 <li><p><a class="reference internal" href="colormaps.html"><span class="doc">Colormaps</span></a> - overview of playNano’s native colormaps and how to use them</p></li>
-<li><dl class="simple">
-<dt><a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a> - running analysis modules and provenance</dt><dd><ul>
+<li><p><a class="reference internal" href="analysis.html"><span class="doc">Analysis</span></a> - running analysis modules and provenance</p>
+<ul>
 <li><p><a class="reference internal" href="custom_analysis_modules.html"><span class="doc">Custom Analysis Modules</span></a> - creating and registering custom analysis modules</p></li>
 </ul>
-</dd>
-</dl>
 </li>
-<li><p><a class="reference internal" href="whats_new/v0.5.2.html"><span class="doc">What’s New in playNano 0.5.2</span></a> - highlights of the latest release</p></li>
+<li><p><a class="reference internal" href="whats_new/v0.5.3.html"><span class="doc">What’s New in playNano 0.5.3</span></a> - highlights of the latest release</p></li>
 <li><p><a class="reference internal" href="changelog.html"><span class="doc">Changelog</span></a> - release notes and history</p></li>
 </ul>
 </section>
 <section id="quickstart-example">
 <h2>Quickstart (example)<a class="headerlink" href="#quickstart-example" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># show a file in the interactive GUI</span>
-playnano<span class="w"> </span>play<span class="w"> </span>./test/resources/sample_0.h5-jpk
+playnano<span class="w"> </span>play<span class="w"> </span>./tests/resources/sample_0.h5-jpk
 </pre></div>
 </div>
 <div class="admonition note">
@@ -568,8 +563,7 @@ playnano<span class="w"> </span>play<span class="w"> </span>./test/resources/sam
 <section id="user-guide-overview">
 <h2>User Guide Overview<a class="headerlink" href="#user-guide-overview" title="Link to this heading">¶</a></h2>
 <p>The <strong>User Guide</strong> is divided into two parts:</p>
-<section id="getting-started">
-<h3><strong>Getting started</strong><a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h3>
+<p><strong>Getting started</strong></p>
 <ul class="simple">
 <li><p><a class="reference internal" href="introduction.html"><span class="doc">Introduction</span></a> - overview of playNano’s motivation, design, and core workflow.</p></li>
 <li><p><a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> - a standalone, five-minute overview showing how to load,
@@ -577,9 +571,7 @@ process, and export AFM data.</p></li>
 <li><p><a class="reference internal" href="notebooks.html"><span class="doc">Notebooks</span></a> - interactive Jupyter notebooks demonstrating typical
 workflows and parameter exploration.</p></li>
 </ul>
-</section>
-<section id="practical-guides">
-<h3><strong>Practical Guides</strong><a class="headerlink" href="#practical-guides" title="Link to this heading">¶</a></h3>
+<p><strong>Practical Guides</strong></p>
 <ul class="simple">
 <li><p><a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> - detailed installation and environment setup.</p></li>
 <li><p><a class="reference internal" href="cli.html"><span class="doc">Command Line Interface (CLI)</span></a> - running batch processing, exports, and automation from the command line.</p></li>
@@ -593,7 +585,6 @@ own modules or research methods.</p></li>
 </ul>
 <p>Each guide expands on concepts introduced in the Quickstart, combining practical
 examples with deeper technical reference.</p>
-</section>
 </section>
 <section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
@@ -612,7 +603,7 @@ examples with deeper technical reference.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#create-a-conda-environment-recommended">1. Create a conda environment (recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quickstart.html#install-playnano-from-pypi">2. Install playNano from PyPi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#install-playnano-from-pypi">2. Install playNano from PyPI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#quick-verification">3. Quick verification</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#most-common-actions-one-liners">4. Most common actions (one-liners)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#where-to-go-next">5. Where to go next</a></li>
@@ -635,7 +626,7 @@ examples with deeper technical reference.</p>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#cli-gui-usage">CLI / GUI Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#pipeline-structure-and-step-types">Pipeline Structure and Step Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#processing-operations">Processing Operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="processing.html#id1">CLI / GUI Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html#building-a-pipeline-with-the-wizard">Building a Pipeline with the Wizard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#programmatic-usage">Programmatic Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#saved-data-exports">Saved data &amp; exports</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processing.html#tips-troubleshooting">Tips &amp; Troubleshooting</a></li>
@@ -652,25 +643,9 @@ examples with deeper technical reference.</p>
 <li class="toctree-l2"><a class="reference internal" href="exporting.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exporting.html#format-comparison">Format Comparison</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exporting.html#using-the-cli">Using the CLI</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#colourmaps-and-z-scale">Colourmaps and Z-Scale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#gif-export">GIF Export</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#video-export">Video Export</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#image-sequence-export">Image Sequence Export</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#ome-tiff-export">OME-TIFF Export</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#npz-export">NPZ Export</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#hdf5-export">HDF5 Export</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#unified-data-export">Unified Data Export</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#notes">Notes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exporting.html#provenance-tracking">Provenance Tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exporting.html#animated-exports">Animated Exports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exporting.html#data-exports">Data Exports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exporting.html#advanced-programmatic-usage">Advanced / Programmatic Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="colormaps.html">Colormaps</a><ul>
@@ -767,7 +742,10 @@ examples with deeper technical reference.</p>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.feature_detection.html">playnano.analysis.modules.feature_detection module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.k_means_clustering.html">playnano.analysis.modules.k_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.log_blob_detection.html">playnano.analysis.modules.log_blob_detection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_extraction.html">playnano.analysis.modules.particle_region_extraction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_region_media_export.html">playnano.analysis.modules.particle_region_media_export module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.particle_tracking.html">playnano.analysis.modules.particle_tracking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.tracked_particle_boundary_size.html">playnano.analysis.modules.tracked_particle_boundary_size module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.modules.x_means_clustering.html">playnano.analysis.modules.x_means_clustering module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.html">playnano.analysis.utils package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/playnano.analysis.utils.common.html">playnano.analysis.utils.common module</a></li>
@@ -867,11 +845,7 @@ examples with deeper technical reference.</p>
 <li><a class="reference internal" href="#">playNano Documentation</a><ul>
 <li><a class="reference internal" href="#quick-links">Quick links</a></li>
 <li><a class="reference internal" href="#quickstart-example">Quickstart (example)</a></li>
-<li><a class="reference internal" href="#user-guide-overview">User Guide Overview</a><ul>
-<li><a class="reference internal" href="#getting-started"><strong>Getting started</strong></a></li>
-<li><a class="reference internal" href="#practical-guides"><strong>Practical Guides</strong></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#user-guide-overview">User Guide Overview</a></li>
 <li><a class="reference internal" href="#contents">Contents</a><ul>
 <li><a class="reference internal" href="#user-guide">User Guide</a></li>
 <li><a class="reference internal" href="#api-reference">API Reference</a></li>
@@ -895,6 +869,6 @@ examples with deeper technical reference.</p>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/version-switcher.js?v=ab8343a9"></script>
+    <script src="_static/version-switcher.js?v=07230818"></script>
     </body>
 </html>
