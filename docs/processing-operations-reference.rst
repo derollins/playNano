@@ -32,10 +32,10 @@ module :mod:`playnano.processing.masked_filters` that contains masked variants o
      - Description
      - Parameters
    * - :func:`~playnano.processing.filters.remove_plane`
-     - Removes a best-fit plane from the frame using least squares. Can be masked (:func:`~playnano.processing.masked_filters.remove_plane`).
+     - Removes a best-fit plane from the frame using least squares. NaN pixels are ignored in the fit and stay NaN. Can be masked (:func:`~playnano.processing.masked_filters.remove_plane_masked`).
      - None
    * - :func:`~playnano.processing.filters.polynomial_flatten`
-     - Fit and subtract a 2D plane (tilt removal). Can be masked (:func:`~playnano.processing.masked_filters.polynomial_flatten`).
+     - Fit and subtract a 2D polynomial surface of the given order (removes tilt and curvature). NaN pixels are ignored in the fit and stay NaN. Can be masked (:func:`~playnano.processing.masked_filters.polynomial_flatten_masked`).
      - order (int), default: 2
    * - :func:`~playnano.processing.filters.row_median_align`
      - Subtract row-wise median to remove horizontal banding. Can be masked (:func:`~playnano.processing.masked_filters.row_median_align`).
