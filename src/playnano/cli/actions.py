@@ -36,7 +36,11 @@ from playnano.io.image_sequence_export import export_image_sequence
 from playnano.io.video_export import export_video
 from playnano.processing.core import process_stack
 from playnano.utils.colormaps import DEFAULT_CMAP, resolve_cmap
-from playnano.utils.io_utils import ensure_not_input_path, prepare_output_directory
+from playnano.utils.io_utils import (
+    ensure_not_input_path,
+    prepare_output_directory,
+    sanitize_output_name,
+)
 from playnano.utils.param_utils import prune_kwargs
 
 logger = logging.getLogger(__name__)
@@ -219,6 +223,9 @@ def analyze_pipeline_mode(
     4. Sanitize the full record (`make_json_safe`) and write it to `<output>.json`.
     5. Export the raw record to HDF5 via `export_to_hdf5`.
 
+    Both files are attempted even if one fails, and any failure is raised at
+    the end, so the command exits with an error.
+
     Parameters
     ----------
     input_file : str
@@ -233,8 +240,10 @@ def analyze_pipeline_mode(
     output_folder : str or None
         Directory in which to write JSON + HDF5 exports; defaults to ``./output``.
     output_name : str or None
-        Base filename (no extension) for both `<output>.json` and `<output>.h5`;
-        defaults to the stem of `input_file`.
+        Base filename for both `<output>.json` and `<output>.h5`; defaults to
+        the stem of `input_file`. Any folder part is dropped and a known
+        extension such as ``.json`` or ``.h5`` is removed, as for ``process``,
+        so files are always written inside the output folder.
 
     Returns
     -------
@@ -243,12 +252,14 @@ def analyze_pipeline_mode(
     Raises
     ------
     ValueError
-        If either output file would overwrite `input_file`. This is checked before
-        the data is loaded.
+        If either output file would overwrite `input_file`, or `output_name`
+        contains invalid characters. Both are checked before the data is loaded.
+    RuntimeError
+        If the JSON or HDF5 file could not be written.
     """
     # 0) decide output paths first, so nothing runs if they would overwrite the input
     out_dir = prepare_output_directory(output_folder, default="output")
-    base_name = output_name or Path(input_file).stem
+    base_name = sanitize_output_name(output_name, Path(input_file).stem)
     json_path = out_dir / f"{base_name}.json"
     h5_path = out_dir / f"{base_name}.h5"
     for out_path in (json_path, h5_path):
@@ -272,20 +283,32 @@ def analyze_pipeline_mode(
         pipeline.add(name, **kwargs)
     raw_record = pipeline.run(stack, log_to=None)
 
-    # 4) write JSON
-    safe_record = make_json_safe(raw_record)
+    # 4) write JSON and 5) HDF5. Try both, so one failure does not lose the
+    # other file, then report every failure.
+    failed: list[Path] = []
     logger.debug("Writing analysis JSON to %s", json_path)
-    with json_path.open("w") as jf:
-        json.dump(safe_record, jf, indent=2)
-    logger.info("Wrote analysis JSON to %s", json_path)
+    try:
+        safe_record = make_json_safe(raw_record)
+        with json_path.open("w") as jf:
+            json.dump(safe_record, jf, indent=2)
+        logger.info("Wrote analysis JSON to %s", json_path)
+    except Exception as e:
+        logger.error("Failed to write analysis JSON to %s: %s", json_path, e)
+        failed.append(json_path)
 
-    # 5) write HDF5
     logger.debug("Writing analysis HDF5 to %s", h5_path)
     try:
         export_to_hdf5(raw_record, out_path=h5_path)
         logger.info("Wrote analysis HDF5 to %s", h5_path)
     except Exception as e:
-        logger.error("Failed to write analysis HDF5: %s", e)
+        logger.error("Failed to write analysis HDF5 to %s: %s", h5_path, e)
+        failed.append(h5_path)
+
+    if failed:
+        raise RuntimeError(
+            "Analysis ran, but these files could not be written: "
+            + ", ".join(str(p) for p in failed)
+        )
 
 
 #: Playback rate used when a stack has no usable frame timing, or when its
@@ -1308,7 +1331,8 @@ class Wizard:
         to ``./output`` if not set.
 
         The base filename is taken from `self.output_name`, or derived from the
-        stem of `self.input_file` if `output_name` is not provided.
+        stem of `self.input_file` if `output_name` is not provided. As for
+        ``process``, any folder part is dropped and a known extension removed.
 
         Results are saved atomically to `<base_name>.json` and `<base_name>.h5`
         in the output directory.
@@ -1320,7 +1344,7 @@ class Wizard:
             before the analysis runs.
         """
         out_dir = prepare_output_directory(self.output_folder, default="output")
-        base_name = self.output_name or Path(self.input_file).stem
+        base_name = sanitize_output_name(self.output_name, Path(self.input_file).stem)
         json_path = out_dir / f"{base_name}.json"
         h5_path = out_dir / f"{base_name}.h5"
         for out_path in (json_path, h5_path):

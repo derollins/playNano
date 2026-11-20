@@ -450,7 +450,7 @@ def test_handle_process_make_sequence(monkeypatch, tmp_path):
 
 
 def test_main_no_command(monkeypatch, capsys):
-    """Test main() exits with usage message when no command is provided."""
+    """No subcommand is a usage error: main() prints usage and exits with code 2."""
     import sys
 
     from playnano.cli.entrypoint import main
@@ -458,7 +458,7 @@ def test_main_no_command(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["prog"])
     with pytest.raises(SystemExit) as e:
         main()
-    assert e.value.code == 0
+    assert e.value.code == 2
     captured = capsys.readouterr()
     assert "usage:" in captured.err
 
