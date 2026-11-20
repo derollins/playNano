@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
@@ -16,8 +17,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-      pull-requests: write
-      statuses: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -50,7 +49,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
-          pip install pytest>=7.0 pytest-cov pytest-qt flake8 pre-commit
 
       - name: Install a specific AFMReader version
         if: matrix.afmreader != 'from-pyproject'
@@ -70,5 +68,6 @@ jobs:
           files: coverage.xml
           flags: unittests
           name: playnano-tests-${{ matrix.os }}-py${{ matrix.python-version }}
-          fail_ci_if_error: true
+          # PRs from forks have no token; a failed upload should not fail the tests.
+          fail_ci_if_error: false
           verbose: true
