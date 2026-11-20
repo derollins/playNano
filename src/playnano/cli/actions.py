@@ -804,7 +804,13 @@ class Wizard:
         self.io.say(f"Moved step from position {old_i+1} to {new_i+1}.")
 
     def handle_save(self, parts: list[str]) -> None:
-        """Save current processing steps to a YAML file."""
+        """
+        Save current processing steps to a YAML file.
+
+        Values are converted to plain YAML types first (tuples to lists, NumPy
+        numbers to Python numbers, paths to strings), so `load` can read the
+        file back with ``yaml.safe_load``.
+        """
         if len(parts) != 2:
             self.io.say("Usage: save <path/to/output.yaml>")
             return
@@ -832,9 +838,10 @@ class Wizard:
             processing_dict["filters"].append(entry)
 
         try:
+            safe_dict = _sanitize_for_dump(processing_dict)
             save_path.parent.mkdir(parents=True, exist_ok=True)
             with open(save_path, "w", encoding="utf8") as f:
-                yaml.dump(processing_dict, f, sort_keys=False)
+                yaml.safe_dump(safe_dict, f, sort_keys=False)
             self.io.say(f"Processing saved to {save_path}")
         except Exception as e:
             self.io.say(f"Error saving processing: {e}")

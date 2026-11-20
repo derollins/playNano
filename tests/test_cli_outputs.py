@@ -1,9 +1,11 @@
 """
-Tests for analyze output names, failed saves and CLI exit codes.
+Tests for the files the CLI writes, and for CLI exit codes.
 
-These run real analyses on ``tests/resources/sample_0.h5-jpk``, so they live
-outside ``test_cli.py``, whose autouse fixtures replace ``load_data`` and
-``Path.exists`` for every test in that module.
+Covers analyze output names and failed saves, and wizard ``save``/``load``
+of processing steps. Some run real analyses on
+``tests/resources/sample_0.h5-jpk``, so they live outside ``test_cli.py``,
+whose autouse fixtures replace ``load_data`` and ``Path.exists`` for every
+test in that module.
 """
 
 import logging
@@ -12,7 +14,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
+import yaml
 
 import playnano.cli.actions as actions
 from playnano.cli.actions import Wizard, analyze_pipeline_mode
@@ -151,3 +155,54 @@ def test_handler_errors_include_traceback_only_at_debug(
     records = [r for r in caplog.records if r.getMessage() == "bad"]
     assert len(records) == 1
     assert bool(records[0].exc_info) is has_traceback
+
+
+# --- wizard save writes YAML that load can read (#103) ---
+
+
+def _no_registered_step(name):
+    """Stand in for `AFMImageStack._resolve_step` when no step is registered."""
+    raise KeyError(name)
+
+
+def _wizard_like(steps):
+    """Return a stand-in with just what `handle_save` and `handle_load` use."""
+    said = []
+    return SimpleNamespace(
+        process_steps=steps,
+        processed_stack=None,
+        processed_steps_snapshot=[],
+        # Unresolved steps make handle_save fall back to dropping None values.
+        afm_stack=SimpleNamespace(_resolve_step=_no_registered_step),
+        io=SimpleNamespace(say=said.append),
+        said=said,
+    )
+
+
+def test_wizard_save_then_load_round_trips_non_yaml_types(tmp_path):
+    """Tuples, NumPy numbers and paths are saved as plain YAML and load back."""
+    steps = [
+        ("intersection_crop", {"pad": (2, 3)}),
+        ("gaussian_filter", {"sigma": np.float64(1.5), "order": np.int64(0)}),
+        ("custom_step", {"ref": Path("ref.npy"), "unused": None}),
+    ]
+    wiz = _wizard_like(list(steps))
+    out = tmp_path / "steps.yaml"
+
+    Wizard.handle_save(wiz, ["save", str(out)])
+    text = out.read_text(encoding="utf8")
+    assert "!!python" not in text
+    yaml.safe_load(text)  # the file is plain YAML
+
+    wiz.process_steps = []
+    Wizard.handle_load(wiz, ["load", str(out)])
+
+    assert wiz.said[-1].startswith("Loaded 3 processing steps"), wiz.said
+    assert wiz.process_steps == [
+        ("intersection_crop", {"pad": [2, 3]}),
+        ("gaussian_filter", {"sigma": 1.5, "order": 0}),
+        ("custom_step", {"ref": "ref.npy"}),
+    ]
+    sigma = wiz.process_steps[1][1]["sigma"]
+    # np.float64 is a float subclass, so also check it is not a NumPy scalar
+    assert isinstance(sigma, float) and not isinstance(sigma, np.generic)

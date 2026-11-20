@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `playnano` with no subcommand exited with code 0; it now exits with code 2, like other usage errors. With
   `--log-level DEBUG`, errors from `play`, `process` and `wizard` now include the traceback, as `analyze` errors
   did; at other levels `analyze` no longer prints one (#102).
+- The wizard's `save` wrote tuples and NumPy values with Python-specific YAML tags, so `load` failed with
+  `ConstructorError`. It now writes plain YAML, as `asave` already did (#103).
 
 ## [0.5.2] - 2026-11-18
 
