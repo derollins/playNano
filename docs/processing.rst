@@ -47,6 +47,13 @@ colon-separated key-value pairs or ``clear`` that resets masks. For example:
        --output-folder ./results \
        --output-name sample_processed
 
+Parameter values are read as Python values: ``2``, ``-2``, ``2.5`` and ``1e3`` are
+numbers, ``true``/``false`` are booleans, ``none`` is ``None``, and lists or tuples
+are written in brackets, for example ``drop_frames:indices_to_drop=[0,1]`` or
+``intersection_crop:pad=(2,3)``. Anything else is text. To pass text that looks
+like a number, quote it: ``name='1'``. ``--analysis-steps`` and values typed into
+the ``wizard`` follow the same rules.
+
 Alternatively, pipelines can be defined in YAML for better readability and reuse:
 
 .. code-block:: yaml
@@ -59,6 +66,9 @@ Alternatively, pipelines can be defined in YAML for better readability and reuse
        order: 2
      - name: gaussian_filter
        sigma: 2.0
+
+In YAML files, write numbers in scientific notation with a dot, such as ``1.0e3``;
+YAML reads ``1e3`` as text.
 
 Run it via:
 
