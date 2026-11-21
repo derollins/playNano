@@ -1,18 +1,16 @@
 """
-Tools for exporting AFM image stacks in multiple formats.
+Save AFM image stacks as OME-TIFF, NPZ or HDF5 files.
 
-This module provides utilities for serializing
-:class:`~playnano.afm_stack.AFMImageStack` objects
-into round-trip-safe formats: OME-TIFF, NPZ, and HDF5.
-Each export preserves pixel data, metadata, masks, provenance, and processing history.
+- **OME-TIFF** (:func:`save_ome_tiff_stack`): one image stack with pixel size,
+  frame times and provenance, readable by other microscopy software (for
+  example Fiji/Bio-Formats).
+- **NPZ** (:func:`save_npz_bundle`) and **HDF5** (:func:`save_h5_bundle`):
+  bundles with the data, every processed layer and mask, the frame metadata and
+  the provenance, which playNano can load again with
+  :mod:`playnano.io.data_loaders`.
 
-Supported formats
------------------
-- **OME-TIFF**: For image analysis interoperability (Bio-Formats compatible).
-- **NPZ**: Compact NumPy archive with full AFMImageStack data and metadata.
-- **HDF5**: Hierarchical bundle ideal for provenance-rich workflows.
-
-Each export supports both *filtered* and *raw* modes.
+:func:`export_bundles` writes any of the three at once, as ``playnano process
+--export`` does. All formats store heights as float32.
 """
 
 from __future__ import annotations
@@ -42,24 +40,22 @@ logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------------
 def check_path_is_path(path: str | Path) -> Path:
     """
-    Ensure the input is returned as a ``pathlib.Path``.
-
-    Converts strings to ``Path`` objects. Raises ``TypeError`` for unsupported types.
+    Return ``path`` as a :class:`pathlib.Path`.
 
     Parameters
     ----------
-    path : str or Path
-        The input path to validate or convert.
+    path : str or pathlib.Path
+        The path to convert.
 
     Returns
     -------
-    Path
-        A ``pathlib.Path`` object representing the input path.
+    pathlib.Path
+        ``path`` as a Path.
 
     Raises
     ------
     TypeError
-        If the input is not a ``str`` or ``Path``.
+        If ``path`` is neither a str nor a Path.
     """
     if isinstance(path, str):
         logger.debug(f"Converting {path} to Path object.")
@@ -76,51 +72,43 @@ def save_ome_tiff_stack(
     path: Path, afm_stack: AFMImageStack, raw: bool = False
 ) -> None:
     """
-    Save an :class:`~playnano.afm_stack.AFMImageStack` as an OME-TIFF file.
+    Save a stack as an OME-TIFF file.
 
-    The OME-TIFF export embeds image data, pixel calibration, timestamps,
-    and provenance metadata into a single, standards-compliant file suitable
-    for downstream analysis in microscopy or image-processing software.
+    The data is written as float32 with axes (T, C, Z, Y, X) and one channel and
+    Z plane. The OME metadata records the pixel size (in µm), each frame's time
+    (``DeltaT``, in s), the interval between the first two frames
+    (``TimeIncrement``) and the channel name. Two private TIFF tags hold JSON:
 
-    File structure
-    --------------
-    - Image data is stored in 5D OME-TIFF format with axes ``(T, C, Z, Y, X)``.
-      Only a single channel (C=1) and a single Z-slice (Z=1) are used.
-    - Physical calibration is stored in micrometres (µm) under
-      ``PhysicalSizeX`` and ``PhysicalSizeY``.
-    - Time increment is stored in seconds under ``TimeIncrement``.
-    - Provenance and processed-layer keys are stored as binary JSON
-      under private TIFF tags ``65000`` and ``65001``.
+    - 65000: the provenance (``stack.provenance``).
+    - 65001: the names of the processed layers. The layers themselves and the
+      masks are not saved; use NPZ or HDF5 for those.
 
     Parameters
     ----------
-    path : Path
-        Output path for the `.ome.tif` file.
+    path : pathlib.Path
+        Output file, for example ``Path("out/stack.ome.tif")``. Used as given;
+        its folder must exist.
     afm_stack : AFMImageStack
-        The AFM image stack to export.
+        The stack to save.
     raw : bool, optional
-        If True, export the unprocessed raw snapshot
-        (``processed['raw']`` if present). Otherwise, export the current
-        data in ``.data`` with all processing applied.
+        If True, save the unprocessed snapshot ``stack.processed["raw"]`` instead
+        of ``stack.data``, without masks or processed layers. If the stack has
+        no ``"raw"`` snapshot, ``stack.data`` is saved. Default is False.
 
-    Notes
-    -----
-    - Each frame's timestamp is stored in the OME metadata as ``DeltaT``.
-    - The pixel size (in nm) is converted to micrometres for OME compliance.
-    - The exported file includes additional TIFF tags:
+    Raises
+    ------
+    ValueError
+        If the frames do not all have the same pixel size.
 
-      * **65000:** JSON-encoded provenance dictionary
-      * **65001:** JSON list of processed layer names
-
-    - The file can be reloaded with standard OME-TIFF readers such as
-      :mod:`tifffile` or :mod:`aicsimageio`.
+    See Also
+    --------
+    playnano.io.data_loaders.load_ome_tiff_stack : Load the file again.
 
     Examples
     --------
     >>> from pathlib import Path
     >>> from playnano.io.export_data import save_ome_tiff_stack
-    >>> save_ome_tiff_stack(Path("output/stack.ome.tif"), stack)
-    >>> save_ome_tiff_stack(Path("output/raw_stack.ome.tif"), stack, raw=True)
+    >>> save_ome_tiff_stack(Path("output/stack.ome.tif"), stack)  # doctest: +SKIP
     """
 
     # --- Select data and timestamps ---
@@ -196,53 +184,42 @@ def save_ome_tiff_stack(
 
 def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
     """
-    Save :class:`~playnano.afm_stack.AFMImageStack` with metadata as a `.npz` bundle.
+    Save a stack, with its layers, masks and metadata, as a NumPy ``.npz`` bundle.
 
-    The NPZ archive consolidates the AFM stack data, metadata, provenance,
-    masks, and processed layers for full round-trip reconstruction.
+    The archive is compressed and contains these arrays:
 
-    File structure
-    --------------
-    data                    : float32 array of shape (n_frames, H, W)
-    processed__<step>       : float32 arrays for each processing step
-    masks__<mask>           : bool arrays for each mask
-    timestamps              : float64 array of length n_frames
-    frame_metadata_json     : UTF-8 encoded JSON string
-    provenance_json         : UTF-8 encoded JSON string
-    state_backups_json      : UTF-8 encoded JSON string (only if present)
-    pixel_size_nm           : float32 scalar
-    channel                 : object array (string)
+    - ``data``: float32, shape (n_frames, height, width).
+    - ``processed__<name>``: float32, one per entry in ``stack.processed``,
+      including ``processed__raw``.
+    - ``masks__<name>``: bool, one per entry in ``stack.masks``.
+    - ``timestamps``: float64, frame times in seconds.
+    - ``frame_metadata_json``, ``provenance_json``, ``state_backups_json``:
+      JSON text.
+    - ``pixel_size_nm``: float32 scalar.
+    - ``channel``: the channel name.
 
     Parameters
     ----------
-    path : Path
-        Destination path for the `.npz` file. The extension will be added
-        automatically.
+    path : pathlib.Path
+        Output file. Its extension is replaced by ``.npz`` (``out/stack``
+        becomes ``out/stack.npz``), and missing folders are created.
     stack : AFMImageStack
-        The stack to export.
+        The stack to save.
     raw : bool, optional
-        If True, only the unprocessed raw snapshot and essential metadata are saved.
-        Otherwise, the full data (`.data`), masks, and processed layers are included.
+        If True, save the unprocessed snapshot ``stack.processed["raw"]`` instead
+        of ``stack.data``, without masks or processed layers. If the stack has
+        no ``"raw"`` snapshot, ``stack.data`` is saved. Default is False. The
+        timestamps are then those from before any frames were removed.
 
-    Notes
-    -----
-    - ``state_backups_json`` is only included if the stack defines a ``state_backups``
-      attribute.
-    - When ``raw=True``, timestamps are taken from
-      ``state_backups['frame_metadata_before_edit']`` (if available),
-      otherwise from ``.frame_metadata``.
-    - Provenance is serialized using
-      :func:`~playnano.utils.io_utils.make_json_safe`
-      to ensure JSON compatibility.
-    - The saved file can be reloaded via
-      :func:`~playnano.io.import_data.load_npz_bundle`.
+    See Also
+    --------
+    playnano.io.data_loaders.load_npz_bundle : Load the bundle again.
 
     Examples
     --------
     >>> from pathlib import Path
     >>> from playnano.io.export_data import save_npz_bundle
-    >>> save_npz_bundle(Path("output/stack_export"), stack)
-    >>> save_npz_bundle(Path("output/raw_only"), stack, raw=True)
+    >>> save_npz_bundle(Path("output/stack"), stack)  # doctest: +SKIP
     """
     path = path.with_suffix(".npz")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -291,54 +268,39 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
 # -------------------------------------------------------------------------
 def save_h5_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None:
     """
-    Save an :class:`~playnano.afm_stack.AFMImageStack` and metadata as an HDF5 bundle.
+    Save a stack, with its layers, masks and metadata, as an HDF5 bundle.
 
-    The hierarchical layout preserves round-trip reconstruction fidelity and stores
-    all relevant AFM stack data, processed layers, masks, timestamps, and provenance.
+    The file contains these datasets, compressed with gzip where they are
+    arrays:
 
-    File structure
-    --------------
-    /data
-        float32 array of shape (n_frames, H, W)
-    /processed/<step>
-        float32 datasets for each processing step
-    /masks/<mask>
-        bool datasets for each mask
-    /timestamps
-        float64 array of length n_frames
-    /frame_metadata_json
-        UTF-8 encoded JSON string
-    /provenance_json
-        UTF-8 encoded JSON string
-    /state_backups_json
-        UTF-8 encoded JSON string (only if present)
+    - ``/data``: float32, shape (n_frames, height, width).
+    - ``/processed/<name>``: float32, one per entry in ``stack.processed``,
+      including ``/processed/raw``.
+    - ``/masks/<name>``: bool, one per entry in ``stack.masks``.
+    - ``/timestamps``: float64, frame times in seconds.
+    - ``/frame_metadata_json``, ``/provenance_json``: JSON text.
+    - ``/state_backups_json``: JSON text, only if ``stack.state_backups`` is
+      not empty.
 
-    Root attributes
-    ---------------
-    pixel_size_nm : float
-        Physical pixel size in nanometers.
-    channel : str
-        Name of the imaging channel.
+    and the file attributes ``pixel_size_nm`` and ``channel``.
 
     Parameters
     ----------
-    path : Path
-        Destination path for the HDF5 file. The '.h5' suffix will be added
-        automatically.
+    path : str or pathlib.Path
+        Output file. Its extension is replaced by ``.h5``, and missing folders
+        are created.
     stack : AFMImageStack
-        The stack to export.
+        The stack to save.
     raw : bool, optional
-        If True, only the unprocessed raw snapshot (`processed['raw']`) is exported.
-        Otherwise, the full `.data`, masks, and processed layers are included.
+        If True, save the unprocessed snapshot ``stack.processed["raw"]`` instead
+        of ``stack.data``, without masks or processed layers. If the stack has
+        no ``"raw"`` snapshot, ``stack.data`` is saved. Default is False. The
+        timestamps and frame metadata are then those from before any frames were
+        removed.
 
-    Notes
-    -----
-    * `state_backups_json` is only created if the stack has a non-empty
-      `state_backups` attribute.
-    * Timestamps are taken from `state_backups['frame_metadata_before_edit']`
-      if exporting raw data, otherwise from `.frame_metadata`.
-    * Provenance is sanitized via
-      :func:`~playnano.analysis.utils.common.make_json_safe`.
+    See Also
+    --------
+    playnano.io.data_loaders.load_h5_bundle : Load the bundle again.
     """
     path = check_path_is_path(path).with_suffix(".h5")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -403,28 +365,34 @@ def export_bundles(
     raw: bool = False,
 ) -> None:
     """
-    Export an :class:`AFMImageStack` in one or more serialization formats.
+    Save a stack in one or more of the formats OME-TIFF, NPZ and HDF5.
+
+    Files are named ``<name>.ome.tif``, ``<name>.npz`` and ``<name>.h5``.
+    ``_filtered`` is added to the name when processed data is saved, that is
+    when ``raw`` is False and the stack has processed layers other than
+    ``"raw"``.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
-        The stack to export.
-    output_folder : Path
-        Target directory for output files.
-    base_name : str
-        Base filename (no extension).
-    formats : list of {"tif", "npz", "h5"}
-        Which formats to produce.
+        The stack to save.
+    output_folder : str or pathlib.Path or None
+        Folder for the files; created if missing. If None, ``./output``.
+    base_name : str or None
+        File name without extension. Any folder part and known extension are
+        removed. If empty or None, the name of the file the stack was loaded
+        from is used.
+    formats : list of str
+        Any of ``"tif"``, ``"npz"`` and ``"h5"``.
     raw : bool, optional
-        If True, exports only the unprocessed raw snapshot, (``.processed['raw']``).
-        Default is False.
+        If True, save the unprocessed snapshot ``stack.processed["raw"]``. See
+        :func:`save_npz_bundle`. Default is False.
 
     Raises
     ------
     ValueError
-        If an unsupported format string is provided, or if an output file would
-        overwrite the file the stack was loaded from. Nothing is written in
-        either case.
+        If a format is not recognised, or an output file would overwrite the
+        file the stack was loaded from. Nothing is written in either case.
     """
     valid = {"tif", "npz", "h5"}
     bad = set(formats) - valid

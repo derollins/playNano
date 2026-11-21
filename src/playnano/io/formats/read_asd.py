@@ -1,23 +1,21 @@
 """
-Module to decode and load .asd high-speed AFM data files as an AFMImageStack.
+Load ``.asd`` high-speed AFM files as an AFMImageStack.
 
-Files containing multiple image frames are read together. Height data (channel
-'TP') is converted to nm from the guessed source unit.
+Files are read with AFMReader. Topography (channel ``"TP"``) is converted to nm
+from a unit guessed from the range of the data; other channels are left as
+read.
 
-Timing (per-frame): asd files record a uniform frame time in the header, so
-``timestamp`` (seconds from frame 0) and ``frame_duration_s`` are the same for
-every frame. Absolute time (``start_epoch_ms``) is derived from the header
-date, which is the END of acquisition (the file's write time), backdated by
-``num_frames * frame_duration_s`` to place frame 0 at the true start.
+Timing: ``.asd`` headers record one frame time for the whole file, so
+``timestamp`` steps evenly and ``frame_duration_s`` is the same for every
+frame. The header date is the end of the recording (when the file was
+written), so ``start_epoch_ms`` is that date minus
+``n_frames * frame_duration_s``.
 
-Frame direction (``scan_direction``) is left as None, asd files don't encode
-slow-axis direction. Anecdotally, the asd ``scan_direction`` is usually topDown
-(or Ygo).
-
-The asd ``scan_direction`` integer in the header encodes an acquisition mode
-plus channel-1 fast-axis direction, although I've not found formal documentation
-of this. The raw value, file version and channel signature are preserved in
-``stack.acquisition`` for later decoding.
+Scan direction: the header does not record the slow-axis direction, so
+``scan_direction`` is None. The header's ``scan_direction`` integer seems to
+encode the acquisition mode and the fast-axis direction of channel 1, but it is
+not documented. Its raw value, the file version and the channel names are kept
+in ``stack.acquisition`` so they can be decoded later.
 """
 
 import logging
@@ -113,32 +111,29 @@ def _start_epoch_ms(asd_metadata: dict, total_duration_s: float) -> int | None:
 
 def load_asd_file(file_path: Path | str, channel: str) -> AFMImageStack:
     """
-    Load an .asd HS-AFM file into an AFMImageStack, with height data in nm.
+    Load an ``.asd`` file.
 
     Parameters
     ----------
-    file_path : Path | str
-        Path to the .asd file.
+    file_path : str or pathlib.Path
+        The ``.asd`` file.
     channel : str
-        Channel to extract ('TP' topography, 'ER' error, or 'PH' phase).
+        Channel to load: ``"TP"`` (topography), ``"ER"`` (error) or ``"PH"``
+        (phase).
 
     Returns
     -------
     AFMImageStack
-        Loaded stack.
+        The stack, shape (n_frames, height, width). Topography is in nm.
 
-        Data is held in ``data`` as a 3D array (N, H, W). The stack's
-        ``pixel_size_nm`` is the constant pixel size in nanometres, and
-        ``channel`` is the channel name.
+        Each ``frame_metadata`` entry holds ``timestamp`` (s from the first
+        frame), ``frame_pixel_size_nm``, ``line_rate`` (lines per second),
+        ``frame_duration_s`` and ``start_epoch_ms``; ``scan_direction`` is None.
 
-        Per-frame ``frame_metadata`` populates ``timestamp``,
-        ``frame_pixel_size_nm``, ``line_rate``, ``frame_duration_s`` and
-        ``start_epoch_ms``; ``scan_direction`` stays None.
-
-        Stack-level ``acquisition`` records asd-specific provenance:
-        ``asd_file_version``, ``asd_scan_direction_raw`` (undecoded int),
-        ``asd_channels`` (tuple). ``bidirectional`` is not set, asd files
-        don't encode slow-axis alternation.
+        ``stack.acquisition`` holds ``asd_file_version``,
+        ``asd_scan_direction_raw`` (the undecoded header value) and
+        ``asd_channels`` (the two channel slots of the header). ``bidirectional``
+        is not set.
     """
     file_path = Path(file_path)
 

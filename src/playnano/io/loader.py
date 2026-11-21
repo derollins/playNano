@@ -1,15 +1,18 @@
 """
-Common loader for various high speed AFM video formats *and* playNano export bundles.
+Load AFM videos from instrument files and from playNano's own exports.
 
-Supported extensions:
-  - .jpk        (folder)
-  - .spm        (folder)
-  - .h5-jpk     (single-file JPK)
-  - .asd        (single-file ASD)
-  - .ARIS       (single-file ARIS)
-  - .ome.tif / .tif  (OME-TIFF bundles)
-  - .npz        (playNano NPZ bundles)
-  - .h5         (playNano HDF5 bundles)
+:func:`load_afm_stack` picks a reader from the file extension:
+
+- Folders of frames: ``.jpk`` (:mod:`~playnano.io.formats.read_jpk_folder`) and
+  ``.spm`` or numbered ``.001``, ``.002`` ... files
+  (:mod:`~playnano.io.formats.read_spm_folder`).
+- Single files: ``.h5-jpk`` (:mod:`~playnano.io.formats.read_h5jpk`), ``.asd``
+  (:mod:`~playnano.io.formats.read_asd`) and ``.aris``
+  (:mod:`~playnano.io.formats.read_aris`).
+- playNano exports: ``.npz``, ``.h5``, and ``.ome.tif``, ``.ome.tiff``,
+  ``.tif`` or ``.tiff`` (:mod:`~playnano.io.data_loaders`).
+
+Extensions are matched without regard to case.
 """
 
 import logging
@@ -34,24 +37,26 @@ def get_loader_for_folder(
     folder_path: Path, folder_loaders: dict
 ) -> tuple[str, callable]:
     """
-    Determine the appropriate loader for a folder containing AFM data.
+    Choose the folder reader for a folder of frame files.
 
     Parameters
     ----------
-    folder_path : Path
-        Path to the folder.
+    folder_path : pathlib.Path
+        The folder.
     folder_loaders : dict
-        Mapping from file extension to loader function.
+        Maps each extension (lower case, with the dot) to its reader.
 
     Returns
     -------
-    (str, callable)
-        The chosen extension and loader function.
+    tuple of (str, callable)
+        The extension and its reader. If the folder holds several known types,
+        ``.jpk`` is chosen if present, otherwise the most common. Numbered
+        extensions such as ``.001`` count as ``.spm``.
 
     Raises
     ------
     FileNotFoundError
-        If no known file types are found.
+        If the folder contains no file of a known type.
     """
     logger.debug(f"Determining loader for folder {folder_path}")
     suffix_counts = {}
@@ -80,26 +85,29 @@ def get_loader_for_file(
     file_path: Path, file_loaders: dict, folder_loaders: dict
 ) -> callable:
     """
-    Determine the appropriate loader for a single multi-frame AFM file.
+    Choose the reader for a single file.
 
     Parameters
     ----------
-    file_path : Path
-        Path to the file.
+    file_path : pathlib.Path
+        The file.
     file_loaders : dict
-        Mapping from file extensions to file loader functions.
+        Maps each extension (lower case, with the dot) to its reader. Combined
+        extensions such as ``.ome.tif`` are checked first.
     folder_loaders : dict
-        Mapping from extensions for folder loaders (for error handling).
+        Extensions of folder formats, used to give a helpful error when a single
+        frame of a folder format is passed.
 
     Returns
     -------
-    (str, callable)
-        The file extension string and the loader function for the file.
+    tuple of (str, callable)
+        The extension and its reader.
 
     Raises
     ------
     ValueError
-        If the file type is unsupported or better handled as a folder.
+        If the file has no extension, an unknown one, or one that belongs to a
+        folder format (for example a single ``.jpk`` frame).
     """
     logger.debug(f"Determining loader for file {file_path}")
 
@@ -132,30 +140,36 @@ def get_loader_for_file(
 
 def load_afm_stack(file_path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Unified interface to load AFM stacks from various file formats.
+    Load an AFM video from a file or a folder of frame files.
 
-    High speed AFM videos can be saved as either individual frames
-    within a folder or as multiple frames within a single file.
-    This loader splits these two approaches and loads both into
-    the common AFMImageStack object for processing.
-
-    As well as the file formats exported from AFM instruments, this
-    function also read raw and processed exports from playnano (NPZ,
-    OME_TIF and HDF5).
-
-    All data values with length units (i.e. m) are converted to nm.
+    The reader is chosen from the extension (see the module description).
+    Instrument readers return heights in nm for length channels; see each
+    reader for details.
 
     Parameters
     ----------
-    file_path : Path | str
-        Path to the AFM data file or folder of files.
-    channel : str
-        Scan channel name.
+    file_path : str or pathlib.Path
+        The file, or the folder of frame files.
+    channel : str, optional
+        Channel to load, for example ``"height_trace"`` for ``.h5-jpk`` files.
+        Channel names depend on the format. Ignored for NPZ and HDF5 bundles.
+        Default is ``"height_trace"``.
 
     Returns
     -------
     AFMImageStack
-        Loaded image stack with metadata.
+        The loaded stack.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the path does not exist, or a folder contains no known file type.
+    ValueError
+        If the file type is not supported.
+
+    See Also
+    --------
+    playnano.afm_stack.AFMImageStack.load_data : The usual way to call this.
     """
     logger.debug(f"Raw input path: {file_path}")
     file_path = Path(file_path).resolve()

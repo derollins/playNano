@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (raises `ValueError`, not `RuntimeError`, for an unknown step), the `max_shift` and `max_jump` behaviour of the
   alignment functions, and the `temporal_*_filter` placeholders, which are not implemented. The `align_frames` and
   `rolling_frame_align` examples showed made-up output; all examples now run as doctests.
+- API reference for `playnano.io`: docstrings now match the code and render without warnings. Corrected the default
+  colormap of the GIF, video and image sequence exports (`afm_brown`, not `afmhot`), how `zmin` and `zmax` work (both
+  None scales each frame separately; `zmin == zmax` gives a blank frame instead of raising), which data and metadata
+  each export format keeps (OME-TIFF keeps no processed layers or masks), the errors the loaders raise, and the
+  `.aris` reader, which returns heights in the file's units (metres), not nm. Documented the missing `cmap_name`,
+  `font_scale` and `fmt` parameters and the video formats (MP4, AVI, MOV, MKV).
 
 ### Changed
 

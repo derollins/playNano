@@ -1,17 +1,8 @@
 """
-Image-sequence export utilities for AFM image stacks.
+Export AFM image stacks as a folder of annotated PNG or JPEG images, one per frame.
 
-This module provides functions for saving each frame of an AFM image stack as
-an individual PNG or JPEG file inside a dedicated output folder. Frames can be
-normalised automatically or scaled with a fixed z-range, and are annotated with
-optional timestamps and scale bars using the shared rendering pipeline in
-:mod:`~playnano.io.render_utils`
-
-Dependencies
-------------
-- matplotlib
-- numpy
-- Pillow (PIL)
+Frames are coloured and annotated by :mod:`playnano.io.render_utils`, which the
+GIF and video exports share, and written with Pillow.
 """
 
 import logging
@@ -57,65 +48,57 @@ def create_image_sequence(
     font_scale: float = DEFAULT_FONT_SCALE,
 ) -> Path:
     """
-    Save every frame of an AFM image stack as an individual image file.
+    Write each frame of an image stack as an image file, with optional annotations.
 
-    Frames are normalised, colourised with a matplotlib colormap, and annotated
-    with a scale bar and timestamp before being written to *output_folder* as
-    ``<base_name>_NNNN.<fmt>``.
+    Files are named ``<base_name>_<n>.<ext>``, where ``n`` is the frame index from
+    0, padded with zeros to at least 4 digits so they sort in order. Use
+    :func:`export_image_sequence` to export an
+    :class:`~playnano.afm_stack.AFMImageStack`.
 
     Parameters
     ----------
-    image_stack : np.ndarray
-        3D array of shape (N, H, W) representing the AFM image stack.
-    pixel_sizes_nm : list
-        Per-frame pixel size in nanometres. Must have the same length as
-        ``image_stack``.
-    timestamps : list[float] or tuple[float], optional
-        Timestamps in seconds for each frame. Frame indices are used as a
-        fallback when ``None`` or invalid.
-    scale_bar_length_nm : int
-        Length of the scale bar in nanometres. Default is 100.
-    output_folder : str or Path
-        Directory in which the frame images will be saved. Created
-        automatically if it does not exist.
-    base_name : str
-        Stem used for each file: ``<base_name>_0000.png``, etc.
-        Default is ``"frame"``.
-    fmt : {"png", "jpg", "jpeg"}
-        Image file format. Default is ``"png"``.
-    cmap_name : str
-        Name of the matplotlib colormap. Default is ``'afmhot'``.
-    zmin : float or str or None, optional
-        Minimum z-value mapped to the low end of the colormap. ``"auto"``
-        uses the 1st percentile of the full stack.
-    zmax : float or str or None, optional
-        Maximum z-value mapped to the high end of the colormap. ``"auto"``
-        uses the 99th percentile of the full stack.
-    draw_ts : bool
-        Whether to draw timestamps on each frame. Default is ``True``.
-    draw_scale : bool
-        Whether to draw a scale bar on each frame. Default is ``True``.
-    font_scale : float
-        Base font scale for annotations at the reference height.
+    image_stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
+    pixel_sizes_nm : list of float
+        Pixel size of each frame, in nm. If it is not a list with one value per
+        frame, no scale bar is drawn.
+    timestamps : list or tuple of float, optional
+        Time of each frame, in seconds. If it is not a list or tuple with one
+        value per frame, frame numbers are drawn instead.
+    scale_bar_length_nm : int, optional
+        Length of the scale bar, in nm; 0 hides it. Default is 100.
+    output_folder : str or pathlib.Path, optional
+        Folder for the images; created if missing. Default is
+        ``"output_frames"``.
+    base_name : str, optional
+        Start of each file name. Default is ``"frame"``.
+    fmt : {"png", "jpg", "jpeg"}, optional
+        Image format. PNG is lossless; JPEG files are saved at quality 90 with
+        the extension ``.jpg``. Default is ``"png"``.
+    cmap_name : str, optional
+        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.
+    zmin, zmax : float or str or None, optional
+        Colour scale limits, as for the ``export_*`` functions: both None scales
+        each frame separately; otherwise the limits apply to every frame, with
+        ``"auto"`` for the 1st or 99th percentile and None for the stack's
+        minimum or maximum. Default is None.
+    draw_ts : bool, optional
+        Draw each frame's time on the frame. Default is True.
+    draw_scale : bool, optional
+        Draw a scale bar. Default is True.
+    font_scale : float, optional
+        Size of the annotation text for a frame 512 pixels high. Default is 2.0.
 
     Returns
     -------
-    Path
-        The resolved output folder where images were written.
+    pathlib.Path
+        The folder the images were written to.
 
     Raises
     ------
     ValueError
-        If ``fmt`` is not a supported image format, or if ``zmin == zmax``.
-
-    Notes
-    -----
-    - Frames are normalised globally when ``zmin``/``zmax`` are provided,
-      otherwise per-frame normalisation is applied.
-    - PNG files are lossless; JPEG files are saved at quality
-      :data:`_JPEG_QUALITY` (default 90).
-    - Zero-padded four-digit frame indices are used so files sort correctly
-      up to 9 999 frames; for larger stacks the padding grows automatically.
+        If ``fmt`` is not supported, ``zmin`` is greater than ``zmax``, or a
+        limit is not a number, ``"auto"`` or None.
     """
     fmt = fmt.lower().lstrip(".")
     if fmt not in _VALID_IMAGE_FORMATS:
@@ -216,54 +199,60 @@ def export_image_sequence(
     font_scale: float = DEFAULT_FONT_SCALE,
 ) -> None:
     """
-    Export an AFM image stack as a folder of annotated PNG or JPEG images.
+    Export a stack as a folder of annotated PNG or JPEG images, one per frame.
 
-    Each frame is saved as a separate file named
-    ``<stem>_NNNN.<fmt>`` inside a subfolder ``<output_folder>/<stem>/``.
+    The images are written to ``<output_folder>/<output_name>/`` as
+    ``<output_name>_0000.png``, ``<output_name>_0001.png`` and so on.
+    ``_filtered`` is added to the name when processed data is exported, that
+    is when ``raw`` is False and the stack has processed layers other than
+    ``"raw"``.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
-        AFM stack object containing raw and/or processed data.
+        The stack to export.
     make_sequence : bool
-        Whether to generate the image sequence. Returns immediately when
-        ``False``.
+        If False, do nothing.
     output_folder : str or None
-        Root directory for output. Defaults to ``"output"`` when ``None``.
-        A subfolder named after the stack stem is created inside it.
+        Folder for the output; created if missing. If None, ``./output``.
     output_name : str or None
-        Base name for the subfolder and frame files. Derived from the stack
-        file name when ``None``.
+        Name for the output, without extension. Any folder part and known
+        extension are removed. If None or empty, the name of the file the stack
+        was loaded from is used.
     scale_bar_nm : int or None
-        Scale bar length in nanometres. Defaults to 100 nm when ``None``.
-    fmt : {"png", "jpg", "jpeg"}
-        Image file format. Default is ``"png"``.
-    raw : bool
-        If ``True``, export the unprocessed raw snapshot. Default is
-        ``False``.
-    zmin : float or None, optional
-        Minimum z-value for colormap scaling. ``"auto"`` triggers the 1st
-        percentile. ``None`` uses per-frame minimum.
-    zmax : float or None, optional
-        Maximum z-value for colormap scaling. ``"auto"`` triggers the 99th
-        percentile. ``None`` uses per-frame maximum.
-    draw_ts : bool
-        Whether to draw timestamps on each frame. Default is ``True``.
-    draw_scale : bool
-        Whether to draw a scale bar on each frame. Default is ``True``.
+        Length of the scale bar, in nm. 0 hides it; None uses 100.
+    fmt : {"png", "jpg", "jpeg"}, optional
+        Image format. Default is ``"png"``.
+    raw : bool, optional
+        If True, export the unprocessed snapshot ``stack.processed["raw"]``,
+        with the frame times from before any frames were removed. Otherwise
+        export ``stack.data``. Default is False.
+    zmin : float or str or None, optional
+        Height mapped to the bottom of the colormap, in the units of the data
+        (usually nm), or ``"auto"`` for the 1st percentile of the stack.
+        Default is None.
+    zmax : float or str or None, optional
+        Height mapped to the top of the colormap, or ``"auto"`` for the 99th
+        percentile of the stack. Default is None.
 
-    Returns
-    -------
-    None
+        If ``zmin`` and ``zmax`` are both None, each frame is scaled separately
+        from its own minimum to its maximum. If either is set, both apply to
+        every frame, and a None limit becomes the minimum or maximum of the
+        whole stack. Values outside the range are clipped.
+    draw_ts : bool, optional
+        Draw each frame's time, in seconds, on the frame. Default is True.
+    draw_scale : bool, optional
+        Draw a scale bar. Default is True.
+    cmap_name : str, optional
+        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.
+    font_scale : float, optional
+        Size of the annotation text for a frame 512 pixels high; scaled with the
+        rendered frame height. Default is 2.0.
 
-    Notes
-    -----
-    - Processed data is preferred over raw when available; ``_filtered`` is
-      appended to the output stem in that case.
-    - Timestamps and pixel size are read from ``afm_stack.frame_metadata``.
-      When exporting raw data after an ``edit_stack`` step, the pre-edit
-      metadata stored in
-      ``afm_stack.state_backups['frame_metadata_before_edit']`` is used.
+    Raises
+    ------
+    ValueError
+        If ``fmt`` is not supported, or ``zmin`` is greater than ``zmax``.
     """
     if not make_sequence:
         return
