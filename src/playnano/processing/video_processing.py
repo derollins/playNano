@@ -1,17 +1,19 @@
 """
-Video processing functions for AFM time-series (stacks of frames).
+Processing functions for whole AFM image stacks (time series of frames).
 
-This module provides functions that operate on 3D numpy arrays
-(time-series of 2D AFM frames). These include:
+These functions take a 3D :class:`numpy.ndarray` of shape
+(n_frames, height, width) and return the processed stack and a dictionary of
+metadata, which the :class:`~playnano.processing.pipeline.ProcessingPipeline`
+stores in the step's provenance. They cover:
 
-- Frame alignment to compensate for drift
-- Cropping and padding utilities
-- Temporal (time-domain) filters
-- Future extensions such as spatio-temporal denoising
+- frame alignment, to correct drift (:func:`align_frames`,
+  :func:`rolling_frame_align`);
+- cropping the NaN borders left by alignment (:func:`intersection_crop`,
+  :func:`crop_square`);
+- filling NaN pixels (:func:`replace_nan`).
 
-All functions follow a NumPy-style API: input stacks are 3D arrays
-with shape (n_frames, height, width). Outputs are processed
-stacks and a metadata dictionary.
+:func:`temporal_median_filter` and :func:`temporal_mean_filter` are planned
+and not implemented yet.
 """
 
 from collections import deque
@@ -42,96 +44,100 @@ def align_frames(
     max_jump: Optional[int] = None,
 ):
     """
-    Align a stack of AFM frames to a reference frame using integer-pixel shifts.
+    Align every frame of a stack to one reference frame by whole-pixel shifts.
 
-    Alignment is performed using either FFT-based or full cross-correlation.
-    Jump smoothing prevents abrupt unrealistic displacements between consecutive
-    frames by limiting the change in shift relative to the previous frame.
+    The shift of each frame is the position of the peak of its cross-correlation
+    with the reference frame. Each frame's mean is subtracted before
+    correlating, so height offsets between frames do not affect the result.
 
     Parameters
     ----------
-    stack : np.ndarray[float]
-        3D array of shape (n_frames, height, width) containing the input AFM image
-        stack.
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     reference_frame : int, optional
-        Index of the frame to use as the alignment reference (default 0). Must be
-        within [0, n_frames-1].
+        Index of the frame the others are aligned to. Default is 0.
     method : {"fft_cross_correlation", "full_cross_correlation"}, optional
-        Alignment method (default "fft_cross_correlation"). FFT-based cross-correlation
-        is generally faster and uses less memory for large frames.
+        How the cross-correlation is computed. Both find the same shifts; the
+        FFT method is much faster and uses less memory on large frames.
+        Default is ``"fft_cross_correlation"``.
     mode : {"pad", "crop", "crop_square"}, optional
-        How to handle borders after shifting:
-        - "pad": keep all frames with NaN padding (default)
-        - "crop": crop to intersection of all frames
-        - "crop_square": crop to largest centered square
+        What to do with the borders after shifting. Default is ``"pad"``.
 
+        - ``"pad"``: keep every pixel of every frame on a larger canvas,
+          filling the gaps with NaN.
+        - ``"crop"``: crop to the region covered by all frames
+          (:func:`intersection_crop`).
+        - ``"crop_square"``: crop to the largest centred square in that region
+          (:func:`crop_square`).
     debug : bool, optional
-        If True, returns additional diagnostic outputs.
+        If True, also return a third value with diagnostic output. Default is
+        False.
     max_shift : int, optional
-        Maximum allowed shift in pixels. Detected shifts are clipped to this range.
+        Largest shift to search for, in pixels along each axis. Default is None
+        (no limit).
     pre_filter_sigma : float, optional
-        Standard deviation of Gaussian filter applied to frames before
-        cross-correlation.
+        If given, frames are smoothed with a Gaussian filter of this standard
+        deviation, in pixels, before correlating. The output frames are not
+        smoothed. Default is None.
     max_jump : int, optional
-        Maximum allowed change in shift between consecutive frames. If exceeded, the
-        shift is replaced by a linear extrapolation from the previous two frames.
+        Largest change in shift, in pixels, allowed between consecutive frames.
+        For frame 1 the change from frame 0 is clipped to this value; from
+        frame 2 on, a shift that changes by more is replaced by a linear
+        extrapolation of the previous two shifts. Default is None (no limit).
 
     Returns
     -------
-    aligned_stack : np.ndarray[float]
-        Aligned 3D stack of frames. Shape may be larger than input to accommodate all
-        shifts.
+    aligned_stack : numpy.ndarray
+        The aligned stack, as float32. With ``mode="pad"`` it is larger than the
+        input so every frame fits; with the crop modes it is smaller.
     metadata : dict
-        Dictionary containing alignment information:
-        - "reference_frame": int, index of the reference frame
-        - "method": str, the alignment method used
-        - "mode": str, border approach used
-        - "shifts": np.ndarray of shape (n_frames, 2), detected (dy, dx) shifts
-        - "original_shape": tuple of (height, width)
-        - "aligned_shape": tuple of (height, width) of the output canvas
-        - "border_mask": np.ndarray[bool], True where valid frame pixels exist
-        - "pre_filter_sigma": float or None
-        - "max_shift": int or None
-        - "max_jump": int or None
+        Details of the alignment:
 
-    debug_outputs : dict, optional
-        Returned only if ``debug=True``. Contains:
-        - "shifts": copy of the shifts array.
+        - ``"reference_frame"`` (int): the reference frame used.
+        - ``"method"`` (str): the ``method`` used.
+        - ``"mode"`` (str): the ``mode`` used.
+        - ``"shifts"`` (numpy.ndarray of int, shape (n_frames, 2)): the
+          (dy, dx) shift applied to each frame, in pixels.
+        - ``"original_shape"`` (tuple): (height, width) of the input frames.
+        - ``"aligned_shape"`` (tuple): (height, width) of the padded canvas,
+          before any cropping.
+        - ``"border_mask"`` (numpy.ndarray of bool): True where at least one
+          frame has data, with the same height and width as the output.
+        - ``"pre_filter_sigma"``, ``"max_shift"``, ``"max_jump"``: the values
+          used.
+        - ``"crop"`` (dict): only with ``mode="crop"`` or ``"crop_square"``;
+          the metadata from :func:`intersection_crop` or :func:`crop_square`.
+    debug_outputs : dict
+        Only returned if ``debug=True``: ``{"shifts": <copy of the shifts>}``.
 
     Raises
     ------
     ValueError
-        If ``stack.ndim`` is not 3.
-    ValueError
-        If ``method`` is not one of {"fft_cross_correlation", "full_cross_correlation"}.
-    ValueError
-        If ``reference_frame`` is not in the range [0, n_frames-1].
-    ValueError
-        If a frame has no finite pixels.
+        If ``stack`` is not 3D, ``reference_frame`` is outside
+        ``0 .. n_frames - 1``, ``method`` or ``mode`` is not recognised, or a
+        frame has no finite pixels.
 
     Notes
     -----
-    - NaN and infinite pixels are ignored when finding shifts (they are filled
-      with the frame mean for the correlation only) and are kept in the output.
-    - Using ``fft_cross_correlation`` reduces memory usage compared to full
-    cross-correlation because it leverages the FFT algorithm and avoids creating
-    large full correlation matrices.
-    - Padding with NaNs allows all frames to be placed without clipping, but may
-    increase memory usage for large shifts.
-    - The function does not interpolate subpixel shifts; all shifts are integer-valued.
+    Shifts are whole pixels; there is no subpixel interpolation. NaN and
+    infinite pixels are ignored when finding the shifts (they are filled with
+    the frame mean for the correlation only) and are kept in the output.
+    Version 0.2.0 subtracts each frame's mean for ``"full_cross_correlation"``
+    too; before, that method found no drift on typical AFM data.
 
     Examples
     --------
     >>> import numpy as np
     >>> from playnano.processing.video_processing import align_frames
-    >>> stack = np.random.rand(10, 200, 200)  # 10 frames of 200x200 pixels
-    >>> aligned_stack, metadata = align_frames(stack, reference_frame=0)
-    >>> aligned_stack.shape
-    (10, 210, 210)  # padded to accommodate shifts
-    >>> metadata['shifts']
+    >>> rng = np.random.default_rng(0)
+    >>> frame = rng.random((64, 64))
+    >>> moved = np.roll(frame, (2, -3), axis=(0, 1))  # 2 px down, 3 px left
+    >>> aligned, meta = align_frames(np.stack([frame, moved]))
+    >>> meta["shifts"]
     array([[ 0,  0],
-        [ 1, -2],
-        ...])
+           [-2,  3]])
+    >>> aligned.shape
+    (2, 66, 67)
     """
     stack = stack.astype(np.float32, copy=False)
 
@@ -271,110 +277,101 @@ def rolling_frame_align(
     max_jump: Optional[int] = None,
 ):
     """
-    Align a stack of AFM frames using a rolling reference and integer pixel shifts.
+    Align each frame to the average of the frames aligned just before it.
 
-    This function computes frame-to-frame shifts relative to a rolling reference
-    (average of the last `window` aligned frames) using phase cross-correlation.
-    Each frame is then placed on a canvas large enough to accommodate all shifts.
-    Optional jump smoothing prevents sudden unrealistic displacements between
-    consecutive frames, and optional Gaussian pre-filtering can improve correlation
-    robustness for noisy data.
+    The first frame is the starting reference. Each later frame is aligned, by
+    phase cross-correlation and whole-pixel shifts, to the average of the last
+    ``window`` aligned frames, so slow changes in the sample are followed.
 
     Parameters
     ----------
-    stack : np.ndarray[float]
-        3D array of shape (n_frames, height, width) containing the image frames.
-
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     window : int, optional
-        Number of previous aligned frames to average when building the rolling
-        reference. Default is 5.
-
+        Number of most recently aligned frames averaged to make the reference.
+        Default is 5.
     mode : {"pad", "crop", "crop_square"}, optional
-        How to handle borders after shifting:
-        - "pad": keep all frames with NaN padding (default)
-        - "crop": crop to intersection of all frames
-        - "crop_square": crop to largest centered square
+        What to do with the borders after shifting. Default is ``"pad"``.
 
+        - ``"pad"``: keep every pixel of every frame on a larger canvas,
+          filling the gaps with NaN.
+        - ``"crop"``: crop to the region covered by all frames
+          (:func:`intersection_crop`).
+        - ``"crop_square"``: crop to the largest centred square in that region
+          (:func:`crop_square`).
     debug : bool, optional
-        If True, returns additional diagnostic outputs such as the rolling reference
-        frames. Default is False.
-
+        If True, also return a third value with diagnostic output. Default is
+        False.
     max_shift : int, optional
-        Maximum allowed shift in pixels along either axis. Detected shifts are clipped.
-        Default is None (no clipping).
-
+        Largest shift allowed, in pixels along each axis; larger shifts are
+        clipped to it. Default is None (no limit).
     pre_filter_sigma : float, optional
-        Standard deviation of Gaussian filter applied to both reference and moving
-        frames prior to cross-correlation. Helps reduce noise. Default is None.
-
+        If given, frames are smoothed with a Gaussian filter of this standard
+        deviation, in pixels, before correlating. The output frames are not
+        smoothed. Default is None.
     max_jump : int, optional
-        Maximum allowed jump in pixels between consecutive frame shifts. If exceeded,
-        the shift is replaced by a linear extrapolation from the previous two shifts.
-        Default is None (no jump smoothing).
+        From frame 2 on, a shift that differs from the previous one by more than
+        this many pixels is replaced by a linear extrapolation of the previous
+        two shifts. Default is None (no limit).
 
     Returns
     -------
-    aligned_stack : np.ndarray[float]
-        3D array of shape (n_frames, canvas_height, canvas_width) containing the
-        aligned frames. NaN values indicate areas outside the original frames after
-        alignment.
-
+    aligned_stack : numpy.ndarray
+        The aligned stack, as float32. With ``mode="pad"`` it is larger than the
+        input so every frame fits; with the crop modes it is smaller.
     metadata : dict
-        Dictionary containing alignment information:
-        - "window": int, rolling reference window used
-        - "method": str, alignment method used
-        - "mode": str, border approach used
-        - "shifts": ndarray of shape (n_frames, 2), detected integer shifts (dy, dx)
-        - "original_shape": tuple of (height, width)
-        - "aligned_shape": tuple of (canvas_height, canvas_width)
-        - "border_mask": ndarray of shape (canvas_height, canvas_width), True where
-          valid pixels exist
-        - "pre_filter_sigma": float or None
-        - "max_shift": int or None
-        - "max_jump": int or None
+        Details of the alignment:
 
-    debug_outputs : dict, optional
-          Returned only if `debug=True`. Contains:
-        - "shifts": copy of the detected shifts array
-        - "aligned_refs": deque of indices used for rolling reference
+        - ``"window"`` (int): the ``window`` used.
+        - ``"method"`` (str): always ``"phase_cross_correlation"``.
+        - ``"mode"`` (str): the ``mode`` used.
+        - ``"shifts"`` (numpy.ndarray of int, shape (n_frames, 2)): the
+          (dy, dx) shift applied to each frame, in pixels.
+        - ``"original_shape"`` (tuple): (height, width) of the input frames.
+        - ``"aligned_shape"`` (tuple): (height, width) of the padded canvas,
+          before any cropping.
+        - ``"border_mask"`` (numpy.ndarray of bool): True where at least one
+          frame has data, with the same height and width as the output.
+        - ``"pre_filter_sigma"``, ``"max_shift"``, ``"max_jump"``: the values
+          used.
+        - ``"crop"`` (dict): only with ``mode="crop"`` or ``"crop_square"``;
+          the metadata from :func:`intersection_crop` or :func:`crop_square`.
+    debug_outputs : dict
+        Only returned if ``debug=True``:
+
+        - ``"shifts"``: a copy of the shifts.
+        - ``"aligned_refs"``: list of the frames in the final reference window,
+          each as ``(frame_index, y0, y1, x0, x1, fy0, fy1, fx0, fx1)``: the
+          region of the working canvas and the matching region of the frame.
 
     Raises
     ------
     ValueError
-        If ``stack.ndim`` is not 3.
-    ValueError
-        If ``window`` < 1.
-    ValueError
-        If a frame has no finite pixels.
+        If ``stack`` is not 3D, ``window`` is less than 1, ``mode`` is not
+        recognised, or a frame has no finite pixels.
 
     Notes
     -----
-    - The rolling reference is computed using the last `window` aligned frames,
-      ignoring NaN pixels. NaN pixels in the moving frame are masked out of the
-      correlation and kept in the output.
-    - Shifts are integer-valued; no subpixel interpolation is performed.
-    - Padding ensures all frames fit without clipping, but increases memory usage.
-    - Internally, a deque ``aligned_refs`` tracks which patches of which frames
-      contribute to the rolling reference. Each entry stores:
-        (frame_index, y0c, y1c, x0c, x1c, fy0, fy1, fx0, fx1),
-      i.e. both the region of the canvas updated and the corresponding slice in
-      the original frame. This allows exact removal of old contributions from
-      ``rolling_sum`` and ``rolling_count`` when the window is exceeded, ensuring
-      consistency without recomputation.
+    Shifts are whole pixels; there is no subpixel interpolation. NaN and
+    infinite pixels are left out of the correlation and of the rolling
+    reference, and are kept in the output. Version 0.1.1 crops ``border_mask``
+    together with the frames in the crop modes.
 
+    See Also
+    --------
+    skimage.registration.phase_cross_correlation : The correlation used.
 
     Examples
     --------
     >>> import numpy as np
     >>> from playnano.processing.video_processing import rolling_frame_align
-    >>> stack = np.random.rand(10, 200, 200)  # 10 frames of 200x200 pixels
-    >>> aligned_stack, metadata = rolling_frame_align(stack, window=3)
-    >>> aligned_stack.shape
-    (10, 210, 210)
-    >>> metadata['shifts']
-    array([[0, 0],
-           [1, -1],
-           ...])
+    >>> rng = np.random.default_rng(0)
+    >>> frame = rng.random((64, 64))
+    >>> moved = np.roll(frame, (2, -3), axis=(0, 1))
+    >>> aligned, meta = rolling_frame_align(np.stack([frame, moved]), window=3)
+    >>> meta["shifts"]
+    array([[ 0,  0],
+           [-2,  3]])
     """
     stack = stack.astype(np.float32, copy=False)
 
@@ -693,28 +690,51 @@ def intersection_crop(
     stack: np.ndarray, pad: int | tuple[int, ...] = 0
 ) -> tuple[np.ndarray, dict]:
     """
-    Crop aligned stack to the largest common intersection region (finite across frames).
+    Crop an aligned stack to the region where every frame has data.
 
-    Option to add padding to expand the crop beyond the intersection, filling with NaN
-    when beyond the data.
+    The crop is the smallest rectangle containing every pixel that is finite in
+    all frames. Use it after alignment with ``mode="pad"`` to remove the NaN
+    borders.
 
     Parameters
     ----------
-    stack : ndarray of shape (n_frames, height, width)
-        Input aligned stack with NaN padding.
-    pad : int or tuple, optional (default=0)
-        Extra pixels to add around the intersection bounds.
-        - int: uniform pad
-        - (v, h): vertical and horizontal pad
-        - (top, bottom, left, right): per-side pad
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width), usually the output
+        of an alignment with NaN borders.
+    pad : int or tuple of int, optional
+        Extra pixels to add around the crop. Default is 0.
+
+        - int: the same on every side.
+        - ``(v, h)``: ``v`` at the top and bottom, ``h`` at the left and right.
+        - ``(top, bottom, left, right)``: each side separately.
+
+        Where the padded crop goes beyond the stack, the new pixels are NaN.
 
     Returns
     -------
-    cropped : ndarray
-        Cropped (and possibly padded) stack.
+    cropped : numpy.ndarray
+        The cropped (and padded) stack.
     meta : dict
-        Metadata including original shape, intersection bounds, requested bounds,
-        actual padding applied, and new shape.
+        Details of the crop. Bounds are ``(y0, y1, x0, x1)`` in the input's
+        pixel coordinates, with ``y1`` and ``x1`` exclusive.
+
+        - ``"operation"``: ``"crop_intersection"``.
+        - ``"original_shape"``, ``"new_shape"``: (height, width) before and
+          after.
+        - ``"intersection_shape"``, ``"intersection_bounds"``: the region
+          where all frames are finite.
+        - ``"requested_bounds"``: the intersection plus ``pad``.
+        - ``"applied_pad"``: (top, bottom, left, right) pixels of NaN added
+          beyond the edges of the input.
+        - ``"pad_param"``: ``pad`` as (top, bottom, left, right).
+
+        If no pixel is finite in all frames, a copy of ``stack`` is returned
+        unchanged, the bounds are None and ``meta["note"]`` says so.
+
+    Raises
+    ------
+    ValueError
+        If ``pad`` is not an int or a tuple of 2 or 4 ints.
     """
     valid_mask = np.all(np.isfinite(stack), axis=0)
     rows = np.any(valid_mask, axis=1)
@@ -766,30 +786,46 @@ def crop_square(
     stack: np.ndarray, pad: int | tuple[int, ...] = 0
 ) -> tuple[np.ndarray, dict]:
     """
-    Crop aligned stack to the largest centered square region.
+    Crop an aligned stack to the largest centred square where every frame has data.
 
-    This is based on the finite-pixel intersection across frames, with optional
-    outward padding (np.nan).
+    The square is centred in the region found by :func:`intersection_crop`, and
+    its side is the shorter side of that region.
 
     Parameters
     ----------
-    stack : ndarray of shape (n_frames, height, width)
-        Input aligned stack with possible NaN padding.
-    pad : int or tuple, optional (default=0)
-        Extra pixels to add around the square bounds.
-        Accepts:
-          - int: uniform pad
-          - (v, h): vertical and horizontal pad
-          - (top, bottom, left, right): per-side pad
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width), usually the output
+        of an alignment with NaN borders.
+    pad : int or tuple of int, optional
+        Extra pixels to add around the crop. Default is 0.
+
+        - int: the same on every side.
+        - ``(v, h)``: ``v`` at the top and bottom, ``h`` at the left and right.
+        - ``(top, bottom, left, right)``: each side separately.
+
+        Where the padded crop goes beyond the stack, the new pixels are NaN.
 
     Returns
     -------
-    cropped : ndarray
-        Cropped (and possibly padded) square stack.
+    cropped : numpy.ndarray
+        The cropped (and padded) stack.
     meta : dict
-        Metadata including original shape, intersection shape, square size, bounds,
-        padding details, and offset compatible with the original function
-        (offset within the intersection crop).
+        Details of the crop, with the same keys as :func:`intersection_crop`
+        (``"operation"`` is ``"crop_square"``), and also:
+
+        - ``"square_size"``: side of the square, in pixels.
+        - ``"square_bounds"``: ``(y0, y1, x0, x1)`` of the square before
+          padding.
+        - ``"offset"``: (row, column) of the square's corner within the
+          intersection region.
+
+        If no pixel is finite in all frames, a copy of ``stack`` is returned
+        unchanged, the bounds are None and ``meta["note"]`` says so.
+
+    Raises
+    ------
+    ValueError
+        If ``pad`` is not an int or a tuple of 2 or 4 ints.
     """
     H, W = stack.shape[1:]
     # Compute finite-pixel intersection mask (across frames)
@@ -869,44 +905,40 @@ def replace_nan(
     value: float | None = None,
 ) -> tuple[np.ndarray, dict]:
     """
-    Replace NaN values in a 2D frame or 3D AFM image stack using various strategies.
+    Replace NaN pixels in a stack.
 
-    Primarily used in video pipelines after alignment, but also applicable to single
-    frames.
+    Often used after alignment with ``mode="pad"``, before steps that do not
+    accept NaN.
 
     Parameters
     ----------
-    stack : np.ndarray
-        Input 3D array of shape (n_frames, height, width) or 2D frame (height, width)
-        that may contain NaN values.
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     mode : {"zero", "mean", "median", "global_mean", "constant"}, optional
-        Replacement strategy. Default is "zero".
-        - "zero" : Replace NaNs with 0.
-        - "mean" : Replace NaNs with the mean of each frame.
-        - "median" : Replace NaNs with the median of each frame.
-        - "global_mean" : Replace NaNs with the mean of the entire stack.
-        - "constant" : Replace NaNs with a user-specified constant `value`.
+        What to replace NaN with. Default is ``"zero"``.
+
+        - ``"zero"``: 0.
+        - ``"mean"``, ``"median"``: the mean or median of the finite pixels of
+          the same frame.
+        - ``"global_mean"``: the mean of the finite pixels of the whole stack.
+        - ``"constant"``: ``value``.
     value : float, optional
-        Constant value to use when `mode="constant"`. Must be provided in that case.
+        Value to use with ``mode="constant"``, where it is required.
 
     Returns
     -------
-    filled : np.ndarray
-        Stack of the same shape as `stack` with NaNs replaced according to `mode`.
+    filled : numpy.ndarray
+        A copy of ``stack`` with NaN replaced, with the same shape and dtype.
     meta : dict
-        Metadata about the NaN replacement operation (e.g., count, mode, constant used).
-
+        ``{"nans_filled": <number of NaN pixels>, "mode": mode,
+        "value_used": value}``; ``"value_used"`` is None unless
+        ``mode="constant"``.
 
     Raises
     ------
     ValueError
-        If `mode` is unknown or if `mode="constant"` and `value` is not provided.
-
-    Notes
-    -----
-    - Frame-wise operations like "mean" and "median" compute statistics per frame
-      independently.
-    - Preserves the dtype of the input stack.
+        If ``mode`` is not recognised, or ``mode="constant"`` and ``value`` is
+        None.
     """
     filled = stack.copy()
     nan_count = np.isnan(filled).sum()
@@ -952,38 +984,44 @@ def replace_nan(
 
 def temporal_median_filter(stack: np.ndarray, window: int = 3) -> np.ndarray:
     """
-    Apply median filter across the time dimension.
+    Not implemented yet: median filter along the time axis.
+
+    Planned for a future release; calling it raises ``NotImplementedError``. It
+    is not registered as a processing step.
 
     Parameters
     ----------
-    stack : ndarray of shape (n_frames, height, width)
-        Input stack.
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     window : int, optional
-        Window size (number of frames). Default is 3.
+        Number of frames in the filter window. Default is 3.
 
-    Returns
-    -------
-    filtered : ndarray of shape (n_frames, height, width)
-        Stack after temporal median filtering.
+    Raises
+    ------
+    NotImplementedError
+        Always.
     """
     raise NotImplementedError
 
 
 def temporal_mean_filter(stack: np.ndarray, window: int = 3) -> np.ndarray:
     """
-    Apply mean filter across the time dimension.
+    Not implemented yet: mean filter along the time axis.
+
+    Planned for a future release; calling it raises ``NotImplementedError``. It
+    is not registered as a processing step.
 
     Parameters
     ----------
-    stack : ndarray of shape (n_frames, height, width)
-        Input stack.
+    stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     window : int, optional
-        Window size (number of frames). Default is 3.
+        Number of frames in the filter window. Default is 3.
 
-    Returns
-    -------
-    filtered : ndarray of shape (n_frames, height, width)
-        Stack after temporal mean filtering.
+    Raises
+    ------
+    NotImplementedError
+        Always.
     """
     raise NotImplementedError
 
@@ -995,11 +1033,16 @@ def temporal_mean_filter(stack: np.ndarray, window: int = 3) -> np.ndarray:
 
 def register_video_processing() -> dict[str, Callable]:
     """
-    Return a dictionary of registered video processing filters.
+    Return the built-in video processing functions.
 
-    Keys are names of the operations, values are the functions themselves.
-    These functions should take a 3D stack (n_frames, H, W) and return either
-    an ndarray (filtered stack) or a tuple (stack, metadata).
+    Each takes a 3D stack and returns either the processed stack or a tuple of
+    (stack, metadata).
+
+    Returns
+    -------
+    dict
+        Maps each step name (str) to its function, for example
+        ``"align_frames"`` to :func:`align_frames`.
     """
     return {
         "align_frames": align_frames,

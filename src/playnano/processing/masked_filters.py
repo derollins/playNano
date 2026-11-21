@@ -1,4 +1,12 @@
-"""Module for filtering AFM data in NumPy arrays with a boolean mask."""
+"""
+2D filters that fit or measure the background only, using a boolean mask.
+
+Each function takes a frame and a mask of the same shape, in which True marks
+foreground (features) and False marks background. The statistic or fit is
+computed from background pixels and then applied to the whole frame. The
+:class:`~playnano.processing.pipeline.ProcessingPipeline` uses these in place of
+the filters in :mod:`playnano.processing.filters` when a mask is active.
+"""
 
 import logging
 
@@ -13,27 +21,26 @@ logger = logging.getLogger(__name__)
 @versioned_filter("0.1.1")
 def remove_plane_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
-    Fit a 2D plane on background only and subtract it from the full image.
+    Fit a plane to the background pixels and subtract it from the whole image.
 
     Parameters
     ----------
-    data : np.ndarray
+    data : numpy.ndarray
         2D AFM image.
-
-    mask : np.ndarray
-        Boolean mask of same shape; True=foreground (excluded),
-        False=background (used to fit).
+    mask : numpy.ndarray
+        Boolean array with the same shape as ``data``. True marks foreground
+        pixels, which are left out of the fit; False marks background.
 
     Returns
     -------
-    np.ndarray
-        Plane-removed image.
+    numpy.ndarray
+        Image with the plane removed, as float64.
 
     Raises
     ------
     ValueError
-        If mask.shape != data.shape, or fewer than 3 background pixels are
-        finite.
+        If ``mask`` and ``data`` have different shapes, or fewer than 3
+        background pixels are finite.
 
     Notes
     -----
@@ -54,29 +61,31 @@ def polynomial_flatten_masked(
     order: int = 2,
 ) -> np.ndarray:
     """
-    Fit a 2D polynomial using background (mask==False) and subtract it.
+    Fit a 2D polynomial to the background pixels and subtract it from the whole image.
 
     Parameters
     ----------
-    data : np.ndarray
+    data : numpy.ndarray
         2D AFM image.
-
-    order : int
-        Polynomial order. Default order=2.
-
-    mask : np.ndarray
-        Boolean mask of same shape; True=foreground, False=background.
+    mask : numpy.ndarray
+        Boolean array with the same shape as ``data``. True marks foreground
+        pixels, which are left out of the fit; False marks background.
+    order : int, optional
+        Total order of the polynomial: 1 is a plane, 2 is quadratic. Default is 2.
 
     Returns
     -------
-    np.ndarray
-        Polynomial-flattened image.
+    numpy.ndarray
+        Image with the polynomial background removed, as float64.
 
     Raises
     ------
     ValueError
-        If mask.shape != data.shape, order is not a positive integer, or there
-        are fewer finite background pixels than polynomial terms.
+        If ``mask`` and ``data`` have different shapes, ``order`` is not a
+        positive integer, or fewer background pixels are finite than the
+        polynomial has terms.
+    RuntimeError
+        If the least-squares fit fails.
 
     Notes
     -----
@@ -96,24 +105,26 @@ def polynomial_flatten_masked(
 @versioned_filter("0.1.0")
 def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
     """
-    Compute each row's median using background pixels and subtract from each full row.
+    Subtract from each row the median of its background pixels.
 
     Parameters
     ----------
-    data : np.ndarray
+    data : numpy.ndarray
         2D AFM image.
-    mask : np.ndarray
-        Boolean mask of same shape; True=foreground, False=background.
+    mask : numpy.ndarray
+        Boolean array with the same shape as ``data``. True marks foreground
+        pixels, which are left out of the fit; False marks background.
 
     Returns
     -------
-    np.ndarray
-        Row-masked-alignment image.
+    numpy.ndarray
+        Row-aligned image, as float64. Rows with no background pixels are left
+        unchanged.
 
     Raises
     ------
     ValueError
-        If mask.shape != data.shape.
+        If ``mask`` and ``data`` have different shapes.
     """
     if mask.shape != data.shape:
         raise ValueError("Mask must have same shape as data.")
@@ -134,21 +145,27 @@ def row_median_align_masked(data: np.ndarray, mask: np.ndarray) -> np.ndarray:
 @versioned_filter("0.2.0")
 def zero_mean_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
-    Subtract the overall mean height to center the background around zero.
-
-    If a mask is provided, mean is computed only over background (mask == False).
+    Subtract the mean height of the background so it is centred on zero.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
-    mask : np.ndarray, optional
-        Boolean mask of same shape as data; True indicates region to exclude from mean.
+    data : numpy.ndarray
+        2D AFM image.
+    mask : numpy.ndarray, optional
+        Boolean array with the same shape as ``data``. True marks foreground
+        pixels, which are left out of the mean. If None, the mean of the whole
+        image is used and a warning is logged.
 
     Returns
     -------
-    np.ndarray
-        Zero-mean image.
+    numpy.ndarray
+        Zero-mean image, as float64.
+
+    Raises
+    ------
+    ValueError
+        If ``mask`` and ``data`` have different shapes, or every pixel is
+        masked.
     """
     img = data.astype(np.float64).copy()
     if mask is None:
@@ -175,22 +192,27 @@ def zero_mean_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
 @versioned_filter("0.1.0")
 def zero_median_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
     """
-    Subtract the overall median height to center the background around zero.
-
-    If a mask is provided, median is computed only over background (mask == False).
+    Subtract the median height of the background so it is centred on zero.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
-    mask : np.ndarray, optional
-        Boolean mask of same shape as data; True indicates regions to exclude
-        from the median.
+    data : numpy.ndarray
+        2D AFM image.
+    mask : numpy.ndarray, optional
+        Boolean array with the same shape as ``data``. True marks foreground
+        pixels, which are left out of the median. If None, the median of the
+        whole image is used and a warning is logged.
 
     Returns
     -------
-    np.ndarray
-        Zero-median image.
+    numpy.ndarray
+        Zero-median image, as float64.
+
+    Raises
+    ------
+    ValueError
+        If ``mask`` and ``data`` have different shapes, or every pixel is
+        masked.
     """
     img = data.astype(np.float64).copy()
     if mask is None:
@@ -210,7 +232,15 @@ def zero_median_masked(data: np.ndarray, mask: np.ndarray = None) -> np.ndarray:
 
 
 def register_mask_filters():
-    """Return list of masking options."""
+    """
+    Return the masked filters, keyed by the name of the unmasked filter they replace.
+
+    Returns
+    -------
+    dict
+        Maps each step name (str) to its function, for example
+        ``"remove_plane"`` to :func:`remove_plane_masked`.
+    """
     return {
         "remove_plane": remove_plane_masked,
         "polynomial_flatten": polynomial_flatten_masked,

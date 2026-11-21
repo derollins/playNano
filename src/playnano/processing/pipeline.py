@@ -1,11 +1,10 @@
-"""Module containing the ProcessingPipeline class for AFMImageStack processing.
+"""
+The ProcessingPipeline class, which runs processing steps on an AFMImageStack.
 
-This module provides ProcessingPipeline, which runs a sequence of
-mask/filter/method/plugin steps on an AFMImageStack. Each step's output is stored
-in `stack.processed` (for filters) or `stack.masks` (for masks), and detailed
-provenance (timestamps, parameters, step type, version info, keys) is recorded in
-`stack.provenance["processing"]`. Environment metadata at pipeline start is recorded in
-`stack.provenance["environment"]`.
+A pipeline runs masks, 2D filters, video processing and stack edits in order.
+It stores each step's output in ``stack.processed`` (or ``stack.masks`` for
+masks) and records what was done in ``stack.provenance["processing"]``, and the
+software environment in ``stack.provenance["environment"]``.
 """
 
 from __future__ import annotations
@@ -56,207 +55,166 @@ def _get_plugin_version(fn) -> str | None:
 
 class ProcessingPipeline:
     """
-    Orchestrates a sequence of masking and filtering steps on an AFMImageStack.
+    Run a sequence of processing steps on an AFMImageStack and record provenance.
 
-    This pipeline records outputs and detailed provenance for each step. Each step is
-    specified by a name and keyword arguments:
+    Steps are added with :meth:`add_filter`, :meth:`add_mask` and
+    :meth:`clear_mask`, and run in order by :meth:`run`. Each step is a name and
+    keyword arguments; the name decides what kind of step it is:
 
-    - ``"clear"``: resets any active mask.
-    - Mask steps: compute boolean masks stored in ``stack.masks[...]``.
-    - Filter/method/plugin steps: apply to the current data (and mask if present),
-      storing results in ``stack.processed[...]``.
+    - ``"clear"``: removes the current mask.
+    - A mask (see :mod:`~playnano.processing.mask_generators`): makes a boolean
+      mask, stored in ``stack.masks``. Masks made one after another are combined
+      with logical OR until the next ``clear``.
+    - A 2D filter (see :mod:`~playnano.processing.filters`): applied to every
+      frame. While a mask is active, the masked version from
+      :mod:`~playnano.processing.masked_filters` is used if there is one.
+    - A video processing step (see
+      :mod:`~playnano.processing.video_processing`): applied to the whole stack.
+    - A stack edit (see :mod:`~playnano.processing.stack_edit`): removes frames
+      and the matching frame metadata. It also clears the current mask.
+    - A method of :class:`~playnano.afm_stack.AFMImageStack`, or a filter or
+      video processing plugin registered under the ``playnano.filters`` or
+      ``playnano.video_processing`` entry point group.
 
-    Provenance for each step, including index, name, parameters, timestamp, step type,
-    version, keys, and summaries, is appended to
-    ``stack.provenance["processing"]["steps"]``. Additionally, a mapping from step
-    name to a list of snapshot keys is stored in
-    ``stack.provenance["processing"]["keys_by_name"]``. The final processed array
-    overwrites ``stack.data``, and environment metadata is captured once in
-    ``stack.provenance["environment"]``.
+    Parameters
+    ----------
+    stack : AFMImageStack
+        The stack to process. It is changed in place by :meth:`run`.
+
+    See Also
+    --------
+    playnano.afm_stack.AFMImageStack.apply : Run a list of steps in one call.
+
+    Examples
+    --------
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> from playnano.processing.pipeline import ProcessingPipeline
+    >>> stack = AFMImageStack.load_data("tests/resources/sample_0.h5-jpk")
+    >>> pipeline = ProcessingPipeline(stack)
+    >>> (pipeline.add_filter("remove_plane")
+    ...          .add_mask("mask_threshold", threshold=1.0)
+    ...          .add_filter("polynomial_flatten", order=2)
+    ...          .clear_mask())  # doctest: +ELLIPSIS
+    <playnano.processing.pipeline.ProcessingPipeline object at ...>
+    >>> result = pipeline.run()
+    >>> sorted(stack.processed)
+    ['raw', 'step_1_remove_plane', 'step_3_polynomial_flatten']
+    >>> sorted(stack.masks)
+    ['step_2_mask_threshold']
     """
 
     def __init__(self, stack: AFMImageStack) -> None:
-        """
-        Initialize the processing pipeline with an AFMImageStack instance.
-
-        Parameters
-        ----------
-        stack : AFMImageStack
-            The AFMImageStack instance to process.
-        """
+        """Store the stack to process; see the class description."""
         self.stack = stack
         self.steps: list[tuple[str, dict[str, Any]]] = []
 
     def add_mask(self, mask_name: str, **kwargs) -> ProcessingPipeline:
         """
-        Add a masking step to the pipeline.
+        Add a mask step.
 
         Parameters
         ----------
         mask_name : str
-            The name of the registered mask function to apply.
-
+            Name of the mask, for example ``"mask_threshold"``.
         **kwargs
-            Additional parameters passed to the mask function.
+            Arguments for the mask function, for example ``threshold=1.0``.
 
         Returns
         -------
         ProcessingPipeline
-            The pipeline instance (for method chaining).
+            This pipeline, so calls can be chained.
 
         Notes
         -----
-        If a mask is currently active (i.e. not cleared), this new mask will be
-        logically combined (ORed) with the existing one.
+        If a mask is already active, the new mask is combined with it by logical
+        OR. The step is identified by its name when the pipeline runs, so this does
+        the same as :meth:`add_filter`; the two names only make pipelines easier to
+        read.
         """
         self.steps.append((mask_name, kwargs))
         return self
 
     def add_filter(self, filter_name: str, **kwargs) -> ProcessingPipeline:
         """
-        Add a filter step to the pipeline.
+        Add a processing step: a 2D filter, video processing step, stack edit or plugin.
 
         Parameters
         ----------
         filter_name : str
-            The name of the registered filter function to apply.
-
+            Name of the step, for example ``"remove_plane"`` or ``"align_frames"``.
         **kwargs
-            Additional keyword arguments for the filter function.
+            Arguments for the step, for example ``order=2``.
 
         Returns
         -------
         ProcessingPipeline
-            The pipeline instance (for method chaining).
+            This pipeline, so calls can be chained.
 
         Notes
         -----
-        If a mask is currently active, the pipeline will attempt to use a
-        masked version of the filter (from `MASK_FILTERS_MAP`) if available.
-        Otherwise, the unmasked filter is applied to the whole dataset.
+        If a mask is active when a 2D filter runs, the masked version of the filter
+        is used if there is one; otherwise the filter is applied to the whole frame.
+        The step is identified by its name when the pipeline runs, so this does the
+        same as :meth:`add_mask`.
         """
         self.steps.append((filter_name, kwargs))
         return self
 
     def clear_mask(self) -> ProcessingPipeline:
         """
-        Add a step to clear the current mask.
+        Add a step that removes the current mask.
+
+        Filters after this step are applied to whole frames until a new mask is
+        added.
 
         Returns
         -------
         ProcessingPipeline
-            The pipeline instance (for method chaining).
-
-        Notes
-        -----
-        Calling this resets the masking state, so subsequent filters will be
-        applied to the entire dataset unless a new mask is added.
+            This pipeline, so calls can be chained.
         """
         self.steps.append(("clear", {}))
         return self
 
     def run(self) -> np.ndarray:
         """
-        Execute configured steps on the AFMImageStack, storing outputs and provenance.
+        Run the steps in order on the stack.
 
-        The pipeline iterates through all added mask, filter, and plugin steps in
-        order, applying each to the current data. Masks are combined if multiple are
-        applied before a filter. Each step's output is stored in `stack.processed`
-        (filters) or `stack.masks` (masks), and a detailed provenance record is saved
-        in `stack.provenance["processing"]`.
+        Before the first step, the current data is saved as
+        ``stack.processed["raw"]`` if there is no such entry yet. After the last step
+        the result replaces ``stack.data``.
 
-        Behavior
-        --------
+        Each step's output is stored under a key ``"step_<n>_<name>"``, where ``n``
+        counts from 1:
 
-        1. Record or update environment metadata via ``gather_environment_info()`` into
-        ``stack.provenance["environment"]``.
+        - 2D filters and video processing steps: in ``stack.processed``.
+        - Stack edits: in ``stack.processed``, always named ``"step_<n>_drop_frames"``.
+        - Masks: in ``stack.masks``. A mask combined with an earlier one is named
+          after both, for example ``"step_3_mask_threshold_mask_below_threshold"``.
 
-        2. Reset previous processing provenance under
-        ``stack.provenance["processing"]``, ensuring that keys ``"steps"`` (a list)
-        and ``"keys_by_name"`` (a dictionary) exist and are cleared.
+        The provenance of each run replaces that of any earlier run:
 
-        3. If not already present, snapshot the original data as ``"raw"`` in
-        ``stack.processed``.
-
-        4. Iterate over ``self.steps`` in order (1-based index) with
-        ``_run_single_step(...)``:
-
-        - Resolve the step type via ``stack._resolve_step(step_name)``, which returns
-          a tuple of the form (``step_type``, ``fn``).
-        - Record a timestamp (from ``utc_now_iso()``), index, name, parameters,
-          step type, function version (from ``fn.__version__`` or plugin lookup), and
-          module name.
-
-        - If ``step_type`` is ``"clear"``:
-            - Reset the current mask to ``None``.
-            - Record ``"mask_cleared": True`` in the provenance entry.
-
-        - If ``step_type`` is ``"mask"``:
-            - Call ``stack._execute_mask_step(fn, arr, **kwargs)`` to compute a boolean
-              mask array.
-            - If there is no existing mask, store it under a new key
-              ``step_<idx>_<mask_name>`` in ``stack.masks``.
-            - Otherwise, overlay it with the previous mask (logical OR) under a derived
-              key.
-            - Update the current mask and record ``"mask_key"`` and ``"mask_summary"``
-              in provenance.
-
-        - Elif ``step_type`` is ``filter``/``method``/``plugin``):
-            - Call ``stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)``
-              to obtain the new array.
-            - Store the result under
-              ``stack.processed["step_<idx>_<safe_name>"]`` and update ``arr``.
-            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.
-
-        - Elif ``step_type`` is ``video_filter``/``video_plugin``):
-            - Call ``stack._execute_video_processing_step(fn, arr, **kwargs)``
-              to obtain the new array.
-            - Store the result under
-              ``stack.processed["step_<idx>_<safe_name>"]`` and update ``arr``.
-            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.
-
-        - Elif ``step_type`` is ``stack_edit``:
-            - If the step name is ``drop_frames``, call it directly to get the new
-              array.
-            - Otherwise, call the stack edit function to get indices to drop, then
-              delegate to the ``drop_frames`` function to perform the edit. This
-              ensures that all stack edits are recorded in a consistent way in
-              provenance.
-            - Store the result under ``stack.processed["step_<idx>_drop_frames"]``
-              and update ``arr``.
-
-        - Else raise an warning for unrecognized step type.
-
-        5. After all steps, overwrite ``stack.data`` with ``arr``.
-
-        6. Build ``stack.provenance["processing"]["keys_by_name"]``, mapping each step
-        name to the list of stored keys (``processed_key`` or ``mask_key``) in order.
-
-        7. Return the final processed array.
+        - ``stack.provenance["processing"]["steps"]``: one record per step, with its
+          index, name, parameters, timestamp, step type, version, function module,
+          the key of its output (``processed_key`` or ``mask_key``) and a summary of
+          the output's shape and dtype. Video processing steps also store their
+          metadata.
+        - ``stack.provenance["processing"]["keys_by_name"]``: step name to the keys
+          of its outputs, in order.
+        - ``stack.provenance["environment"]``: Python, platform and package
+          versions.
 
         Returns
         -------
-        np.ndarray
-            The final processed data array, now also stored in `stack.data`.
+        numpy.ndarray
+            The processed stack, also stored in ``stack.data``.
 
         Raises
         ------
-        RuntimeError
-            If a step cannot be resolved or executed due to misconfiguration.
-
         ValueError
-            If overlaying a mask fails due to missing previous mask key (propagated).
-
+            If a step name is not recognised.
         Exception
-            Any exception raised by a step function is logged and re-raised.
-
-        Notes
-        -----
-        - The method ensures a raw copy of the original stack exists under
-          `stack.processed["raw"]`.
-        - Mask steps may be overlaid with previous masks using logical OR.
-        - Non-drop_frames stack_edit steps automatically delegate to drop_frames
-          to maintain provenance consistency.
+            Any error raised by a step is logged and raised again; steps already
+            run keep their outputs.
         """
         self._prepare_environment_and_provenance()
         arr = self._snapshot_raw_data()

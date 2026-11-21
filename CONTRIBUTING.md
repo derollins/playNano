@@ -249,6 +249,23 @@ Include the following sections as applicable:
 | `Notes` | For algorithmic detail, caveats, or references |
 | `Examples` | For public API; optional for simple cases |
 
+### Writing types and descriptions
+
+The documentation is built with `sphinx-build -n`, which warns about any type it cannot
+resolve. To keep the API reference readable and free of warnings:
+
+- Put only the type on the `name : type` line, for example `numpy.ndarray`, `str`,
+  `int, optional` or `list of int`. Write `numpy.ndarray`, not `np.ndarray` or `ndarray`,
+  so it links to the NumPy documentation.
+- Put shapes, units and defaults in the description, not the type:
+  "3D image stack of shape (n_frames, height, width), in nm. Default is 0."
+- Write a fixed set of string values as `{"pad", "crop", "crop_square"}`.
+- For a dict, write `dict` as the type and describe the keys and values in the text.
+- Leave a blank line before a bulleted list, and indent the list under its parameter.
+- Describe what the code does now. If you find a bug, report it rather than documenting
+  it as intended behaviour.
+- Check examples by running them: `pytest --doctest-modules src/playnano/<package>`.
+
 For **module-level docstrings**, follow the pattern established in `feature_detection.py`
 and `particle_tracking.py`: a one-line summary, an extended description, a `See Also`
 section linking related modules, a `.. versionadded::` directive, and an `Author` section.

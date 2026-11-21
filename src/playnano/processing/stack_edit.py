@@ -1,22 +1,19 @@
 """
-Functions for editing AFM image stacks by removing or selecting frames.
+Functions for removing or selecting frames of an AFM image stack.
 
-These functions are designed to be called by the ProcessingPipeline, which
-handles provenance tracking and updates to the AFMImageStack object. The
-functions here operate purely on data arrays or frame index lists.
+Only :func:`drop_frames` changes a stack. The other functions return the
+indices of the frames to drop; in a
+:class:`~playnano.processing.pipeline.ProcessingPipeline` these indices are
+passed to :func:`drop_frames`, so every edit is recorded the same way in the
+provenance. The pipeline also removes the matching entries from the stack's
+frame metadata and keeps a copy of the metadata from before the first edit.
 
-Only 'drop_frames' performs actual stack edits.
-Other registered stack_edit functions return indices to drop, which are
-then passed to 'drop_frames' to ensure consistent provenance tracking.
-
-Functions
----------
-- drop_frames : Remove specific frames from a 3D array.
-- drop_frame_range : Generate a list of frame indices to drop within a given range.
-- select_frames : Generate a list of frame indices to drop, keeping only the selected
-  frames.
-- drop_final_frames : Generate a list of frame indices to drop from the end of the
-  stack. Default is to drop the last frame (n_frames_to_drop=1).
+- :func:`drop_frames` removes the given frames.
+- :func:`drop_frame_range` drops the frames from ``start`` up to, but not
+  including, ``end``.
+- :func:`select_frames` keeps only the given frames.
+- :func:`drop_final_frames` drops frames from the end (by default, the last
+  one).
 """
 
 from typing import Callable
@@ -29,29 +26,25 @@ from playnano.utils.versioning import versioned_filter
 @versioned_filter("0.1.0")
 def drop_frames(data: np.ndarray, indices_to_drop: list[int]) -> np.ndarray:
     """
-    Remove specific frames from a 3D array.
+    Remove the given frames from a stack.
 
     Parameters
     ----------
-    data : np.ndarray
-        3D array of shape (n_frames, height, width) representing the image stack.
+    data : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     indices_to_drop : list of int
-        List of frame indices to remove from the stack.
+        Indices of the frames to remove. Duplicates are ignored; negative
+        indices are not allowed.
 
     Returns
     -------
-    np.ndarray
-        New array with the specified frames removed.
+    numpy.ndarray
+        A new array without the given frames. ``data`` is not changed.
 
     Raises
     ------
     ValueError
-        If any provided indices are out of bounds or if `data` is not 3D.
-
-    Notes
-    -----
-    - The function does not modify the input array in place.
-    - The ProcessingPipeline is responsible for updating metadata and provenance.
+        If ``data`` is not 3D or an index is outside ``0 .. n_frames - 1``.
     """
     if data.ndim != 3:
         raise ValueError(f"Expected a 3D array, got {data.ndim}D.")
@@ -71,26 +64,27 @@ def drop_frames(data: np.ndarray, indices_to_drop: list[int]) -> np.ndarray:
 @versioned_filter("0.1.0")
 def drop_frame_range(data: np.ndarray, start: int, end: int) -> list[int]:
     """
-    Generate indices to drop within a given range of frames.
+    Return the indices of a range of frames to drop.
 
     Parameters
     ----------
-    data : np.ndarray
-        3D array of shape (n_frames, height, width) representing the image stack.
+    data : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     start : int
-        Starting index of the range (inclusive).
+        First frame to drop (inclusive).
     end : int
-        Ending index of the range (exclusive).
+        Frame after the last one to drop (exclusive).
 
     Returns
     -------
     list of int
-        List of indices that should be dropped.
+        ``[start, start + 1, ..., end - 1]``.
 
     Raises
     ------
     ValueError
-        If the range is invalid or out of bounds.
+        If ``data`` is not 3D, ``start < 0``, ``end > n_frames`` or
+        ``start >= end``.
     """
     if data.ndim != 3:
         raise ValueError(f"Expected a 3D array, got {data.ndim}D.")
@@ -104,24 +98,24 @@ def drop_frame_range(data: np.ndarray, start: int, end: int) -> list[int]:
 @versioned_filter("0.1.0")
 def select_frames(data: np.ndarray, keep_indices: list[int]) -> list[int]:
     """
-    Generate a list of frame indices to drop, keeping only the selected frames.
+    Return the indices of the frames to drop so that only the given frames are kept.
 
     Parameters
     ----------
-    data : np.ndarray
-        3D array of shape (n_frames, height, width) representing the image stack.
+    data : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
     keep_indices : list of int
-        Indices of frames to retain in the stack.
+        Indices of the frames to keep. Duplicates are ignored.
 
     Returns
     -------
     list of int
-        List of frame indices that should be dropped.
+        Sorted indices of every other frame.
 
     Raises
     ------
     ValueError
-        If `keep_indices` contains out-of-range values.
+        If ``data`` is not 3D or an index is outside ``0 .. n_frames - 1``.
     """
     if data.ndim != 3:
         raise ValueError(f"Expected a 3D array, got {data.ndim}D.")
@@ -138,25 +132,25 @@ def select_frames(data: np.ndarray, keep_indices: list[int]) -> list[int]:
 @versioned_filter("0.1.0")
 def drop_final_frames(data: np.ndarray, n_frames_to_drop: int = 1) -> list[int]:
     """
-    Generate a list of frame indices to drop from the end of the stack.
+    Return the indices of the last frames of a stack, to drop.
 
     Parameters
     ----------
-    data : np.ndarray
-        3D array of shape (n_frames, height, width) representing the image stack.
-    n_frames_to_drop : int
-        Number of frames to drop from the end of the stack.
+    data : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
+    n_frames_to_drop : int, optional
+        Number of frames to drop from the end. Default is 1.
 
     Returns
     -------
     list of int
-        List of frame indices that should be dropped. By default, this will drop
-        the last frame (n_frames_to_drop=1).
+        Indices of the last ``n_frames_to_drop`` frames (empty if it is 0).
 
     Raises
     ------
     ValueError
-        If `n_frames_to_drop` is negative or exceeds the number of frames.
+        If ``data`` is not 3D, or ``n_frames_to_drop`` is negative or larger
+        than the number of frames.
     """
     if data.ndim != 3:
         raise ValueError(f"Expected a 3D array, got {data.ndim}D.")
@@ -170,13 +164,13 @@ def drop_final_frames(data: np.ndarray, n_frames_to_drop: int = 1) -> list[int]:
 
 def register_stack_edit_processing() -> dict[str, Callable]:
     """
-    Return a dictionary of registered stack editing processing filters.
+    Return the built-in stack edit functions.
 
-    Keys are names of the operations, values are the functions themselves.
-    drop_frames is the operational function takes a 3D stack (n_frames,
-    H, W) and a list of indices and returns a ndarray. drop_frame_range,
-    select_frames and drop_final_frames are helper functions that return
-    lists of indices to drop which can be passed to drop_frames.
+    Returns
+    -------
+    dict
+        Maps each step name (str) to its function, for example
+        ``"drop_frames"`` to :func:`drop_frames`.
     """
     return {
         "drop_frames": drop_frames,

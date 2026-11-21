@@ -1,4 +1,12 @@
-"""Module for applying flattening and filtering to AFM images in Numpy arrays."""
+"""
+2D filters for flattening and smoothing AFM frames.
+
+Each filter takes one frame as a 2D :class:`numpy.ndarray` and returns the
+result; the input is not changed. The
+:class:`~playnano.processing.pipeline.ProcessingPipeline` applies them to every
+frame of a stack. Masked versions of the flattening filters are in
+:mod:`playnano.processing.masked_filters`.
+"""
 
 import logging
 
@@ -92,13 +100,13 @@ def row_median_align(data: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
+    data : numpy.ndarray
+        2D AFM image.
 
     Returns
     -------
-    np.ndarray
-        Row-aligned image.
+    numpy.ndarray
+        Row-aligned image, as float64.
     """
     aligned = data.astype(np.float64).copy()
     # Compute median for each row
@@ -111,19 +119,24 @@ def row_median_align(data: np.ndarray) -> np.ndarray:
 @versioned_filter("0.1.1")
 def remove_plane(data: np.ndarray) -> np.ndarray:
     """
-    Fit a 2D plane to the image by least squares and subtract it.
+    Fit a plane to the image by least squares and subtract it.
 
-    Uses a 2D plane (z = ax + by + c) to remove overall tilt.
+    The plane ``z = a*x + b*y + c`` removes the overall tilt of the frame.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
+    data : numpy.ndarray
+        2D AFM image.
 
     Returns
     -------
-    np.ndarray
-        Plane-removed image.
+    numpy.ndarray
+        Image with the plane removed, as float64.
+
+    Raises
+    ------
+    ValueError
+        If fewer than 3 pixels are finite.
 
     Notes
     -----
@@ -138,25 +151,30 @@ def remove_plane(data: np.ndarray) -> np.ndarray:
 @versioned_filter("0.2.0")
 def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
     """
-    Subtract a 2D polynomial surface of given order to flatten AFM image data.
+    Fit a 2D polynomial surface to the image and subtract it.
+
+    Removes tilt (order 1) and curvature (order 2 and above) from the frame.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
-    order : int
-        Polynomial order for surface fitting (e.g., 1 for linear, 2 for quadratic).
+    data : numpy.ndarray
+        2D AFM image.
+    order : int, optional
+        Total order of the polynomial: 1 is a plane, 2 is quadratic. Default is 2.
 
     Returns
     -------
-    np.ndarray
-        Flattened image with polynomial background removed.
+    numpy.ndarray
+        Image with the polynomial background removed, as float64.
 
     Raises
     ------
     ValueError
-        If data is not a 2D array, if order is not a positive integer, or if
-        there are fewer finite pixels than polynomial terms.
+        If ``data`` is not a 2D array, if ``order`` is not a positive integer,
+        or if fewer pixels are finite than the polynomial has terms
+        (``(order + 1) * (order + 2) / 2``).
+    RuntimeError
+        If the least-squares fit fails.
 
     Notes
     -----
@@ -178,19 +196,22 @@ def polynomial_flatten(data: np.ndarray, order: int = 2) -> np.ndarray:
 @versioned_filter("0.2.0")
 def zero_mean(data: np.ndarray) -> np.ndarray:
     """
-    Subtract the overall mean height to center data around zero.
+    Subtract the mean height of the image so it is centred on zero.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
-    mask : np.ndarray, optional
-        Boolean mask of same shape as data; True indicates region to exclude from mean.
+    data : numpy.ndarray
+        2D AFM image.
 
     Returns
     -------
-    np.ndarray
-        Zero-mean image.
+    numpy.ndarray
+        Zero-mean image, as float64.
+
+    See Also
+    --------
+    playnano.processing.masked_filters.zero_mean_masked :
+        The same, with the mean taken over background pixels only.
     """
     img = data.astype(np.float64).copy()
     mean_val = np.mean(img)
@@ -201,17 +222,22 @@ def zero_mean(data: np.ndarray) -> np.ndarray:
 @versioned_filter("0.1.0")
 def zero_median(data: np.ndarray) -> np.ndarray:
     """
-    Subtract the overall median height to center the background around zero.
+    Subtract the median height of the image so it is centred on zero.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
+    data : numpy.ndarray
+        2D AFM image.
 
     Returns
     -------
-    np.ndarray
-        Zero-median image.
+    numpy.ndarray
+        Zero-median image, as float64.
+
+    See Also
+    --------
+    playnano.processing.masked_filters.zero_median_masked :
+        The same, with the median taken over background pixels only.
     """
     img = data.astype(np.float64).copy()
     median_val = np.median(img)
@@ -221,19 +247,23 @@ def zero_median(data: np.ndarray) -> np.ndarray:
 @versioned_filter("0.1.0")
 def gaussian_filter(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     """
-    Apply a Gaussian low-pass filter to smooth high-frequency noise.
+    Smooth the image with a Gaussian filter to reduce high-frequency noise.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
-    sigma : float
-        Standard deviation for Gaussian kernel, in pixels.
+    data : numpy.ndarray
+        2D AFM image.
+    sigma : float, optional
+        Standard deviation of the Gaussian kernel, in pixels. Default is 1.0.
 
     Returns
     -------
-    np.ndarray
-        Smoothed image.
+    numpy.ndarray
+        Smoothed image, with the same dtype as ``data``.
+
+    See Also
+    --------
+    scipy.ndimage.gaussian_filter : The function used.
     """
     return ndimage.gaussian_filter(data, sigma=sigma)
 
@@ -241,23 +271,31 @@ def gaussian_filter(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 @versioned_filter("0.1.0")
 def vertical_flip(data: np.ndarray) -> np.ndarray:
     """
-    Vertically flip an image, reversing the row order.
+    Flip the image vertically, reversing the order of the rows.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D AFM image data.
+    data : numpy.ndarray
+        2D AFM image.
 
     Returns
     -------
-    np.ndarray
-        Vertically flipped image.
+    numpy.ndarray
+        Flipped image (a view of ``data``).
     """
     return np.flipud(data)
 
 
 def register_filters():
-    """Return list of filter options."""
+    """
+    Return the built-in 2D filters.
+
+    Returns
+    -------
+    dict
+        Maps each step name (str) to its function, for example
+        ``"remove_plane"`` to :func:`remove_plane`.
+    """
     return {
         "remove_plane": remove_plane,
         "row_median_align": row_median_align,
