@@ -1,8 +1,4 @@
-"""
-Frame-based post-processing helpers.
-
-E.g. summarize per-frame statistics or produce histograms.
-"""
+"""Per-frame summaries of detected features, as a table or histogram."""
 
 from pathlib import Path
 from typing import Optional, Sequence
@@ -15,24 +11,28 @@ def frame_summary_to_dataframe(
     features_per_frame: Sequence[Sequence[dict]],
 ) -> pd.DataFrame:
     """
-    Build a DataFrame with one row per frame.
-
-    Summarises number of features, total area, mean intensity, etc.
+    Summarise the features detected in each frame, one row per frame.
 
     Parameters
     ----------
-    features_per_frame : list of lists of dict
-        As returned by `FeatureDetectionModule.run()["features_per_frame"]`.
+    features_per_frame : list of list of dict
+        The ``"features_per_frame"`` output of a feature detection module,
+        such as ``feature_detection``. Each feature dict must have ``"area"``
+        and ``"mean"``.
 
     Returns
     -------
-    pd.DataFrame
-        Columns:
-          - frame_index (int)
-          - n_features  (int)
-          - total_area  (int)
-          - mean_area   (float)
-          - mean_intensity (float)
+    pandas.DataFrame
+        One row per frame, with the columns:
+
+        - ``frame_index`` (int): from 0.
+        - ``n_features`` (int): number of features.
+        - ``total_area`` and ``mean_area`` (float): feature area, in pixels.
+        - ``mean_intensity`` (float): the average of the features' mean
+          heights, usually in nm.
+
+        ``mean_area`` and ``mean_intensity`` are 0.0 for a frame with no
+        features.
     """
     rows = []
     for i, feats in enumerate(features_per_frame):
@@ -60,22 +60,25 @@ def plot_frame_histogram(
     bins: int = 20,
 ) -> plt.Axes:
     """
-    Plot a histogram of a per-frame summary metric.
+    Plot a histogram of one column of a per-frame summary.
 
     Parameters
     ----------
     df : pandas.DataFrame
-        As returned by `frame_summary_to_dataframe`.
+        A table from :func:`frame_summary_to_dataframe`.
     column : str
-        Which column to histogram (e.g. 'n_features').
-    ax : matplotlib Axes, optional
-    save_to : Path, optional
-    bins : int
-        Number of histogram bins.
+        The column to plot, for example ``"n_features"``.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, a new figure is created. Default is None.
+    save_to : str or pathlib.Path, optional
+        If given, save the figure to this file at 150 dpi. Default is None.
+    bins : int, optional
+        Number of histogram bins. Default is 20.
 
     Returns
     -------
-    ax : matplotlib Axes
+    matplotlib.axes.Axes
+        The axes drawn on.
     """
     if ax is None:
         fig, ax = plt.subplots()

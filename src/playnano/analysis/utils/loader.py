@@ -1,8 +1,8 @@
 """
-Module for resolving and instantiating analysis modules.
+Find an analysis module by name and create it.
 
-Handles lookup in the built-in registry and via entry points
-registered under the group 'playnano.analysis'.
+Built-in modules are looked up first, then plugins registered under the
+``playnano.analysis`` entry point group.
 """
 
 from __future__ import annotations
@@ -15,24 +15,24 @@ from playnano.analysis.base import AnalysisModule
 
 def load_analysis_module(name: str) -> AnalysisModule:
     """
-    Load and instantiate an AnalysisModule by name.
+    Create the analysis module with the given name.
 
     Parameters
     ----------
     name : str
-        Name of the analysis module to load.
+        The module's name, for example ``"feature_detection"``.
 
     Returns
     -------
     AnalysisModule
-        Instantiated module.
+        A new instance of the module.
 
     Raises
     ------
     ValueError
-        If the module cannot be found.
+        If no built-in module or plugin has this name.
     TypeError
-        If the loaded object is not a subclass of AnalysisModule.
+        If the plugin is not an :class:`~playnano.analysis.base.AnalysisModule`.
     """
     cls = BUILTIN_ANALYSIS_MODULES.get(name)
     if cls is None:

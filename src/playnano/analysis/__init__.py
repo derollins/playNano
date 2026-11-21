@@ -1,4 +1,14 @@
-"""Public package initialization. Analysis modules live here."""
+"""
+Analysis of AFM image stacks: feature detection, tracking, clustering and more.
+
+Analysis steps are subclasses of :class:`~playnano.analysis.base.AnalysisModule`
+and are run in order by :class:`~playnano.analysis.pipeline.AnalysisPipeline`.
+
+Attributes
+----------
+BUILTIN_ANALYSIS_MODULES : dict
+    Maps the name of each built-in analysis module (str) to its class.
+"""
 
 # Import built-in modules so they register or can be referenced
 from .modules.count_nonzero import CountNonzeroModule

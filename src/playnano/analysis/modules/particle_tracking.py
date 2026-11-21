@@ -22,16 +22,6 @@ playnano.analysis.modules.feature_detection : Mask based particle detection meth
 playnano.analysis.modules.log_blob_detection : LoG-based particle detection method.
 
 .. versionadded:: 0.2.0
-
-Author
-------
-Daniel E. Rollins (d.e.rollins@leeds.ac.uk) / GitHub: derollins
-
-AI Transparency Note
---------------------
-AI-based tools were used for limited typing/formatting assistance
-and for debugging, refactoring, and documentation suggestions. All code paths,
-algorithms, and final behaviour were reviewed and validated by the author.
 """
 
 from typing import Any, Optional, Sequence

@@ -268,7 +268,9 @@ resolve. To keep the API reference readable and free of warnings:
 
 For **module-level docstrings**, follow the pattern established in `feature_detection.py`
 and `particle_tracking.py`: a one-line summary, an extended description, a `See Also`
-section linking related modules, a `.. versionadded::` directive, and an `Author` section.
+section linking related modules, and a `.. versionadded::` directive. Don't add author or
+AI-use sections to docstrings: authors are credited in `CITATION.cff` and the git history,
+and AI use is disclosed in the pull request (see [AI Transparency](#ai-transparency)).
 
 ---
 
@@ -392,13 +394,10 @@ behaviour.
 AI-based tools may be used during development for tasks such as typing assistance, formatting,
 debugging and refactoring suggestions, and documentation drafting.
 
-Any use of AI tools in contributions to playNano should be disclosed in one of the following
-ways:
-
-- A note in the module-level docstring of any file where AI tools contributed substantially
-  to the logic or structure (see existing examples in `feature_detection.py` and
-  `particle_tracking.py`)
-- A note in the pull request description
+Any use of AI tools in a contribution to playNano should be disclosed in the pull request
+description: say which tools were used and for what. Don't put AI-use notes in docstrings or
+source files; they go out of date as the code changes, and the pull request keeps a
+permanent record of each change.
 
 AI-generated code must be reviewed, tested, and validated by the contributor before
 submission. The contributor is responsible for the correctness of all submitted code
