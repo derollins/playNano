@@ -1,4 +1,12 @@
-"""Common utility functions for analysis."""
+"""
+Convert analysis results for saving as JSON or HDF5.
+
+- :class:`NumpyEncoder` and :func:`safe_json_dumps` write NumPy values as JSON.
+- :func:`sanitize_analysis_for_logging` and :func:`make_json_safe` make a
+  smaller, JSON-safe copy in which arrays are summarised.
+- :func:`export_to_hdf5` and :func:`load_analysis_from_hdf5` save and reload a
+  record in full.
+"""
 
 import json
 import logging
@@ -13,34 +21,38 @@ logger = logging.getLogger(__name__)
 
 class NumpyEncoder(json.JSONEncoder):
     """
-    Custom JSON encoder for serializing NumPy ndarray and scalar objects.
+    JSON encoder that also writes NumPy arrays, NumPy numbers and functions.
 
-    This encoder converts NumPy arrays to native Python lists and NumPy scalar
-    types (e.g., float32, int64) to their native Python equivalents so they can be
-    serialized by the standard `json` module. It can be used with `json.dump`
-    or `json.dumps` by passing it as the `cls` argument.
+    Arrays become (nested) lists, NumPy integers and floats become Python numbers,
+    and functions become the text ``"<function name>"``. Pass it as ``cls`` to
+    :func:`json.dump` or :func:`json.dumps`.
 
-    Example:
-        json.dump(data, file, cls=NumpyEncoder)
+    Examples
+    --------
+    >>> import json
+    >>> import numpy as np
+    >>> json.dumps({"a": np.arange(3), "b": np.float32(0.5)}, cls=NumpyEncoder)
+    '{"a": [0, 1, 2], "b": 0.5}'
     """
 
     def default(self, obj):
         """
-        Override default method to convert NumPy arrays and scalar types.
+        Return a JSON-serialisable form of ``obj``.
 
-        Convert NumPy arrays ad scalar types to JSON-serializable forms.
+        Parameters
+        ----------
+        obj : Any
+            A value the standard encoder cannot write.
 
-        Parameters:
-            obj (Any): The object to be serialized.
+        Returns
+        -------
+        list or int or float or str
+            The converted value.
 
-        Returns:
-            A JSON-serializable version of the object. If the object is a NumPy
-            ndarray, it is converted to a list. If the object is a NumPy scalar
-            (e.g., np.float32, np.int64), it is converted to the equivalent Python
-            scalar. Otherwise, the superclass's default method is used.
-
-        Raises:
-            TypeError: If the object cannot be serialized by the superclass.
+        Raises
+        ------
+        TypeError
+            If ``obj`` is none of the types above (for example, a NumPy bool).
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -54,7 +66,19 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 def safe_json_dumps(obj):
-    """Serialize an object to JSON safely, falling back to str() on failure."""
+    """
+    Return ``obj`` as JSON text, or as ``str(obj)`` if it cannot be written as JSON.
+
+    Parameters
+    ----------
+    obj : Any
+        The value to convert, written with :class:`NumpyEncoder`.
+
+    Returns
+    -------
+    str
+        The JSON text, or ``str(obj)``. In that case a message is printed.
+    """
     try:
         return json.dumps(obj, cls=NumpyEncoder)
     except TypeError as e:
@@ -72,18 +96,31 @@ def export_to_hdf5(
     record: Mapping[str, Any], out_path: Path, dataset_name: str = "analysis_record"
 ) -> None:
     """
-    Save a nested dict/list/array structure to HDF5 with full breakdown.
+    Save nested dicts, lists and arrays, such as an analysis record, to HDF5.
 
-    - Dicts become groups, one subgroup per key. Keys are stored as strings.
-    - Lists of numbers, or of strings, become a ``values`` dataset.
-    - Other lists become subgroups ``item_0``, ``item_1``, etc.
-    - NumPy arrays become a ``values`` dataset with their original dtype.
-    - Scalars and strings are stored in a ``value`` attribute.
+    Nothing is summarised, so :func:`load_analysis_from_hdf5` returns the same
+    structure. Each value becomes an HDF5 group:
 
-    Each group also records the type it came from (attribute ``_playnano_type``),
-    so :func:`load_analysis_from_hdf5` returns the same structure: ``None``,
-    empty dicts, float lists and keys named ``values`` all survive the round trip.
-    Tuples and sets are stored as lists.
+    - dicts: one subgroup per key, with keys stored as str;
+    - lists of numbers, or of str, and arrays: a ``values`` dataset;
+    - other lists: subgroups ``item_0``, ``item_1`` and so on;
+    - numbers, str and other values: a ``value`` attribute (values HDF5 cannot
+      store are saved as ``str(value)``);
+    - None: an empty group.
+
+    Each group's ``_playnano_type`` attribute records the type it came from.
+    Tuples and sets are saved as lists.
+
+    Parameters
+    ----------
+    record : dict
+        The structure to save, for example the record returned by
+        :meth:`~playnano.analysis.pipeline.AnalysisPipeline.run`.
+    out_path : str or pathlib.Path
+        The file to write; overwritten if it exists. Missing folders are
+        created.
+    dataset_name : str, optional
+        Name of the top-level group. Default is ``"analysis_record"``.
     """
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -228,38 +265,29 @@ def load_analysis_from_hdf5(
     file_path: str | Path, dataset_name: str = "analysis_record"
 ) -> dict:
     """
-    Load a nested dict/list/NumPy array structure from an HDF5 file.
-
-    This reverses `export_to_hdf5`. Files written by this version record the type
-    of every value, so dicts, lists, arrays, ``None`` and scalars come back as they
-    were saved. Files written by earlier versions have no type records; for those,
-    integer-valued floats are converted to Python ints (for use as list indices),
-    and ``None`` and empty dicts cannot be told apart from other values.
+    Load a structure saved by :func:`export_to_hdf5`.
 
     Parameters
     ----------
-    file_path : str or Path
-        Path to the HDF5 file containing the saved analysis dictionary.
-    dataset_name : str
-        Name of the top-level group in the HDF5 file where the dictionary is stored.
-        Default is 'analysis_record'.
+    file_path : str or pathlib.Path
+        The HDF5 file.
+    dataset_name : str, optional
+        Name of the top-level group. Default is ``"analysis_record"``.
 
     Returns
     -------
-    record : dict
-        Nested dictionary reconstructed from the HDF5 file. The structure preserves:
-        - dicts as dicts
-        - lists as lists
-        - NumPy arrays as np.ndarray
-        - strings as str
-        - empty lists as []
-        - primitive values stored in attributes
-        - integer-valued floats converted to Python int recursively
+    dict
+        The saved structure, with dicts, lists, arrays, numbers, str and None
+        as they were saved (tuples and sets come back as lists).
+
+        Files written by playNano before 0.5.2 do not record types. For these,
+        the type is inferred from the layout: integer-valued floats become
+        ints, and None and empty dicts cannot be recovered.
 
     Raises
     ------
     KeyError
-        If `dataset_name` is not found in the HDF5 file.
+        If the file has no group called ``dataset_name``.
     """
 
     with h5py.File(file_path, "r") as h5file:
@@ -287,28 +315,32 @@ def sanitize_analysis_for_logging(
     obj, path="root", _depth=0, _max_depth=MAX_SANITIZE_DEPTH
 ):
     """
-    Return a JSON-safe version of any object, for the analysis JSON output.
+    Return a JSON-safe copy of ``obj`` in which arrays are summarised.
 
-    Dicts, lists, tuples and sets are converted recursively. NumPy arrays are
-    replaced by a summary (shape, dtype, min, max, mean), functions by a
-    placeholder string, and NumPy scalars by Python scalars. Numbers and
-    strings are always kept, however deeply nested.
+    Dicts, lists, tuples and sets are converted recursively, with dict keys
+    made JSON-safe. Arrays are replaced by a summary dict with the keys
+    ``"_array_shape"``, ``"_array_dtype"`` and ``"_summary"`` (``min``, ``max``
+    and ``mean``, or None for an empty array). Functions become the text
+    ``"<function name>"``, NumPy numbers become Python numbers and bytes are
+    decoded as UTF-8.
 
     Parameters
     ----------
     obj : Any
-        The object to convert.
+        The value to convert.
     path : str, optional
-        Location of ``obj`` in the record, used in log messages.
-    _depth, _max_depth : int
-        Internal recursion counters. A container nested deeper than
-        ``_max_depth`` is replaced by a placeholder string and a warning is
+        Location of ``obj`` in the record, used in log messages. Default is
+        ``"root"``.
+    _depth, _max_depth : int, optional
+        Used internally. A container nested more than ``_max_depth`` levels
+        deep (default 50) is replaced by a placeholder text, and a warning is
         logged.
 
     Returns
     -------
     Any
-        A structure of dicts, lists, numbers, strings, booleans and None.
+        The converted value, made only of dicts, lists, str, numbers, bools and
+        None. Other objects are returned unchanged.
     """
     import numpy as np
 
@@ -366,22 +398,31 @@ def sanitize_analysis_for_logging(
 
 def make_json_safe(record: dict) -> dict:
     """
-    Make a AnalysisRecord safe for export through JSON dumping.
+    Return a JSON-safe copy of an analysis record, with arrays summarised.
 
-    Prepare an AnalysisRecord for JSON dumping by stripping out or summarizing
-    any non-JSON-serializable entries.
+    Runs :func:`sanitize_analysis_for_logging` on each part of the record.
 
     Parameters
     ----------
     record : dict
-        The full AnalysisRecord returned by AnalysisPipeline.run().
+        The record returned by
+        :meth:`~playnano.analysis.pipeline.AnalysisPipeline.run`.
 
     Returns
     -------
     dict
-        A new dict with the same top-level keys ("environment", "analysis",
-        "provenance"), but with each value run through your sanitizers so
-        that they contain only numbers, strings, lists, and dicts.
+        A new dict with the keys ``"environment"``, ``"analysis"`` and
+        ``"provenance"``.
+
+    Raises
+    ------
+    KeyError
+        If one of those keys is missing.
+
+    See Also
+    --------
+    playnano.utils.io_utils.make_json_safe : A different function with the same
+        name, used for stack provenance.
     """
     return {
         "environment": sanitize_analysis_for_logging(record["environment"]),

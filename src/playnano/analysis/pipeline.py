@@ -1,4 +1,10 @@
-"""Module for the AnalysisPipeline class for orchastration of analysis workflows."""
+"""
+Run a sequence of analysis modules on an AFM image stack.
+
+:class:`AnalysisPipeline` runs analysis modules (subclasses of
+:class:`~playnano.analysis.base.AnalysisModule`) in order and records their
+outputs and provenance. It is what ``playnano analyze`` uses.
+"""
 
 import importlib.metadata as metadata
 import logging
@@ -20,68 +26,59 @@ logger = logging.getLogger(__name__)
 
 AnalysisRecord = dict[str, Any]
 """
-Structured output of an AnalysisPipeline run.
-
-This record contains:
-- environment : dict
-    Metadata about the runtime environment (e.g. Python version, library versions).
-- analysis : dict
-    Results of each analysis module run, with keys 'step_<n>_<module_name>'.
-- provenance : dict
-    Metadata about the provenance of the analysis steps, with keys:
-      - steps : list of dict
-          Ordered list of executed analysis steps. Each entry contains:
-            - index : int
-                1-based index of the step in the pipeline.
-            - name : str
-                The name of the analysis module used.
-            - params : dict
-                Parameters passed to the module.
-            - timestamp : str
-                ISO 8601 UTC timestamp when the step was executed.
-            - version : str or None
-                Optional version string provided by the module instance.
-            - analysis_key : str
-                Key under which this step's outputs are stored in the `analysis` dict.
-      - results_by_name : dict[str, list]
-          Maps module names to lists of outputs from each occurrence.
-      - frame_times : list[float] or None
-          Timestamps for each frame in the stack, from `stack.get_frame_times()`,
-          or None if unavailable.
-
-Examples
---------
->>> pipeline = AnalysisPipeline()
->>> pipeline.add("feature_detection", threshold=5)
->>> record = pipeline.run(stack, log_to="out.json")
->>> # Access outputs:
->>> record["analysis"]["step_1_feature_detection"]["summary"]
-{'total_features': 23, 'avg_per_frame': 3.8}
->>> # Inspect provenance:
->>> record["provenance"]["results_by_name"]["feature_detection"][0]["summary"]
-{'total_features': 23, 'avg_per_frame': 3.8}
+Type of the record :meth:`AnalysisPipeline.run` returns: a dict with the keys
+``"environment"``, ``"analysis"`` and ``"provenance"``, described there.
 """
 
 
 class AnalysisPipeline:
     """
-    Orchestrates a sequence of analysis steps on an AFMImageStack.
+    Run a list of analysis modules on a stack, in order.
 
-    Each step corresponds to an AnalysisModule (built-in or entry-point), invoked
-    in order with the given parameters. Outputs of each step are stored in
-    `stack.analysis` under keys 'step_<n>_<module_name>'. Detailed provenance
-    (timestamps, parameters, version, linking keys) is recorded in
-    `stack.provenance["analysis"]`. The run() method returns a dict containing
-    environment info, the `analysis` dict, and its `provenance`.
+    Add steps with :meth:`add`, then call :meth:`run`. Each step names an
+    analysis module, either a built-in one (see
+    :data:`playnano.analysis.BUILTIN_ANALYSIS_MODULES`) or a plugin registered
+    under the ``playnano.analysis`` entry point group. Each step's outputs are
+    stored in ``stack.analysis["step_<n>_<module_name>"]``, and its parameters,
+    time and module version in ``stack.provenance["analysis"]``.
+
+    Attributes
+    ----------
+    steps : list of tuple
+        The steps added, as ``(module_name, params)`` pairs.
+
+    Examples
+    --------
+    Detect a particle that moves across three frames, then link it into a
+    track:
+
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> from playnano.analysis.pipeline import AnalysisPipeline
+    >>> data = np.zeros((3, 64, 64))
+    >>> for t in range(3):
+    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],
+    ... )
+    >>> pipeline = AnalysisPipeline()
+    >>> pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)
+    >>> pipeline.add("particle_tracking", max_distance=5)
+    >>> record = pipeline.run(stack)
+    >>> list(record["analysis"])
+    ['step_1_feature_detection', 'step_2_particle_tracking']
+    >>> record["analysis"]["step_1_feature_detection"]["summary"]
+    {'total_frames': 3, 'total_features': 3, 'avg_features_per_frame': 1.0}
+    >>> record["analysis"]["step_2_particle_tracking"]["n_tracks"]
+    1
     """
 
     def __init__(self):
-        """
-        Initialize an empty analysis pipeline.
-
-        Steps are stored as a list of (module_name, params) tuples.
-        Modules are loaded on demand using an internal registry or entry points.
-        """
+        """Create an empty pipeline."""
         # Each entry: (module_name: str, params:   dict)
         self.steps: list[tuple[str, dict[str, Any]]] = []
         # Cache instantiated modules: name -> instance
@@ -89,32 +86,30 @@ class AnalysisPipeline:
 
     def add(self, module_name: str, **params) -> None:
         """
-        Add an analysis module to the pipeline.
+        Add a step that runs an analysis module.
 
         Parameters
         ----------
         module_name : str
-            The name of the analysis module to add (must be registered).
+            Name of the analysis module, for example ``"feature_detection"``. It is
+            not checked until :meth:`run`.
         **params
-            Keyword arguments passed to the module's `run()` method.
-
-        Returns
-        -------
-        None
+            Keyword arguments passed to the module's ``run`` method. If
+            ``mask_fn`` is a str, it is replaced by the masking function of that
+            name from :mod:`playnano.processing.mask_generators` when the step runs.
 
         Examples
         --------
-        >>> pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=5)
-        >>> pipeline.add("particle_tracking", max_distance=3)
+        >>> pipeline = AnalysisPipeline()
+        >>> pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)
+        >>> pipeline.add("particle_tracking", max_distance=5)
+        >>> pipeline.steps[1]
+        ('particle_tracking', {'max_distance': 5})
         """
         self.steps.append((module_name, params))
 
     def clear(self) -> None:
-        """
-        Remove all scheduled analysis steps and clear module cache.
-
-        This allows reconfiguration of the pipeline without creating a new instance.
-        """
+        """Remove all steps, so the pipeline can be set up again."""
         self.steps.clear()
         self._module_cache.clear()
 
@@ -237,66 +232,59 @@ class AnalysisPipeline:
 
     def run(self, stack: AFMImageStack, log_to: Optional[str] = None) -> AnalysisRecord:
         """
-        Execute all added analysis steps on the given AFMImageStack.
+        Run every step on a stack and return the results.
 
-        Each step:
-
-        - is resolved to an AnalysisModule instance
-        - invoked with `(stack, previous_results=..., **params)`
-        - its outputs are stored under `stack.analysis["step_<n>_<module_name>"]`
-        - provenance is recorded in `stack.provenance["analysis"]["steps"]`
-
-        The overall provenance sub-dict also collects:
-
-        - results_by_name: mapping module name to list of outputs
-        - frame_times: result of `stack.get_frame_times()`, or None
-
-        The environment info (via gather_environment_info) is stored at
-        `stack.provenance["environment"]` (if not already set).
+        Each step's module receives the stack, the step's parameters and
+        ``previous_results``: a dict mapping the name of each module run so far to
+        its latest outputs. Results from an earlier call of ``run`` are discarded:
+        ``stack.analysis`` and ``stack.provenance["analysis"]`` are replaced.
 
         Parameters
         ----------
         stack : AFMImageStack
-            The AFMImageStack to analyze.
+            The stack to analyse.
         log_to : str, optional
-            Path to a JSON file where the combined record will be saved.
+            If given, also write the record to this JSON file, creating missing
+            folders. Arrays are summarised in the file (shape, dtype, minimum,
+            maximum and mean), not written in full; see
+            :func:`~playnano.analysis.utils.common.sanitize_analysis_for_logging`.
+            Default is None.
 
         Returns
         -------
-        AnalysisRecord :     dict
+        dict
+            The analysis record, with these keys:
 
-        {
-            "environment": <dict of environment metadata>,
-            "analysis": <dict of outputs per step>,
-            "provenance": <dict with keys "steps", "results_by_name", "frame_times">
-        }
+            ``"environment"``
+                Python, platform and package versions; the same dict as
+                ``stack.provenance["environment"]``, which is only set if empty.
+            ``"analysis"``
+                The outputs of each step, keyed ``"step_<n>_<module_name>"``, with
+                ``n`` counting from 1 and spaces in the name replaced by ``_``. The
+                same dict as ``stack.analysis``.
+            ``"provenance"``
+                The same dict as ``stack.provenance["analysis"]``, with:
 
-        Notes
-        -----
-        - Raw outputs: accessible via `stack.analysis["step_<n>_<module_name>"]`.
-        - Provenance: in `stack.provenance["analysis"]`, with a list of step records.
-        - If stack.provenance or stack.analysis is absent, they are created.
-        - If log_to is provided, the same record dict is JSON-dumped using NumpyEncoder.
+                - ``"steps"``: one dict per step, with ``index``, ``name``,
+                  ``params`` (as passed to the module, so a ``mask_fn`` name appears
+                  as the function), ``timestamp`` (ISO 8601, UTC), ``version`` (the
+                  module's ``version``, or None) and ``analysis_key``.
+                - ``"results_by_name"``: each module name mapped to a list with one
+                  ``{"analysis_key": ..., "outputs": ...}`` dict per time it ran.
+                - ``"frame_times"``: the stack's frame times, in seconds.
 
         Raises
         ------
+        ValueError
+            If a module name is not found, or ``mask_fn`` names no masking
+            function.
+        RuntimeError
+            If a module declares ``requires`` and none of those modules ran
+            before it, or a plugin module fails to load.
+        TypeError
+            If a plugin is not an :class:`~playnano.analysis.base.AnalysisModule`.
         Exception
-            Propagates any exception from module.run(...), after logging.
-
-        Examples
-        --------
-        >>> pipeline = AnalysisPipeline()
-        >>> pipeline.add("count_nonzero")
-        >>> pipeline.add("feature_detection", mask_fn="mask_threshold", min_size=5)
-        >>> record = pipeline.run(stack, log_to="out.json")
-        >>> # Access the outputs:
-        >>> record["analysis"]["step_1_count_nonzero"]
-        {'counts': [...], ...}
-        >>> # Inspect provenance:
-        >>> for step_info in record["provenance"]["steps"]:
-        ...     print(step_info["name"], step_info["analysis_key"])
-        count_nonzero step_1_count_nonzero
-        feature_detection step_2_feature_detection
+            Any error raised by a module is logged and raised again.
         """
         # Ensure stack.provenance is a dict
         if not hasattr(stack, "provenance") or not isinstance(stack.provenance, dict):

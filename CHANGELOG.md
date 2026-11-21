@@ -22,11 +22,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   each export format keeps (OME-TIFF keeps no processed layers or masks), the errors the loaders raise, and the
   `.aris` reader, which returns heights in the file's units (metres), not nm. Documented the missing `cmap_name`,
   `font_scale` and `fmt` parameters and the video formats (MP4, AVI, MOV, MKV).
+- API reference for the core of `playnano.analysis` (`AnalysisPipeline`, `AnalysisModule`, `export` and `utils`):
+  docstrings now match the code and render without warnings. The `AnalysisPipeline` examples showed made-up output
+  and a wrong path into `results_by_name`; the class now has an example that runs as a doctest. Documented the errors
+  `AnalysisPipeline.run` raises, that its `log_to` JSON summarises arrays instead of writing them, the `version` and
+  `requires` attributes of analysis modules, and the units of the particle tables. Corrected
+  `load_analysis_from_hdf5` (integer-valued floats are converted only for files saved before 0.5.2) and
+  `flatten_particle_features` (`object_key` is detected when not given).
 
 ### Changed
 
 - The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and `CONTRIBUTING.md` has
   rules for writing types in docstrings.
+- `CONTRIBUTING.md`: AI use is disclosed in the pull request, not in source files, and module docstrings no longer
+  have author or AI-use sections; authors are credited in `CITATION.cff`.
 
 ## [0.5.3] - 2026-11-20
 
