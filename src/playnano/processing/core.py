@@ -1,4 +1,4 @@
-"""Core functions for loading and processing AFMImageStacks."""
+"""Load an AFM file and run a list of processing steps on it."""
 
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -14,32 +14,38 @@ def process_stack(
     steps: List[Tuple[str, Dict]],
 ) -> AFMImageStack:
     """
-    Load an AFMImageStack from a file, apply a list of processing steps, and return it.
+    Load an AFM file, run a list of processing steps on it and return the stack.
+
+    This is what ``playnano process`` uses.
 
     Parameters
     ----------
-    input_path : Path
-        Path to the AFM stack file.
-
+    input_path : pathlib.Path
+        AFM file, or folder of frame files, to load.
     channel : str
-        Channel to load (e.g., 'h', 'z', etc.).
-
-    steps : list of tuple
-        List of processing steps in the form (step_name, kwargs). Special step_name
-        values:
-        - "clear" : clears the current mask
-        - "mask"  : applies a mask function with kwargs
-        - otherwise : treated as a filter name with kwargs
+        Channel to load, for example ``"height_trace"``.
+    steps : list of tuple of (str, dict)
+        Processing steps in order, as ``(name, kwargs)`` pairs, for example
+        ``[("remove_plane", {}), ("mask_threshold", {"threshold": 1.0})]``. A
+        name can be any filter, mask, video processing or stack edit step;
+        ``"clear"`` clears the current mask.
 
     Returns
     -------
     AFMImageStack
-        The processed AFMImageStack.
+        The processed stack. ``stack.data`` holds the result and
+        ``stack.processed["raw"]`` the original data.
 
     Raises
     ------
     LoadError
-        If the AFM stack cannot be loaded from `input_path`.
+        If the file cannot be loaded.
+    ValueError
+        If a step name is not recognised.
+
+    See Also
+    --------
+    playnano.processing.pipeline.ProcessingPipeline : Runs the steps.
     """
     try:
         stack = AFMImageStack.load_data(input_path, channel=channel)

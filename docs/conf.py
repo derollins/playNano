@@ -220,8 +220,16 @@ nitpick_ignore = [
     ("py:class", "AnalysisOutputs"),
     ("py:class", "analysis_record"),
 ]
+# Choices written in numpydoc form, e.g. {"pad", "crop"}, are values, not types.
+nitpick_ignore_regex = [
+    ("py:class", r"""\{?\s*["'][^"']*["']\s*\}?"""),
+]
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    "h5py": ("https://docs.h5py.org/en/stable", None),
+    "skimage": ("https://scikit-image.org/docs/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "matplotlib": ("https://matplotlib.org/stable", None),
     "qt": ("https://doc.qt.io/qtforpython-6/", None),

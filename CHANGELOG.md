@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- API reference for `playnano.processing`: docstrings now match the code and render without warnings. Corrected
+  `zero_mean` (documented a `mask` parameter it does not have), `mask_morphological` (masks by absolute height, so
+  holes below `-threshold` are masked too), `mask_adaptive` (non-overlapping blocks), `ProcessingPipeline.run`
+  (raises `ValueError`, not `RuntimeError`, for an unknown step), the `max_shift` and `max_jump` behaviour of the
+  alignment functions, and the `temporal_*_filter` placeholders, which are not implemented. The `align_frames` and
+  `rolling_frame_align` examples showed made-up output; all examples now run as doctests.
+
+### Changed
+
+- The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and `CONTRIBUTING.md` has
+  rules for writing types in docstrings.
+
 ## [0.5.3] - 2026-11-20
 
 This release fixes `polynomial_flatten` at high orders and on data with NaN pixels, CLI parameter parsing, wizard
