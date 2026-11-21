@@ -1,9 +1,4 @@
-"""
-Module for LoG blob detection.
-
-Detect "blobs" in each frame of an AFM image stack using the Laplacian-of-Gaussian
-method. Provides automatic multi-scale blob detection and optional radius estimation.
-"""
+"""Analysis module that detects round features with a Laplacian of Gaussian filter."""
 
 from typing import Any, Optional
 
@@ -12,43 +7,42 @@ from playnano.analysis.base import AnalysisModule
 
 class LoGBlobDetectionModule(AnalysisModule):
     """
-    Detect blobs in AFM image stacks using the Laplacian-of-Gaussian (LoG) method.
+    Detect round features in each frame with a Laplacian of Gaussian (LoG) filter.
 
-    This module applies multi-scale blob detection to each frame in an AFM image stack
-    using the Laplacian-of-Gaussian algorithm from `skimage.feature.blob_log`. It
-    supports automatic scale selection and optional estimation of blob radii.
+    Pipeline name: ``"log_blob_detection"``. Each frame is searched at several
+    scales with :func:`skimage.feature.blob_log`, which gives each feature's
+    position and size. Unlike
+    :class:`~playnano.analysis.modules.feature_detection.FeatureDetectionModule`,
+    no mask is needed.
 
-    Methods
-    -------
-    run(stack, previous_results=None, *, min_sigma=1.0, max_sigma=5.0, num_sigma=10,
-        threshold=0.1, overlap=0.5, include_radius=True)
-        Detects blobs in each frame of the AFM image stack and returns per-frame
-        features and a summary.
-
-    Version
-    -------
-    0.1.0
+    .. note::
+       The output has no ``centroid`` or ``labeled_masks``, so it cannot yet be
+       used by ``particle_tracking`` or the clustering modules, although they list
+       ``log_blob_detection`` as an input.
 
     Examples
     --------
-    >>> module = LoGBlobDetectionModule()
-    >>> result = module.run(stack, min_sigma=1.0, max_sigma=5.0, num_sigma=10)
-    >>> result['summary']['total_blobs']
-    42
+    A Gaussian bump centred at row 32, column 20:
+
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> from playnano.analysis.modules.log_blob_detection import (
+    ...     LoGBlobDetectionModule,
+    ... )
+    >>> yy, xx = np.mgrid[:64, :64]
+    >>> bump = 3.0 * np.exp(-((yy - 32) ** 2 + (xx - 20) ** 2) / (2 * 3.0**2))
+    >>> stack = AFMImageStack(bump[None], 2.0, "height_trace", "demo.h5-jpk")
+    >>> result = LoGBlobDetectionModule().run(stack, max_sigma=6)
+    >>> blob = result["features_per_frame"][0][0]
+    >>> blob["y"], blob["x"]
+    (32.0, 20.0)
     """
 
     version = "0.1.0"
 
     @property
     def name(self) -> str:
-        """
-        Name of the analysis module.
-
-        Returns
-        -------
-        str
-            The string identifier for this module: "log_blob_detection".
-        """
+        """Name of this module in a pipeline, ``"log_blob_detection"``."""
         return "log_blob_detection"
 
     def run(
@@ -64,45 +58,44 @@ class LoGBlobDetectionModule(AnalysisModule):
         include_radius: bool = True,
     ) -> dict[str, Any]:
         """
-        Detect "blobs" in each frame via a Laplacian-of-Gaussian filter.
+        Detect blobs in each frame of ``stack.data``.
 
         Parameters
         ----------
         stack : AFMImageStack
-            Must have stack.data of shape (n_frames, H, W).
-
-        min_sigma, max_sigma : float
-            Parameters passed to skimage.feature.blob_log.
-
-        num_sigma : int
-            Parameter passed to skimage.feature.blob_log.
-
-        threshold : float
-            Absolute intensity threshold for LoG response.
-
-        overlap : float
-            If two detected blobs overlap more than this fraction,
-            only the larger is kept.
-
-        include_radius : bool
-            If True, append the estimated blob radius in each feature-dict.
+            The stack to analyse.
+        previous_results : dict, optional
+            Not used. Default is None.
+        min_sigma : float, optional
+            Smallest Gaussian width searched, in pixels. Default is 1.0.
+        max_sigma : float, optional
+            Largest Gaussian width searched, in pixels. Default is 5.0.
+        num_sigma : int, optional
+            Number of widths searched between ``min_sigma`` and ``max_sigma``.
+            Default is 10.
+        threshold : float, optional
+            Smallest LoG response kept, in the units of the data (usually nm).
+            Lower values detect fainter blobs. Default is 0.1.
+        overlap : float, optional
+            If two blobs overlap by more than this fraction of their area, the
+            smaller is removed. Between 0 and 1. Default is 0.5.
+        include_radius : bool, optional
+            Add each blob's radius (``sigma * sqrt(2)``, in pixels). Default is
+            True.
 
         Returns
         -------
-        dict[str, Any]
-            Dictionary with keys:
+        dict
+            ``"features_per_frame"``
+                For each frame, a list of dicts, one per blob, with
+                ``frame_timestamp`` (s), ``y`` and ``x`` (pixels), ``sigma``
+                (pixels) and, if ``include_radius``, ``radius`` (pixels).
+            ``"summary"``
+                ``total_frames``, ``total_blobs`` and ``avg_blobs_per_frame``.
 
-            - features_per_frame : list of list of dict
-                Per-frame list of detected blobs. Each dict contains:
-                - frame_timestamp : float
-                - y, x : float
-                - sigma : float
-                - radius : float, optional (if include_radius=True)
-            - summary : dict
-                Aggregate metrics:
-                - total_frames : int
-                - total_blobs : int
-                - avg_blobs_per_frame : float
+        See Also
+        --------
+        skimage.feature.blob_log : The detection function used.
         """
         from skimage.feature import blob_log
 

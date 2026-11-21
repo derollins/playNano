@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `requires` attributes of analysis modules, and the units of the particle tables. Corrected
   `load_analysis_from_hdf5` (integer-valued floats are converted only for files saved before 0.5.2) and
   `flatten_particle_features` (`object_key` is detected when not given).
+- API reference for the detection and tracking modules (`feature_detection`, `log_blob_detection`, `count_nonzero`,
+  `particle_tracking`, `tracked_particle_boundary_size`): docstrings now match the code and render without warnings,
+  and each module has an example that runs as a doctest instead of made-up output. Documented the units (positions,
+  areas, distances and sizes are in pixels), that `particle_tracking` uses `centroid` as (row, col) by default, links
+  tracks greedily and links only moves shorter than `max_distance`, that `feature_detection` accepts a mask function's
+  name, and the errors each module raises. Noted that `log_blob_detection` output cannot yet be used by tracking or
+  clustering, and that `mask_key` cannot find a mask through a pipeline.
 
 ### Changed
 
