@@ -514,130 +514,128 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.processing.stack_edit">
 <span id="playnano-processing-stack-edit-module"></span><h1>playnano.processing.stack_edit module<a class="headerlink" href="#module-playnano.processing.stack_edit" title="Link to this heading">¶</a></h1>
-<p>Functions for editing AFM image stacks by removing or selecting frames.</p>
-<p>These functions are designed to be called by the ProcessingPipeline, which
-handles provenance tracking and updates to the AFMImageStack object. The
-functions here operate purely on data arrays or frame index lists.</p>
-<p>Only ‘drop_frames’ performs actual stack edits.
-Other registered stack_edit functions return indices to drop, which are
-then passed to ‘drop_frames’ to ensure consistent provenance tracking.</p>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<p>Functions for removing or selecting frames of an AFM image stack.</p>
+<p>Only <a class="reference internal" href="#playnano.processing.stack_edit.drop_frames" title="playnano.processing.stack_edit.drop_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frames()</span></code></a> changes a stack. The other functions return the
+indices of the frames to drop; in a
+<a class="reference internal" href="playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline" title="playnano.processing.pipeline.ProcessingPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessingPipeline</span></code></a> these indices are
+passed to <a class="reference internal" href="#playnano.processing.stack_edit.drop_frames" title="playnano.processing.stack_edit.drop_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frames()</span></code></a>, so every edit is recorded the same way in the
+provenance. The pipeline also removes the matching entries from the stack’s
+frame metadata and keeps a copy of the metadata from before the first edit.</p>
 <ul class="simple">
-<li><p>drop_frames : Remove specific frames from a 3D array.</p></li>
-<li><p>drop_frame_range : Generate a list of frame indices to drop within a given range.</p></li>
-<li><p>select_frames : Generate a list of frame indices to drop, keeping only the selected
-frames.</p></li>
-<li><p>drop_final_frames : Generate a list of frame indices to drop from the end of the
-stack. Default is to drop the last frame (n_frames_to_drop=1).</p></li>
+<li><p><a class="reference internal" href="#playnano.processing.stack_edit.drop_frames" title="playnano.processing.stack_edit.drop_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frames()</span></code></a> removes the given frames.</p></li>
+<li><p><a class="reference internal" href="#playnano.processing.stack_edit.drop_frame_range" title="playnano.processing.stack_edit.drop_frame_range"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frame_range()</span></code></a> drops the frames from <code class="docutils literal notranslate"><span class="pre">start</span></code> up to, but not
+including, <code class="docutils literal notranslate"><span class="pre">end</span></code>.</p></li>
+<li><p><a class="reference internal" href="#playnano.processing.stack_edit.select_frames" title="playnano.processing.stack_edit.select_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">select_frames()</span></code></a> keeps only the given frames.</p></li>
+<li><p><a class="reference internal" href="#playnano.processing.stack_edit.drop_final_frames" title="playnano.processing.stack_edit.drop_final_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_final_frames()</span></code></a> drops frames from the end (by default, the last
+one).</p></li>
 </ul>
-</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.stack_edit.drop_final_frames">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_final_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_frames_to_drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_final_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_final_frames" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a list of frame indices to drop from the end of the stack.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_final_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_frames_to_drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_final_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_final_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Return the indices of the last frames of a stack, to drop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 3D array of shape (n_frames, height, width) representing the image stack.</p></li>
-<li><p><strong>n_frames_to_drop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of frames to drop from the end of the stack.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 3D image stack of shape (n_frames, height, width).</p></li>
+<li><p><strong>n_frames_to_drop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of frames to drop from the end. Default is 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of frame indices that should be dropped. By default, this will drop
-the last frame (n_frames_to_drop=1).</p>
+<dd class="field-even"><p>Indices of the last <code class="docutils literal notranslate"><span class="pre">n_frames_to_drop</span></code> frames (empty if it is 0).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <cite>n_frames_to_drop</cite> is negative or exceeds the number of frames.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not 3D, or <code class="docutils literal notranslate"><span class="pre">n_frames_to_drop</span></code> is negative or larger
+    than the number of frames.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.stack_edit.drop_frame_range">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_frame_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_frame_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_frame_range" title="Link to this definition">¶</a></dt>
-<dd><p>Generate indices to drop within a given range of frames.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_frame_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_frame_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_frame_range" title="Link to this definition">¶</a></dt>
+<dd><p>Return the indices of a range of frames to drop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 3D array of shape (n_frames, height, width) representing the image stack.</p></li>
-<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Starting index of the range (inclusive).</p></li>
-<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Ending index of the range (exclusive).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 3D image stack of shape (n_frames, height, width).</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – First frame to drop (inclusive).</p></li>
+<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Frame after the last one to drop (exclusive).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of indices that should be dropped.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">start</span> <span class="pre">+</span> <span class="pre">1,</span> <span class="pre">...,</span> <span class="pre">end</span> <span class="pre">-</span> <span class="pre">1]</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the range is invalid or out of bounds.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not 3D, <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&lt;</span> <span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span> <span class="pre">&gt;</span> <span class="pre">n_frames</span></code> or
+    <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&gt;=</span> <span class="pre">end</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.stack_edit.drop_frames">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_to_drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_frames" title="Link to this definition">¶</a></dt>
-<dd><p>Remove specific frames from a 3D array.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">drop_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_to_drop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#drop_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.drop_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the given frames from a stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 3D array of shape (n_frames, height, width) representing the image stack.</p></li>
-<li><p><strong>indices_to_drop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – List of frame indices to remove from the stack.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 3D image stack of shape (n_frames, height, width).</p></li>
+<li><p><strong>indices_to_drop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Indices of the frames to remove. Duplicates are ignored; negative
+indices are not allowed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>New array with the specified frames removed.</p>
+<dd class="field-even"><p>A new array without the given frames. <code class="docutils literal notranslate"><span class="pre">data</span></code> is not changed.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If any provided indices are out of bounds or if <cite>data</cite> is not 3D.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not 3D or an index is outside <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">..</span> <span class="pre">n_frames</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>The function does not modify the input array in place.</p></li>
-<li><p>The ProcessingPipeline is responsible for updating metadata and provenance.</p></li>
-</ul>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.stack_edit.register_stack_edit_processing">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">register_stack_edit_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#register_stack_edit_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.register_stack_edit_processing" title="Link to this definition">¶</a></dt>
-<dd><p>Return a dictionary of registered stack editing processing filters.</p>
-<p>Keys are names of the operations, values are the functions themselves.
-drop_frames is the operational function takes a 3D stack (n_frames,
-H, W) and a list of indices and returns a ndarray. drop_frame_range,
-select_frames and drop_final_frames are helper functions that return
-lists of indices to drop which can be passed to drop_frames.</p>
+<dd><p>Return the built-in stack edit functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maps each step name (str) to its function, for example
+<code class="docutils literal notranslate"><span class="pre">&quot;drop_frames&quot;</span></code> to <a class="reference internal" href="#playnano.processing.stack_edit.drop_frames" title="playnano.processing.stack_edit.drop_frames"><code class="xref py py-func docutils literal notranslate"><span class="pre">drop_frames()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.stack_edit.select_frames">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">select_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#select_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.select_frames" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a list of frame indices to drop, keeping only the selected frames.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.stack_edit.</span></span><span class="sig-name descname"><span class="pre">select_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/processing/stack_edit.html#select_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.stack_edit.select_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Return the indices of the frames to drop so that only the given frames are kept.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 3D array of shape (n_frames, height, width) representing the image stack.</p></li>
-<li><p><strong>keep_indices</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Indices of frames to retain in the stack.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 3D image stack of shape (n_frames, height, width).</p></li>
+<li><p><strong>keep_indices</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Indices of the frames to keep. Duplicates are ignored.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of frame indices that should be dropped.</p>
+<dd class="field-even"><p>Sorted indices of every other frame.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <cite>keep_indices</cite> contains out-of-range values.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not 3D or an index is outside <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">..</span> <span class="pre">n_frames</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -700,7 +698,6 @@ lists of indices to drop which can be passed to drop_frames.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">playnano.processing.stack_edit module</a><ul>
-<li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#playnano.processing.stack_edit.drop_final_frames"><code class="docutils literal notranslate"><span class="pre">drop_final_frames()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.processing.stack_edit.drop_frame_range"><code class="docutils literal notranslate"><span class="pre">drop_frame_range()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.processing.stack_edit.drop_frames"><code class="docutils literal notranslate"><span class="pre">drop_frames()</span></code></a></li>

@@ -507,24 +507,21 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.stack_edit</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Functions for editing AFM image stacks by removing or selecting frames.</span>
+<span class="sd">Functions for removing or selecting frames of an AFM image stack.</span>
 
-<span class="sd">These functions are designed to be called by the ProcessingPipeline, which</span>
-<span class="sd">handles provenance tracking and updates to the AFMImageStack object. The</span>
-<span class="sd">functions here operate purely on data arrays or frame index lists.</span>
+<span class="sd">Only :func:`drop_frames` changes a stack. The other functions return the</span>
+<span class="sd">indices of the frames to drop; in a</span>
+<span class="sd">:class:`~playnano.processing.pipeline.ProcessingPipeline` these indices are</span>
+<span class="sd">passed to :func:`drop_frames`, so every edit is recorded the same way in the</span>
+<span class="sd">provenance. The pipeline also removes the matching entries from the stack's</span>
+<span class="sd">frame metadata and keeps a copy of the metadata from before the first edit.</span>
 
-<span class="sd">Only 'drop_frames' performs actual stack edits.</span>
-<span class="sd">Other registered stack_edit functions return indices to drop, which are</span>
-<span class="sd">then passed to 'drop_frames' to ensure consistent provenance tracking.</span>
-
-<span class="sd">Functions</span>
-<span class="sd">---------</span>
-<span class="sd">- drop_frames : Remove specific frames from a 3D array.</span>
-<span class="sd">- drop_frame_range : Generate a list of frame indices to drop within a given range.</span>
-<span class="sd">- select_frames : Generate a list of frame indices to drop, keeping only the selected</span>
-<span class="sd">  frames.</span>
-<span class="sd">- drop_final_frames : Generate a list of frame indices to drop from the end of the</span>
-<span class="sd">  stack. Default is to drop the last frame (n_frames_to_drop=1).</span>
+<span class="sd">- :func:`drop_frames` removes the given frames.</span>
+<span class="sd">- :func:`drop_frame_range` drops the frames from ``start`` up to, but not</span>
+<span class="sd">  including, ``end``.</span>
+<span class="sd">- :func:`select_frames` keeps only the given frames.</span>
+<span class="sd">- :func:`drop_final_frames` drops frames from the end (by default, the last</span>
+<span class="sd">  one).</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
@@ -539,29 +536,25 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">drop_frames</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">indices_to_drop</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Remove specific frames from a 3D array.</span>
+<span class="sd">    Remove the given frames from a stack.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        3D array of shape (n_frames, height, width) representing the image stack.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    indices_to_drop : list of int</span>
-<span class="sd">        List of frame indices to remove from the stack.</span>
+<span class="sd">        Indices of the frames to remove. Duplicates are ignored; negative</span>
+<span class="sd">        indices are not allowed.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        New array with the specified frames removed.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        A new array without the given frames. ``data`` is not changed.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If any provided indices are out of bounds or if `data` is not 3D.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - The function does not modify the input array in place.</span>
-<span class="sd">    - The ProcessingPipeline is responsible for updating metadata and provenance.</span>
+<span class="sd">        If ``data`` is not 3D or an index is outside ``0 .. n_frames - 1``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected a 3D array, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D."</span><span class="p">)</span>
@@ -584,26 +577,27 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">drop_frame_range</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Generate indices to drop within a given range of frames.</span>
+<span class="sd">    Return the indices of a range of frames to drop.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        3D array of shape (n_frames, height, width) representing the image stack.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    start : int</span>
-<span class="sd">        Starting index of the range (inclusive).</span>
+<span class="sd">        First frame to drop (inclusive).</span>
 <span class="sd">    end : int</span>
-<span class="sd">        Ending index of the range (exclusive).</span>
+<span class="sd">        Frame after the last one to drop (exclusive).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of int</span>
-<span class="sd">        List of indices that should be dropped.</span>
+<span class="sd">        ``[start, start + 1, ..., end - 1]``.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the range is invalid or out of bounds.</span>
+<span class="sd">        If ``data`` is not 3D, ``start &lt; 0``, ``end &gt; n_frames`` or</span>
+<span class="sd">        ``start &gt;= end``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected a 3D array, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D."</span><span class="p">)</span>
@@ -620,24 +614,24 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_frames</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">keep_indices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Generate a list of frame indices to drop, keeping only the selected frames.</span>
+<span class="sd">    Return the indices of the frames to drop so that only the given frames are kept.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        3D array of shape (n_frames, height, width) representing the image stack.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    keep_indices : list of int</span>
-<span class="sd">        Indices of frames to retain in the stack.</span>
+<span class="sd">        Indices of the frames to keep. Duplicates are ignored.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of int</span>
-<span class="sd">        List of frame indices that should be dropped.</span>
+<span class="sd">        Sorted indices of every other frame.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `keep_indices` contains out-of-range values.</span>
+<span class="sd">        If ``data`` is not 3D or an index is outside ``0 .. n_frames - 1``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected a 3D array, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D."</span><span class="p">)</span>
@@ -657,25 +651,25 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">drop_final_frames</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_frames_to_drop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Generate a list of frame indices to drop from the end of the stack.</span>
+<span class="sd">    Return the indices of the last frames of a stack, to drop.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        3D array of shape (n_frames, height, width) representing the image stack.</span>
-<span class="sd">    n_frames_to_drop : int</span>
-<span class="sd">        Number of frames to drop from the end of the stack.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
+<span class="sd">    n_frames_to_drop : int, optional</span>
+<span class="sd">        Number of frames to drop from the end. Default is 1.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of int</span>
-<span class="sd">        List of frame indices that should be dropped. By default, this will drop</span>
-<span class="sd">        the last frame (n_frames_to_drop=1).</span>
+<span class="sd">        Indices of the last ``n_frames_to_drop`` frames (empty if it is 0).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `n_frames_to_drop` is negative or exceeds the number of frames.</span>
+<span class="sd">        If ``data`` is not 3D, or ``n_frames_to_drop`` is negative or larger</span>
+<span class="sd">        than the number of frames.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected a 3D array, got </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">D."</span><span class="p">)</span>
@@ -692,13 +686,13 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.stack_edit.html#playnano.processing.stack_edit.register_stack_edit_processing">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_stack_edit_processing</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Return a dictionary of registered stack editing processing filters.</span>
+<span class="sd">    Return the built-in stack edit functions.</span>
 
-<span class="sd">    Keys are names of the operations, values are the functions themselves.</span>
-<span class="sd">    drop_frames is the operational function takes a 3D stack (n_frames,</span>
-<span class="sd">    H, W) and a list of indices and returns a ndarray. drop_frame_range,</span>
-<span class="sd">    select_frames and drop_final_frames are helper functions that return</span>
-<span class="sd">    lists of indices to drop which can be passed to drop_frames.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Maps each step name (str) to its function, for example</span>
+<span class="sd">        ``"drop_frames"`` to :func:`drop_frames`.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">"drop_frames"</span><span class="p">:</span> <span class="n">drop_frames</span><span class="p">,</span>

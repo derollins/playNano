@@ -507,24 +507,17 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.render_utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Shared frame-rendering utilities for all rendered AFM exports.</span>
+<span class="sd">Frame rendering shared by the GIF, video and image sequence exports.</span>
 
-<span class="sd">This module provides the single source of truth for how frames are</span>
-<span class="sd">normalised, colourised, resized, and annotated across GIF, video,</span>
-<span class="sd">and image-sequence exports. Changing appearance here affects all</span>
-<span class="sd">three export formats consistently.</span>
+<span class="sd">:func:`render_frame` scales, colours, resizes and annotates one frame, so all</span>
+<span class="sd">three exports look the same. Module constants control the appearance:</span>
 
-<span class="sd">Constants</span>
-<span class="sd">---------</span>
-<span class="sd">MIN_FRAME_HEIGHT : int</span>
-<span class="sd">    Frames shorter than this are upscaled; taller frames are unchanged.</span>
-<span class="sd">REFERENCE_HEIGHT : int</span>
-<span class="sd">    The height at which ``font_scale=1.0`` produces the default annotation</span>
-<span class="sd">    size. Derived font scale is proportional to the actual frame height.</span>
-<span class="sd">ANNOTATION_COLOR : tuple</span>
-<span class="sd">    Default RGB colour for all annotations.</span>
-<span class="sd">DEFAULT_FONT_SCALE : float</span>
-<span class="sd">    Base font scale passed to draw_scale_and_timestamp at REFERENCE_HEIGHT.</span>
+<span class="sd">- ``MIN_FRAME_HEIGHT`` (512): shorter frames are enlarged to this height;</span>
+<span class="sd">  taller frames are not resized.</span>
+<span class="sd">- ``REFERENCE_HEIGHT`` (512): the frame height at which ``font_scale`` is used</span>
+<span class="sd">  as given; annotation size scales with the rendered frame height.</span>
+<span class="sd">- ``ANNOTATION_COLOR`` ((255, 255, 255)): RGB colour of the annotations.</span>
+<span class="sd">- ``DEFAULT_FONT_SCALE`` (2.0): default ``font_scale`` of the exports.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -559,43 +552,40 @@
     <span class="n">zmax_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Normalise, colourise, resize, and annotate a single AFM frame.</span>
-
-<span class="sd">    This is the shared rendering pipeline used by all rendered exports</span>
-<span class="sd">    (GIF, video, image sequence). All appearance decisions are made here.</span>
+<span class="sd">    Scale, colour, resize and annotate one frame for an animated export.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    frame : np.ndarray</span>
-<span class="sd">        2D float array (H, W) representing a single AFM frame.</span>
+<span class="sd">    frame : numpy.ndarray</span>
+<span class="sd">        2D image.</span>
 <span class="sd">    cmap : matplotlib.colors.Colormap</span>
 <span class="sd">        Colormap to apply.</span>
 <span class="sd">    timestamp : float</span>
-<span class="sd">        Timestamp in seconds for the annotation overlay.</span>
+<span class="sd">        Time to draw, in seconds.</span>
 <span class="sd">    pixel_size_nm : float</span>
-<span class="sd">        Pixel size in nanometres, used to compute the scale bar length.</span>
+<span class="sd">        Pixel size of the frame, in nm, used for the scale bar.</span>
 <span class="sd">    scale_bar_length_nm : int</span>
-<span class="sd">        Desired scale bar length in nanometres.</span>
+<span class="sd">        Length of the scale bar, in nm; 0 hides it.</span>
 <span class="sd">    font_scale : float</span>
-<span class="sd">        Base font scale. The actual font size is derived proportionally</span>
-<span class="sd">        from the frame height relative to ``REFERENCE_HEIGHT``, so</span>
-<span class="sd">        annotations appear the same visual size regardless of resolution.</span>
+<span class="sd">        Size of the annotation text for a frame ``REFERENCE_HEIGHT`` pixels</span>
+<span class="sd">        high; scaled with the rendered frame height.</span>
 <span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to draw the timestamp overlay.</span>
+<span class="sd">        Draw the timestamp.</span>
 <span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw the scale bar overlay.</span>
-<span class="sd">    zmin_val : float or None</span>
-<span class="sd">        Pre-computed global minimum for normalisation. If ``None``,</span>
-<span class="sd">        per-frame normalisation is used.</span>
-<span class="sd">    zmax_val : float or None</span>
-<span class="sd">        Pre-computed global maximum for normalisation. If ``None``,</span>
-<span class="sd">        per-frame normalisation is used.</span>
+<span class="sd">        Draw the scale bar.</span>
+<span class="sd">    zmin_val, zmax_val : float or None, optional</span>
+<span class="sd">        Heights mapped to the bottom and top of the colormap; values outside</span>
+<span class="sd">        are clipped and NaN is drawn in the bottom colour. If they are equal,</span>
+<span class="sd">        the whole frame is drawn in the bottom colour. If either is None, the</span>
+<span class="sd">        frame is scaled from its own minimum to its maximum, with NaN counted</span>
+<span class="sd">        as 0. Default is None.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Annotated RGB frame as a uint8 array of shape (H, W, 3).</span>
-<span class="sd">        Height is at least ``MIN_FRAME_HEIGHT``.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        RGB image, uint8, of shape (height, width, 3). Frames shorter than</span>
+<span class="sd">        ``MIN_FRAME_HEIGHT`` are enlarged to that height (keeping the aspect</span>
+<span class="sd">        ratio) with cubic interpolation.</span>
 <span class="sd">    """</span>
     <span class="c1"># --- Normalise ---</span>
     <span class="k">if</span> <span class="n">zmin_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">zmax_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -651,27 +641,25 @@
 <a class="viewcode-back" href="../../../api/playnano.io.render_utils.html#playnano.io.render_utils.resolve_stack_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_stack_data</span><span class="p">(</span><span class="n">afm_stack</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Select the correct data source and metadata for a rendered export.</span>
-
-<span class="sd">    Centralises the raw-vs-processed selection logic shared by all</span>
-<span class="sd">    ``export_*`` functions.</span>
+<span class="sd">    Choose the data and frame metadata for an animated export.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    afm_stack : AFMImageStack</span>
 <span class="sd">        The stack to export.</span>
 <span class="sd">    raw : bool</span>
-<span class="sd">        If ``True``, use the unprocessed raw snapshot when available.</span>
+<span class="sd">        If True and the stack has a ``"raw"`` snapshot, use it, with the frame</span>
+<span class="sd">        metadata from before any frames were removed.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    stack_data : np.ndarray</span>
-<span class="sd">        The frame data array to render.</span>
-<span class="sd">    meta_src : list[dict]</span>
-<span class="sd">        Per-frame metadata (timestamps, pixel sizes).</span>
+<span class="sd">    stack_data : numpy.ndarray</span>
+<span class="sd">        The frames to render: the raw snapshot, or ``afm_stack.data``.</span>
+<span class="sd">    meta_src : list of dict</span>
+<span class="sd">        The matching per-frame metadata.</span>
 <span class="sd">    is_filtered : bool</span>
-<span class="sd">        ``True`` when processed (filtered) data is being exported.</span>
-<span class="sd">        Callers should append ``"_filtered"`` to the output name.</span>
+<span class="sd">        True if processed data was chosen, so ``_filtered`` should be added to</span>
+<span class="sd">        the output name.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
         <span class="n">stack_data</span> <span class="o">=</span> <span class="n">afm_stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="s2">"raw"</span><span class="p">]</span>

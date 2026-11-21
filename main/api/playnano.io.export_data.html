@@ -514,37 +514,34 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.export_data">
 <span id="playnano-io-export-data-module"></span><h1>playnano.io.export_data module<a class="headerlink" href="#module-playnano.io.export_data" title="Link to this heading">¶</a></h1>
-<p>Tools for exporting AFM image stacks in multiple formats.</p>
-<p>This module provides utilities for serializing
-<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> objects
-into round-trip-safe formats: OME-TIFF, NPZ, and HDF5.
-Each export preserves pixel data, metadata, masks, provenance, and processing history.</p>
-<section id="supported-formats">
-<h2>Supported formats<a class="headerlink" href="#supported-formats" title="Link to this heading">¶</a></h2>
+<p>Save AFM image stacks as OME-TIFF, NPZ or HDF5 files.</p>
 <ul class="simple">
-<li><p><strong>OME-TIFF</strong>: For image analysis interoperability (Bio-Formats compatible).</p></li>
-<li><p><strong>NPZ</strong>: Compact NumPy archive with full AFMImageStack data and metadata.</p></li>
-<li><p><strong>HDF5</strong>: Hierarchical bundle ideal for provenance-rich workflows.</p></li>
+<li><p><strong>OME-TIFF</strong> (<a class="reference internal" href="#playnano.io.export_data.save_ome_tiff_stack" title="playnano.io.export_data.save_ome_tiff_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_ome_tiff_stack()</span></code></a>): one image stack with pixel size,
+frame times and provenance, readable by other microscopy software (for
+example Fiji/Bio-Formats).</p></li>
+<li><p><strong>NPZ</strong> (<a class="reference internal" href="#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_npz_bundle()</span></code></a>) and <strong>HDF5</strong> (<a class="reference internal" href="#playnano.io.export_data.save_h5_bundle" title="playnano.io.export_data.save_h5_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_h5_bundle()</span></code></a>):
+bundles with the data, every processed layer and mask, the frame metadata and
+the provenance, which playNano can load again with
+<a class="reference internal" href="playnano.io.data_loaders.html#module-playnano.io.data_loaders" title="playnano.io.data_loaders"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.io.data_loaders</span></code></a>.</p></li>
 </ul>
-<p>Each export supports both <em>filtered</em> and <em>raw</em> modes.</p>
-</section>
+<p><a class="reference internal" href="#playnano.io.export_data.export_bundles" title="playnano.io.export_data.export_bundles"><code class="xref py py-func docutils literal notranslate"><span class="pre">export_bundles()</span></code></a> writes any of the three at once, as <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">process</span>
+<span class="pre">--export</span></code> does. All formats store heights as float32.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.check_path_is_path">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">check_path_is_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#check_path_is_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.check_path_is_path" title="Link to this definition">¶</a></dt>
-<dd><p>Ensure the input is returned as a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code>.</p>
-<p>Converts strings to <code class="docutils literal notranslate"><span class="pre">Path</span></code> objects. Raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for unsupported types.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">path</span></code> as a <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>Path</em>) – The input path to validate or convert.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The path to convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object representing the input path.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">path</span></code> as a Path.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Path</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)">pathlib.Path</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If the input is not a <code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">Path</span></code>.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is neither a str nor a Path.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -552,22 +549,27 @@ Each export preserves pixel data, metadata, masks, provenance, and processing hi
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.export_bundles">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">export_bundles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">formats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#export_bundles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.export_bundles" title="Link to this definition">¶</a></dt>
-<dd><p>Export an <code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code> in one or more serialization formats.</p>
+<dd><p>Save a stack in one or more of the formats OME-TIFF, NPZ and HDF5.</p>
+<p>Files are named <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.ome.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.npz</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.h5</span></code>.
+<code class="docutils literal notranslate"><span class="pre">_filtered</span></code> is added to the name when processed data is saved, that is
+when <code class="docutils literal notranslate"><span class="pre">raw</span></code> is False and the stack has processed layers other than
+<code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to export.</p></li>
-<li><p><strong>output_folder</strong> (<em>Path</em>) – Target directory for output files.</p></li>
-<li><p><strong>base_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Base filename (no extension).</p></li>
-<li><p><strong>formats</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><em>{&quot;tif&quot;</em><em>, </em><em>&quot;npz&quot;</em><em>, </em><em>&quot;h5&quot;}</em>) – Which formats to produce.</p></li>
-<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, exports only the unprocessed raw snapshot, (<code class="docutils literal notranslate"><span class="pre">.processed['raw']</span></code>).
-Default is False.</p></li>
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to save.</p></li>
+<li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a><em> or </em><em>None</em>) – Folder for the files; created if missing. If None, <code class="docutils literal notranslate"><span class="pre">./output</span></code>.</p></li>
+<li><p><strong>base_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em>) – File name without extension. Any folder part and known extension are
+removed. If empty or None, the name of the file the stack was loaded
+from is used.</p></li>
+<li><p><strong>formats</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Any of <code class="docutils literal notranslate"><span class="pre">&quot;tif&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;npz&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;h5&quot;</span></code>.</p></li>
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the unprocessed snapshot <code class="docutils literal notranslate"><span class="pre">stack.processed[&quot;raw&quot;]</span></code>. See
+<a class="reference internal" href="#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_npz_bundle()</span></code></a>. Default is False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If an unsupported format string is provided, or if an output file would
-    overwrite the file the stack was loaded from. Nothing is written in
-    either case.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a format is not recognised, or an output file would overwrite the
+    file the stack was loaded from. Nothing is written in either case.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,202 +577,128 @@ Default is False.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.save_h5_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">save_h5_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#save_h5_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.save_h5_bundle" title="Link to this definition">¶</a></dt>
-<dd><p>Save an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> and metadata as an HDF5 bundle.</p>
-<p>The hierarchical layout preserves round-trip reconstruction fidelity and stores
-all relevant AFM stack data, processed layers, masks, timestamps, and provenance.</p>
-<section id="file-structure">
-<h2>File structure<a class="headerlink" href="#file-structure" title="Link to this heading">¶</a></h2>
-<dl class="option-list">
-<dt><kbd><span class="option">/data</span></kbd></dt>
-<dd><p>float32 array of shape (n_frames, H, W)</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>/processed/&lt;step&gt;</dt><dd><p>float32 datasets for each processing step</p>
-</dd>
-<dt>/masks/&lt;mask&gt;</dt><dd><p>bool datasets for each mask</p>
-</dd>
-</dl>
-<dl class="option-list">
-<dt><kbd><span class="option">/timestamps</span></kbd></dt>
-<dd><p>float64 array of length n_frames</p>
-</dd>
-<dt><kbd><span class="option">/frame_metadata_json</span></kbd></dt>
-<dd><p>UTF-8 encoded JSON string</p>
-</dd>
-<dt><kbd><span class="option">/provenance_json</span></kbd></dt>
-<dd><p>UTF-8 encoded JSON string</p>
-</dd>
-<dt><kbd><span class="option">/state_backups_json</span></kbd></dt>
-<dd><p>UTF-8 encoded JSON string (only if present)</p>
-</dd>
-</dl>
-</section>
-<section id="root-attributes">
-<h2>Root attributes<a class="headerlink" href="#root-attributes" title="Link to this heading">¶</a></h2>
-<dl class="simple">
-<dt>pixel_size_nm<span class="classifier">float</span></dt><dd><p>Physical pixel size in nanometers.</p>
-</dd>
-<dt>channel<span class="classifier">str</span></dt><dd><p>Name of the imaging channel.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">param path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Destination path for the HDF5 file. The ‘.h5’ suffix will be added
-automatically.</p>
-</dd>
-<dt class="field-even">type path<span class="colon">:</span></dt>
-<dd class="field-even"><p>Path</p>
-</dd>
-<dt class="field-odd">param stack<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The stack to export.</p>
-</dd>
-<dt class="field-even">type stack<span class="colon">:</span></dt>
-<dd class="field-even"><p>AFMImageStack</p>
-</dd>
-<dt class="field-odd">param raw<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If True, only the unprocessed raw snapshot (<cite>processed[‘raw’]</cite>) is exported.
-Otherwise, the full <cite>.data</cite>, masks, and processed layers are included.</p>
-</dd>
-<dt class="field-even">type raw<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool, optional</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
+<dd><p>Save a stack, with its layers, masks and metadata, as an HDF5 bundle.</p>
+<p>The file contains these datasets, compressed with gzip where they are
+arrays:</p>
 <ul class="simple">
-<li><p><cite>state_backups_json</cite> is only created if the stack has a non-empty
-<cite>state_backups</cite> attribute.</p></li>
-<li><p>Timestamps are taken from <cite>state_backups[‘frame_metadata_before_edit’]</cite>
-if exporting raw data, otherwise from <cite>.frame_metadata</cite>.</p></li>
-<li><p>Provenance is sanitized via
-<a class="reference internal" href="playnano.analysis.utils.common.html#playnano.analysis.utils.common.make_json_safe" title="playnano.analysis.utils.common.make_json_safe"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_json_safe()</span></code></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/data</span></code>: float32, shape (n_frames, height, width).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/processed/&lt;name&gt;</span></code>: float32, one per entry in <code class="docutils literal notranslate"><span class="pre">stack.processed</span></code>,
+including <code class="docutils literal notranslate"><span class="pre">/processed/raw</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/masks/&lt;name&gt;</span></code>: bool, one per entry in <code class="docutils literal notranslate"><span class="pre">stack.masks</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/timestamps</span></code>: float64, frame times in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/frame_metadata_json</span></code>, <code class="docutils literal notranslate"><span class="pre">/provenance_json</span></code>: JSON text.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/state_backups_json</span></code>: JSON text, only if <code class="docutils literal notranslate"><span class="pre">stack.state_backups</span></code> is
+not empty.</p></li>
 </ul>
-</section>
+<p>and the file attributes <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> and <code class="docutils literal notranslate"><span class="pre">channel</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Output file. Its extension is replaced by <code class="docutils literal notranslate"><span class="pre">.h5</span></code>, and missing folders
+are created.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to save.</p></li>
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the unprocessed snapshot <code class="docutils literal notranslate"><span class="pre">stack.processed[&quot;raw&quot;]</span></code> instead
+of <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>, without masks or processed layers. If the stack has
+no <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot, <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> is saved. Default is False. The
+timestamps and frame metadata are then those from before any frames were
+removed.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="playnano.io.data_loaders.html#playnano.io.data_loaders.load_h5_bundle" title="playnano.io.data_loaders.load_h5_bundle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.io.data_loaders.load_h5_bundle</span></code></a></dt><dd><p>Load the bundle again.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.save_npz_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">save_npz_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#save_npz_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.save_npz_bundle" title="Link to this definition">¶</a></dt>
-<dd><p>Save <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> with metadata as a <cite>.npz</cite> bundle.</p>
-<p>The NPZ archive consolidates the AFM stack data, metadata, provenance,
-masks, and processed layers for full round-trip reconstruction.</p>
-<section id="id1">
-<h2>File structure<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<p>data                    : float32 array of shape (n_frames, H, W)
-processed__&lt;step&gt;       : float32 arrays for each processing step
-masks__&lt;mask&gt;           : bool arrays for each mask
-timestamps              : float64 array of length n_frames
-frame_metadata_json     : UTF-8 encoded JSON string
-provenance_json         : UTF-8 encoded JSON string
-state_backups_json      : UTF-8 encoded JSON string (only if present)
-pixel_size_nm           : float32 scalar
-channel                 : object array (string)</p>
+<dd><p>Save a stack, with its layers, masks and metadata, as a NumPy <code class="docutils literal notranslate"><span class="pre">.npz</span></code> bundle.</p>
+<p>The archive is compressed and contains these arrays:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: float32, shape (n_frames, height, width).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processed__&lt;name&gt;</span></code>: float32, one per entry in <code class="docutils literal notranslate"><span class="pre">stack.processed</span></code>,
+including <code class="docutils literal notranslate"><span class="pre">processed__raw</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">masks__&lt;name&gt;</span></code>: bool, one per entry in <code class="docutils literal notranslate"><span class="pre">stack.masks</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamps</span></code>: float64, frame times in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code>, <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code>, <code class="docutils literal notranslate"><span class="pre">state_backups_json</span></code>:
+JSON text.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code>: float32 scalar.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code>: the channel name.</p></li>
+</ul>
 <dl class="field-list simple">
-<dt class="field-odd">param path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Destination path for the <cite>.npz</cite> file. The extension will be added
-automatically.</p>
-</dd>
-<dt class="field-even">type path<span class="colon">:</span></dt>
-<dd class="field-even"><p>Path</p>
-</dd>
-<dt class="field-odd">param stack<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The stack to export.</p>
-</dd>
-<dt class="field-even">type stack<span class="colon">:</span></dt>
-<dd class="field-even"><p>AFMImageStack</p>
-</dd>
-<dt class="field-odd">param raw<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If True, only the unprocessed raw snapshot and essential metadata are saved.
-Otherwise, the full data (<cite>.data</cite>), masks, and processed layers are included.</p>
-</dd>
-<dt class="field-even">type raw<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool, optional</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Output file. Its extension is replaced by <code class="docutils literal notranslate"><span class="pre">.npz</span></code> (<code class="docutils literal notranslate"><span class="pre">out/stack</span></code>
+becomes <code class="docutils literal notranslate"><span class="pre">out/stack.npz</span></code>), and missing folders are created.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to save.</p></li>
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the unprocessed snapshot <code class="docutils literal notranslate"><span class="pre">stack.processed[&quot;raw&quot;]</span></code> instead
+of <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>, without masks or processed layers. If the stack has
+no <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot, <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> is saved. Default is False. The
+timestamps are then those from before any frames were removed.</p></li>
+</ul>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">state_backups_json</span></code> is only included if the stack defines a <code class="docutils literal notranslate"><span class="pre">state_backups</span></code>
-attribute.</p></li>
-<li><p>When <code class="docutils literal notranslate"><span class="pre">raw=True</span></code>, timestamps are taken from
-<code class="docutils literal notranslate"><span class="pre">state_backups['frame_metadata_before_edit']</span></code> (if available),
-otherwise from <code class="docutils literal notranslate"><span class="pre">.frame_metadata</span></code>.</p></li>
-<li><p>Provenance is serialized using
-<a class="reference internal" href="playnano.utils.io_utils.html#playnano.utils.io_utils.make_json_safe" title="playnano.utils.io_utils.make_json_safe"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_json_safe()</span></code></a>
-to ensure JSON compatibility.</p></li>
-<li><p>The saved file can be reloaded via
-<code class="xref py py-func docutils literal notranslate"><span class="pre">load_npz_bundle()</span></code>.</p></li>
-</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="playnano.io.data_loaders.html#playnano.io.data_loaders.load_npz_bundle" title="playnano.io.data_loaders.load_npz_bundle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.io.data_loaders.load_npz_bundle</span></code></a></dt><dd><p>Load the bundle again.</p>
+</dd>
+</dl>
+</div>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_npz_bundle</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"output/stack_export"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"output/raw_only"</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_npz_bundle</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"output/stack"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.export_data.save_ome_tiff_stack">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.export_data.</span></span><span class="sig-name descname"><span class="pre">save_ome_tiff_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/export_data.html#save_ome_tiff_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.export_data.save_ome_tiff_stack" title="Link to this definition">¶</a></dt>
-<dd><p>Save an <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><code class="xref py py-class docutils literal notranslate"><span class="pre">AFMImageStack</span></code></a> as an OME-TIFF file.</p>
-<p>The OME-TIFF export embeds image data, pixel calibration, timestamps,
-and provenance metadata into a single, standards-compliant file suitable
-for downstream analysis in microscopy or image-processing software.</p>
-<section id="id2">
-<h2>File structure<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<dd><p>Save a stack as an OME-TIFF file.</p>
+<p>The data is written as float32 with axes (T, C, Z, Y, X) and one channel and
+Z plane. The OME metadata records the pixel size (in µm), each frame’s time
+(<code class="docutils literal notranslate"><span class="pre">DeltaT</span></code>, in s), the interval between the first two frames
+(<code class="docutils literal notranslate"><span class="pre">TimeIncrement</span></code>) and the channel name. Two private TIFF tags hold JSON:</p>
 <ul class="simple">
-<li><p>Image data is stored in 5D OME-TIFF format with axes <code class="docutils literal notranslate"><span class="pre">(T,</span> <span class="pre">C,</span> <span class="pre">Z,</span> <span class="pre">Y,</span> <span class="pre">X)</span></code>.
-Only a single channel (C=1) and a single Z-slice (Z=1) are used.</p></li>
-<li><p>Physical calibration is stored in micrometres (µm) under
-<code class="docutils literal notranslate"><span class="pre">PhysicalSizeX</span></code> and <code class="docutils literal notranslate"><span class="pre">PhysicalSizeY</span></code>.</p></li>
-<li><p>Time increment is stored in seconds under <code class="docutils literal notranslate"><span class="pre">TimeIncrement</span></code>.</p></li>
-<li><p>Provenance and processed-layer keys are stored as binary JSON
-under private TIFF tags <code class="docutils literal notranslate"><span class="pre">65000</span></code> and <code class="docutils literal notranslate"><span class="pre">65001</span></code>.</p></li>
+<li><p>65000: the provenance (<code class="docutils literal notranslate"><span class="pre">stack.provenance</span></code>).</p></li>
+<li><p>65001: the names of the processed layers. The layers themselves and the
+masks are not saved; use NPZ or HDF5 for those.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">param path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Output path for the <cite>.ome.tif</cite> file.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Output file, for example <code class="docutils literal notranslate"><span class="pre">Path(&quot;out/stack.ome.tif&quot;)</span></code>. Used as given;
+its folder must exist.</p></li>
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to save.</p></li>
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, save the unprocessed snapshot <code class="docutils literal notranslate"><span class="pre">stack.processed[&quot;raw&quot;]</span></code> instead
+of <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>, without masks or processed layers. If the stack has
+no <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot, <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> is saved. Default is False.</p></li>
+</ul>
 </dd>
-<dt class="field-even">type path<span class="colon">:</span></dt>
-<dd class="field-even"><p>Path</p>
-</dd>
-<dt class="field-odd">param afm_stack<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The AFM image stack to export.</p>
-</dd>
-<dt class="field-even">type afm_stack<span class="colon">:</span></dt>
-<dd class="field-even"><p>AFMImageStack</p>
-</dd>
-<dt class="field-odd">param raw<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If True, export the unprocessed raw snapshot
-(<code class="docutils literal notranslate"><span class="pre">processed['raw']</span></code> if present). Otherwise, export the current
-data in <code class="docutils literal notranslate"><span class="pre">.data</span></code> with all processing applied.</p>
-</dd>
-<dt class="field-even">type raw<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool, optional</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the frames do not all have the same pixel size.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>Each frame’s timestamp is stored in the OME metadata as <code class="docutils literal notranslate"><span class="pre">DeltaT</span></code>.</p></li>
-<li><p>The pixel size (in nm) is converted to micrometres for OME compliance.</p></li>
-<li><p>The exported file includes additional TIFF tags:</p>
-<ul>
-<li><p><strong>65000:</strong> JSON-encoded provenance dictionary</p></li>
-<li><p><strong>65001:</strong> JSON list of processed layer names</p></li>
-</ul>
-</li>
-<li><p>The file can be reloaded with standard OME-TIFF readers such as
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">tifffile</span></code> or <code class="xref py py-mod docutils literal notranslate"><span class="pre">aicsimageio</span></code>.</p></li>
-</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="playnano.io.data_loaders.html#playnano.io.data_loaders.load_ome_tiff_stack" title="playnano.io.data_loaders.load_ome_tiff_stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.io.data_loaders.load_ome_tiff_stack</span></code></a></dt><dd><p>Load the file again.</p>
+</dd>
+</dl>
+</div>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.export_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">save_ome_tiff_stack</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"output/stack.ome.tif"</span><span class="p">),</span> <span class="n">stack</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">save_ome_tiff_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"output/raw_stack.ome.tif"</span><span class="p">),</span> <span class="n">stack</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
 </dd></dl>
 
 </section>
@@ -831,7 +759,6 @@ data in <code class="docutils literal notranslate"><span class="pre">.data</span
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">playnano.io.export_data module</a><ul>
-<li><a class="reference internal" href="#supported-formats">Supported formats</a></li>
 <li><a class="reference internal" href="#playnano.io.export_data.check_path_is_path"><code class="docutils literal notranslate"><span class="pre">check_path_is_path()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.io.export_data.export_bundles"><code class="docutils literal notranslate"><span class="pre">export_bundles()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.io.export_data.save_h5_bundle"><code class="docutils literal notranslate"><span class="pre">save_h5_bundle()</span></code></a></li>

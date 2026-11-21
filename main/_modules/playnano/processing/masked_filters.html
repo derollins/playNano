@@ -506,7 +506,15 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.masked_filters</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module for filtering AFM data in NumPy arrays with a boolean mask."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">2D filters that fit or measure the background only, using a boolean mask.</span>
+
+<span class="sd">Each function takes a frame and a mask of the same shape, in which True marks</span>
+<span class="sd">foreground (features) and False marks background. The statistic or fit is</span>
+<span class="sd">computed from background pixels and then applied to the whole frame. The</span>
+<span class="sd">:class:`~playnano.processing.pipeline.ProcessingPipeline` uses these in place of</span>
+<span class="sd">the filters in :mod:`playnano.processing.filters` when a mask is active.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -523,27 +531,26 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.1"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">remove_plane_masked</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Fit a 2D plane on background only and subtract it from the full image.</span>
+<span class="sd">    Fit a plane to the background pixels and subtract it from the whole image.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
+<span class="sd">    data : numpy.ndarray</span>
 <span class="sd">        2D AFM image.</span>
-
-<span class="sd">    mask : np.ndarray</span>
-<span class="sd">        Boolean mask of same shape; True=foreground (excluded),</span>
-<span class="sd">        False=background (used to fit).</span>
+<span class="sd">    mask : numpy.ndarray</span>
+<span class="sd">        Boolean array with the same shape as ``data``. True marks foreground</span>
+<span class="sd">        pixels, which are left out of the fit; False marks background.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Plane-removed image.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Image with the plane removed, as float64.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If mask.shape != data.shape, or fewer than 3 background pixels are</span>
-<span class="sd">        finite.</span>
+<span class="sd">        If ``mask`` and ``data`` have different shapes, or fewer than 3</span>
+<span class="sd">        background pixels are finite.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -567,29 +574,31 @@
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Fit a 2D polynomial using background (mask==False) and subtract it.</span>
+<span class="sd">    Fit a 2D polynomial to the background pixels and subtract it from the whole image.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
+<span class="sd">    data : numpy.ndarray</span>
 <span class="sd">        2D AFM image.</span>
-
-<span class="sd">    order : int</span>
-<span class="sd">        Polynomial order. Default order=2.</span>
-
-<span class="sd">    mask : np.ndarray</span>
-<span class="sd">        Boolean mask of same shape; True=foreground, False=background.</span>
+<span class="sd">    mask : numpy.ndarray</span>
+<span class="sd">        Boolean array with the same shape as ``data``. True marks foreground</span>
+<span class="sd">        pixels, which are left out of the fit; False marks background.</span>
+<span class="sd">    order : int, optional</span>
+<span class="sd">        Total order of the polynomial: 1 is a plane, 2 is quadratic. Default is 2.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Polynomial-flattened image.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Image with the polynomial background removed, as float64.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If mask.shape != data.shape, order is not a positive integer, or there</span>
-<span class="sd">        are fewer finite background pixels than polynomial terms.</span>
+<span class="sd">        If ``mask`` and ``data`` have different shapes, ``order`` is not a</span>
+<span class="sd">        positive integer, or fewer background pixels are finite than the</span>
+<span class="sd">        polynomial has terms.</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If the least-squares fit fails.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -612,24 +621,26 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">row_median_align_masked</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Compute each row's median using background pixels and subtract from each full row.</span>
+<span class="sd">    Subtract from each row the median of its background pixels.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
+<span class="sd">    data : numpy.ndarray</span>
 <span class="sd">        2D AFM image.</span>
-<span class="sd">    mask : np.ndarray</span>
-<span class="sd">        Boolean mask of same shape; True=foreground, False=background.</span>
+<span class="sd">    mask : numpy.ndarray</span>
+<span class="sd">        Boolean array with the same shape as ``data``. True marks foreground</span>
+<span class="sd">        pixels, which are left out of the fit; False marks background.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Row-masked-alignment image.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Row-aligned image, as float64. Rows with no background pixels are left</span>
+<span class="sd">        unchanged.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If mask.shape != data.shape.</span>
+<span class="sd">        If ``mask`` and ``data`` have different shapes.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Mask must have same shape as data."</span><span class="p">)</span>
@@ -653,21 +664,27 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.2.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">zero_mean_masked</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Subtract the overall mean height to center the background around zero.</span>
-
-<span class="sd">    If a mask is provided, mean is computed only over background (mask == False).</span>
+<span class="sd">    Subtract the mean height of the background so it is centred on zero.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        2D AFM image data.</span>
-<span class="sd">    mask : np.ndarray, optional</span>
-<span class="sd">        Boolean mask of same shape as data; True indicates region to exclude from mean.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        2D AFM image.</span>
+<span class="sd">    mask : numpy.ndarray, optional</span>
+<span class="sd">        Boolean array with the same shape as ``data``. True marks foreground</span>
+<span class="sd">        pixels, which are left out of the mean. If None, the mean of the whole</span>
+<span class="sd">        image is used and a warning is logged.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Zero-mean image.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Zero-mean image, as float64.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``mask`` and ``data`` have different shapes, or every pixel is</span>
+<span class="sd">        masked.</span>
 <span class="sd">    """</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -697,22 +714,27 @@
 <span class="nd">@versioned_filter</span><span class="p">(</span><span class="s2">"0.1.0"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">zero_median_masked</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Subtract the overall median height to center the background around zero.</span>
-
-<span class="sd">    If a mask is provided, median is computed only over background (mask == False).</span>
+<span class="sd">    Subtract the median height of the background so it is centred on zero.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        2D AFM image data.</span>
-<span class="sd">    mask : np.ndarray, optional</span>
-<span class="sd">        Boolean mask of same shape as data; True indicates regions to exclude</span>
-<span class="sd">        from the median.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        2D AFM image.</span>
+<span class="sd">    mask : numpy.ndarray, optional</span>
+<span class="sd">        Boolean array with the same shape as ``data``. True marks foreground</span>
+<span class="sd">        pixels, which are left out of the median. If None, the median of the</span>
+<span class="sd">        whole image is used and a warning is logged.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Zero-median image.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Zero-median image, as float64.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``mask`` and ``data`` have different shapes, or every pixel is</span>
+<span class="sd">        masked.</span>
 <span class="sd">    """</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -735,7 +757,15 @@
 <div class="viewcode-block" id="register_mask_filters">
 <a class="viewcode-back" href="../../../api/playnano.processing.masked_filters.html#playnano.processing.masked_filters.register_mask_filters">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_mask_filters</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">"""Return list of masking options."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the masked filters, keyed by the name of the unmasked filter they replace.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Maps each step name (str) to its function, for example</span>
+<span class="sd">        ``"remove_plane"`` to :func:`remove_plane_masked`.</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">"remove_plane"</span><span class="p">:</span> <span class="n">remove_plane_masked</span><span class="p">,</span>
         <span class="s2">"polynomial_flatten"</span><span class="p">:</span> <span class="n">polynomial_flatten_masked</span><span class="p">,</span>

@@ -507,10 +507,10 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_h5jpk</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.</span>
+<span class="sd">Load JPK ``.h5-jpk`` high-speed AFM files as an AFMImageStack.</span>
 
-<span class="sd">Files containing multiple image frames are read together.</span>
-<span class="sd">Converts the height data into nm from another metric unit (e.g. m).</span>
+<span class="sd">All frames are read from one HDF5 file. Channels with a length unit (for example</span>
+<span class="sd">m) are converted to nm; see :func:`apply_z_unit_conversion`.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -932,7 +932,25 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_z_unit_conversion</span><span class="p">(</span>
     <span class="n">images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">channel_group</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Apply z unit conversion to nanometers if needed, or guess if unknown."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert a channel's values to nm if it has a length unit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    images : numpy.ndarray</span>
+<span class="sd">        Channel values, already z-scaled.</span>
+<span class="sd">    channel_group : h5py.Group</span>
+<span class="sd">        The channel's group, whose attributes give the unit.</span>
+<span class="sd">    channel : str, optional</span>
+<span class="sd">        Channel name, used only in log messages. Default is ``"height_trace"``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The values in nm if the unit is a length; unchanged if it is ``"V"``,</span>
+<span class="sd">        ``"v"`` or ``"deg"``. If the unit is missing or not recognised, it is</span>
+<span class="sd">        guessed from the range of the data, falling back to nm.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">z_unit</span> <span class="o">=</span> <span class="n">_get_z_unit_h5</span><span class="p">(</span><span class="n">channel_group</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -956,35 +974,44 @@
     <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flip_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load image stack from a JPK .h5-jpk file, scaled to nanometers.</span>
+<span class="sd">    Load a JPK ``.h5-jpk`` file.</span>
 
-<span class="sd">    Frames are read from the channel's frame axis, z-scaled, converted to nm, and</span>
-<span class="sd">    given real per-frame timestamps from the file's start/end-time datasets (with an</span>
-<span class="sd">    interlace-aware scan-rate fallback). Interlace (bidirectional) and motion are read</span>
-<span class="sd">    from the measurement attributes.</span>
+<span class="sd">    Each frame is reshaped from the channel's data, z-scaled and converted to nm</span>
+<span class="sd">    (see :func:`apply_z_unit_conversion`). Frame times come from the file's</span>
+<span class="sd">    start and end time records; if they are missing, they are worked out from the</span>
+<span class="sd">    scan rate, allowing for interlaced (bidirectional) scanning.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    file_path : Path | str</span>
-<span class="sd">        Path to the .h5-jpk file.</span>
+<span class="sd">    file_path : str or pathlib.Path</span>
+<span class="sd">        The ``.h5-jpk`` file.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to extract.</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``,</span>
+<span class="sd">        ``"measuredheight_trace"``, ``"amplitude_retrace"`` or</span>
+<span class="sd">        ``"phase_trace"``: the channel name in lower case, ``_``, then</span>
+<span class="sd">        ``trace`` or ``retrace``.</span>
 <span class="sd">    flip_image : bool, optional</span>
-<span class="sd">        Flip each image vertically if True.</span>
+<span class="sd">        Flip each frame vertically. Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
+<span class="sd">        The stack. Each ``frame_metadata`` entry holds ``timestamp`` (s from</span>
+<span class="sd">        the first frame), ``frame_pixel_size_nm``, ``line_rate``,</span>
+<span class="sd">        ``frame_duration_s``, ``start_epoch_ms`` and ``scan_direction``.</span>
+<span class="sd">        ``stack.acquisition["bidirectional"]`` records whether the scan was</span>
+<span class="sd">        interlaced.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the channel is not in the file.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    In .h5-jpk files the pixel size, interlace mode and motion are defined at the</span>
-<span class="sd">    measurement level and are constant across all frames, so those metadata values are</span>
-<span class="sd">    identical for every frame. Timestamps and frame durations are per-frame.</span>
-
-<span class="sd">    This differs from .jpk and .spm folder-based data, where pixel size may vary</span>
-<span class="sd">    between frames and is stored per-frame.</span>
+<span class="sd">    Pixel size, interlacing and scan direction are set per measurement, so they</span>
+<span class="sd">    are the same for every frame. Only the first measurement in the file is read;</span>
+<span class="sd">    a warning is logged if there are more.</span>
 <span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 

@@ -514,27 +514,40 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.formats.read_jpk_folder">
 <span id="playnano-io-formats-read-jpk-folder-module"></span><h1>playnano.io.formats.read_jpk_folder module<a class="headerlink" href="#module-playnano.io.formats.read_jpk_folder" title="Link to this heading">¶</a></h1>
-<p>Module to load .jpk AFM data files from a folder into Python NumPy arrays.</p>
-<p>Files contained within the same folder are read together.
-Files read with the height data in nm.</p>
+<p>Load a folder of JPK <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> image files, one per frame, as an AFMImageStack.</p>
+<p>Files are read with AFMReader, which converts height and amplitude channels to
+nm. Frames are taken in file-name order.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_jpk_folder.load_jpk_folder">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_jpk_folder.</span></span><span class="sig-name descname"><span class="pre">load_jpk_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_jpk_folder.html#load_jpk_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_jpk_folder.load_jpk_folder" title="Link to this definition">¶</a></dt>
-<dd><p>Load an AFM video from a folder of individual .jpk image files.</p>
-<p>AFMReader converts “height”, “measuredHeight” and “amplitude” channels to nm.</p>
+<dd><p>Load a folder of <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> files as one stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>folder_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to folder containing .jpk files.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to extract.</p></li>
-<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Flip each image vertically if True.</p></li>
+<li><p><strong>folder_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Folder of <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> files, one per frame. Files are sorted by name.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>; the same names as
+AFMReader’s <code class="docutils literal notranslate"><span class="pre">load_jpk</span></code>.</p></li>
+<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Flip each frame vertically. AFMReader already flips <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> frames, so
+True (the default) returns frames in the row order stored in the file,
+and False returns AFMReader’s orientation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded AFM image stack with metadata and per-frame info.</p>
+<dd class="field-even"><p>The stack. <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> is the first frame’s; each
+<code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry holds <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (s from the first frame),
+<code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>, <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code>,
+<code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> and <code class="docutils literal notranslate"><span class="pre">scan_direction</span></code>.
+<code class="docutils literal notranslate"><span class="pre">stack.acquisition[&quot;bidirectional&quot;]</span></code> records whether the scan was
+interlaced, worked out from the frame timing.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">folder_path</span></code> is not a folder, or the frames differ in shape.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the folder has no <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> files.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

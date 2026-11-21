@@ -506,7 +506,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.core</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Core functions for loading and processing AFMImageStacks."""</span>
+<span></span><span class="sd">"""Load an AFM file and run a list of processing steps on it."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -524,32 +524,38 @@
     <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an AFMImageStack from a file, apply a list of processing steps, and return it.</span>
+<span class="sd">    Load an AFM file, run a list of processing steps on it and return the stack.</span>
+
+<span class="sd">    This is what ``playnano process`` uses.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_path : Path</span>
-<span class="sd">        Path to the AFM stack file.</span>
-
+<span class="sd">    input_path : pathlib.Path</span>
+<span class="sd">        AFM file, or folder of frame files, to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to load (e.g., 'h', 'z', etc.).</span>
-
-<span class="sd">    steps : list of tuple</span>
-<span class="sd">        List of processing steps in the form (step_name, kwargs). Special step_name</span>
-<span class="sd">        values:</span>
-<span class="sd">        - "clear" : clears the current mask</span>
-<span class="sd">        - "mask"  : applies a mask function with kwargs</span>
-<span class="sd">        - otherwise : treated as a filter name with kwargs</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
+<span class="sd">    steps : list of tuple of (str, dict)</span>
+<span class="sd">        Processing steps in order, as ``(name, kwargs)`` pairs, for example</span>
+<span class="sd">        ``[("remove_plane", {}), ("mask_threshold", {"threshold": 1.0})]``. A</span>
+<span class="sd">        name can be any filter, mask, video processing or stack edit step;</span>
+<span class="sd">        ``"clear"`` clears the current mask.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        The processed AFMImageStack.</span>
+<span class="sd">        The processed stack. ``stack.data`` holds the result and</span>
+<span class="sd">        ``stack.processed["raw"]`` the original data.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    LoadError</span>
-<span class="sd">        If the AFM stack cannot be loaded from `input_path`.</span>
+<span class="sd">        If the file cannot be loaded.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a step name is not recognised.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    playnano.processing.pipeline.ProcessingPipeline : Runs the steps.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>

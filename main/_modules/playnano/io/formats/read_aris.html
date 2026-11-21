@@ -507,12 +507,16 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_aris</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module to decode and load .aris high-speed AFM data files into an AFMImageStack object.</span>
+<span class="sd">Load Asylum Research ``.aris`` high-speed AFM files as an AFMImageStack.</span>
 
-<span class="sd">The Asylum Research ARIS files contain multiple frames that may differ in pixel</span>
-<span class="sd">resolution. The global pixel size (from the first frame) is stored in</span>
-<span class="sd">`pixel_size_nm`, while per-frame overrides are stored in each entry of</span>
-<span class="sd">`frame_metadata` under the key `frame_pixel_size_nm`.</span>
+<span class="sd">ARIS files are HDF5 files. Frames can differ in scan size, so each frame's</span>
+<span class="sd">pixel size is stored in its ``frame_metadata`` entry as</span>
+<span class="sd">``frame_pixel_size_nm``; the stack's ``pixel_size_nm`` is that of the first</span>
+<span class="sd">frame.</span>
+
+<span class="sd">.. warning::</span>
+<span class="sd">   Heights are returned in the units stored in the file, which is metres for</span>
+<span class="sd">   height channels, not nm as the other readers return.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -646,21 +650,26 @@
     <span class="n">selected_ch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load all frames for the given channel and compute per-frame pixel sizes.</span>
+<span class="sd">    Read every frame of one channel and work out each frame's pixel size.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : h5py.Group</span>
-<span class="sd">        HDF5 group with frame/channel image data.</span>
+<span class="sd">        The ``/DataSet/Resolution 0`` group, holding one group per frame.</span>
 <span class="sd">    info : h5py.Group</span>
-<span class="sd">        HDF5 group containing metadata and per-frame overrides.</span>
+<span class="sd">        The ``/DataSetInfo`` group, holding the scan parameters and any changes</span>
+<span class="sd">        made to them during the recording.</span>
 <span class="sd">    selected_ch : str</span>
-<span class="sd">        Channel name to extract.</span>
+<span class="sd">        Channel to read.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    (ndarray, list of float)</span>
-<span class="sd">        3D stack array and per-frame pixel-size values (nm).</span>
+<span class="sd">    image_stack : numpy.ndarray</span>
+<span class="sd">        Frames in time order, shape (n_frames, height, width), in the units</span>
+<span class="sd">        stored in the file.</span>
+<span class="sd">    pixel_sizes_nm : list of float</span>
+<span class="sd">        Pixel size of each frame, in nm. Frames without their own scan size use</span>
+<span class="sd">        the global one.</span>
 <span class="sd">    """</span>
     <span class="n">sorted_keys</span> <span class="o">=</span> <span class="n">_get_sorted_frame_keys</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -709,27 +718,31 @@
     <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load image stack from a Asylum Research .aris file, scaled to nanometers.</span>
-
-<span class="sd">    The images are loaded, reshaped into frames, and have timestamps generated.</span>
+<span class="sd">    Load an Asylum Research ``.aris`` file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    file_path : Path | str</span>
-<span class="sd">        Path to the .aris file.</span>
+<span class="sd">    file_path : str or pathlib.Path</span>
+<span class="sd">        The ``.aris`` file.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to extract.</span>
+<span class="sd">        Channel to load, for example ``"HeightTrace"``, ``"HeightRetrace"``,</span>
+<span class="sd">        ``"AmplitudeRetrace"`` or ``"PhaseRetrace"``; the names depend on the</span>
+<span class="sd">        file.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        Loaded AFM image stack with metadata and per-frame info.</span>
+<span class="sd">        The stack. Heights are in the units stored in the file (metres for</span>
+<span class="sd">        height channels), not nm. Each ``frame_metadata`` entry holds</span>
+<span class="sd">        ``timestamp`` (s from the first frame), ``frame_pixel_size_nm``,</span>
+<span class="sd">        ``line_rate`` (the global scan rate, in lines per second) and</span>
+<span class="sd">        ``start_epoch_ms`` (if the file records its start time).</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Pixel size may vary between frames in ARIS files. The global</span>
-<span class="sd">    `pixel_size_nm` attribute corresponds to the first frame, while</span>
-<span class="sd">    per-frame values are stored in `frame_metadata`.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the channel is not in the file, or the number of frame times does</span>
+<span class="sd">        not match the number of frames.</span>
 <span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>

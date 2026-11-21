@@ -514,28 +514,38 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.processing.masked_filters">
 <span id="playnano-processing-masked-filters-module"></span><h1>playnano.processing.masked_filters module<a class="headerlink" href="#module-playnano.processing.masked_filters" title="Link to this heading">¶</a></h1>
-<p>Module for filtering AFM data in NumPy arrays with a boolean mask.</p>
+<p>2D filters that fit or measure the background only, using a boolean mask.</p>
+<p>Each function takes a frame and a mask of the same shape, in which True marks
+foreground (features) and False marks background. The statistic or fit is
+computed from background pixels and then applied to the whole frame. The
+<a class="reference internal" href="playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline" title="playnano.processing.pipeline.ProcessingPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessingPipeline</span></code></a> uses these in place of
+the filters in <a class="reference internal" href="playnano.processing.filters.html#module-playnano.processing.filters" title="playnano.processing.filters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.processing.filters</span></code></a> when a mask is active.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.polynomial_flatten_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#polynomial_flatten_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.polynomial_flatten_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Fit a 2D polynomial using background (mask==False) and subtract it.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">polynomial_flatten_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#polynomial_flatten_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.polynomial_flatten_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a 2D polynomial to the background pixels and subtract it from the whole image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Polynomial order. Default order=2.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Boolean array with the same shape as <code class="docutils literal notranslate"><span class="pre">data</span></code>. True marks foreground
+pixels, which are left out of the fit; False marks background.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Total order of the polynomial: 1 is a plane, 2 is quadratic. Default is 2.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Polynomial-flattened image.</p>
+<dd class="field-even"><p>Image with the polynomial background removed, as float64.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape, order is not a positive integer, or there
-    are fewer finite background pixels than polynomial terms.</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mask</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> have different shapes, <code class="docutils literal notranslate"><span class="pre">order</span></code> is not a
+    positive integer, or fewer background pixels are finite than the
+    polynomial has terms.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If the least-squares fit fails.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -547,30 +557,39 @@ orders of 3 and above fit correctly on large frames.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.register_mask_filters">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">register_mask_filters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#register_mask_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.register_mask_filters" title="Link to this definition">¶</a></dt>
-<dd><p>Return list of masking options.</p>
+<dd><p>Return the masked filters, keyed by the name of the unmasked filter they replace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maps each step name (str) to its function, for example
+<code class="docutils literal notranslate"><span class="pre">&quot;remove_plane&quot;</span></code> to <a class="reference internal" href="#playnano.processing.masked_filters.remove_plane_masked" title="playnano.processing.masked_filters.remove_plane_masked"><code class="xref py py-func docutils literal notranslate"><span class="pre">remove_plane_masked()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.remove_plane_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">remove_plane_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#remove_plane_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.remove_plane_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Fit a 2D plane on background only and subtract it from the full image.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">remove_plane_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#remove_plane_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.remove_plane_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a plane to the background pixels and subtract it from the whole image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground (excluded),
-False=background (used to fit).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Boolean array with the same shape as <code class="docutils literal notranslate"><span class="pre">data</span></code>. True marks foreground
+pixels, which are left out of the fit; False marks background.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Plane-removed image.</p>
+<dd class="field-even"><p>Image with the plane removed, as float64.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape, or fewer than 3 background pixels are
-    finite.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mask</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> have different shapes, or fewer than 3
+    background pixels are finite.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -581,66 +600,77 @@ in the output. Version 0.1.1 fits with NumPy instead of scikit-learn
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.row_median_align_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">row_median_align_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#row_median_align_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.row_median_align_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Compute each row’s median using background pixels and subtract from each full row.</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">row_median_align_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#row_median_align_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.row_median_align_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract from each row the median of its background pixels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em>) – Boolean mask of same shape; True=foreground, False=background.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Boolean array with the same shape as <code class="docutils literal notranslate"><span class="pre">data</span></code>. True marks foreground
+pixels, which are left out of the fit; False marks background.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Row-masked-alignment image.</p>
+<dd class="field-even"><p>Row-aligned image, as float64. Rows with no background pixels are left
+unchanged.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If mask.shape != data.shape.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mask</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> have different shapes.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.zero_mean_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_mean_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_mean_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Subtract the overall mean height to center the background around zero.</p>
-<p>If a mask is provided, mean is computed only over background (mask == False).</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_mean_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_mean_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_mean_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the mean height of the background so it is centred on zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Boolean mask of same shape as data; True indicates region to exclude from mean.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – Boolean array with the same shape as <code class="docutils literal notranslate"><span class="pre">data</span></code>. True marks foreground
+pixels, which are left out of the mean. If None, the mean of the whole
+image is used and a warning is logged.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Zero-mean image.</p>
+<dd class="field-even"><p>Zero-mean image, as float64.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mask</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> have different shapes, or every pixel is
+    masked.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.masked_filters.zero_median_masked">
-<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_median_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_median_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_median_masked" title="Link to this definition">¶</a></dt>
-<dd><p>Subtract the overall median height to center the background around zero.</p>
-<p>If a mask is provided, median is computed only over background (mask == False).</p>
+<span class="sig-prename descclassname"><span class="pre">playnano.processing.masked_filters.</span></span><span class="sig-name descname"><span class="pre">zero_median_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/masked_filters.html#zero_median_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.masked_filters.zero_median_masked" title="Link to this definition">¶</a></dt>
+<dd><p>Subtract the median height of the background so it is centred on zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D AFM image data.</p></li>
-<li><p><strong>mask</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Boolean mask of same shape as data; True indicates regions to exclude
-from the median.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – Boolean array with the same shape as <code class="docutils literal notranslate"><span class="pre">data</span></code>. True marks foreground
+pixels, which are left out of the median. If None, the median of the
+whole image is used and a warning is logged.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Zero-median image.</p>
+<dd class="field-even"><p>Zero-median image, as float64.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">mask</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> have different shapes, or every pixel is
+    masked.</p>
 </dd>
 </dl>
 </dd></dl>
