@@ -1,19 +1,17 @@
 """
-Module to load a folder of NanoScope .spm files as an AFMImageStack.
+Load a folder of Bruker NanoScope ``.spm`` files, one per frame, as an AFMImageStack.
 
-Files contained within the same folder are read together.
-Files read with the height data in nm.
+Files are read with AFMReader, which returns heights in nm. Frames are taken in
+file-name order.
 
-Timing (per-frame): real ``Relative frame time`` values from each file's header
-are used to compute both ``timestamp`` (seconds from frame 0) and
-``frame_duration_s`` (gap to the next frame). Real values capture the actual
-inter-frame jitter and dead time between acquisitions, which the synthesised
-``lines / Scan Rate`` estimate would miss. If any file is missing that field
-the reader falls back to the synth interval for the whole stack.
+Timing: if every file's header has ``Relative frame time``, those times give
+``timestamp`` (s from the first frame) and ``frame_duration_s`` (the time to
+the next frame), which include any pause between frames. If any file lacks it,
+the whole stack uses an even interval of lines / ``Scan Rate``.
 
-Frame direction (``scan_direction``) is stored per frame because a NanoScope time
-series can capture alternating up/down frames. Absolute time (``start_epoch_ms``)
-is derived from each file's ``Date`` field.
+``scan_direction`` is stored per frame, because NanoScope time series can
+alternate between up and down frames. ``start_epoch_ms`` comes from each
+file's ``Date``.
 """
 
 import logging
@@ -32,26 +30,25 @@ logger = logging.getLogger(__name__)
 
 def parse_spm_header(file_path, max_bytes=65536):
     """
-    Extract ASCII header key-value pairs from a .spm file.
+    Read the text header of an ``.spm`` file into a dict.
 
-    NanoScope headers are backslash-prefixed 'key: value' lines at the start
-    of the file, followed by the binary image data at ``Data offset``. This
-    reads the first ``max_bytes`` and parses whatever key/value lines it finds.
+    The header is a list of ``key: value`` lines, each starting with a
+    backslash, at the start of the file before the binary image data.
 
     Parameters
     ----------
-    file_path : str or Path
-        Path to the .spm file.
+    file_path : str or pathlib.Path
+        The ``.spm`` file.
     max_bytes : int, optional
-        Bytes to read from the start of the file. The default (65 kB) covers
-        the fields this reader needs on typical Dimension/BioScope files, but
-        very large headers may need more.
+        Number of bytes to read from the start of the file. Enough for the
+        fields this reader uses in typical files; very long headers may need
+        more. Default is 65536.
 
     Returns
     -------
-    dict[str, str]
-        Mapping of header keys to values as strings (values keep their unit
-        suffixes; use ``_first_float`` to strip them).
+    dict
+        Header keys mapped to their values, both as str. Values keep their
+        units. Malformed lines are skipped.
     """
     header_dict = {}
     with open(file_path, "rb") as f:
@@ -132,38 +129,40 @@ def _read_spm_header_fields(fpath):
 
 def load_spm_folder(folder_path: Path | str, channel: str) -> AFMImageStack:
     """
-    Load a NanoScope .spm time-series folder into an AFMImageStack.
-
-    Real per-frame timing is used when ``Relative frame time`` is present in
-    every file, giving actual inter-frame gaps rather than a uniform synthetic
-    interval. Frame direction is stored per frame so a series with alternating
-    up/down frames is faithfully represented.
+    Load a folder of NanoScope ``.spm`` files as one stack.
 
     Parameters
     ----------
-    folder_path : Path | str
-        Folder containing the .spm frames. Files with numeric extensions
-        (``.001``, ``.002`` …) are treated as .spm too.
+    folder_path : str or pathlib.Path
+        Folder of frame files: ``.spm`` or numbered ``.001``, ``.002`` ...
+        files. Files are sorted by name.
     channel : str
-        Channel name to extract.
+        Channel to load, for example ``"Height"``, ``"ZSensor"`` or
+        ``"Height Sensor"``.
 
     Returns
     -------
     AFMImageStack
-        Loaded stack. ``pixel_size_nm`` is taken from the first frame;
-        per-frame values live in ``frame_metadata`` (``timestamp``,
-        ``frame_pixel_size_nm``, ``frame_duration_s``, ``start_epoch_ms``,
-        ``scan_direction``, ``line_rate``).
+        The stack. ``pixel_size_nm`` is the first frame's; each
+        ``frame_metadata`` entry holds ``timestamp`` (s from the first frame),
+        ``frame_pixel_size_nm``, ``line_rate``, ``frame_duration_s``,
+        ``start_epoch_ms`` and ``scan_direction``. The last frame's
+        ``frame_duration_s`` is None when real frame times are used, because
+        there is no next frame to measure to.
+
+    Raises
+    ------
+    ValueError
+        If ``folder_path`` is not a folder, the first file has no
+        ``Scan Rate``, or the frames differ in shape.
+    FileNotFoundError
+        If the folder has no ``.spm`` or numbered files.
 
     Notes
     -----
-    The final frame's ``frame_duration_s`` is ``None`` — there's no frame N+1
-    to measure against, and inventing a duration would silently claim
-    information the file doesn't contain.
-
-    ``start_epoch_ms`` is derived from ``Date``, which is naive local time
-    with second precision. It is good enough for provenance but should not be
-    used for sub-second alignment across machines.
+    ``Date`` is local time with one-second precision, but it is stored as if
+    it were UTC, so ``start_epoch_ms`` can be off by the time zone offset. Use
+    it for records, not to align recordings to better than a second.
     """
     folder = Path(folder_path)
     if not folder.is_dir():

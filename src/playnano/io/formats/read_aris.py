@@ -1,10 +1,14 @@
 """
-Module to decode and load .aris high-speed AFM data files into an AFMImageStack object.
+Load Asylum Research ``.aris`` high-speed AFM files as an AFMImageStack.
 
-The Asylum Research ARIS files contain multiple frames that may differ in pixel
-resolution. The global pixel size (from the first frame) is stored in
-`pixel_size_nm`, while per-frame overrides are stored in each entry of
-`frame_metadata` under the key `frame_pixel_size_nm`.
+ARIS files are HDF5 files. Frames can differ in scan size, so each frame's
+pixel size is stored in its ``frame_metadata`` entry as
+``frame_pixel_size_nm``; the stack's ``pixel_size_nm`` is that of the first
+frame.
+
+.. warning::
+   Heights are returned in the units stored in the file, which is metres for
+   height channels, not nm as the other readers return.
 """
 
 import logging
@@ -136,21 +140,26 @@ def load_frames_and_scaling(
     selected_ch: str,
 ) -> tuple[np.ndarray, list[float]]:
     """
-    Load all frames for the given channel and compute per-frame pixel sizes.
+    Read every frame of one channel and work out each frame's pixel size.
 
     Parameters
     ----------
     data : h5py.Group
-        HDF5 group with frame/channel image data.
+        The ``/DataSet/Resolution 0`` group, holding one group per frame.
     info : h5py.Group
-        HDF5 group containing metadata and per-frame overrides.
+        The ``/DataSetInfo`` group, holding the scan parameters and any changes
+        made to them during the recording.
     selected_ch : str
-        Channel name to extract.
+        Channel to read.
 
     Returns
     -------
-    (ndarray, list of float)
-        3D stack array and per-frame pixel-size values (nm).
+    image_stack : numpy.ndarray
+        Frames in time order, shape (n_frames, height, width), in the units
+        stored in the file.
+    pixel_sizes_nm : list of float
+        Pixel size of each frame, in nm. Frames without their own scan size use
+        the global one.
     """
     sorted_keys = _get_sorted_frame_keys(data)
 
@@ -196,27 +205,31 @@ def load_aris(
     channel: str,
 ) -> AFMImageStack:
     """
-    Load image stack from a Asylum Research .aris file, scaled to nanometers.
-
-    The images are loaded, reshaped into frames, and have timestamps generated.
+    Load an Asylum Research ``.aris`` file.
 
     Parameters
     ----------
-    file_path : Path | str
-        Path to the .aris file.
+    file_path : str or pathlib.Path
+        The ``.aris`` file.
     channel : str
-        Channel to extract.
+        Channel to load, for example ``"HeightTrace"``, ``"HeightRetrace"``,
+        ``"AmplitudeRetrace"`` or ``"PhaseRetrace"``; the names depend on the
+        file.
 
     Returns
     -------
     AFMImageStack
-        Loaded AFM image stack with metadata and per-frame info.
+        The stack. Heights are in the units stored in the file (metres for
+        height channels), not nm. Each ``frame_metadata`` entry holds
+        ``timestamp`` (s from the first frame), ``frame_pixel_size_nm``,
+        ``line_rate`` (the global scan rate, in lines per second) and
+        ``start_epoch_ms`` (if the file records its start time).
 
-    Notes
-    -----
-    Pixel size may vary between frames in ARIS files. The global
-    `pixel_size_nm` attribute corresponds to the first frame, while
-    per-frame values are stored in `frame_metadata`.
+    Raises
+    ------
+    ValueError
+        If the channel is not in the file, or the number of frame times does
+        not match the number of frames.
     """
     file_path = Path(file_path)
     with h5py.File(file_path, "r") as file:

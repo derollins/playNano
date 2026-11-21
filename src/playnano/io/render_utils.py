@@ -1,22 +1,15 @@
 """
-Shared frame-rendering utilities for all rendered AFM exports.
+Frame rendering shared by the GIF, video and image sequence exports.
 
-This module provides the single source of truth for how frames are
-normalised, colourised, resized, and annotated across GIF, video,
-and image-sequence exports. Changing appearance here affects all
-three export formats consistently.
+:func:`render_frame` scales, colours, resizes and annotates one frame, so all
+three exports look the same. Module constants control the appearance:
 
-Constants
----------
-MIN_FRAME_HEIGHT : int
-    Frames shorter than this are upscaled; taller frames are unchanged.
-REFERENCE_HEIGHT : int
-    The height at which ``font_scale=1.0`` produces the default annotation
-    size. Derived font scale is proportional to the actual frame height.
-ANNOTATION_COLOR : tuple
-    Default RGB colour for all annotations.
-DEFAULT_FONT_SCALE : float
-    Base font scale passed to draw_scale_and_timestamp at REFERENCE_HEIGHT.
+- ``MIN_FRAME_HEIGHT`` (512): shorter frames are enlarged to this height;
+  taller frames are not resized.
+- ``REFERENCE_HEIGHT`` (512): the frame height at which ``font_scale`` is used
+  as given; annotation size scales with the rendered frame height.
+- ``ANNOTATION_COLOR`` ((255, 255, 255)): RGB colour of the annotations.
+- ``DEFAULT_FONT_SCALE`` (2.0): default ``font_scale`` of the exports.
 """
 
 import logging
@@ -49,43 +42,40 @@ def render_frame(
     zmax_val: float | None = None,
 ) -> np.ndarray:
     """
-    Normalise, colourise, resize, and annotate a single AFM frame.
-
-    This is the shared rendering pipeline used by all rendered exports
-    (GIF, video, image sequence). All appearance decisions are made here.
+    Scale, colour, resize and annotate one frame for an animated export.
 
     Parameters
     ----------
-    frame : np.ndarray
-        2D float array (H, W) representing a single AFM frame.
+    frame : numpy.ndarray
+        2D image.
     cmap : matplotlib.colors.Colormap
         Colormap to apply.
     timestamp : float
-        Timestamp in seconds for the annotation overlay.
+        Time to draw, in seconds.
     pixel_size_nm : float
-        Pixel size in nanometres, used to compute the scale bar length.
+        Pixel size of the frame, in nm, used for the scale bar.
     scale_bar_length_nm : int
-        Desired scale bar length in nanometres.
+        Length of the scale bar, in nm; 0 hides it.
     font_scale : float
-        Base font scale. The actual font size is derived proportionally
-        from the frame height relative to ``REFERENCE_HEIGHT``, so
-        annotations appear the same visual size regardless of resolution.
+        Size of the annotation text for a frame ``REFERENCE_HEIGHT`` pixels
+        high; scaled with the rendered frame height.
     draw_ts : bool
-        Whether to draw the timestamp overlay.
+        Draw the timestamp.
     draw_scale : bool
-        Whether to draw the scale bar overlay.
-    zmin_val : float or None
-        Pre-computed global minimum for normalisation. If ``None``,
-        per-frame normalisation is used.
-    zmax_val : float or None
-        Pre-computed global maximum for normalisation. If ``None``,
-        per-frame normalisation is used.
+        Draw the scale bar.
+    zmin_val, zmax_val : float or None, optional
+        Heights mapped to the bottom and top of the colormap; values outside
+        are clipped and NaN is drawn in the bottom colour. If they are equal,
+        the whole frame is drawn in the bottom colour. If either is None, the
+        frame is scaled from its own minimum to its maximum, with NaN counted
+        as 0. Default is None.
 
     Returns
     -------
-    np.ndarray
-        Annotated RGB frame as a uint8 array of shape (H, W, 3).
-        Height is at least ``MIN_FRAME_HEIGHT``.
+    numpy.ndarray
+        RGB image, uint8, of shape (height, width, 3). Frames shorter than
+        ``MIN_FRAME_HEIGHT`` are enlarged to that height (keeping the aspect
+        ratio) with cubic interpolation.
     """
     # --- Normalise ---
     if zmin_val is not None and zmax_val is not None:
@@ -138,27 +128,25 @@ def render_frame(
 
 def resolve_stack_data(afm_stack, raw: bool) -> tuple:
     """
-    Select the correct data source and metadata for a rendered export.
-
-    Centralises the raw-vs-processed selection logic shared by all
-    ``export_*`` functions.
+    Choose the data and frame metadata for an animated export.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
         The stack to export.
     raw : bool
-        If ``True``, use the unprocessed raw snapshot when available.
+        If True and the stack has a ``"raw"`` snapshot, use it, with the frame
+        metadata from before any frames were removed.
 
     Returns
     -------
-    stack_data : np.ndarray
-        The frame data array to render.
-    meta_src : list[dict]
-        Per-frame metadata (timestamps, pixel sizes).
+    stack_data : numpy.ndarray
+        The frames to render: the raw snapshot, or ``afm_stack.data``.
+    meta_src : list of dict
+        The matching per-frame metadata.
     is_filtered : bool
-        ``True`` when processed (filtered) data is being exported.
-        Callers should append ``"_filtered"`` to the output name.
+        True if processed data was chosen, so ``_filtered`` should be added to
+        the output name.
     """
     if raw and "raw" in afm_stack.processed:
         stack_data = afm_stack.processed["raw"]

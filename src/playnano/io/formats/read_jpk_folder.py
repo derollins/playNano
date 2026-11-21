@@ -1,8 +1,8 @@
 """
-Module to load .jpk AFM data files from a folder into Python NumPy arrays.
+Load a folder of JPK ``.jpk`` image files, one per frame, as an AFMImageStack.
 
-Files contained within the same folder are read together.
-Files read with the height data in nm.
+Files are read with AFMReader, which converts height and amplitude channels to
+nm. Frames are taken in file-name order.
 """
 
 import logging
@@ -192,23 +192,36 @@ def load_jpk_folder(
     folder_path: Path | str, channel: str, flip_image: bool = True
 ) -> AFMImageStack:
     """
-    Load an AFM video from a folder of individual .jpk image files.
-
-    AFMReader converts "height", "measuredHeight" and "amplitude" channels to nm.
+    Load a folder of ``.jpk`` files as one stack.
 
     Parameters
     ----------
-    folder_path : Path | str
-        Path to folder containing .jpk files.
+    folder_path : str or pathlib.Path
+        Folder of ``.jpk`` files, one per frame. Files are sorted by name.
     channel : str
-        Channel to extract.
+        Channel to load, for example ``"height_trace"``; the same names as
+        AFMReader's ``load_jpk``.
     flip_image : bool, optional
-        Flip each image vertically if True.
+        Flip each frame vertically. AFMReader already flips ``.jpk`` frames, so
+        True (the default) returns frames in the row order stored in the file,
+        and False returns AFMReader's orientation.
 
     Returns
     -------
     AFMImageStack
-        Loaded AFM image stack with metadata and per-frame info.
+        The stack. ``pixel_size_nm`` is the first frame's; each
+        ``frame_metadata`` entry holds ``timestamp`` (s from the first frame),
+        ``frame_pixel_size_nm``, ``line_rate``, ``frame_duration_s``,
+        ``start_epoch_ms`` and ``scan_direction``.
+        ``stack.acquisition["bidirectional"]`` records whether the scan was
+        interlaced, worked out from the frame timing.
+
+    Raises
+    ------
+    ValueError
+        If ``folder_path`` is not a folder, or the frames differ in shape.
+    FileNotFoundError
+        If the folder has no ``.jpk`` files.
     """
     folder = Path(folder_path)
     if not folder.is_dir():

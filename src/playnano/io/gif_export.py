@@ -1,15 +1,8 @@
 """
-GIF export utilities for AFM image stacks.
+Export AFM image stacks as annotated, animated GIFs.
 
-This module provides functions for generating animated GIFs from AFM image stacks,
-with optional timestamps and scale bars. Frames can be normalized automatically or
-scaled using a fixed z-range.
-
-Dependencies
-------------
-- matplotlib
-- numpy
-- Pillow (PIL)
+Frames are coloured and annotated by :mod:`playnano.io.render_utils`, which the
+video and image sequence exports share, and written with Pillow.
 """
 
 import logging
@@ -48,69 +41,46 @@ def create_gif_with_scale_and_timestamp(
     font_scale: float = DEFAULT_FONT_SCALE,
 ):
     """
-    Create an animated GIF from an AFM image stack with optional overlays.
+    Write an animated GIF from an image stack, with optional time and scale annotations.
 
-    Frames are normalized, colorized using a matplotlib colormap, and annotated
-    with a scale bar and timestamps before being compiled into a GIF.
+    Use :func:`export_gif` to export an :class:`~playnano.afm_stack.AFMImageStack`.
 
     Parameters
     ----------
-    image_stack : np.ndarray
-        3D array of shape (N, H, W) representing the AFM image stack.
-
-    pixel_sizes_nm : list
-        List containing the size of a pixel in nanometers for each frame.
-
-    timestamps : list[float] or tuple[float], optional
-        Timestamps for each frame in seconds. If ``None`` or invalid,
-        frame indices are used.
-
-    scale_bar_length_nm : int
-        Length of the scale bar in nanometers. Default is 100.
-
-    output_path : str
-        Path where the GIF will be saved. Default is 'output'.
-
-    fps : float
-        Playback frame rate in frames per second. Default is 5.0.
-        GIF format has limited temporal resolution; the actual frame
-        delay is rounded to the nearest millisecond.
-
-    cmap_name : str
-        Name of the matplotlib colormap to apply. Default is 'afmhot'.
-
-    zmin : float or str or None, optional
-        Minimum z-value mapped to colormap low end.
-        The string literal ``"auto"`` uses the 1st percentile.
-
-    zmax : float or str or None, optional
-        Maximum z-value mapped to colormap high end.
-        The string literal ``"auto"`` uses the 99th percentile.
-
-    draw_ts : bool
-        Whether to draw timestamps. Default is True.
-
-    draw_scale : bool
-        Whether to draw a scale bar. Default is True.
-
-    font_scale : float
-        Base font scale for annotations.
+    image_stack : numpy.ndarray
+        3D image stack of shape (n_frames, height, width).
+    pixel_sizes_nm : list of float
+        Pixel size of each frame, in nm. If it is not a list with one value per
+        frame, no scale bar is drawn.
+    timestamps : list or tuple of float, optional
+        Time of each frame, in seconds. If it is not a list or tuple with one
+        value per frame, frame numbers are drawn instead.
+    scale_bar_length_nm : int, optional
+        Length of the scale bar, in nm; 0 hides it. Default is 100.
+    output_path : str or pathlib.Path, optional
+        The GIF file to write. Default is ``"output"``.
+    fps : float, optional
+        Frames per second. The frame delay is rounded down to a whole number of
+        milliseconds; with 0 or less, each frame shows for 0.5 s. Default is 5.0.
+    cmap_name : str, optional
+        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.
+    zmin, zmax : float or str or None, optional
+        Colour scale limits, as for the ``export_*`` functions: both None scales
+        each frame separately; otherwise the limits apply to every frame, with
+        ``"auto"`` for the 1st or 99th percentile and None for the stack's
+        minimum or maximum. Default is None.
+    draw_ts : bool, optional
+        Draw each frame's time on the frame. Default is True.
+    draw_scale : bool, optional
+        Draw a scale bar. Default is True.
+    font_scale : float, optional
+        Size of the annotation text for a frame 512 pixels high. Default is 2.0.
 
     Raises
     ------
     ValueError
-        If ``zmin`` equals ``zmax`` or ``timestamps`` have incorrect shape.
-
-    Returns
-    -------
-    None
-
-    Notes
-    -----
-    - Timestamps and scale bars are drawn in white.
-    - Frames are normalized globally if ``zmin`` and ``zmax`` are provided;
-      otherwise, per-frame.
-
+        If ``zmin`` is greater than ``zmax``, or a limit is not a number,
+        ``"auto"`` or None.
     """
     frames = []
     cmap = cm.get_cmap(cmap_name)
@@ -199,61 +169,59 @@ def export_gif(
     font_scale: float = DEFAULT_FONT_SCALE,
 ) -> None:
     """
-    Export an AFM image stack as an annotated GIF.
+    Export a stack as an annotated, animated GIF.
+
+    The file is ``<output_folder>/<output_name>.gif``.
+    ``_filtered`` is added to the name when processed data is exported, that
+    is when ``raw`` is False and the stack has processed layers other than
+    ``"raw"``.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
-        AFM stack object containing raw and/or processed data.
-
+        The stack to export.
     make_gif : bool
-        Whether to generate the GIF. If ``False``, the function exits immediately.
-
+        If False, do nothing.
     output_folder : str or None
-        Directory to save the GIF. Defaults to ``"output"`` if ``None``.
-
+        Folder for the output; created if missing. If None, ``./output``.
     output_name : str or None
-        Base name for the GIF file. If ``None``, derived from the stack file name.
-
+        Name for the output, without extension. Any folder part and known
+        extension are removed. If None or empty, the name of the file the stack
+        was loaded from is used.
     scale_bar_nm : int or None
-        Length of the scale bar in nanometers. Defaults to 100 nm.
+        Length of the scale bar, in nm. 0 hides it; None uses 100.
+    cmap_name : str, optional
+        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.
+    raw : bool, optional
+        If True, export the unprocessed snapshot ``stack.processed["raw"]``,
+        with the frame times from before any frames were removed. Otherwise
+        export ``stack.data``. Default is False.
+    fps : float, optional
+        Frames per second. Default is 5.0.
+    zmin : float or str or None, optional
+        Height mapped to the bottom of the colormap, in the units of the data
+        (usually nm), or ``"auto"`` for the 1st percentile of the stack.
+        Default is None.
+    zmax : float or str or None, optional
+        Height mapped to the top of the colormap, or ``"auto"`` for the 99th
+        percentile of the stack. Default is None.
 
-    raw : bool
-        If ``True``, export raw (unprocessed) data; otherwise export processed data
-        if available. Default is False.
+        If ``zmin`` and ``zmax`` are both None, each frame is scaled separately
+        from its own minimum to its maximum. If either is set, both apply to
+        every frame, and a None limit becomes the minimum or maximum of the
+        whole stack. Values outside the range are clipped.
+    draw_ts : bool, optional
+        Draw each frame's time, in seconds, on the frame. Default is True.
+    draw_scale : bool, optional
+        Draw a scale bar. Default is True.
+    font_scale : float, optional
+        Size of the annotation text for a frame 512 pixels high; scaled with the
+        rendered frame height. Default is 2.0.
 
-    fps : float
-        Frame rate for the GIF in frames per second. Default is 5.0.
-
-    zmin : float or None, optional
-        Minimum z-value mapped to colormap low end. The string literal ``"auto"``
-        can also be used to automatically set the 1st percentile. ``None`` uses
-        the minimum value of the data.
-
-    zmax : float or None, optional
-        Maximum z-value mapped to colormap high end. The string literal ``"auto"``
-        can also be used to automatically set the 99th percentile. ``None`` uses
-        the maximum value of the data.
-
-    draw_ts : bool
-        Whether to draw timestamps on each frame. Default is True.
-
-    draw_scale : bool
-        Whether to draw a scale bar on each frame. Default is True.
-
-    font_scale : float
-        Base font scale for annotations at the reference height.
-    Returns
-    -------
-    None
-
-    Notes
-    -----
-    - Uses processed data if available; otherwise falls back to raw data.
-    - Timestamps and pixel size are read from ``afm_stack`` metadata although if raw
-      data is exported after an edit_stack processing step then the timestamps in
-      ``afm_stack.state_backups['frame_metadata_before_edit']`` are retrieved and used.
-    - Output file name includes ``"_filtered"`` if processed data is exported.
+    Raises
+    ------
+    ValueError
+        If ``zmin`` is greater than ``zmax``.
     """
     if not make_gif:
         return

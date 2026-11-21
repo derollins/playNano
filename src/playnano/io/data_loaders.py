@@ -1,21 +1,16 @@
 """
-Data loaders for AFM image stacks exported by **playNano**.
+Load stacks saved by playNano as NPZ, HDF5 or OME-TIFF files.
 
-This module provides readers for serialized AFMImageStack bundles created
-by the export routines (``.npz``, ``.h5``, and OME-TIFF). Each loader
-reconstructs a :class:`~playnano.afm_stack.AFMImageStack` with correct
-data, pixel size, channel name, and per-frame metadata (timestamps,
-frame_pixel_size_nm etc.)
-All loaders restore provenance and any stored processing or mask data.
+- :func:`load_npz_bundle` and :func:`load_h5_bundle` restore everything
+  :mod:`playnano.io.export_data` saved: data, processed layers, masks, frame
+  metadata, provenance and the saved metadata from before frame removal.
+- :func:`load_ome_tiff_stack` restores the data, pixel size, frame times,
+  channel name and provenance. OME-TIFF files do not hold processed layers or
+  masks.
 
-Functions
----------
-load_npz_bundle
-    Load a `.npz` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.
-load_h5_bundle
-    Load a `.h5` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.
-load_ome_tiff_stack
-    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.
+Usually these are called through :func:`playnano.io.loader.load_afm_stack` or
+:meth:`playnano.afm_stack.AFMImageStack.load_data`, which choose the loader from
+the file extension.
 """
 
 import json
@@ -33,39 +28,34 @@ logger = logging.getLogger(__name__)
 
 def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an :class:`~playnano.afm_stack.AFMImageStack` from a `.npz` bundle.
+    Load a stack from an NPZ bundle.
 
-    The `.npz` file must contain the following keys:
-
-    - ``data`` : ``float32`` array of shape ``(n_frames, H, W)``
-    - ``pixel_size_nm`` : scalar ``float``
-    - ``channel`` : ``str`` scalar
-    - ``frame_metadata_json`` : JSON-encoded list of dicts
-    - ``provenance_json`` : JSON-encoded dict
-    - ``processed__<step>`` : optional processed frame arrays
-    - ``masks__<mask>`` : optional boolean mask arrays
-    - ``state_backups_json`` : optional JSON-encoded dict of saved states
-
-    This is the structure produced by :func:`playnano.io.export_data.save_npz_bundle`.
+    Reads files written by :func:`~playnano.io.export_data.save_npz_bundle`.
 
     Parameters
     ----------
-    path : pathlib.Path
-        Path to the `.npz` file.
-    channel : str, default="height_trace"
-        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`
-        but ignored when reading the bundle.
+    path : str or pathlib.Path
+        The ``.npz`` file.
+    channel : str, optional
+        Ignored; the channel saved in the bundle is used. Accepted so all
+        loaders can be called the same way by
+        :func:`~playnano.io.loader.load_afm_stack`.
 
     Returns
     -------
-    playnano.afm_stack.AFMImageStack
-        Reconstructed AFM image stack with attributes populated:
-        ``.processed``, ``.masks``, and ``.provenance``.
+    AFMImageStack
+        The stack, with ``processed``, ``masks``, ``frame_metadata``,
+        ``state_backups`` and ``provenance`` restored.
+        ``stack.provenance["bundle"]`` records the file it was read from
+        (``bundle_file``) and its type (``bundle_type``).
 
     Raises
     ------
+    KeyError
+        If ``data``, ``pixel_size_nm`` or ``channel`` is missing.
     ValueError
-        If required keys are missing or JSON blobs cannot be decoded.
+        If ``frame_metadata_json`` or ``provenance_json`` is missing, or a JSON
+        entry cannot be decoded.
     """
     arrs = np.load(str(path), allow_pickle=True)
 
@@ -132,44 +122,35 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
 def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an :class:`~playnano.afm_stack.AFMImageStack` from an HDF5 bundle.
+    Load a stack from an HDF5 bundle.
 
-    Expected HDF5 structure
-    -----------------------
-    Datasets
-        - ``/data`` : ``float32`` array of shape ``(n_frames, H, W)``
-        - ``/processed/<step>`` : optional processed datasets
-        - ``/masks/<mask>`` : optional boolean mask datasets
-        - ``/frame_metadata_json`` : UTF-8 encoded JSON (list of dicts)
-        - ``/provenance_json`` : UTF-8 encoded JSON (dict)
-        - ``/state_backups_json`` : optional UTF-8 JSON (dict)
-    Attributes
-        - ``pixel_size_nm`` : scalar float
-        - ``channel`` : string
-
-    Files with the structure are produced by
-    :func:`playnano.io.export_data.save_h5_bundle`.
+    Reads files written by :func:`~playnano.io.export_data.save_h5_bundle`.
 
     Parameters
     ----------
-    path : pathlib.Path
-        Path to the `.h5` file.
-    channel : str, default="height_trace"
-        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`
-        but ignored when reading the bundle.
+    path : str or pathlib.Path
+        The ``.h5`` file.
+    channel : str, optional
+        Ignored; the channel saved in the bundle is used. Accepted so all
+        loaders can be called the same way by
+        :func:`~playnano.io.loader.load_afm_stack`.
 
     Returns
     -------
-    playnano.afm_stack.AFMImageStack
-        Fully reconstructed AFM image stack with provenance, processed steps,
-        and masks restored.
+    AFMImageStack
+        The stack, with ``processed``, ``masks``, ``frame_metadata``,
+        ``state_backups`` (if saved) and ``provenance`` restored.
+        ``stack.provenance["bundle"]`` records the file it was read from
+        (``bundle_file``) and its type (``bundle_type``).
 
     Raises
     ------
+    KeyError
+        If the ``/data`` dataset or the ``pixel_size_nm`` or ``channel``
+        attribute is missing.
     ValueError
-        If required datasets are missing or JSON decoding fails.
-        If required datasets (``frame_metadata_json`` or ``provenance_json``)
-        are missing or contain invalid JSON.
+        If ``/frame_metadata_json`` or ``/provenance_json`` is missing, or a
+        JSON dataset cannot be decoded.
     """
     with h5py.File(str(path), "r") as f:
         data = f["data"][()].astype(np.float32)
@@ -225,36 +206,39 @@ def load_h5_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
 
 def load_ome_tiff_stack(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
-    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.
+    Load a stack from an OME-TIFF file.
 
-    Attempts to parse OME-XML and custom metadata tags to reconstruct
-    pixel size, timestamps, and provenance. Falls back gracefully if
-    certain metadata are unavailable.
+    Made for files saved by :func:`~playnano.io.export_data.save_ome_tiff_stack`,
+    but other OME-TIFF stacks with axes (T, C, Z, Y, X) or (T, Y, X) also load;
+    only the first channel and Z plane are read.
 
     Parameters
     ----------
-    path : pathlib.Path
-        Path to the `.ome.tif` file created by
-        :func:`~playnano.io.export_data.save_ome_tiff_stack`.
+    path : str or pathlib.Path
+        The ``.ome.tif`` file.
     channel : str, optional
-        Fallback channel name if none is found in OME metadata.
+        Channel name to use if the file does not name one. Default is
+        ``"height_trace"``.
 
     Returns
     -------
-    playnano.afm_stack.AFMImageStack
-        Reconstructed AFMImageStack with:
+    AFMImageStack
+        The stack, as float32. Values are taken from the OME metadata where
+        present, with these fallbacks:
 
-        - ``data`` : 3D ``float32`` array ``(T, H, W)``
-        - ``pixel_size_nm`` : float, derived from OME physical size
-        - ``channel`` : str, from OME Channel or fallback
-        - ``frame_metadata`` : list of dicts containing timestamps
-        - ``provenance`` : dict reconstructed from custom or embedded tags
+        - pixel size from ``PhysicalSizeX`` (µm, converted to nm), else 1.0 nm;
+        - frame times from each plane's ``DeltaT``, else the frame index;
+        - provenance from TIFF tag 65000, else from a ``UserDataProvenance``
+          entry in the image description, else empty.
+
+        ``frame_metadata`` holds only ``timestamp`` and ``frame_pixel_size_nm``.
+        ``stack.provenance["bundle"]`` records the file it was read from
+        (``bundle_file``) and its type (``bundle_type``).
 
     Raises
     ------
     ValueError
-        If the image array shape is unsupported or essential metadata
-        cannot be parsed.
+        If the image does not have 3 or 5 dimensions.
     """
     import xml.etree.ElementTree as ET
 

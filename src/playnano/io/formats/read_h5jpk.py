@@ -1,8 +1,8 @@
 """
-Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.
+Load JPK ``.h5-jpk`` high-speed AFM files as an AFMImageStack.
 
-Files containing multiple image frames are read together.
-Converts the height data into nm from another metric unit (e.g. m).
+All frames are read from one HDF5 file. Channels with a length unit (for example
+m) are converted to nm; see :func:`apply_z_unit_conversion`.
 """
 
 import logging
@@ -422,7 +422,25 @@ def _guess_and_standardize_units_to_nm(image_stack: np.ndarray) -> np.ndarray:
 def apply_z_unit_conversion(
     images: np.ndarray, channel_group: h5py.Group, channel: str = "height_trace"
 ) -> np.ndarray:
-    """Apply z unit conversion to nanometers if needed, or guess if unknown."""
+    """
+    Convert a channel's values to nm if it has a length unit.
+
+    Parameters
+    ----------
+    images : numpy.ndarray
+        Channel values, already z-scaled.
+    channel_group : h5py.Group
+        The channel's group, whose attributes give the unit.
+    channel : str, optional
+        Channel name, used only in log messages. Default is ``"height_trace"``.
+
+    Returns
+    -------
+    numpy.ndarray
+        The values in nm if the unit is a length; unchanged if it is ``"V"``,
+        ``"v"`` or ``"deg"``. If the unit is missing or not recognised, it is
+        guessed from the range of the data, falling back to nm.
+    """
     try:
         z_unit = _get_z_unit_h5(channel_group)
     except Exception as e:
@@ -443,35 +461,44 @@ def load_h5jpk(
     file_path: Path | str, channel: str, flip_image: bool = True
 ) -> AFMImageStack:
     """
-    Load image stack from a JPK .h5-jpk file, scaled to nanometers.
+    Load a JPK ``.h5-jpk`` file.
 
-    Frames are read from the channel's frame axis, z-scaled, converted to nm, and
-    given real per-frame timestamps from the file's start/end-time datasets (with an
-    interlace-aware scan-rate fallback). Interlace (bidirectional) and motion are read
-    from the measurement attributes.
+    Each frame is reshaped from the channel's data, z-scaled and converted to nm
+    (see :func:`apply_z_unit_conversion`). Frame times come from the file's
+    start and end time records; if they are missing, they are worked out from the
+    scan rate, allowing for interlaced (bidirectional) scanning.
 
     Parameters
     ----------
-    file_path : Path | str
-        Path to the .h5-jpk file.
+    file_path : str or pathlib.Path
+        The ``.h5-jpk`` file.
     channel : str
-        Channel to extract.
+        Channel to load, for example ``"height_trace"``,
+        ``"measuredheight_trace"``, ``"amplitude_retrace"`` or
+        ``"phase_trace"``: the channel name in lower case, ``_``, then
+        ``trace`` or ``retrace``.
     flip_image : bool, optional
-        Flip each image vertically if True.
+        Flip each frame vertically. Default is True.
 
     Returns
     -------
     AFMImageStack
-        Loaded AFM image stack with metadata and per-frame info.
+        The stack. Each ``frame_metadata`` entry holds ``timestamp`` (s from
+        the first frame), ``frame_pixel_size_nm``, ``line_rate``,
+        ``frame_duration_s``, ``start_epoch_ms`` and ``scan_direction``.
+        ``stack.acquisition["bidirectional"]`` records whether the scan was
+        interlaced.
+
+    Raises
+    ------
+    ValueError
+        If the channel is not in the file.
 
     Notes
     -----
-    In .h5-jpk files the pixel size, interlace mode and motion are defined at the
-    measurement level and are constant across all frames, so those metadata values are
-    identical for every frame. Timestamps and frame durations are per-frame.
-
-    This differs from .jpk and .spm folder-based data, where pixel size may vary
-    between frames and is stored per-frame.
+    Pixel size, interlacing and scan direction are set per measurement, so they
+    are the same for every frame. Only the first measurement in the file is read;
+    a warning is logged if there are more.
     """
     file_path = Path(file_path)
 
