@@ -1,17 +1,10 @@
 # mypy: disable-error-code=type-arg
 """
-Particle boundary size analysis module for the playNano analysis pipeline.
+Analysis module that measures the size of each tracked particle over time.
 
-This module computes a per-particle boundary size metric over time by consuming
-the output of ``particle_region_extraction``.
-
-For each tracked particle and frame, the maximum dimension of the (tight)
-bounding box is recorded.  Optionally, a threshold may be applied to classify
-each time point into a discrete state (e.g. compact vs extended).
-
-The module is designed to integrate with the playNano ``AnalysisPipeline`` and
-records results in a provenance-aware, serializable format suitable for
-downstream analysis and plotting.
+The size is the longer side of each region's bounding box, as found by
+``particle_region_extraction``. A threshold can split the time points into two
+states, for example compact and extended.
 """
 
 from typing import Any, Dict, List, Optional
@@ -23,41 +16,19 @@ from playnano.analysis.base import AnalysisModule
 
 class BoundarySizeModule(AnalysisModule):
     """
-    Measure particle boundary size over time from pre-extracted particle regions.
+    Measure each tracked particle's size, frame by frame.
 
-    This module consumes output from ``ParticleRegionExtractionModule``
-    (registered as ``"particle_region_extraction"`` in the pipeline).  It
-    expects that module to have been run with ``include_bbox=True``.
-
-    The boundary size metric is derived from the tight bounding box:
-
-    ``max_dim = max(bbox_height, bbox_width)``
-
-    Optionally, a threshold can be applied to derive a discrete state variable
-    (e.g. compact vs extended).
-
-    Parameters accepted in :meth:`run`
-    ------------------------------------
-    extraction_module : str, default ``"particle_region_extraction"``
-        Name of the upstream extraction module in the pipeline.
-    threshold : float or None
-        If provided, each frame is classified as ``state = int(max_dim > threshold)``.
-    measure : str, default ``"bbox_max_dim"``
-        Metric name (currently only ``"bbox_max_dim"`` is supported).
-
-    Notes
-    -----
-    - If a region entry is ``None`` (missing detection) or its bounding box is
-      ``None``, ``max_dim`` is recorded as ``np.nan``.
-    - If the upstream extraction module was run without ``include_bbox=True``,
-      a ``RuntimeError`` is raised.
+    Pipeline name: ``"tracked_particle_boundary_size"``. It needs the output of
+    ``particle_region_extraction``, run with ``include_bbox=True`` (the
+    default). The size, ``max_dim``, is the longer side of the region's tight
+    bounding box, in pixels. See :meth:`run` for the parameters and outputs.
     """
 
     version = "0.1.0"
 
     @property
     def name(self) -> str:
-        """Module name for registration in the analysis pipeline."""
+        """Name of this module in a pipeline, ``"tracked_particle_boundary_size"``."""
         return "tracked_particle_boundary_size"
 
     requires = ["particle_region_extraction"]
@@ -72,50 +43,53 @@ class BoundarySizeModule(AnalysisModule):
         measure: str = "bbox_max_dim",
     ) -> Dict[str, Any]:
         """
-        Execute the boundary size analysis.
+        Measure the size of each tracked particle in each frame.
 
         Parameters
         ----------
         stack : AFMImageStack
-            Input image stack (not used directly; present for pipeline API
-            compatibility).
-        previous_results : dict, optional
-            Results from earlier pipeline modules.  Must contain output from
-            ``extraction_module`` with ``include_bbox=True``.
-        extraction_module : str, default ``"particle_region_extraction"``
-            Key identifying the region extraction module output in
-            ``previous_results``.
-        threshold : float or None, optional
-            Threshold applied to ``max_dim`` to compute a binary state
-            variable.  If ``None``, no state classification is performed.
-        measure : str, default ``"bbox_max_dim"``
-            Name of the boundary size metric.  Currently only
-            ``"bbox_max_dim"`` is supported.
+            The stack; not used directly.
+        previous_results : dict
+            Outputs of earlier steps. Must hold the output of
+            ``extraction_module``.
+        extraction_module : str, optional
+            Name of the region extraction step. Default is
+            ``"particle_region_extraction"``.
+        threshold : float, optional
+            If given, each frame is also given a ``state``: 1 if ``max_dim`` is
+            greater than ``threshold`` (in pixels), otherwise 0. Default is None.
+        measure : str, optional
+            The size measure. Only ``"bbox_max_dim"`` is available. Default is
+            ``"bbox_max_dim"``.
 
         Returns
         -------
         dict
-            Keys:
+            ``"measure"``, ``"threshold"``
+                The values used.
+            ``"per_track"``
+                One dict per track, with ``track_id``, ``frames``, ``timestamps``
+                (s), ``max_dim`` (pixels) and, with a threshold, ``state``.
+                Frames where the particle was not found have ``max_dim`` NaN and
+                ``state`` NaN.
+            ``"flat_table"``
+                The same values with one dict per track and frame, with
+                ``track_id``, ``label``, ``frame``, ``timestamp``, ``max_dim`` and,
+                with a threshold, ``state``; ready for :class:`pandas.DataFrame`.
+            ``"plot_hints"``
+                Names of plotting functions in ``playnano_plugins``, a package that
+                is not part of playNano.
+            ``"summary"``
+                ``n_tracks``, ``n_rows``, ``n_missing_region_measurements`` and
+                ``state_included``.
 
-            ``measure`` : str
-                Name of the boundary size metric used.
-            ``threshold`` : float or None
-                Threshold used for state classification, or ``None``.
-            ``per_track`` : list of dict
-                Per-track time series.  Each dict has:
-
-                - ``"track_id"`` : int
-                - ``"frames"`` : list of int
-                - ``"timestamps"`` : list of float
-                - ``"max_dim"`` : list of float (``np.nan`` where absent)
-                - ``"state"`` : list of int/float  *(only if threshold given)*
-
-            ``flat_table`` : list of dict
-                Row-per-frame representation suitable for ``pandas.DataFrame``.
-            ``plot_hints`` : dict
-                Suggested plotting helper function names.
-            ``summary`` : dict
-                Bookkeeping counters.
+        Raises
+        ------
+        RuntimeError
+            If ``previous_results`` is None, lacks ``extraction_module``, or the
+            extraction ran with ``include_bbox=False``.
+        ValueError
+            If ``measure`` is not ``"bbox_max_dim"``.
         """
         if previous_results is None:
             raise RuntimeError(f"{self.name!r} requires previous results to run.")

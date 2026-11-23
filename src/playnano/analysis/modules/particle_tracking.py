@@ -1,27 +1,15 @@
 """
-Module for linking particle features across frames to build trajectories.
+Analysis module that links detected features from frame to frame into tracks.
 
-This module defines the ParticleTrackingModule, which links features
-detected in sequential frames of an AFM image stack using nearest-neighbor
-matching based on feature coordinates.
+Each feature is linked to the nearest feature of an existing track that is
+close enough; features that are not linked start new tracks. Tracks can
+continue across frames where the particle was not detected.
 
-Features are matched across frames if they lie within a specified maximum
-distance. Tracks are formed by chaining these matches over time.
-
-Each resulting track includes:
-    - A unique track ID
-    - A list of frames spanned by the track (first→last detection)
-    - A list of point indices aligned with frames; missing detections are None
-    - A list of coordinates describing the particle's positions
-
-Optionally, per-track masks are extracted from the labeled feature masks.
+.. versionadded:: 0.2.0
 
 See Also
 --------
-playnano.analysis.modules.feature_detection : Mask based particle detection method.
-playnano.analysis.modules.log_blob_detection : LoG-based particle detection method.
-
-.. versionadded:: 0.2.0
+playnano.analysis.modules.feature_detection : Detects the features to track.
 """
 
 from typing import Any, Optional, Sequence
@@ -34,32 +22,56 @@ from playnano.analysis.base import AnalysisModule
 
 class ParticleTrackingModule(AnalysisModule):
     """
-    Link detected features frame-to-frame to produce particle trajectories.
+    Link features detected in successive frames into tracks.
 
-    This module links features detected by a prior feature detection module
-    using nearest-neighbor coordinate matching across adjacent frames. A new
-    track is created for each unmatched feature.
+    Pipeline name: ``"particle_tracking"``. It needs the output of
+    ``feature_detection`` from an earlier step.
 
-    Version
-    -------
-    0.2.0
+    In each frame, tracks are extended in the order they started: each takes
+    the nearest feature not yet taken that is closer than ``max_distance`` to
+    its last position. This is quick but not globally optimal: when particles
+    come close, an older track can take a feature a newer one fits better.
+    Features left over start new tracks.
 
-    Version 0.2.0 allows tracks to continue across missing detections
-    and supports scaling the distance threshold with time since last detection.
+    Version 0.2.0 added ``max_missing`` and ``distance_scale``. See :meth:`run`
+    for the parameters and outputs.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> data = np.zeros((3, 64, 64))
+    >>> for t in range(3):
+    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0  # a 6 x 6 pixel particle
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],
+    ... )
+    >>> from playnano.analysis.modules.feature_detection import (
+    ...     FeatureDetectionModule,
+    ... )
+    >>> from playnano.analysis.modules.particle_tracking import (
+    ...     ParticleTrackingModule,
+    ... )
+    >>> detected = FeatureDetectionModule().run(
+    ...     stack, mask_fn="mask_threshold", threshold=1.0
+    ... )
+    >>> result = ParticleTrackingModule().run(
+    ...     stack, {"feature_detection": detected}, max_distance=5
+    ... )
+    >>> track = result["tracks"][0]
+    >>> track["frames"], track["coords"]
+    ([0, 1, 2], [(12.5, 12.5), (13.5, 12.5), (14.5, 12.5)])
     """
 
     version = "0.2.0"
 
     @property
     def name(self) -> str:
-        """
-        Name of the analysis module.
-
-        Returns
-        -------
-        str
-            Unique identifier: "particle_tracking".
-        """
+        """Name of this module in a pipeline, ``"particle_tracking"``."""
         return "particle_tracking"
 
     requires = ["feature_detection", "log_blob_detection"]
@@ -264,69 +276,73 @@ class ParticleTrackingModule(AnalysisModule):
         **params,
     ) -> dict[str, Any]:
         """
-        Track particles across frames using nearest-neighbor association.
+        Link the features detected in each frame into tracks.
 
         Parameters
         ----------
         stack : AFMImageStack
-            The input AFM image stack.
-
-        previous_results : dict[str, Any], optional
-            Must contain results from a detection module, including:
-
-            - coord_key (e.g., "features_per_frame"): list of dicts with per-frame
-              features
-            - "labeled_masks": per-frame mask of label regions
-
+            The stack; not used directly.
+        previous_results : dict
+            Outputs of earlier steps. Must hold a detection output with the
+            ``coord_key`` list and ``"labeled_masks"``.
         detection_module : str, optional
-            Which module to read features from (default: "feature_detection").
-
+            Name of the detection step to use. If it has not run,
+            ``log_blob_detection`` is tried, then ``feature_detection``. Default is
+            ``"feature_detection"``.
         coord_key : str, optional
-            Key in previous_results[detection_module] containing per-frame feature
-            dicts (default: "features_per_frame").
-
-        coord_columns : Sequence[str], optional
-            Keys to extract coordinates from each feature; falls back to "centroid" if
-            needed. Default is ("centroid_x", "centroid_y").
-
+            Key of the per-frame feature lists in the detection output. Default is
+            ``"features_per_frame"``.
+        coord_columns : list or tuple of str, optional
+            Keys of each feature's two coordinates. If a feature lacks them, its
+            ``centroid`` is used instead. ``feature_detection`` has no
+            ``centroid_x`` or ``centroid_y``, so with the default, coordinates are
+            ``centroid``: (row, col), in pixels. Default is
+            ``("centroid_x", "centroid_y")``.
         max_distance : float, optional
-            Maximum allowed movement per frame in coordinate units (default: 5.0).
-
+            Distance a particle can move between frames and still be linked, in
+            the same units as the coordinates (pixels for ``feature_detection``).
+            Only moves strictly shorter than this are linked. Default is 5.0.
         max_missing : int, optional
-            Maximum allowed consecutive missing detections before terminating a track.
-            Default is 0 (no missing allowed).
-
-        distance_scale : str, optional
-            How to scale max_distance with time since last detection in frames:
-            "constant" (default), "linear" (scale linearly with time), or "sqrt" (scale
-            with square root of time).
+            Number of frames in a row a track can go without a feature before it
+            ends. Default is 0: a track ends at its first missed frame.
+        distance_scale : {"constant", "linear", "sqrt"}, optional
+            How ``max_distance`` grows after missed frames, with ``dt`` the number
+            of frames since the track's last feature: ``"constant"`` keeps it,
+            ``"linear"`` multiplies it by ``dt`` and ``"sqrt"`` by ``sqrt(dt)``.
+            Default is ``"constant"``.
+        **params
+            Not used; ignored.
 
         Returns
         -------
         dict
-            Dictionary with keys:
+            ``"tracks"``
+                One dict per track, with:
 
-            - tracks : list of dict
-                Per-track dictionaries containing:
+                - ``id`` (int): from 0, in the order tracks started.
+                - ``frames`` (list of int): every frame from the track's first
+                  feature to its last.
+                - ``point_indices`` (list of int or None): the index of the
+                  track's feature in each frame's list in the detection output,
+                  or None for a missed frame.
+                - ``coords`` (list of tuple or None): the feature's coordinates in
+                  each frame, or None for a missed frame.
+            ``"track_masks"``
+                Maps each track ID to a boolean mask of its last feature, if the
+                feature has a ``label``.
+            ``"n_tracks"``
+                The number of tracks.
 
-                - id : int
-                  Track ID
-
-                - frames : list[int]
-                  Frame indices spanned by track
-
-                - point_indices : list[Optional[int]]
-                  Indices into features_per_frame
-
-                - coords : list[Optional[tuple[float, float]]]
-                  Coordinates (coord0, coord1) aligned with frames; None indicates
-                  missing detection.
-
-            - track_masks : dict[int, np.ndarray]
-              Last mask per track
-
-            - n_tracks : int
-              Total number of tracks
+        Raises
+        ------
+        RuntimeError
+            If there is no detection output, or it lacks ``coord_key`` or
+            ``"labeled_masks"``.
+        ValueError
+            If ``max_distance`` or ``max_missing`` is negative, or
+            ``distance_scale`` is not recognised.
+        KeyError
+            If a feature has neither ``coord_columns`` nor ``centroid``.
         """
 
         if previous_results is None:

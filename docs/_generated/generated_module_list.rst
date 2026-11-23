@@ -1,10 +1,10 @@
-- :mod:`count_nonzero <playnano.analysis.modules.count_nonzero>` - Analysis module for counting non-zero data points in an array.
+- :mod:`count_nonzero <playnano.analysis.modules.count_nonzero>` - Analysis module that counts the non-zero pixels in each frame.
 - :mod:`dbscan_clustering <playnano.analysis.modules.dbscan_clustering>` - DBSCAN clustering on features over the entire stack in 3D (x, y, time).
-- :mod:`feature_detection <playnano.analysis.modules.feature_detection>` - Threshold-based feature detection for AFM image stacks.
+- :mod:`feature_detection <playnano.analysis.modules.feature_detection>` - Analysis module that detects features using a mask of each frame.
 - :mod:`k_means_clustering <playnano.analysis.modules.k_means_clustering>` - K-Means clustering on features over the entire stack in 3D (x, y, time).
-- :mod:`log_blob_detection <playnano.analysis.modules.log_blob_detection>` - Module for LoG blob detection.
+- :mod:`log_blob_detection <playnano.analysis.modules.log_blob_detection>` - Analysis module that detects round features with a Laplacian of Gaussian filter.
 - :mod:`particle_region_extraction <playnano.analysis.modules.particle_region_extraction>` - Particle region extraction module for the playNano analysis pipeline.
 - :mod:`particle_region_media_export <playnano.analysis.modules.particle_region_media_export>` - Particle region export module for the playNano analysis pipeline.
-- :mod:`particle_tracking <playnano.analysis.modules.particle_tracking>` - Module for linking particle features across frames to build trajectories.
-- :mod:`tracked_particle_boundary_size <playnano.analysis.modules.tracked_particle_boundary_size>` - Particle boundary size analysis module for the playNano analysis pipeline.
+- :mod:`particle_tracking <playnano.analysis.modules.particle_tracking>` - Analysis module that links detected features from frame to frame into tracks.
+- :mod:`tracked_particle_boundary_size <playnano.analysis.modules.tracked_particle_boundary_size>` - Analysis module that measures the size of each tracked particle over time.
 - :mod:`x_means_clustering <playnano.analysis.modules.x_means_clustering>` - Module for X-Means clustering as part of the playNano analysis pipeline.
