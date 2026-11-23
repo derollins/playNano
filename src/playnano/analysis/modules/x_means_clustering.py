@@ -1,15 +1,13 @@
 """
-Module for X-Means clustering as part of the playNano analysis pipeline.
+Analysis module that groups detected features with X-means.
 
-This module implements a version of the X-Means clustering algorithm,
-an extension of K-Means that estimates the optimal number of clusters using the
-Bayesian Information Criterion (BIC).
+X-means finds the number of clusters itself: it repeatedly runs k-means and
+splits clusters while splitting improves the Bayesian information criterion
+(BIC). Based on:
 
-Based on:
-Pelleg, D., & Moore, A. W. (2000). X-means: Extending K-means with Efficient
-Estimation of the Number of Clusters. Carnegie Mellon University.
-http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf
-
+Pelleg, D. and Moore, A. W. (2000). X-means: Extending K-means with Efficient
+Estimation of the Number of Clusters. *Proceedings of the 17th International
+Conference on Machine Learning*, 727-734.
 """
 
 import logging
@@ -27,60 +25,66 @@ logger = logging.getLogger(__name__)
 
 class XMeansClusteringModule(AnalysisModule):
     """
-    Cluster features using the X-Means algorithm over (x, y[, t]) coordinates.
+    Group detected features from all frames with X-means, which picks the number.
 
-    This module clusters spatial (and optionally temporal) feature coordinates extracted
-    from an AFM stack using an X-Means algorithm implemented in pure Python.
+    Pipeline name: ``"x_means_clustering"``. It needs the output of
+    ``feature_detection`` from an earlier step.
 
-    Parameters
-    ----------
-    coord_key : str
-        Key in previous_results[detection_module] to find feature list.
+    Each detected feature becomes one point. By default its coordinates are the
+    feature's ``centroid``, (row, col) in pixels, with the frame time in seconds
+    added as a third coordinate. With ``normalise`` (the default), each coordinate
+    is rescaled to the range 0 to 1 before clustering.
 
-    coord_columns : Sequence[str]
-        Names of feature dictionary keys to use for coordinates
-        (e.g. centroid_x, centroid_y).
+    Starting with ``min_k`` clusters, each round runs k-means, then tries to split
+    each cluster of 2 or more points in two. A cluster is split if the two halves,
+    each of at least 2 points, have a higher combined BIC than the cluster by more
+    than ``bic_threshold``. The next round runs k-means again, from scratch, with
+    the new number of clusters. This stops when no cluster splits or splitting
+    would give more than ``max_k`` clusters. The random seed of each k-means run
+    is fixed, so results are repeatable.
 
-    use_time : bool
-        Whether to append frame timestamps as the third coordinate.
+    Examples
+    --------
+    Two particles over 4 frames, one moving to the right:
 
-    min_k : int
-        Initial number of clusters (minimum).
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> from playnano.analysis.modules.feature_detection import (
+    ...     FeatureDetectionModule,
+    ... )
+    >>> data = np.zeros((4, 64, 64))
+    >>> for t in range(4):
+    ...     data[t, 10:16, 10 + t : 16 + t] = 3.0
+    ...     data[t, 40:46, 40:46] = 3.0
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(4)],
+    ... )
+    >>> detected = FeatureDetectionModule().run(
+    ...     stack, mask_fn="mask_threshold", threshold=1.0
+    ... )
+    >>> previous = {"feature_detection": detected}
+    >>> from playnano.analysis.modules.x_means_clustering import (
+    ...     XMeansClusteringModule,
+    ... )
+    >>> result = XMeansClusteringModule().run(stack, previous, use_time=False)
+    >>> result["cluster_centers"].round(2)
+    array([[12.5, 15. ],
+           [42.5, 42.5],
+           [12.5, 13. ]])
 
-    max_k : int
-        Maximum number of clusters to allow.
-
-    normalise : bool
-        Whether to min-max normalize coordinate space before clustering.
-
-    time_weight : float, optional
-        Multiplier for time dimension (after normalization).
-
-    Returns
-    -------
-    dict
-        Dictionary with clustering results:
-        - clusters: list of {id, frames, point_indices, coords}
-        - cluster_centers: (K, D) ndarray in original units
-        - summary: {n_clusters: int, members_per_cluster: dict}
-
-    Version
-    -------
-    0.1.0
+    The still particle is one cluster; the moving one is split in two, because
+    its positions spread more widely than one cluster explains well.
     """
 
     version = "0.1.0"
 
     @property
     def name(self) -> str:
-        """
-        Name of the analysis module.
-
-        Returns
-        -------
-        str
-            The string identifier for this module.
-        """
+        """Name of this module in a pipeline, ``"x_means_clustering"``."""
         return "x_means_clustering"
 
     requires = ["feature_detection", "log_blob_detection"]
@@ -103,87 +107,80 @@ class XMeansClusteringModule(AnalysisModule):
         bic_threshold: float = 0.0,
     ) -> dict[str, Any]:
         """
-        Perform X-Means clustering on features extracted from an AFM stack.
-
-        This method extracts (x, y[, t]) coordinates from detected features,
-        optionally normalizes and time-weights them, and applies the X-Means algorithm
-        to automatically select the number of clusters based on the BIC score.
+        Cluster the detected features with X-means.
 
         Parameters
         ----------
         stack : AFMImageStack
-            The input image stack providing frame timing and metadata context.
-
-        previous_results : dict[str, Any], optional
-            Dictionary containing outputs from previous analysis steps.
-            Must contain the selected detection_module and coord_key.
-
-        detection_module : str
-            Key identifying which previous modules output to use.
-            Default is "feature_detection".
-
-        coord_key : str
-            Key under the detection module that holds per-frame feature dicts.
-            Default is "features_per_frame".
-
-        coord_columns : Sequence[str]
-            Keys to extract from each feature for clustering coordinates.
-            If missing, will fall back to using the "centroid" tuple if available.
-            Defaults is ("centroid_x", "centroid_y").
-
-        use_time : bool
-            If True and `coord_columns` only gives 2D coordinates, appends the
-            frame timestamp as a third dimension. Default is True.
-
-        min_k : int
-            Initial number of clusters to start with. Default is 1.
-
-        max_k : int
-            Maximum number of clusters allowed. Default is 10.
-
-        normalise : bool
-            Whether to normalize the feature coordinate axes to the [0, 1] range
-            before clustering. Default is True.
-
-        time_weight : float or None, optional
-            Multiplicative factor applied to the time axis (after normalization).
-            Used only if time is included as a third coordinate.
-
-        replicates : int
-            Number of times to run k-means internally to choose the best split.
-            Default is 3.
-
-        max_iter : int
-            Maximum number of iterations for each k-means call.
-            Default is 300.
-
-        bic_threshold : float
-            Minimum improvement in BIC required to split a cluster.
-            Default is 0.0 (any improvement allows a split).
+            The stack; used for the frame times.
+        previous_results : dict
+            Outputs of earlier steps. Must hold a detection output.
+        detection_module : str, optional
+            Name of the detection step to use. If it has not run,
+            ``log_blob_detection`` is tried, then ``feature_detection``. Default is
+            ``"feature_detection"``.
+        coord_key : str, optional
+            Key of the per-frame feature lists in the detection output. Default is
+            ``"features_per_frame"``.
+        coord_columns : list or tuple of str, optional
+            Keys of each feature's coordinates. If a feature lacks them, the first
+            two values of its ``centroid``, (row, col), are used instead.
+            ``feature_detection`` has no ``centroid_x`` or ``centroid_y``, so this is
+            what happens with the default. Default is
+            ``("centroid_x", "centroid_y")``.
+        use_time : bool, optional
+            Add each feature's frame time, in seconds, as a third coordinate (only
+            when there are two coordinates). Default is True.
+        min_k : int, optional
+            Number of clusters to start with. Must not be more than ``max_k``.
+            Default is 1.
+        max_k : int, optional
+            Largest number of clusters allowed. Default is 10.
+        normalise : bool, optional
+            Rescale each coordinate to the range 0 to 1 (minimum to maximum over
+            all points) before clustering. Default is True.
+        time_weight : float, optional
+            Multiply the rescaled time coordinate by this, so time counts more (above
+            1) or less (below 1) than position. Must be positive. Only used with
+            ``normalise`` and a time coordinate. Default is None (no weighting).
+        replicates : int, optional
+            Number of times each k-means run is started; the best is kept. Default
+            is 3.
+        max_iter : int, optional
+            Largest number of iterations of each k-means run. Default is 300.
+        bic_threshold : float, optional
+            How much a split must raise the BIC to be accepted. Higher values give
+            fewer clusters. Default is 0.0.
 
         Returns
         -------
         dict
-            A dictionary with the following keys:
-
-            - "clusters" : list of dicts, each with:
-                - id : int
-                - frames : list of int
-                - point_indices : list of int
-                - coords : list of tuple (normalized x, y, [t])
-            - "cluster_centers" : ndarray of shape (k, D)
-                Final cluster centers in original (denormalized) coordinates.
-            - "summary" : dict
-                - "n_clusters" : int
-                - "members_per_cluster" : dict mapping cluster ID to point count.
+            ``"clusters"``
+                One dict per cluster, with ``id`` (int), and for each member point
+                ``frames`` (frame index), ``point_indices`` (index in that frame's
+                feature list) and ``coords`` (the point's coordinates as clustered,
+                so rescaled if ``normalise``).
+            ``"cluster_centers"``
+                Array of shape (n_clusters, n_coordinates): the centre of each
+                cluster, in the original units (pixels, and seconds for time).
+            ``"summary"``
+                ``n_clusters`` and ``members_per_cluster`` (cluster ID to number of
+                points).
 
         Raises
         ------
         RuntimeError
-            If the required detection module output is missing from previous_results.
-
+            If ``previous_results`` holds no detection output.
         KeyError
-            If the expected coordinate keys are missing from any feature dictionary.
+            If the detection output lacks ``coord_key``, or a feature has neither
+            ``coord_columns`` nor ``centroid``.
+        ValueError
+            If ``min_k`` is more than the number of points.
+
+        Notes
+        -----
+        If ``min_k`` is more than ``max_k``, no clustering is done: the result has
+        ``min_k`` centres picked at random from the points.
         """
         # Validate input dependencies
         if previous_results is None:
@@ -301,9 +298,34 @@ def core_xmeans(
     max_iter: int,
     bic_threshold: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Core X-Means loop.
+    """
+    Run X-means on an array of points.
 
-    Parameters are equivalent to those in `run` above.
+    Parameters
+    ----------
+    data : numpy.ndarray
+        Points, shape (n_points, n_coordinates).
+    init_k : int
+        Number of clusters to start with.
+    max_k : int
+        Largest number of clusters allowed.
+    min_cluster_size : int
+        Smallest number of points in each half of a split.
+    distance : str
+        Not used; distances are always squared Euclidean.
+    replicates : int
+        Number of starts of each k-means run.
+    max_iter : int
+        Largest number of iterations of each k-means run.
+    bic_threshold : float
+        How much a split must raise the BIC to be accepted.
+
+    Returns
+    -------
+    labels : numpy.ndarray
+        Index of each point's cluster: the nearest centre.
+    centers : numpy.ndarray
+        Cluster centres, shape (n_clusters, n_coordinates).
     """
     k = init_k
     centers = initialize_centers(data, k)
@@ -360,19 +382,22 @@ def core_xmeans(
 
 
 def compute_bic(points: np.ndarray, center: np.ndarray) -> float:
-    """Compute Bayesian Information Criterion for a cluster.
+    """
+    Return the Bayesian information criterion (BIC) of one cluster; higher is better.
+
+    The cluster is modelled as a spherical Gaussian around ``center``.
 
     Parameters
     ----------
-    points : np.ndarray
-        Points in the cluster.
-    center : np.ndarray
-        Cluster center (shape (1, D)).
+    points : numpy.ndarray
+        The cluster's points, shape (n_points, n_coordinates).
+    center : numpy.ndarray
+        The cluster's centre, shape (1, n_coordinates).
 
     Returns
     -------
     float
-        BIC value.
+        The BIC, or ``-inf`` for fewer than 2 points.
     """
     n, p = points.shape
     if n <= 1:
@@ -388,7 +413,23 @@ def compute_bic(points: np.ndarray, center: np.ndarray) -> float:
 
 
 def initialize_centers(points: np.ndarray, k: int) -> np.ndarray:
-    """Initialize k centers using a k-means++-like heuristic."""
+    """
+    Pick ``k`` starting centres from the points, spread out like k-means++.
+
+    Uses NumPy's global random generator, which is not seeded.
+
+    Parameters
+    ----------
+    points : numpy.ndarray
+        Points, shape (n_points, n_coordinates).
+    k : int
+        Number of centres.
+
+    Returns
+    -------
+    numpy.ndarray
+        The centres, shape (k, n_coordinates).
+    """
     n = points.shape[0]
     centers = [points[np.random.choice(n)]]
     for _ in range(1, k):

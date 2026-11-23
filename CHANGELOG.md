@@ -36,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tracks greedily and links only moves shorter than `max_distance`, that `feature_detection` accepts a mask function's
   name, and the errors each module raises. Noted that `log_blob_detection` output cannot yet be used by tracking or
   clustering, and that `mask_key` cannot find a mask through a pipeline.
+- API reference for the clustering modules (`dbscan_clustering`, `k_means_clustering`, `x_means_clustering`): docstrings
+  now match the code, and each module has an example that runs as a doctest. Documented that coordinates are
+  `centroid` (row, col) in pixels plus time in seconds, that `eps` and `time_weight` act on coordinates rescaled to 0
+  to 1, that cluster `coords` are rescaled while `cluster_centers` are in the original units, and how X-means chooses
+  the number of clusters. Corrected DBSCAN, which always drops noise points and uses the mean of all members as the
+  centre, not of core points.
 
 ### Changed
 
@@ -43,6 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rules for writing types in docstrings.
 - `CONTRIBUTING.md`: AI use is disclosed in the pull request, not in source files, and module docstrings no longer
   have author or AI-use sections; authors are credited in `CITATION.cff`.
+- The documentation links to the scikit-learn documentation. `docs/_generated/generated_module_list.rst` is no longer
+  tracked by git; the docs build writes it.
 
 ## [0.5.3] - 2026-11-20
 
