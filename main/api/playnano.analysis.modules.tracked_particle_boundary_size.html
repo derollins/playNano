@@ -514,48 +514,23 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.tracked_particle_boundary_size">
 <span id="playnano-analysis-modules-tracked-particle-boundary-size-module"></span><h1>playnano.analysis.modules.tracked_particle_boundary_size module<a class="headerlink" href="#module-playnano.analysis.modules.tracked_particle_boundary_size" title="Link to this heading">¶</a></h1>
-<p>Particle boundary size analysis module for the playNano analysis pipeline.</p>
-<p>This module computes a per-particle boundary size metric over time by consuming
-the output of <code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code>.</p>
-<p>For each tracked particle and frame, the maximum dimension of the (tight)
-bounding box is recorded.  Optionally, a threshold may be applied to classify
-each time point into a discrete state (e.g. compact vs extended).</p>
-<p>The module is designed to integrate with the playNano <code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code> and
-records results in a provenance-aware, serializable format suitable for
-downstream analysis and plotting.</p>
+<p>Analysis module that measures the size of each tracked particle over time.</p>
+<p>The size is the longer side of each region’s bounding box, as found by
+<code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code>. A threshold can split the time points into two
+states, for example compact and extended.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.tracked_particle_boundary_size.</span></span><span class="sig-name descname"><span class="pre">BoundarySizeModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/tracked_particle_boundary_size.html#BoundarySizeModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Measure particle boundary size over time from pre-extracted particle regions.</p>
-<p>This module consumes output from <code class="docutils literal notranslate"><span class="pre">ParticleRegionExtractionModule</span></code>
-(registered as <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code> in the pipeline).  It
-expects that module to have been run with <code class="docutils literal notranslate"><span class="pre">include_bbox=True</span></code>.</p>
-<p>The boundary size metric is derived from the tight bounding box:</p>
-<p><code class="docutils literal notranslate"><span class="pre">max_dim</span> <span class="pre">=</span> <span class="pre">max(bbox_height,</span> <span class="pre">bbox_width)</span></code></p>
-<p>Optionally, a threshold can be applied to derive a discrete state variable
-(e.g. compact vs extended).</p>
-<section id="parameters-accepted-in-run">
-<h2>Parameters accepted in <a class="reference internal" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run" title="playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a><a class="headerlink" href="#parameters-accepted-in-run" title="Link to this heading">¶</a></h2>
-<dl>
-<dt>extraction_module<span class="classifier">str, default <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code></span></dt><dd><p>Name of the upstream extraction module in the pipeline.</p>
-</dd>
-<dt>threshold<span class="classifier">float or None</span></dt><dd><p>If provided, each frame is classified as <code class="docutils literal notranslate"><span class="pre">state</span> <span class="pre">=</span> <span class="pre">int(max_dim</span> <span class="pre">&gt;</span> <span class="pre">threshold)</span></code>.</p>
-</dd>
-<dt>measure<span class="classifier">str, default <code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code></span></dt><dd><p>Metric name (currently only <code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code> is supported).</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>If a region entry is <code class="docutils literal notranslate"><span class="pre">None</span></code> (missing detection) or its bounding box is
-<code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> is recorded as <code class="docutils literal notranslate"><span class="pre">np.nan</span></code>.</p></li>
-<li><p>If the upstream extraction module was run without <code class="docutils literal notranslate"><span class="pre">include_bbox=True</span></code>,
-a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> is raised.</p></li>
-</ul>
+<p>Measure each tracked particle’s size, frame by frame.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;tracked_particle_boundary_size&quot;</span></code>. It needs the output of
+<code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code>, run with <code class="docutils literal notranslate"><span class="pre">include_bbox=True</span></code> (the
+default). The size, <code class="docutils literal notranslate"><span class="pre">max_dim</span></code>, is the longer side of the region’s tight
+bounding box, in pixels. See <a class="reference internal" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run" title="playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> for the parameters and outputs.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Module name for registration in the analysis pipeline.</p>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;tracked_particle_boundary_size&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -566,49 +541,52 @@ a <code class="docutils literal notranslate"><span class="pre">RuntimeError</spa
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">extraction_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'particle_region_extraction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_max_dim'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/tracked_particle_boundary_size.html#BoundarySizeModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Execute the boundary size analysis.</p>
+<dd><p>Measure the size of each tracked particle in each frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Input image stack (not used directly; present for pipeline API
-compatibility).</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Results from earlier pipeline modules.  Must contain output from
-<code class="docutils literal notranslate"><span class="pre">extraction_module</span></code> with <code class="docutils literal notranslate"><span class="pre">include_bbox=True</span></code>.</p></li>
-<li><p><strong>extraction_module</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>) – Key identifying the region extraction module output in
-<code class="docutils literal notranslate"><span class="pre">previous_results</span></code>.</p></li>
-<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Threshold applied to <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> to compute a binary state
-variable.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>, no state classification is performed.</p></li>
-<li><p><strong>measure</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code>) – Name of the boundary size metric.  Currently only
-<code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code> is supported.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack; not used directly.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold the output of
+<code class="docutils literal notranslate"><span class="pre">extraction_module</span></code>.</p></li>
+<li><p><strong>extraction_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the region extraction step. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – If given, each frame is also given a <code class="docutils literal notranslate"><span class="pre">state</span></code>: 1 if <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> is
+greater than <code class="docutils literal notranslate"><span class="pre">threshold</span></code> (in pixels), otherwise 0. Default is None.</p></li>
+<li><p><strong>measure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The size measure. Only <code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code> is available. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Keys:</p>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">measure</span></code><span class="classifier">str</span></dt><dd><p>Name of the boundary size metric used.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;measure&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;threshold&quot;</span></code></dt><dd><p>The values used.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">threshold</span></code><span class="classifier">float or None</span></dt><dd><p>Threshold used for state classification, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code></dt><dd><p>One dict per track, with <code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">frames</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamps</span></code>
+(s), <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> (pixels) and, with a threshold, <code class="docutils literal notranslate"><span class="pre">state</span></code>.
+Frames where the particle was not found have <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> NaN and
+<code class="docutils literal notranslate"><span class="pre">state</span></code> NaN.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">per_track</span></code><span class="classifier">list of dict</span></dt><dd><p>Per-track time series.  Each dict has:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code> : int</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;frames&quot;</span></code> : list of int</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;timestamps&quot;</span></code> : list of float</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;max_dim&quot;</span></code> : list of float (<code class="docutils literal notranslate"><span class="pre">np.nan</span></code> where absent)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;state&quot;</span></code> : list of int/float  <em>(only if threshold given)</em></p></li>
-</ul>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;flat_table&quot;</span></code></dt><dd><p>The same values with one dict per track and frame, with
+<code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">label</span></code>, <code class="docutils literal notranslate"><span class="pre">frame</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamp</span></code>, <code class="docutils literal notranslate"><span class="pre">max_dim</span></code> and,
+with a threshold, <code class="docutils literal notranslate"><span class="pre">state</span></code>; ready for <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">flat_table</span></code><span class="classifier">list of dict</span></dt><dd><p>Row-per-frame representation suitable for <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;plot_hints&quot;</span></code></dt><dd><p>Names of plotting functions in <code class="docutils literal notranslate"><span class="pre">playnano_plugins</span></code>, a package that
+is not part of playNano.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">plot_hints</span></code><span class="classifier">dict</span></dt><dd><p>Suggested plotting helper function names.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">summary</span></code><span class="classifier">dict</span></dt><dd><p>Bookkeeping counters.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n_tracks</span></code>, <code class="docutils literal notranslate"><span class="pre">n_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">n_missing_region_measurements</span></code> and
+<code class="docutils literal notranslate"><span class="pre">state_included</span></code>.</p>
 </dd>
 </dl>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">previous_results</span></code> is None, lacks <code class="docutils literal notranslate"><span class="pre">extraction_module</span></code>, or the
+    extraction ran with <code class="docutils literal notranslate"><span class="pre">include_bbox=False</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">measure</span></code> is not <code class="docutils literal notranslate"><span class="pre">&quot;bbox_max_dim&quot;</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -618,7 +596,6 @@ variable.  If <code class="docutils literal notranslate"><span class="pre">None<
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>

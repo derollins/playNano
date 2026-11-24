@@ -506,38 +506,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.k_means_clustering</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">K-Means clustering on features over the entire stack in 3D (x, y, time).</span>
-
-<span class="sd">This module extracts a point-cloud from per-frame feature dictionaries</span>
-<span class="sd">(e.g. coordinates + timestamps), optionally normalizes each axis to [0,1],</span>
-<span class="sd">applies K-Means with a user-supplied k, then returns cluster assignments,</span>
-<span class="sd">cluster centers (in original coordinate units), and a summary.</span>
-
-<span class="sd">Parameters</span>
-<span class="sd">----------</span>
-<span class="sd">coord_key : str</span>
-<span class="sd">    Key in previous_results whose value is `features_per_frame`</span>
-<span class="sd">    (list of lists of dicts).</span>
-
-<span class="sd">coord_columns : Sequence[str]</span>
-<span class="sd">    Which keys in each feature-dict to use (e.g. ("x","y")).</span>
-
-<span class="sd">use_time : bool</span>
-<span class="sd">    If True and coord_columns length is 2, append frame time as the third dimension.</span>
-
-<span class="sd">k : int</span>
-<span class="sd">    Number of clusters.</span>
-
-<span class="sd">normalise : bool</span>
-<span class="sd">    If True, min-max normalize each axis before clustering.</span>
-
-<span class="sd">time_weight : float | None</span>
-<span class="sd">    If given, multiply the time axis by this weight.</span>
-
-<span class="sd">**kmeans_kwargs</span>
-<span class="sd">    Forwarded to sklearn.cluster.KMeans.</span>
-<span class="sd">"""</span>
+<span></span><span class="sd">"""Analysis module that groups detected features into ``k`` clusters with k-means."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
 
@@ -551,52 +520,65 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.k_means_clustering.html#playnano.analysis.modules.k_means_clustering.KMeansClusteringModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KMeansClusteringModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Cluster features across all frames using K-Means in 2D or 3D (x, y, [time]).</span>
+<span class="sd">    Group detected features from all frames into ``k`` clusters with k-means.</span>
 
-<span class="sd">    Extracts point coordinates from per-frame features, applies optional normalization</span>
-<span class="sd">    and time weighting, then performs K-Means clustering. Returns cluster assignments,</span>
-<span class="sd">    centers in original scale, and a summary report.</span>
+<span class="sd">    Pipeline name: ``"k_means_clustering"``. It needs the output of</span>
+<span class="sd">    ``feature_detection`` from an earlier step.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    coord_key : str</span>
-<span class="sd">        Key in previous_results pointing to 'features_per_frame' structure.</span>
+<span class="sd">    Each detected feature becomes one point. By default its coordinates are the</span>
+<span class="sd">    feature's ``centroid``, (row, col) in pixels, with the frame time in seconds</span>
+<span class="sd">    added as a third coordinate. With ``normalise`` (the default), each coordinate</span>
+<span class="sd">    is rescaled to the range 0 to 1 before clustering.</span>
 
-<span class="sd">    coord_columns : Sequence[str]</span>
-<span class="sd">        Keys to extract coordinates from each feature (e.g. ("x", "y")).</span>
+<span class="sd">    Every point is put in one of ``k`` clusters, so that points are as close as</span>
+<span class="sd">    possible to their cluster's centre. The random seed is fixed</span>
+<span class="sd">    (``random_state=42``), so results are repeatable. To find the number of</span>
+<span class="sd">    clusters from the data, use ``x_means_clustering`` or ``dbscan_clustering``.</span>
 
-<span class="sd">    use_time : bool</span>
-<span class="sd">        If True, appends frame timestamp as a third clustering dimension.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Two particles over 4 frames, one moving to the right:</span>
 
-<span class="sd">    k : int</span>
-<span class="sd">        Number of clusters to fit.</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.feature_detection import (</span>
+<span class="sd">    ...     FeatureDetectionModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((4, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(4):</span>
+<span class="sd">    ...     data[t, 10:16, 10 + t : 16 + t] = 3.0</span>
+<span class="sd">    ...     data[t, 40:46, 40:46] = 3.0</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(4)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; detected = FeatureDetectionModule().run(</span>
+<span class="sd">    ...     stack, mask_fn="mask_threshold", threshold=1.0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; previous = {"feature_detection": detected}</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.k_means_clustering import (</span>
+<span class="sd">    ...     KMeansClusteringModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = KMeansClusteringModule().run(stack, previous, k=2)</span>
+<span class="sd">    &gt;&gt;&gt; result["summary"]</span>
+<span class="sd">    {'n_clusters': 2, 'members_per_cluster': {0: 4, 1: 4}}</span>
+<span class="sd">    &gt;&gt;&gt; result["cluster_centers"].round(2)</span>
+<span class="sd">    array([[12.5 , 14.  ,  0.75],</span>
+<span class="sd">           [42.5 , 42.5 ,  0.75]])</span>
 
-<span class="sd">    normalise : bool</span>
-<span class="sd">        If True, normalize each axis to [0, 1] before clustering.</span>
-
-<span class="sd">    time_weight : float or None</span>
-<span class="sd">        Optional multiplier for time axis after normalization.</span>
-
-<span class="sd">    **kmeans_kwargs</span>
-<span class="sd">        Additional keyword arguments passed to sklearn.cluster.KMeans.</span>
-
-<span class="sd">    Version</span>
-<span class="sd">    -------</span>
-<span class="sd">    0.1.0</span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sklearn.cluster.KMeans : The clustering used.</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Name of the analysis module.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            The string identifier for this module.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"k_means_clustering"``."""</span>
         <span class="k">return</span> <span class="s2">"k_means_clustering"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
@@ -618,77 +600,68 @@
         <span class="o">**</span><span class="n">kmeans_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Perform K-Means clustering on features extracted from a stack.</span>
-
-<span class="sd">        Constructs a coordinate array from features (x, y[, t]), optionally applies</span>
-<span class="sd">        normalization and time weighting, and fits k-means to assign clusters.</span>
+<span class="sd">        Cluster the detected features into ``k`` clusters with k-means.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The input image stack providing frame times and data context.</span>
-
-<span class="sd">        previous_results : dict[str, Any], optional</span>
-<span class="sd">            Dictionary containing outputs from previous analysis steps.</span>
-<span class="sd">            Must contain the selected detection_module and coord_key.</span>
-
-<span class="sd">        detection_module : str</span>
-<span class="sd">            Key identifying which previous module's output to use.</span>
-<span class="sd">            Default is "feature_detection".</span>
-
-<span class="sd">        coord_key : str</span>
-<span class="sd">            Key under the detection module that holds per-frame feature dicts.</span>
-<span class="sd">            Default is "features_per_frame".</span>
-
-<span class="sd">        coord_columns : Sequence[str]</span>
-<span class="sd">            Keys to extract from each feature for clustering coordinates.</span>
-<span class="sd">            If missing, fallback to the "centroid" tuple is attempted.</span>
-<span class="sd">            Default is ("centroid_x", "centroid_y")</span>
-
-<span class="sd">        use_time : bool</span>
-<span class="sd">            If True and `coord_columns` is 2D, append frame timestamp as third</span>
-<span class="sd">            dimension. Default is True.</span>
-
+<span class="sd">            The stack; used for the frame times.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold a detection output.</span>
+<span class="sd">        detection_module : str, optional</span>
+<span class="sd">            Name of the detection step to use. If it has not run,</span>
+<span class="sd">            ``log_blob_detection`` is tried, then ``feature_detection``. Default is</span>
+<span class="sd">            ``"feature_detection"``.</span>
+<span class="sd">        coord_key : str, optional</span>
+<span class="sd">            Key of the per-frame feature lists in the detection output. Default is</span>
+<span class="sd">            ``"features_per_frame"``.</span>
+<span class="sd">        coord_columns : list or tuple of str, optional</span>
+<span class="sd">            Keys of each feature's coordinates. If a feature lacks them, the first</span>
+<span class="sd">            two values of its ``centroid``, (row, col), are used instead.</span>
+<span class="sd">            ``feature_detection`` has no ``centroid_x`` or ``centroid_y``, so this is</span>
+<span class="sd">            what happens with the default. Default is</span>
+<span class="sd">            ``("centroid_x", "centroid_y")``.</span>
+<span class="sd">        use_time : bool, optional</span>
+<span class="sd">            Add each feature's frame time, in seconds, as a third coordinate (only</span>
+<span class="sd">            when there are two coordinates). Default is True.</span>
 <span class="sd">        k : int</span>
-<span class="sd">            Number of clusters to compute.</span>
-
-<span class="sd">        normalise : bool</span>
-<span class="sd">            Whether to min-max normalize each axis of the feature points before</span>
-<span class="sd">            clustering. Default is True.</span>
-
-<span class="sd">        time_weight : float or None, optional</span>
-<span class="sd">            Weighting factor for time axis (applied after normalization).</span>
-<span class="sd">            Only used if time is included as a third dimension.</span>
-
-<span class="sd">        **kmeans_kwargs : dict</span>
-<span class="sd">            Additional arguments forwarded to `sklearn.cluster.KMeans`.</span>
+<span class="sd">            Number of clusters. Required; must not be more than the number of</span>
+<span class="sd">            points.</span>
+<span class="sd">        normalise : bool, optional</span>
+<span class="sd">            Rescale each coordinate to the range 0 to 1 (minimum to maximum over</span>
+<span class="sd">            all points) before clustering. Default is True.</span>
+<span class="sd">        time_weight : float, optional</span>
+<span class="sd">            Multiply the rescaled time coordinate by this, so time counts more (above</span>
+<span class="sd">            1) or less (below 1) than position. Must be positive. Only used with</span>
+<span class="sd">            ``normalise`` and a time coordinate. Default is None (no weighting).</span>
+<span class="sd">        **kmeans_kwargs</span>
+<span class="sd">            Passed to :class:`sklearn.cluster.KMeans`, for example ``n_init``.</span>
+<span class="sd">            ``random_state`` cannot be passed; it is fixed at 42.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            A dictionary with the following keys:</span>
-
-<span class="sd">            - "clusters" : list of dicts, each with:</span>
-<span class="sd">                - id : int</span>
-<span class="sd">                - frames : list of int</span>
-<span class="sd">                - point_indices : list of int</span>
-<span class="sd">                - coords : list of tuple</span>
-<span class="sd">                    The normalized coordinates used in clustering for each point</span>
-<span class="sd">                    in the cluster (e.g., (x, y[, t])).</span>
-
-<span class="sd">            - "cluster_centers" : ndarray of shape (k, D)</span>
-<span class="sd">                Cluster centers in original coordinate units.</span>
-<span class="sd">            - "summary" : dict</span>
-<span class="sd">                - "n_clusters" : int</span>
-<span class="sd">                - "members_per_cluster" : dict mapping cluster id to point count</span>
+<span class="sd">            ``"clusters"``</span>
+<span class="sd">                One dict per cluster, with ``id`` (int), and for each member point</span>
+<span class="sd">                ``frames`` (frame index), ``point_indices`` (index in that frame's</span>
+<span class="sd">                feature list) and ``coords`` (the point's coordinates as clustered,</span>
+<span class="sd">                so rescaled if ``normalise``).</span>
+<span class="sd">            ``"cluster_centers"``</span>
+<span class="sd">                Array of shape (n_clusters, n_coordinates): the centre of each</span>
+<span class="sd">                cluster, in the original units (pixels, and seconds for time).</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                ``n_clusters`` and ``members_per_cluster`` (cluster ID to number of</span>
+<span class="sd">                points).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        RuntimeError</span>
-<span class="sd">            If the required `detection_module` output is not found in previous_results.</span>
-
+<span class="sd">            If ``previous_results`` holds no detection output.</span>
 <span class="sd">        KeyError</span>
-<span class="sd">            If the required coordinate keys are missing in any feature dictionary.</span>
+<span class="sd">            If the detection output lacks ``coord_key``, or a feature has neither</span>
+<span class="sd">            ``coord_columns`` nor ``centroid``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``k`` is more than the number of points.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>

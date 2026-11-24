@@ -506,7 +506,13 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.pipeline</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module for the AnalysisPipeline class for orchastration of analysis workflows."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Run a sequence of analysis modules on an AFM image stack.</span>
+
+<span class="sd">:class:`AnalysisPipeline` runs analysis modules (subclasses of</span>
+<span class="sd">:class:`~playnano.analysis.base.AnalysisModule`) in order and records their</span>
+<span class="sd">outputs and provenance. It is what ``playnano analyze`` uses.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">metadata</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -528,46 +534,8 @@
 
 <span class="n">AnalysisRecord</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 <span class="sd">"""</span>
-<span class="sd">Structured output of an AnalysisPipeline run.</span>
-
-<span class="sd">This record contains:</span>
-<span class="sd">- environment : dict</span>
-<span class="sd">    Metadata about the runtime environment (e.g. Python version, library versions).</span>
-<span class="sd">- analysis : dict</span>
-<span class="sd">    Results of each analysis module run, with keys 'step_&lt;n&gt;_&lt;module_name&gt;'.</span>
-<span class="sd">- provenance : dict</span>
-<span class="sd">    Metadata about the provenance of the analysis steps, with keys:</span>
-<span class="sd">      - steps : list of dict</span>
-<span class="sd">          Ordered list of executed analysis steps. Each entry contains:</span>
-<span class="sd">            - index : int</span>
-<span class="sd">                1-based index of the step in the pipeline.</span>
-<span class="sd">            - name : str</span>
-<span class="sd">                The name of the analysis module used.</span>
-<span class="sd">            - params : dict</span>
-<span class="sd">                Parameters passed to the module.</span>
-<span class="sd">            - timestamp : str</span>
-<span class="sd">                ISO 8601 UTC timestamp when the step was executed.</span>
-<span class="sd">            - version : str or None</span>
-<span class="sd">                Optional version string provided by the module instance.</span>
-<span class="sd">            - analysis_key : str</span>
-<span class="sd">                Key under which this step's outputs are stored in the `analysis` dict.</span>
-<span class="sd">      - results_by_name : dict[str, list]</span>
-<span class="sd">          Maps module names to lists of outputs from each occurrence.</span>
-<span class="sd">      - frame_times : list[float] or None</span>
-<span class="sd">          Timestamps for each frame in the stack, from `stack.get_frame_times()`,</span>
-<span class="sd">          or None if unavailable.</span>
-
-<span class="sd">Examples</span>
-<span class="sd">--------</span>
-<span class="sd">&gt;&gt;&gt; pipeline = AnalysisPipeline()</span>
-<span class="sd">&gt;&gt;&gt; pipeline.add("feature_detection", threshold=5)</span>
-<span class="sd">&gt;&gt;&gt; record = pipeline.run(stack, log_to="out.json")</span>
-<span class="sd">&gt;&gt;&gt; # Access outputs:</span>
-<span class="sd">&gt;&gt;&gt; record["analysis"]["step_1_feature_detection"]["summary"]</span>
-<span class="sd">{'total_features': 23, 'avg_per_frame': 3.8}</span>
-<span class="sd">&gt;&gt;&gt; # Inspect provenance:</span>
-<span class="sd">&gt;&gt;&gt; record["provenance"]["results_by_name"]["feature_detection"][0]["summary"]</span>
-<span class="sd">{'total_features': 23, 'avg_per_frame': 3.8}</span>
+<span class="sd">Type of the record :meth:`AnalysisPipeline.run` returns: a dict with the keys</span>
+<span class="sd">``"environment"``, ``"analysis"`` and ``"provenance"``, described there.</span>
 <span class="sd">"""</span>
 
 
@@ -575,23 +543,52 @@
 <a class="viewcode-back" href="../../../api/playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AnalysisPipeline</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Orchestrates a sequence of analysis steps on an AFMImageStack.</span>
+<span class="sd">    Run a list of analysis modules on a stack, in order.</span>
 
-<span class="sd">    Each step corresponds to an AnalysisModule (built-in or entry-point), invoked</span>
-<span class="sd">    in order with the given parameters. Outputs of each step are stored in</span>
-<span class="sd">    `stack.analysis` under keys 'step_&lt;n&gt;_&lt;module_name&gt;'. Detailed provenance</span>
-<span class="sd">    (timestamps, parameters, version, linking keys) is recorded in</span>
-<span class="sd">    `stack.provenance["analysis"]`. The run() method returns a dict containing</span>
-<span class="sd">    environment info, the `analysis` dict, and its `provenance`.</span>
+<span class="sd">    Add steps with :meth:`add`, then call :meth:`run`. Each step names an</span>
+<span class="sd">    analysis module, either a built-in one (see</span>
+<span class="sd">    :data:`playnano.analysis.BUILTIN_ANALYSIS_MODULES`) or a plugin registered</span>
+<span class="sd">    under the ``playnano.analysis`` entry point group. Each step's outputs are</span>
+<span class="sd">    stored in ``stack.analysis["step_&lt;n&gt;_&lt;module_name&gt;"]``, and its parameters,</span>
+<span class="sd">    time and module version in ``stack.provenance["analysis"]``.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    steps : list of tuple</span>
+<span class="sd">        The steps added, as ``(module_name, params)`` pairs.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Detect a particle that moves across three frames, then link it into a</span>
+<span class="sd">    track:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.pipeline import AnalysisPipeline</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((3, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(3):</span>
+<span class="sd">    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; pipeline = AnalysisPipeline()</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("particle_tracking", max_distance=5)</span>
+<span class="sd">    &gt;&gt;&gt; record = pipeline.run(stack)</span>
+<span class="sd">    &gt;&gt;&gt; list(record["analysis"])</span>
+<span class="sd">    ['step_1_feature_detection', 'step_2_particle_tracking']</span>
+<span class="sd">    &gt;&gt;&gt; record["analysis"]["step_1_feature_detection"]["summary"]</span>
+<span class="sd">    {'total_frames': 3, 'total_features': 3, 'avg_features_per_frame': 1.0}</span>
+<span class="sd">    &gt;&gt;&gt; record["analysis"]["step_2_particle_tracking"]["n_tracks"]</span>
+<span class="sd">    1</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize an empty analysis pipeline.</span>
-
-<span class="sd">        Steps are stored as a list of (module_name, params) tuples.</span>
-<span class="sd">        Modules are loaded on demand using an internal registry or entry points.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Create an empty pipeline."""</span>
         <span class="c1"># Each entry: (module_name: str, params:   dict)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># Cache instantiated modules: name -&gt; instance</span>
@@ -601,23 +598,25 @@
 <a class="viewcode-back" href="../../../api/playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.add">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Add an analysis module to the pipeline.</span>
+<span class="sd">        Add a step that runs an analysis module.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        module_name : str</span>
-<span class="sd">            The name of the analysis module to add (must be registered).</span>
+<span class="sd">            Name of the analysis module, for example ``"feature_detection"``. It is</span>
+<span class="sd">            not checked until :meth:`run`.</span>
 <span class="sd">        **params</span>
-<span class="sd">            Keyword arguments passed to the module's `run()` method.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
+<span class="sd">            Keyword arguments passed to the module's ``run`` method. If</span>
+<span class="sd">            ``mask_fn`` is a str, it is replaced by the masking function of that</span>
+<span class="sd">            name from :mod:`playnano.processing.mask_generators` when the step runs.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=5)</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add("particle_tracking", max_distance=3)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline = AnalysisPipeline()</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.add("particle_tracking", max_distance=5)</span>
+<span class="sd">        &gt;&gt;&gt; pipeline.steps[1]</span>
+<span class="sd">        ('particle_tracking', {'max_distance': 5})</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">module_name</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span></div>
 
@@ -625,11 +624,7 @@
 <div class="viewcode-block" id="AnalysisPipeline.clear">
 <a class="viewcode-back" href="../../../api/playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.clear">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Remove all scheduled analysis steps and clear module cache.</span>
-
-<span class="sd">        This allows reconfiguration of the pipeline without creating a new instance.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Remove all steps, so the pipeline can be set up again."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_module_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
@@ -755,66 +750,59 @@
 <a class="viewcode-back" href="../../../api/playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">,</span> <span class="n">log_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisRecord</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute all added analysis steps on the given AFMImageStack.</span>
+<span class="sd">        Run every step on a stack and return the results.</span>
 
-<span class="sd">        Each step:</span>
-
-<span class="sd">        - is resolved to an AnalysisModule instance</span>
-<span class="sd">        - invoked with `(stack, previous_results=..., **params)`</span>
-<span class="sd">        - its outputs are stored under `stack.analysis["step_&lt;n&gt;_&lt;module_name&gt;"]`</span>
-<span class="sd">        - provenance is recorded in `stack.provenance["analysis"]["steps"]`</span>
-
-<span class="sd">        The overall provenance sub-dict also collects:</span>
-
-<span class="sd">        - results_by_name: mapping module name to list of outputs</span>
-<span class="sd">        - frame_times: result of `stack.get_frame_times()`, or None</span>
-
-<span class="sd">        The environment info (via gather_environment_info) is stored at</span>
-<span class="sd">        `stack.provenance["environment"]` (if not already set).</span>
+<span class="sd">        Each step's module receives the stack, the step's parameters and</span>
+<span class="sd">        ``previous_results``: a dict mapping the name of each module run so far to</span>
+<span class="sd">        its latest outputs. Results from an earlier call of ``run`` are discarded:</span>
+<span class="sd">        ``stack.analysis`` and ``stack.provenance["analysis"]`` are replaced.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The AFMImageStack to analyze.</span>
+<span class="sd">            The stack to analyse.</span>
 <span class="sd">        log_to : str, optional</span>
-<span class="sd">            Path to a JSON file where the combined record will be saved.</span>
+<span class="sd">            If given, also write the record to this JSON file, creating missing</span>
+<span class="sd">            folders. Arrays are summarised in the file (shape, dtype, minimum,</span>
+<span class="sd">            maximum and mean), not written in full; see</span>
+<span class="sd">            :func:`~playnano.analysis.utils.common.sanitize_analysis_for_logging`.</span>
+<span class="sd">            Default is None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        AnalysisRecord :     dict</span>
+<span class="sd">        dict</span>
+<span class="sd">            The analysis record, with these keys:</span>
 
-<span class="sd">        {</span>
-<span class="sd">            "environment": &lt;dict of environment metadata&gt;,</span>
-<span class="sd">            "analysis": &lt;dict of outputs per step&gt;,</span>
-<span class="sd">            "provenance": &lt;dict with keys "steps", "results_by_name", "frame_times"&gt;</span>
-<span class="sd">        }</span>
+<span class="sd">            ``"environment"``</span>
+<span class="sd">                Python, platform and package versions; the same dict as</span>
+<span class="sd">                ``stack.provenance["environment"]``, which is only set if empty.</span>
+<span class="sd">            ``"analysis"``</span>
+<span class="sd">                The outputs of each step, keyed ``"step_&lt;n&gt;_&lt;module_name&gt;"``, with</span>
+<span class="sd">                ``n`` counting from 1 and spaces in the name replaced by ``_``. The</span>
+<span class="sd">                same dict as ``stack.analysis``.</span>
+<span class="sd">            ``"provenance"``</span>
+<span class="sd">                The same dict as ``stack.provenance["analysis"]``, with:</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        - Raw outputs: accessible via `stack.analysis["step_&lt;n&gt;_&lt;module_name&gt;"]`.</span>
-<span class="sd">        - Provenance: in `stack.provenance["analysis"]`, with a list of step records.</span>
-<span class="sd">        - If stack.provenance or stack.analysis is absent, they are created.</span>
-<span class="sd">        - If log_to is provided, the same record dict is JSON-dumped using NumpyEncoder.</span>
+<span class="sd">                - ``"steps"``: one dict per step, with ``index``, ``name``,</span>
+<span class="sd">                  ``params`` (as passed to the module, so a ``mask_fn`` name appears</span>
+<span class="sd">                  as the function), ``timestamp`` (ISO 8601, UTC), ``version`` (the</span>
+<span class="sd">                  module's ``version``, or None) and ``analysis_key``.</span>
+<span class="sd">                - ``"results_by_name"``: each module name mapped to a list with one</span>
+<span class="sd">                  ``{"analysis_key": ..., "outputs": ...}`` dict per time it ran.</span>
+<span class="sd">                - ``"frame_times"``: the stack's frame times, in seconds.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a module name is not found, or ``mask_fn`` names no masking</span>
+<span class="sd">            function.</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If a module declares ``requires`` and none of those modules ran</span>
+<span class="sd">            before it, or a plugin module fails to load.</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If a plugin is not an :class:`~playnano.analysis.base.AnalysisModule`.</span>
 <span class="sd">        Exception</span>
-<span class="sd">            Propagates any exception from module.run(...), after logging.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; pipeline = AnalysisPipeline()</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add("count_nonzero")</span>
-<span class="sd">        &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn="mask_threshold", min_size=5)</span>
-<span class="sd">        &gt;&gt;&gt; record = pipeline.run(stack, log_to="out.json")</span>
-<span class="sd">        &gt;&gt;&gt; # Access the outputs:</span>
-<span class="sd">        &gt;&gt;&gt; record["analysis"]["step_1_count_nonzero"]</span>
-<span class="sd">        {'counts': [...], ...}</span>
-<span class="sd">        &gt;&gt;&gt; # Inspect provenance:</span>
-<span class="sd">        &gt;&gt;&gt; for step_info in record["provenance"]["steps"]:</span>
-<span class="sd">        ...     print(step_info["name"], step_info["analysis_key"])</span>
-<span class="sd">        count_nonzero step_1_count_nonzero</span>
-<span class="sd">        feature_detection step_2_feature_detection</span>
+<span class="sd">            Any error raised by a module is logged and raised again.</span>
 <span class="sd">        """</span>
         <span class="c1"># Ensure stack.provenance is a dict</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"provenance"</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>

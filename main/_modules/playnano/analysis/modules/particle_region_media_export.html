@@ -508,32 +508,17 @@
           <h1>Source code for playnano.analysis.modules.particle_region_media_export</h1><div class="highlight"><pre>
 <span></span><span class="c1"># mypy: disable-error-code=type-arg</span>
 <span class="sd">"""</span>
-<span class="sd">Particle region export module for the playNano analysis pipeline.</span>
+<span class="sd">Analysis module that saves tracked particle regions as GIFs, videos or image sequences.</span>
 
-<span class="sd">This module exports per-particle GIFs, video files, and/or image sequences</span>
-<span class="sd">using the cropped image regions produced by ``ParticleRegionExtractionModule``.</span>
+<span class="sd">It uses the crops made by ``particle_region_extraction``. For each track, the</span>
+<span class="sd">crops are padded to the size of the track's largest crop and stacked, then</span>
+<span class="sd">written with the same rendering as the whole-stack exports:</span>
 
-<span class="sd">For each tracked particle the per-frame crops are centre-padded to a</span>
-<span class="sd">consistent spatial size, assembled once into a ``(T, H, W)`` NumPy array, and</span>
-<span class="sd">passed to whichever of the following rendering functions are enabled:</span>
+<span class="sd">- :func:`playnano.io.gif_export.create_gif_with_scale_and_timestamp`,</span>
+<span class="sd">- :func:`playnano.io.video_export.create_video_with_scale_and_timestamp`,</span>
+<span class="sd">- :func:`playnano.io.image_sequence_export.create_image_sequence`.</span>
 
-<span class="sd">- :func:`playnano.io.gif_export.create_gif_with_scale_and_timestamp` for</span>
-<span class="sd">  animated GIF output.</span>
-<span class="sd">- :func:`playnano.io.video_export.create_video_with_scale_and_timestamp` for</span>
-<span class="sd">  MP4/AVI/MOV/MKV output.</span>
-<span class="sd">- :func:`playnano.io.image_sequence_export.create_image_sequence` for</span>
-<span class="sd">  per-frame PNG/JPEG output.</span>
-
-<span class="sd">Any combination of the three export types can be produced in a single pipeline</span>
-<span class="sd">step from the same assembled stack.  At least one must be enabled.</span>
-
-<span class="sd">Output paths follow the pattern ``&lt;base&gt;_track_&lt;id&gt;.&lt;ext&gt;``; image sequences</span>
-<span class="sd">are written into per-track sub-directories ``&lt;base&gt;_track_&lt;id&gt;/`` with frames</span>
-<span class="sd">named ``frame_NNNN.&lt;fmt&gt;``.</span>
-
-<span class="sd">The module is designed to integrate with the playNano ``AnalysisPipeline``.</span>
-<span class="sd">Its primary side-effects are writing files to disk; the returned results dict</span>
-<span class="sd">records a manifest of everything written, plus a summary.</span>
+<span class="sd">Any combination of the three can be written in one step.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -554,7 +539,7 @@
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
-<span class="c1"># Internal helpers  (shared with particle_region_gif and particle_region_tiff)</span>
+<span class="c1"># Internal helpers</span>
 <span class="c1"># ---------------------------------------------------------------------------</span>
 
 
@@ -724,81 +709,40 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.particle_region_media_export.html#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParticleRegionMediaExportModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Analysis module to export GIFs, videos and image sequences of extracted particles.</span>
+<span class="sd">    Save each tracked particle's crops as a GIF, video and/or image sequence.</span>
 
-<span class="sd">    Export per-track GIFs, videos, and/or image sequences from pre-extracted</span>
-<span class="sd">    particle image regions, with optional track filtering and sorting.</span>
+<span class="sd">    Pipeline name: ``"particle_region_media_export"``. It needs the output of</span>
+<span class="sd">    ``particle_region_extraction``, run with ``include_image=True`` (the</span>
+<span class="sd">    default). Files are written to ``output_folder``, overwriting any with the</span>
+<span class="sd">    same name:</span>
 
-<span class="sd">    One output is produced per tracked particle per enabled export type.</span>
-<span class="sd">    All enabled types share the same padded ``(T, H, W)`` stack assembly step,</span>
-<span class="sd">    so enabling multiple formats incurs no redundant work beyond the extra write</span>
-<span class="sd">    calls.</span>
+<span class="sd">    - GIF: ``&lt;name&gt;_track_&lt;id&gt;.gif``;</span>
+<span class="sd">    - video: ``&lt;name&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;``;</span>
+<span class="sd">    - image sequence: a folder ``&lt;name&gt;_track_&lt;id&gt;/`` of ``frame_0000.png``,</span>
+<span class="sd">      ``frame_0001.png`` and so on.</span>
 
-<span class="sd">    The module requires:</span>
-<span class="sd">    - output from ``ParticleRegionExtractionModule`` (``"particle_region_extraction"``)</span>
-<span class="sd">      run with ``include_image=True``.</span>
+<span class="sd">    Frames where the particle was not detected are filled with ``fill_value``.</span>
+<span class="sd">    See :meth:`run` for the parameters and outputs.</span>
 
-<span class="sd">    Parameters accepted in :meth:`run`</span>
-<span class="sd">    ------------------------------------</span>
-<span class="sd">    track_ids : list of int or None</span>
-<span class="sd">        Explicit whitelist of track IDs to export.  ``None`` exports all</span>
-<span class="sd">        tracks.  Applied before ``sort_by`` and ``max_tracks``.</span>
-<span class="sd">    max_tracks : int or None</span>
-<span class="sd">        Maximum number of tracks to export.  Applied after ``track_ids``</span>
-<span class="sd">        filtering and ``sort_by`` ordering.  ``None`` exports all remaining</span>
-<span class="sd">        tracks.</span>
-<span class="sd">    sort_by : {"track_id", "n_frames", "n_detections"}</span>
-<span class="sd">        Sort order used before applying ``max_tracks``.  ``"track_id"``</span>
-<span class="sd">        (default) gives stable ascending order; ``"n_frames"`` and</span>
-<span class="sd">        ``"n_detections"`` sort descending so the most complete tracks are</span>
-<span class="sd">        exported first.</span>
-<span class="sd">    export_gif : bool</span>
-<span class="sd">        Whether to write an animated GIF per track.  Default ``False``.</span>
-<span class="sd">    export_video : bool</span>
-<span class="sd">        Whether to write a video file per track.  Default ``True``.</span>
-<span class="sd">    video_fmt : str</span>
-<span class="sd">        Video container format: ``"mp4"``, ``"avi"``, ``"mov"``, or</span>
-<span class="sd">        ``"mkv"``.  Default ``"mp4"``.</span>
-<span class="sd">    export_sequence : bool</span>
-<span class="sd">        Whether to write a per-frame image sequence per track.  Default</span>
-<span class="sd">        ``False``.</span>
-<span class="sd">    sequence_fmt : str</span>
-<span class="sd">        Image format for sequences: ``"png"``, ``"jpg"``, or ``"jpeg"``.</span>
-<span class="sd">        Default ``"png"``.</span>
-<span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory to write output into.  Defaults to ``"output"``.</span>
-<span class="sd">    output_name : str or None</span>
-<span class="sd">        Base name stem, derived from the stack file name when ``None``.</span>
-<span class="sd">        Videos are written as ``&lt;base&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;``.</span>
-<span class="sd">        Sequence sub-directories are named ``&lt;base&gt;_track_&lt;id&gt;/``.</span>
-<span class="sd">    fps : float</span>
-<span class="sd">        Playback frame rate in frames per second.  Default ``5.0``.</span>
-<span class="sd">    cmap_name : str</span>
-<span class="sd">        Matplotlib colourmap name.  Default ``DEFAULT_CMAP``.</span>
-<span class="sd">    zmin, zmax : float, str, or None</span>
-<span class="sd">        Z-range for normalisation forwarded to the rendering functions.</span>
-<span class="sd">        ``"auto"`` uses the 1st/99th percentile across all crops for the</span>
-<span class="sd">        track; ``None`` normalises each frame independently.</span>
-<span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to annotate frames with a timestamp.  Default ``True``.</span>
-<span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw a scale bar.  Default ``True``.</span>
-<span class="sd">    scale_bar_length_nm : int</span>
-<span class="sd">        Scale bar length in nm.  Default ``100``.</span>
-<span class="sd">    font_scale : float</span>
-<span class="sd">        Font scale for annotations.  Default ``DEFAULT_FONT_SCALE``.</span>
-<span class="sd">    fill_value : float</span>
-<span class="sd">        Fill value for padding and missing-frame placeholders.  Default ``0.0``.</span>
-<span class="sd">    extraction_module : str</span>
-<span class="sd">        Key of the upstream extraction module in ``previous_results``.</span>
-<span class="sd">        Default ``"particle_region_extraction"``.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    After detection, tracking and region extraction, write a GIF of the ten</span>
+<span class="sd">    tracks with the most detections:</span>
+
+<span class="sd">    &gt;&gt;&gt; pipeline.add(</span>
+<span class="sd">    ...     "particle_region_media_export",</span>
+<span class="sd">    ...     export_gif=True,</span>
+<span class="sd">    ...     export_video=False,</span>
+<span class="sd">    ...     sort_by="n_detections",</span>
+<span class="sd">    ...     max_tracks=10,</span>
+<span class="sd">    ... )  # doctest: +SKIP</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Module name for registration in the analysis pipeline."""</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"particle_region_media_export"``."""</span>
         <span class="k">return</span> <span class="s2">"particle_region_media_export"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"particle_region_extraction"</span><span class="p">]</span>
@@ -832,103 +776,93 @@
         <span class="n">fill_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute the video and/or image-sequence export.</span>
+<span class="sd">        Write the GIFs, videos and image sequences for the selected tracks.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            Input stack.  ``stack.pixel_size_nm`` and ``stack.file_path`` are</span>
-<span class="sd">            used for scale bar calibration and default output naming.</span>
-<span class="sd">        previous_results : dict, optional</span>
-<span class="sd">            Outputs from earlier pipeline modules.  Must contain output from</span>
-<span class="sd">            ``extraction_module`` with ``include_image=True``.</span>
-<span class="sd">        extraction_module : str, default ``"particle_region_extraction"``</span>
-<span class="sd">            Key identifying the region extraction module output.</span>
-<span class="sd">        output_folder : str or None</span>
-<span class="sd">            Directory to write output.  Defaults to ``"output"``.</span>
-<span class="sd">        output_name : str or None</span>
-<span class="sd">            Base file name stem.  Track ID is appended automatically.</span>
-<span class="sd">        track_ids : list of int or None, default None</span>
-<span class="sd">            Explicit whitelist of track IDs to export.  ``None`` exports all</span>
-<span class="sd">            tracks.  IDs not present in the extraction output are silently</span>
-<span class="sd">            ignored.</span>
-<span class="sd">        max_tracks : int or None, default None</span>
-<span class="sd">            Maximum number of tracks to export after filtering and sorting.</span>
-<span class="sd">            Useful for QC runs: e.g. ``sort_by="n_frames", max_tracks=10``</span>
-<span class="sd">            exports the ten longest-lived particles.  ``None`` exports all</span>
-<span class="sd">            remaining tracks.</span>
-<span class="sd">        sort_by : str, default ``"track_id"``</span>
-<span class="sd">            Sort key applied after ``track_ids`` filtering and before</span>
-<span class="sd">            ``max_tracks``.  Options:</span>
-
-<span class="sd">            - ``"track_id"`` : ascending by track ID (stable default).</span>
-<span class="sd">            - ``"n_frames"`` : descending by total frame count.</span>
-<span class="sd">            - ``"n_detections"`` : descending by number of frames with a</span>
-<span class="sd">              non-missing detection.</span>
-
-<span class="sd">        export_gif : bool, default False</span>
-<span class="sd">            Write an animated GIF (``&lt;base&gt;_track_&lt;id&gt;.gif``) per track.</span>
-<span class="sd">        export_video : bool, default True</span>
-<span class="sd">            Write a video file (``&lt;base&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;``) per track.</span>
-<span class="sd">        video_fmt : str, default ``"mp4"``</span>
-<span class="sd">            Video container format.  One of ``"mp4"``, ``"avi"``, ``"mov"``,</span>
-<span class="sd">            ``"mkv"``.</span>
-<span class="sd">        export_sequence : bool, default False</span>
-<span class="sd">            Write a folder of per-frame images</span>
-<span class="sd">            (``&lt;base&gt;_track_&lt;id&gt;/frame_NNNN.&lt;sequence_fmt&gt;``) per track.</span>
-<span class="sd">        sequence_fmt : str, default ``"png"``</span>
-<span class="sd">            Image format for sequence frames.  One of ``"png"``, ``"jpg"``,</span>
-<span class="sd">            ``"jpeg"``.</span>
-<span class="sd">        fps : float, default 5.0</span>
-<span class="sd">            Playback frame rate in frames per second (video only).</span>
-<span class="sd">        cmap_name : str, default ``DEFAULT_CMAP``</span>
-<span class="sd">            Matplotlib colourmap for false-colour rendering.</span>
-<span class="sd">        zmin : float, str, or None</span>
-<span class="sd">            Lower bound for z-normalisation, forwarded to the rendering</span>
-<span class="sd">            functions.</span>
-<span class="sd">        zmax : float, str, or None</span>
-<span class="sd">            Upper bound for z-normalisation, forwarded to the rendering</span>
-<span class="sd">            functions.</span>
-<span class="sd">        draw_ts : bool, default True</span>
-<span class="sd">            Whether to overlay timestamps on frames.</span>
-<span class="sd">        draw_scale : bool, default True</span>
-<span class="sd">            Whether to overlay a scale bar on frames.</span>
-<span class="sd">        scale_bar_length_nm : int, default 100</span>
-<span class="sd">            Scale bar length in nanometres.</span>
-<span class="sd">        font_scale : float, default ``DEFAULT_FONT_SCALE``</span>
-<span class="sd">            Font scale for timestamp and scale bar annotations.</span>
-<span class="sd">        fill_value : float, default 0.0</span>
-<span class="sd">            Value used to fill padded pixels and missing-frame placeholders.</span>
+<span class="sd">            The stack: its ``pixel_size_nm`` sets the scale bar and its file name</span>
+<span class="sd">            the default output name.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold the output of ``extraction_module``.</span>
+<span class="sd">        extraction_module : str, optional</span>
+<span class="sd">            Name of the region extraction step. Default is</span>
+<span class="sd">            ``"particle_region_extraction"``.</span>
+<span class="sd">        output_folder : str, optional</span>
+<span class="sd">            Folder for the output; created if missing. If None, ``./output``.</span>
+<span class="sd">        output_name : str, optional</span>
+<span class="sd">            Start of each file name. If None, the name of the file the stack was</span>
+<span class="sd">            loaded from.</span>
+<span class="sd">        track_ids : list of int, optional</span>
+<span class="sd">            Export only these tracks. IDs not found are ignored. If None, all</span>
+<span class="sd">            tracks. Default is None.</span>
+<span class="sd">        max_tracks : int, optional</span>
+<span class="sd">            Export at most this many tracks, after ``track_ids`` and ``sort_by``.</span>
+<span class="sd">            Default is None (no limit).</span>
+<span class="sd">        sort_by : {"track_id", "n_frames", "n_detections"}, optional</span>
+<span class="sd">            Order of the tracks before ``max_tracks`` is applied: by ID</span>
+<span class="sd">            (ascending), by number of frames spanned, or by number of frames with a</span>
+<span class="sd">            detection (both descending). Default is ``"track_id"``.</span>
+<span class="sd">        export_gif : bool, optional</span>
+<span class="sd">            Write a GIF per track. Default is False.</span>
+<span class="sd">        export_video : bool, optional</span>
+<span class="sd">            Write a video per track. Default is True.</span>
+<span class="sd">        video_fmt : {"mp4", "avi", "mov", "mkv"}, optional</span>
+<span class="sd">            Video format. Default is ``"mp4"``.</span>
+<span class="sd">        export_sequence : bool, optional</span>
+<span class="sd">            Write a folder of images per track. Default is False.</span>
+<span class="sd">        sequence_fmt : {"png", "jpg", "jpeg"}, optional</span>
+<span class="sd">            Image format of the sequences. Default is ``"png"``.</span>
+<span class="sd">        fps : float, optional</span>
+<span class="sd">            Frames per second of the GIFs and videos. Default is 5.0.</span>
+<span class="sd">        cmap_name : str, optional</span>
+<span class="sd">            Name of a registered matplotlib colormap. Default is ``"afm_brown"``.</span>
+<span class="sd">        zmin, zmax : float or str, optional</span>
+<span class="sd">            Colour scale limits, as for :func:`playnano.io.gif_export.export_gif`:</span>
+<span class="sd">            both None scales each frame separately; ``"auto"`` uses the 1st or</span>
+<span class="sd">            99th percentile of the track. Padding and missing frames</span>
+<span class="sd">            (``fill_value``) count towards both, so they can change the colours.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        draw_ts : bool, optional</span>
+<span class="sd">            Draw each frame's time. Default is True.</span>
+<span class="sd">        draw_scale : bool, optional</span>
+<span class="sd">            Draw a scale bar. Default is True.</span>
+<span class="sd">        scale_bar_length_nm : int, optional</span>
+<span class="sd">            Length of the scale bar, in nm; 0 hides it. Default is 100.</span>
+<span class="sd">        font_scale : float, optional</span>
+<span class="sd">            Size of the annotation text for a frame 512 pixels high. Default is 2.0.</span>
+<span class="sd">        fill_value : float, optional</span>
+<span class="sd">            Value used for padding and for frames where the particle was not</span>
+<span class="sd">            detected. Default is 0.0.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Keys:</span>
-
-<span class="sd">            ``gif_paths`` : list of str</span>
-<span class="sd">                Absolute paths of written GIF files.  Empty when</span>
-<span class="sd">                ``export_gif=False``.</span>
-<span class="sd">            ``video_paths`` : list of str</span>
-<span class="sd">                Absolute paths of written video files.  Empty when</span>
-<span class="sd">                ``export_video=False``.</span>
-<span class="sd">            ``sequence_folders`` : list of str</span>
-<span class="sd">                Absolute paths of written sequence folders.  Empty when</span>
-<span class="sd">                ``export_sequence=False``.</span>
-<span class="sd">            ``per_track`` : list of dict</span>
-<span class="sd">                One entry per track containing ``track_id``, ``n_frames``,</span>
-<span class="sd">                ``frame_size``, and whichever of ``gif_path`` /</span>
-<span class="sd">                ``video_path`` / ``sequence_folder`` were produced.</span>
-<span class="sd">            ``summary`` : dict</span>
-<span class="sd">                Bookkeeping counters and configuration echo.</span>
+<span class="sd">            ``"gif_paths"``, ``"video_paths"``, ``"sequence_folders"``</span>
+<span class="sd">                Absolute paths of what was written, as str.</span>
+<span class="sd">            ``"per_track"``</span>
+<span class="sd">                One dict per track written, with ``track_id``, ``n_frames``,</span>
+<span class="sd">                ``frame_size`` (height, width, in pixels) and its ``gif_path``,</span>
+<span class="sd">                ``video_path`` and ``sequence_folder``.</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                Counts of tracks found, selected, written, skipped (no crops) and</span>
+<span class="sd">                filtered out, and the settings used.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        RuntimeError</span>
-<span class="sd">            If none of the export flags are enabled, or if required upstream</span>
-<span class="sd">            outputs are missing or misconfigured.</span>
+<span class="sd">            If no export is enabled, ``previous_results`` is None or lacks the</span>
+<span class="sd">            extraction output, or the extraction ran with ``include_image=False``.</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If ``sort_by``, ``video_fmt``, or ``sequence_fmt`` is not a</span>
-<span class="sd">            supported value.</span>
+<span class="sd">            If ``sort_by`` is not recognised, ``sequence_fmt`` is not supported, or</span>
+<span class="sd">            ``zmin`` is greater than ``zmax``.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Formats are not checked before writing starts, so with an unsupported</span>
+<span class="sd">        format some files may already be written when the error is raised. An</span>
+<span class="sd">        unsupported ``video_fmt`` raises ``FileNotFoundError`` rather than</span>
+<span class="sd">        ``ValueError``. The scale bar uses the stack's pixel size, not each frame's.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>

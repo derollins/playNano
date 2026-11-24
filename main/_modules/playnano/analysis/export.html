@@ -506,7 +506,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.export</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Functions for exporting analysis results."""</span>
+<span></span><span class="sd">"""Write an analysis record to a JSON file."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -519,22 +519,24 @@
 <a class="viewcode-back" href="../../../api/playnano.analysis.export.html#playnano.analysis.export.export_analysis_to_json">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">export_analysis_to_json</span><span class="p">(</span><span class="n">out_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">analysis_record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Write the analysis_record (returned by AnalysisPipeline.run) to JSON.</span>
+<span class="sd">    Write an analysis record to a JSON file, with arrays written in full.</span>
+
+<span class="sd">    Unlike ``AnalysisPipeline.run(log_to=...)``, which summarises arrays, this</span>
+<span class="sd">    writes every value: arrays become nested lists and NumPy numbers become</span>
+<span class="sd">    Python numbers (see :class:`~playnano.analysis.utils.common.NumpyEncoder`).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    out_path : str</span>
-<span class="sd">        Output file path.</span>
-
+<span class="sd">        The JSON file to write. Missing folders are created.</span>
 <span class="sd">    analysis_record : dict</span>
-<span class="sd">        Analysis record to serialize.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        The record returned by</span>
+<span class="sd">        :meth:`~playnano.analysis.pipeline.AnalysisPipeline.run`.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If the record holds a value that cannot be written as JSON.</span>
 <span class="sd">    OSError</span>
 <span class="sd">        If the file cannot be written.</span>
 <span class="sd">    """</span>

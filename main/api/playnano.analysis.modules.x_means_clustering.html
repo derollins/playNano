@@ -514,59 +514,69 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.x_means_clustering">
 <span id="playnano-analysis-modules-x-means-clustering-module"></span><h1>playnano.analysis.modules.x_means_clustering module<a class="headerlink" href="#module-playnano.analysis.modules.x_means_clustering" title="Link to this heading">¶</a></h1>
-<p>Module for X-Means clustering as part of the playNano analysis pipeline.</p>
-<p>This module implements a version of the X-Means clustering algorithm,
-an extension of K-Means that estimates the optimal number of clusters using the
-Bayesian Information Criterion (BIC).</p>
-<p>Based on:
-Pelleg, D., &amp; Moore, A. W. (2000). X-means: Extending K-means with Efficient
-Estimation of the Number of Clusters. Carnegie Mellon University.
-<a class="reference external" href="http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf">http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf</a></p>
+<p>Analysis module that groups detected features with X-means.</p>
+<p>X-means finds the number of clusters itself: it repeatedly runs k-means and
+splits clusters while splitting improves the Bayesian information criterion
+(BIC). Based on:</p>
+<p>Pelleg, D. and Moore, A. W. (2000). X-means: Extending K-means with Efficient
+Estimation of the Number of Clusters. <em>Proceedings of the 17th International
+Conference on Machine Learning</em>, 727-734.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.XMeansClusteringModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">XMeansClusteringModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/x_means_clustering.html#XMeansClusteringModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Cluster features using the X-Means algorithm over (x, y[, t]) coordinates.</p>
-<p>This module clusters spatial (and optionally temporal) feature coordinates extracted
-from an AFM stack using an X-Means algorithm implemented in pure Python.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Key in previous_results[detection_module] to find feature list.</p></li>
-<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Names of feature dictionary keys to use for coordinates
-(e.g. centroid_x, centroid_y).</p></li>
-<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to append frame timestamps as the third coordinate.</p></li>
-<li><p><strong>min_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Initial number of clusters (minimum).</p></li>
-<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of clusters to allow.</p></li>
-<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to min-max normalize coordinate space before clustering.</p></li>
-<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Multiplier for time dimension (after normalization).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>dict</em> – Dictionary with clustering results:
-- clusters: list of {id, frames, point_indices, coords}
-- cluster_centers: (K, D) ndarray in original units
-- summary: {n_clusters: int, members_per_cluster: dict}</p></li>
-<li><p><em>Version</em></p></li>
-<li><p><em>——-</em></p></li>
-<li><p><em>0.1.0</em></p></li>
-</ul>
-</p>
-</dd>
-</dl>
+<p>Group detected features from all frames with X-means, which picks the number.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;x_means_clustering&quot;</span></code>. It needs the output of
+<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> from an earlier step.</p>
+<p>Each detected feature becomes one point. By default its coordinates are the
+feature’s <code class="docutils literal notranslate"><span class="pre">centroid</span></code>, (row, col) in pixels, with the frame time in seconds
+added as a third coordinate. With <code class="docutils literal notranslate"><span class="pre">normalise</span></code> (the default), each coordinate
+is rescaled to the range 0 to 1 before clustering.</p>
+<p>Starting with <code class="docutils literal notranslate"><span class="pre">min_k</span></code> clusters, each round runs k-means, then tries to split
+each cluster of 2 or more points in two. A cluster is split if the two halves,
+each of at least 2 points, have a higher combined BIC than the cluster by more
+than <code class="docutils literal notranslate"><span class="pre">bic_threshold</span></code>. The next round runs k-means again, from scratch, with
+the new number of clusters. This stops when no cluster splits or splitting
+would give more than <code class="docutils literal notranslate"><span class="pre">max_k</span></code> clusters. The random seed of each k-means run
+is fixed, so results are repeatable.</p>
+<p class="rubric">Examples</p>
+<p>Two particles over 4 frames, one moving to the right:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.feature_detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">FeatureDetectionModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">46</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">46</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected</span> <span class="o">=</span> <span class="n">FeatureDetectionModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stack</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">previous</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"feature_detection"</span><span class="p">:</span> <span class="n">detected</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.x_means_clustering</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">XMeansClusteringModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">XMeansClusteringModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">previous</span><span class="p">,</span> <span class="n">use_time</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s2">"cluster_centers"</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([[12.5, 15. ],</span>
+<span class="go">       [42.5, 42.5],</span>
+<span class="go">       [12.5, 13. ]])</span>
+</pre></div>
+</div>
+<p>The still particle is one cluster; the moving one is split in two, because
+its positions spread more widely than one cluster explains well.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the analysis module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string identifier for this module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
-</dd>
-</dl>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;x_means_clustering&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -577,66 +587,53 @@ from an AFM stack using an X-Means algorithm implemented in pure Python.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.15)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bic_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/x_means_clustering.html#XMeansClusteringModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Perform X-Means clustering on features extracted from an AFM stack.</p>
-<p>This method extracts (x, y[, t]) coordinates from detected features,
-optionally normalizes and time-weights them, and applies the X-Means algorithm
-to automatically select the number of clusters based on the BIC score.</p>
+<dd><p>Cluster the detected features with X-means.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input image stack providing frame timing and metadata context.</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing outputs from previous analysis steps.
-Must contain the selected detection_module and coord_key.</p></li>
-<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Key identifying which previous modules output to use.
-Default is “feature_detection”.</p></li>
-<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Key under the detection module that holds per-frame feature dicts.
-Default is “features_per_frame”.</p></li>
-<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Keys to extract from each feature for clustering coordinates.
-If missing, will fall back to using the “centroid” tuple if available.
-Defaults is (“centroid_x”, “centroid_y”).</p></li>
-<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If True and <cite>coord_columns</cite> only gives 2D coordinates, appends the
-frame timestamp as a third dimension. Default is True.</p></li>
-<li><p><strong>min_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Initial number of clusters to start with. Default is 1.</p></li>
-<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of clusters allowed. Default is 10.</p></li>
-<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to normalize the feature coordinate axes to the [0, 1] range
-before clustering. Default is True.</p></li>
-<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Multiplicative factor applied to the time axis (after normalization).
-Used only if time is included as a third coordinate.</p></li>
-<li><p><strong>replicates</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of times to run k-means internally to choose the best split.
-Default is 3.</p></li>
-<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Maximum number of iterations for each k-means call.
-Default is 300.</p></li>
-<li><p><strong>bic_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Minimum improvement in BIC required to split a cluster.
-Default is 0.0 (any improvement allows a split).</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack; used for the frame times.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold a detection output.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the detection step to use. If it has not run,
+<code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code> is tried, then <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of the per-frame feature lists in the detection output. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>.</p></li>
+<li><p><strong>coord_columns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Keys of each feature’s coordinates. If a feature lacks them, the first
+two values of its <code class="docutils literal notranslate"><span class="pre">centroid</span></code>, (row, col), are used instead.
+<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> has no <code class="docutils literal notranslate"><span class="pre">centroid_x</span></code> or <code class="docutils literal notranslate"><span class="pre">centroid_y</span></code>, so this is
+what happens with the default. Default is
+<code class="docutils literal notranslate"><span class="pre">(&quot;centroid_x&quot;,</span> <span class="pre">&quot;centroid_y&quot;)</span></code>.</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add each feature’s frame time, in seconds, as a third coordinate (only
+when there are two coordinates). Default is True.</p></li>
+<li><p><strong>min_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of clusters to start with. Must not be more than <code class="docutils literal notranslate"><span class="pre">max_k</span></code>.
+Default is 1.</p></li>
+<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Largest number of clusters allowed. Default is 10.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Rescale each coordinate to the range 0 to 1 (minimum to maximum over
+all points) before clustering. Default is True.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Multiply the rescaled time coordinate by this, so time counts more (above
+1) or less (below 1) than position. Must be positive. Only used with
+<code class="docutils literal notranslate"><span class="pre">normalise</span></code> and a time coordinate. Default is None (no weighting).</p></li>
+<li><p><strong>replicates</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of times each k-means run is started; the best is kept. Default
+is 3.</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Largest number of iterations of each k-means run. Default is 300.</p></li>
+<li><p><strong>bic_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – How much a split must raise the BIC to be accepted. Higher values give
+fewer clusters. Default is 0.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A dictionary with the following keys:</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>”clusters”<span class="classifier">list of dicts, each with:</span></dt><dd><ul>
-<li><p>id : int</p></li>
-<li><p>frames : list of int</p></li>
-<li><p>point_indices : list of int</p></li>
-<li><p>coords : list of tuple (normalized x, y, [t])</p></li>
-</ul>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;clusters&quot;</span></code></dt><dd><p>One dict per cluster, with <code class="docutils literal notranslate"><span class="pre">id</span></code> (int), and for each member point
+<code class="docutils literal notranslate"><span class="pre">frames</span></code> (frame index), <code class="docutils literal notranslate"><span class="pre">point_indices</span></code> (index in that frame’s
+feature list) and <code class="docutils literal notranslate"><span class="pre">coords</span></code> (the point’s coordinates as clustered,
+so rescaled if <code class="docutils literal notranslate"><span class="pre">normalise</span></code>).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;cluster_centers&quot;</span></code></dt><dd><p>Array of shape (n_clusters, n_coordinates): the centre of each
+cluster, in the original units (pixels, and seconds for time).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n_clusters</span></code> and <code class="docutils literal notranslate"><span class="pre">members_per_cluster</span></code> (cluster ID to number of
+points).</p>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>”cluster_centers”<span class="classifier">ndarray of shape (k, D)</span></dt><dd><p>Final cluster centers in original (denormalized) coordinates.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>”summary”<span class="classifier">dict</span></dt><dd><ul>
-<li><p>”n_clusters” : int</p></li>
-<li><p>”members_per_cluster” : dict mapping cluster ID to point count.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -644,11 +641,16 @@ Default is 0.0 (any improvement allows a split).</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If the required detection module output is missing from previous_results.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If the expected coordinate keys are missing from any feature dictionary.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">previous_results</span></code> holds no detection output.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If the detection output lacks <code class="docutils literal notranslate"><span class="pre">coord_key</span></code>, or a feature has neither
+    <code class="docutils literal notranslate"><span class="pre">coord_columns</span></code> nor <code class="docutils literal notranslate"><span class="pre">centroid</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">min_k</span></code> is more than the number of points.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">min_k</span></code> is more than <code class="docutils literal notranslate"><span class="pre">max_k</span></code>, no clustering is done: the result has
+<code class="docutils literal notranslate"><span class="pre">min_k</span></code> centres picked at random from the points.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -661,16 +663,17 @@ Default is 0.0 (any improvement allows a split).</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.compute_bic">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">compute_bic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/x_means_clustering.html#compute_bic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.compute_bic" title="Link to this definition">¶</a></dt>
-<dd><p>Compute Bayesian Information Criterion for a cluster.</p>
+<dd><p>Return the Bayesian information criterion (BIC) of one cluster; higher is better.</p>
+<p>The cluster is modelled as a spherical Gaussian around <code class="docutils literal notranslate"><span class="pre">center</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<em>np.ndarray</em>) – Points in the cluster.</p></li>
-<li><p><strong>center</strong> (<em>np.ndarray</em>) – Cluster center (shape (1, D)).</p></li>
+<li><p><strong>points</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – The cluster’s points, shape (n_points, n_coordinates).</p></li>
+<li><p><strong>center</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – The cluster’s centre, shape (1, n_coordinates).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>BIC value.</p>
+<dd class="field-even"><p>The BIC, or <code class="docutils literal notranslate"><span class="pre">-inf</span></code> for fewer than 2 points.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
@@ -681,14 +684,49 @@ Default is 0.0 (any improvement allows a split).</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.core_xmeans">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">core_xmeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cluster_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">replicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bic_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/x_means_clustering.html#core_xmeans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.core_xmeans" title="Link to this definition">¶</a></dt>
-<dd><p>Core X-Means loop.</p>
-<p>Parameters are equivalent to those in <cite>run</cite> above.</p>
+<dd><p>Run X-means on an array of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Points, shape (n_points, n_coordinates).</p></li>
+<li><p><strong>init_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of clusters to start with.</p></li>
+<li><p><strong>max_k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Largest number of clusters allowed.</p></li>
+<li><p><strong>min_cluster_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Smallest number of points in each half of a split.</p></li>
+<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Not used; distances are always squared Euclidean.</p></li>
+<li><p><strong>replicates</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of starts of each k-means run.</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Largest number of iterations of each k-means run.</p></li>
+<li><p><strong>bic_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – How much a split must raise the BIC to be accepted.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>labels</strong> (<em>numpy.ndarray</em>) – Index of each point’s cluster: the nearest centre.</p></li>
+<li><p><strong>centers</strong> (<em>numpy.ndarray</em>) – Cluster centres, shape (n_clusters, n_coordinates).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.modules.x_means_clustering.initialize_centers">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.x_means_clustering.</span></span><span class="sig-name descname"><span class="pre">initialize_centers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/x_means_clustering.html#initialize_centers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.x_means_clustering.initialize_centers" title="Link to this definition">¶</a></dt>
-<dd><p>Initialize k centers using a k-means++-like heuristic.</p>
+<dd><p>Pick <code class="docutils literal notranslate"><span class="pre">k</span></code> starting centres from the points, spread out like k-means++.</p>
+<p>Uses NumPy’s global random generator, which is not seeded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Points, shape (n_points, n_coordinates).</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of centres.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The centres, shape (k, n_coordinates).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

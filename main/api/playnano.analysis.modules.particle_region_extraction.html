@@ -514,71 +514,60 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.particle_region_extraction">
 <span id="playnano-analysis-modules-particle-region-extraction-module"></span><h1>playnano.analysis.modules.particle_region_extraction module<a class="headerlink" href="#module-playnano.analysis.modules.particle_region_extraction" title="Link to this heading">¶</a></h1>
-<p>Particle region extraction module for the playNano analysis pipeline.</p>
-<p>This module extracts per-particle image regions over time using labeled masks
-from a detection module (e.g. <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>) and particle associations
-from a tracking module (e.g. <code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code>).</p>
-<p>For each tracked particle and each frame, the module locates the labeled region
-and extracts:</p>
+<p>Analysis module that cuts out each tracked particle’s region, frame by frame.</p>
+<p>For each track from <code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code> and each frame it spans, the module
+finds the particle’s labelled region in the <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> output and
+records:</p>
 <ul class="simple">
-<li><p>the tight bounding-box coordinates of the region,</p></li>
-<li><p>an optionally padded / squared / fixed-size bounding box,</p></li>
-<li><p>a crop of the raw image stack frame (optional),</p></li>
-<li><p>a crop of the binary object mask (optional).</p></li>
+<li><p>its tight bounding box,</p></li>
+<li><p>a bounding box enlarged by padding, made square or set to a fixed size,</p></li>
+<li><p>a crop of the frame to that box (optional),</p></li>
+<li><p>a crop of the particle’s mask to that box (optional).</p></li>
 </ul>
-<p>This module is a data-organisation step: it assembles per-track, per-frame
-region data into a consistent structure for downstream analysis and export.
-Per-frame statistics (mean, max, etc.) are already produced by the detection
-module; time-series statistics belong in a dedicated downstream module.</p>
-<p>All outputs are <code class="docutils literal notranslate"><span class="pre">None</span></code> / <code class="docutils literal notranslate"><span class="pre">np.nan</span></code> for frames where the particle is absent
-(dense tracks with missing detections) or where indices are out of range.</p>
+<p>It only organises data: per-frame measurements come from the detection step,
+and later modules such as <code class="docutils literal notranslate"><span class="pre">tracked_particle_boundary_size</span></code> and
+<code class="docutils literal notranslate"><span class="pre">particle_region_media_export</span></code> use its output.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.particle_region_extraction.</span></span><span class="sig-name descname"><span class="pre">ParticleRegionExtractionModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_region_extraction.html#ParticleRegionExtractionModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Extract per-particle image regions over time from tracked, labeled detections.</p>
-<p>For each tracked particle and frame the module resolves the labeled region
-from the detection output, computes a bounding box, and optionally crops
-the raw image frame and/or binary mask.</p>
-<p>This is a data-organisation step.  Per-frame statistics are available from
-the detection module output; time-series analysis belongs in a downstream
-module.</p>
-<p>The module requires:
-- output from a particle tracking module (e.g. <code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code>)
-- output from a labeled detection module providing:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">features_per_frame</span></code> — list of per-frame feature dicts with a
-region label under <code class="docutils literal notranslate"><span class="pre">label_key</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">labeled_masks</span></code> — list of 2-D integer-labeled NumPy arrays.</p></li>
-</ul>
-</div></blockquote>
-<section id="parameters-accepted-in-run">
-<h2>Parameters accepted in <a class="reference internal" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run" title="playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a><a class="headerlink" href="#parameters-accepted-in-run" title="Link to this heading">¶</a></h2>
-<dl>
-<dt>padding<span class="classifier">int, default 0</span></dt><dd><p>Pixels to add around the tight bounding box (clipped to image bounds).</p>
-</dd>
-<dt>fixed_box_size<span class="classifier">int or None, default None</span></dt><dd><p>Enforce a fixed-size crop centred on the detection, in pixels.</p>
-</dd>
-<dt>square<span class="classifier">bool, default False</span></dt><dd><p>Force the bounding box to be square (ignored when <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code>
-is set).</p>
-</dd>
-<dt>fixed_size_mode<span class="classifier">{“global”, “per_track”}, default <code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code></span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code> uses <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> directly; <code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code>
-computes the size per track as the largest detection plus
-<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">padding</span></code>.</p>
-</dd>
-<dt>include_image<span class="classifier">bool, default True</span></dt><dd><p>Include <code class="docutils literal notranslate"><span class="pre">&quot;image_crop&quot;</span></code> (raw frame crop) in each region dict.</p>
-</dd>
-<dt>include_mask<span class="classifier">bool, default True</span></dt><dd><p>Include <code class="docutils literal notranslate"><span class="pre">&quot;mask_crop&quot;</span></code> (binary foreground crop) in each region dict.</p>
-</dd>
-<dt>include_bbox<span class="classifier">bool, default True</span></dt><dd><p>Include <code class="docutils literal notranslate"><span class="pre">&quot;bbox_tight&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;bbox_padded&quot;</span></code> in each region dict
-and in the flat table.</p>
-</dd>
-</dl>
+<p>Cut out each tracked particle’s region in every frame of its track.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>. It needs the outputs of
+<code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code> and of a detection step that gives labelled regions
+(<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>). See <a class="reference internal" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run" title="playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> for the parameters and outputs.</p>
+<p>Bounding boxes are <code class="docutils literal notranslate"><span class="pre">(min_row,</span> <span class="pre">min_col,</span> <span class="pre">max_row,</span> <span class="pre">max_col)</span></code> in pixels, with
+the maxima exclusive, so <code class="docutils literal notranslate"><span class="pre">frame[min_row:max_row,</span> <span class="pre">min_col:max_col]</span></code> is the
+crop. Image crops are taken from <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>, so from processed data if the
+stack was processed.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisPipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_tracking"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_region_extraction"</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"step_3_particle_region_extraction"</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">region</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">"per_track"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"regions"</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">region</span><span class="p">[</span><span class="s2">"bbox_tight"</span><span class="p">],</span> <span class="n">region</span><span class="p">[</span><span class="s2">"bbox_padded"</span><span class="p">],</span> <span class="n">region</span><span class="p">[</span><span class="s2">"image_crop"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">((11, 10, 17, 16), (9, 8, 19, 18), (10, 10))</span>
+</pre></div>
+</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Module name for registration in the analysis pipeline.</p>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -589,53 +578,74 @@ and in the flat table.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracking_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'particle_tracking'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_box_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_size_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'label'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_region_extraction.html#ParticleRegionExtractionModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Execute the region extraction.</p>
+<dd><p>Find, box and crop each tracked particle’s region in each frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Input image stack.  Must support <code class="docutils literal notranslate"><span class="pre">stack[frame_idx]</span></code> integer
-indexing when <code class="docutils literal notranslate"><span class="pre">include_image=True</span></code>.</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Outputs from earlier pipeline modules.</p></li>
-<li><p><strong>tracking_module</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;particle_tracking&quot;</span></code>) – Key of the tracking module in <code class="docutils literal notranslate"><span class="pre">previous_results</span></code>.</p></li>
-<li><p><strong>detection_module</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>) – Key of the labeled detection module in <code class="docutils literal notranslate"><span class="pre">previous_results</span></code>.</p></li>
-<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default 0</em>) – Pixels to add around the tight bounding box on each side.</p></li>
-<li><p><strong>fixed_box_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>default None</em>) – Enforce a fixed crop size in pixels, centred on the detection.</p></li>
-<li><p><strong>square</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default False</em>) – Force the bounding box to be square (ignored when
-<code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> is set).</p></li>
-<li><p><strong>fixed_size_mode</strong> ({“global”, “per_track”}, default <code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code>) – <code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code> uses <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> directly; <code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code>
-computes the size per track as the largest detection plus
-<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">padding</span></code>.</p></li>
-<li><p><strong>include_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Include <code class="docutils literal notranslate"><span class="pre">&quot;image_crop&quot;</span></code> in each region dict.</p></li>
-<li><p><strong>include_mask</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Include <code class="docutils literal notranslate"><span class="pre">&quot;mask_crop&quot;</span></code> in each region dict.</p></li>
-<li><p><strong>include_bbox</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Include <code class="docutils literal notranslate"><span class="pre">&quot;bbox_tight&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;bbox_padded&quot;</span></code> in each region dict
-and in <code class="docutils literal notranslate"><span class="pre">flat_table</span></code>.</p></li>
-<li><p><strong>label_key</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;label&quot;</span></code>) – Key used to look up the region label in each feature dict.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack: crops are taken from <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> and times from its frame
+metadata (the frame index if a frame has no time).</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold the outputs of <code class="docutils literal notranslate"><span class="pre">tracking_module</span></code>
+and <code class="docutils literal notranslate"><span class="pre">detection_module</span></code>.</p></li>
+<li><p><strong>tracking_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the tracking step. Default is <code class="docutils literal notranslate"><span class="pre">&quot;particle_tracking&quot;</span></code>.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the detection step. Its output must have <code class="docutils literal notranslate"><span class="pre">&quot;labeled_masks&quot;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Pixels added on each side of the tight box, limited by the frame edges.
+Default is 0.</p></li>
+<li><p><strong>fixed_box_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Make every box this many pixels square, centred on the padded box and
+shifted to stay inside the frame. Overrides <code class="docutils literal notranslate"><span class="pre">square</span></code>. Default is None.</p></li>
+<li><p><strong>square</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Make the padded box square, with sides equal to its longer side. Not
+used if a fixed size is set. Default is False.</p></li>
+<li><p><strong>fixed_size_mode</strong> (<em>{&quot;global&quot;</em><em>, </em><em>&quot;per_track&quot;}</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code> uses <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> for every track. <code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code>
+gives each track its own size: its largest tight box side plus
+<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">padding</span></code>. <code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code> only takes effect if <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code>
+is also set (to any value, which is then not used). Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;global&quot;</span></code>.</p></li>
+<li><p><strong>include_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add <code class="docutils literal notranslate"><span class="pre">&quot;image_crop&quot;</span></code> to each region. Default is True.</p></li>
+<li><p><strong>include_mask</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add <code class="docutils literal notranslate"><span class="pre">&quot;mask_crop&quot;</span></code> to each region. Default is True.</p></li>
+<li><p><strong>include_bbox</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add the boxes to each region and to <code class="docutils literal notranslate"><span class="pre">flat_table</span></code>. Default is True.</p></li>
+<li><p><strong>label_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of each feature’s label in <code class="docutils literal notranslate"><span class="pre">labeled_masks</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;label&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">per_track</span></code><span class="classifier">list of dict</span></dt><dd><p>One entry per track with <code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;frames&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;timestamps&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;fixed_box_size&quot;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&quot;regions&quot;</span></code>.
-Each region entry is <code class="docutils literal notranslate"><span class="pre">None</span></code> (missing detection) or a dict
-containing:</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code></dt><dd><p>One dict per track, with <code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">frames</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamps</span></code>
+(s), <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> (the size used for this track, or None) and
+<code class="docutils literal notranslate"><span class="pre">regions</span></code>: for each frame, None if the particle was not detected,
+otherwise a dict with:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;frame&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;timestamp&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;label&quot;</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bbox_tight&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;bbox_padded&quot;</span></code> <em>(if include_bbox)</em></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;image_crop&quot;</span></code> <em>(if include_image)</em></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;mask_crop&quot;</span></code> <em>(if include_mask)</em></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> and <code class="docutils literal notranslate"><span class="pre">label</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bbox_tight</span></code>: the box around the largest connected piece of the
+label, or None if the label is not in the mask;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bbox_padded</span></code>: the box after <code class="docutils literal notranslate"><span class="pre">padding</span></code>, <code class="docutils literal notranslate"><span class="pre">square</span></code> and
+<code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_crop</span></code>: the frame cropped to <code class="docutils literal notranslate"><span class="pre">bbox_padded</span></code> (array);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask_crop</span></code>: boolean mask of the particle in that crop.</p></li>
 </ul>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">flat_table</span></code><span class="classifier">list of dict</span></dt><dd><p>Row-per-frame table suitable for <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.
-Array crops are excluded; bbox columns are included when
-<code class="docutils literal notranslate"><span class="pre">include_bbox=True</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;flat_table&quot;</span></code></dt><dd><p>One dict per track and frame, with <code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">frame</span></code>,
+<code class="docutils literal notranslate"><span class="pre">timestamp</span></code>, <code class="docutils literal notranslate"><span class="pre">label</span></code> and, if <code class="docutils literal notranslate"><span class="pre">include_bbox</span></code>, the box corners as
+<code class="docutils literal notranslate"><span class="pre">bbox_tight_minr</span></code>, <code class="docutils literal notranslate"><span class="pre">bbox_tight_minc</span></code>, <code class="docutils literal notranslate"><span class="pre">bbox_tight_maxr</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bbox_tight_maxc</span></code> and the same for <code class="docutils literal notranslate"><span class="pre">bbox_padded</span></code>. Missing values
+are NaN. Crops are not included. Ready for <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">summary</span></code><span class="classifier">dict</span></dt><dd><p>Bookkeeping counters and configuration echo.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p>Counts (<code class="docutils literal notranslate"><span class="pre">n_tracks</span></code>, <code class="docutils literal notranslate"><span class="pre">n_rows</span></code>, <code class="docutils literal notranslate"><span class="pre">n_skipped_index_errors</span></code>,
+<code class="docutils literal notranslate"><span class="pre">n_missing_region_measurements</span></code>) and the settings used.</p>
 </dd>
 </dl>
+<p>Frames or feature indices out of range give a warning and a None region.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">previous_results</span></code> is None or lacks the tracking or detection
+    output (or their <code class="docutils literal notranslate"><span class="pre">&quot;tracks&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;labeled_masks&quot;</span></code> or
+    <code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>), or a tracked feature has no <code class="docutils literal notranslate"><span class="pre">label_key</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">fixed_size_mode</span></code> is not recognised.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -645,7 +655,6 @@ Array crops are excluded; bbox columns are included when
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>

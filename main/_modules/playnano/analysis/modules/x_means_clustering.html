@@ -507,17 +507,15 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.x_means_clustering</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module for X-Means clustering as part of the playNano analysis pipeline.</span>
+<span class="sd">Analysis module that groups detected features with X-means.</span>
 
-<span class="sd">This module implements a version of the X-Means clustering algorithm,</span>
-<span class="sd">an extension of K-Means that estimates the optimal number of clusters using the</span>
-<span class="sd">Bayesian Information Criterion (BIC).</span>
+<span class="sd">X-means finds the number of clusters itself: it repeatedly runs k-means and</span>
+<span class="sd">splits clusters while splitting improves the Bayesian information criterion</span>
+<span class="sd">(BIC). Based on:</span>
 
-<span class="sd">Based on:</span>
-<span class="sd">Pelleg, D., &amp; Moore, A. W. (2000). X-means: Extending K-means with Efficient</span>
-<span class="sd">Estimation of the Number of Clusters. Carnegie Mellon University.</span>
-<span class="sd">http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf</span>
-
+<span class="sd">Pelleg, D. and Moore, A. W. (2000). X-means: Extending K-means with Efficient</span>
+<span class="sd">Estimation of the Number of Clusters. *Proceedings of the 17th International</span>
+<span class="sd">Conference on Machine Learning*, 727-734.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -537,60 +535,66 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.XMeansClusteringModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">XMeansClusteringModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Cluster features using the X-Means algorithm over (x, y[, t]) coordinates.</span>
+<span class="sd">    Group detected features from all frames with X-means, which picks the number.</span>
 
-<span class="sd">    This module clusters spatial (and optionally temporal) feature coordinates extracted</span>
-<span class="sd">    from an AFM stack using an X-Means algorithm implemented in pure Python.</span>
+<span class="sd">    Pipeline name: ``"x_means_clustering"``. It needs the output of</span>
+<span class="sd">    ``feature_detection`` from an earlier step.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    coord_key : str</span>
-<span class="sd">        Key in previous_results[detection_module] to find feature list.</span>
+<span class="sd">    Each detected feature becomes one point. By default its coordinates are the</span>
+<span class="sd">    feature's ``centroid``, (row, col) in pixels, with the frame time in seconds</span>
+<span class="sd">    added as a third coordinate. With ``normalise`` (the default), each coordinate</span>
+<span class="sd">    is rescaled to the range 0 to 1 before clustering.</span>
 
-<span class="sd">    coord_columns : Sequence[str]</span>
-<span class="sd">        Names of feature dictionary keys to use for coordinates</span>
-<span class="sd">        (e.g. centroid_x, centroid_y).</span>
+<span class="sd">    Starting with ``min_k`` clusters, each round runs k-means, then tries to split</span>
+<span class="sd">    each cluster of 2 or more points in two. A cluster is split if the two halves,</span>
+<span class="sd">    each of at least 2 points, have a higher combined BIC than the cluster by more</span>
+<span class="sd">    than ``bic_threshold``. The next round runs k-means again, from scratch, with</span>
+<span class="sd">    the new number of clusters. This stops when no cluster splits or splitting</span>
+<span class="sd">    would give more than ``max_k`` clusters. The random seed of each k-means run</span>
+<span class="sd">    is fixed, so results are repeatable.</span>
 
-<span class="sd">    use_time : bool</span>
-<span class="sd">        Whether to append frame timestamps as the third coordinate.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Two particles over 4 frames, one moving to the right:</span>
 
-<span class="sd">    min_k : int</span>
-<span class="sd">        Initial number of clusters (minimum).</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.feature_detection import (</span>
+<span class="sd">    ...     FeatureDetectionModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((4, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(4):</span>
+<span class="sd">    ...     data[t, 10:16, 10 + t : 16 + t] = 3.0</span>
+<span class="sd">    ...     data[t, 40:46, 40:46] = 3.0</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(4)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; detected = FeatureDetectionModule().run(</span>
+<span class="sd">    ...     stack, mask_fn="mask_threshold", threshold=1.0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; previous = {"feature_detection": detected}</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.x_means_clustering import (</span>
+<span class="sd">    ...     XMeansClusteringModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = XMeansClusteringModule().run(stack, previous, use_time=False)</span>
+<span class="sd">    &gt;&gt;&gt; result["cluster_centers"].round(2)</span>
+<span class="sd">    array([[12.5, 15. ],</span>
+<span class="sd">           [42.5, 42.5],</span>
+<span class="sd">           [12.5, 13. ]])</span>
 
-<span class="sd">    max_k : int</span>
-<span class="sd">        Maximum number of clusters to allow.</span>
-
-<span class="sd">    normalise : bool</span>
-<span class="sd">        Whether to min-max normalize coordinate space before clustering.</span>
-
-<span class="sd">    time_weight : float, optional</span>
-<span class="sd">        Multiplier for time dimension (after normalization).</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        Dictionary with clustering results:</span>
-<span class="sd">        - clusters: list of {id, frames, point_indices, coords}</span>
-<span class="sd">        - cluster_centers: (K, D) ndarray in original units</span>
-<span class="sd">        - summary: {n_clusters: int, members_per_cluster: dict}</span>
-
-<span class="sd">    Version</span>
-<span class="sd">    -------</span>
-<span class="sd">    0.1.0</span>
+<span class="sd">    The still particle is one cluster; the moving one is split in two, because</span>
+<span class="sd">    its positions spread more widely than one cluster explains well.</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Name of the analysis module.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            The string identifier for this module.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"x_means_clustering"``."""</span>
         <span class="k">return</span> <span class="s2">"x_means_clustering"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
@@ -615,87 +619,80 @@
         <span class="n">bic_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Perform X-Means clustering on features extracted from an AFM stack.</span>
-
-<span class="sd">        This method extracts (x, y[, t]) coordinates from detected features,</span>
-<span class="sd">        optionally normalizes and time-weights them, and applies the X-Means algorithm</span>
-<span class="sd">        to automatically select the number of clusters based on the BIC score.</span>
+<span class="sd">        Cluster the detected features with X-means.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The input image stack providing frame timing and metadata context.</span>
-
-<span class="sd">        previous_results : dict[str, Any], optional</span>
-<span class="sd">            Dictionary containing outputs from previous analysis steps.</span>
-<span class="sd">            Must contain the selected detection_module and coord_key.</span>
-
-<span class="sd">        detection_module : str</span>
-<span class="sd">            Key identifying which previous modules output to use.</span>
-<span class="sd">            Default is "feature_detection".</span>
-
-<span class="sd">        coord_key : str</span>
-<span class="sd">            Key under the detection module that holds per-frame feature dicts.</span>
-<span class="sd">            Default is "features_per_frame".</span>
-
-<span class="sd">        coord_columns : Sequence[str]</span>
-<span class="sd">            Keys to extract from each feature for clustering coordinates.</span>
-<span class="sd">            If missing, will fall back to using the "centroid" tuple if available.</span>
-<span class="sd">            Defaults is ("centroid_x", "centroid_y").</span>
-
-<span class="sd">        use_time : bool</span>
-<span class="sd">            If True and `coord_columns` only gives 2D coordinates, appends the</span>
-<span class="sd">            frame timestamp as a third dimension. Default is True.</span>
-
-<span class="sd">        min_k : int</span>
-<span class="sd">            Initial number of clusters to start with. Default is 1.</span>
-
-<span class="sd">        max_k : int</span>
-<span class="sd">            Maximum number of clusters allowed. Default is 10.</span>
-
-<span class="sd">        normalise : bool</span>
-<span class="sd">            Whether to normalize the feature coordinate axes to the [0, 1] range</span>
-<span class="sd">            before clustering. Default is True.</span>
-
-<span class="sd">        time_weight : float or None, optional</span>
-<span class="sd">            Multiplicative factor applied to the time axis (after normalization).</span>
-<span class="sd">            Used only if time is included as a third coordinate.</span>
-
-<span class="sd">        replicates : int</span>
-<span class="sd">            Number of times to run k-means internally to choose the best split.</span>
-<span class="sd">            Default is 3.</span>
-
-<span class="sd">        max_iter : int</span>
-<span class="sd">            Maximum number of iterations for each k-means call.</span>
-<span class="sd">            Default is 300.</span>
-
-<span class="sd">        bic_threshold : float</span>
-<span class="sd">            Minimum improvement in BIC required to split a cluster.</span>
-<span class="sd">            Default is 0.0 (any improvement allows a split).</span>
+<span class="sd">            The stack; used for the frame times.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold a detection output.</span>
+<span class="sd">        detection_module : str, optional</span>
+<span class="sd">            Name of the detection step to use. If it has not run,</span>
+<span class="sd">            ``log_blob_detection`` is tried, then ``feature_detection``. Default is</span>
+<span class="sd">            ``"feature_detection"``.</span>
+<span class="sd">        coord_key : str, optional</span>
+<span class="sd">            Key of the per-frame feature lists in the detection output. Default is</span>
+<span class="sd">            ``"features_per_frame"``.</span>
+<span class="sd">        coord_columns : list or tuple of str, optional</span>
+<span class="sd">            Keys of each feature's coordinates. If a feature lacks them, the first</span>
+<span class="sd">            two values of its ``centroid``, (row, col), are used instead.</span>
+<span class="sd">            ``feature_detection`` has no ``centroid_x`` or ``centroid_y``, so this is</span>
+<span class="sd">            what happens with the default. Default is</span>
+<span class="sd">            ``("centroid_x", "centroid_y")``.</span>
+<span class="sd">        use_time : bool, optional</span>
+<span class="sd">            Add each feature's frame time, in seconds, as a third coordinate (only</span>
+<span class="sd">            when there are two coordinates). Default is True.</span>
+<span class="sd">        min_k : int, optional</span>
+<span class="sd">            Number of clusters to start with. Must not be more than ``max_k``.</span>
+<span class="sd">            Default is 1.</span>
+<span class="sd">        max_k : int, optional</span>
+<span class="sd">            Largest number of clusters allowed. Default is 10.</span>
+<span class="sd">        normalise : bool, optional</span>
+<span class="sd">            Rescale each coordinate to the range 0 to 1 (minimum to maximum over</span>
+<span class="sd">            all points) before clustering. Default is True.</span>
+<span class="sd">        time_weight : float, optional</span>
+<span class="sd">            Multiply the rescaled time coordinate by this, so time counts more (above</span>
+<span class="sd">            1) or less (below 1) than position. Must be positive. Only used with</span>
+<span class="sd">            ``normalise`` and a time coordinate. Default is None (no weighting).</span>
+<span class="sd">        replicates : int, optional</span>
+<span class="sd">            Number of times each k-means run is started; the best is kept. Default</span>
+<span class="sd">            is 3.</span>
+<span class="sd">        max_iter : int, optional</span>
+<span class="sd">            Largest number of iterations of each k-means run. Default is 300.</span>
+<span class="sd">        bic_threshold : float, optional</span>
+<span class="sd">            How much a split must raise the BIC to be accepted. Higher values give</span>
+<span class="sd">            fewer clusters. Default is 0.0.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            A dictionary with the following keys:</span>
-
-<span class="sd">            - "clusters" : list of dicts, each with:</span>
-<span class="sd">                - id : int</span>
-<span class="sd">                - frames : list of int</span>
-<span class="sd">                - point_indices : list of int</span>
-<span class="sd">                - coords : list of tuple (normalized x, y, [t])</span>
-<span class="sd">            - "cluster_centers" : ndarray of shape (k, D)</span>
-<span class="sd">                Final cluster centers in original (denormalized) coordinates.</span>
-<span class="sd">            - "summary" : dict</span>
-<span class="sd">                - "n_clusters" : int</span>
-<span class="sd">                - "members_per_cluster" : dict mapping cluster ID to point count.</span>
+<span class="sd">            ``"clusters"``</span>
+<span class="sd">                One dict per cluster, with ``id`` (int), and for each member point</span>
+<span class="sd">                ``frames`` (frame index), ``point_indices`` (index in that frame's</span>
+<span class="sd">                feature list) and ``coords`` (the point's coordinates as clustered,</span>
+<span class="sd">                so rescaled if ``normalise``).</span>
+<span class="sd">            ``"cluster_centers"``</span>
+<span class="sd">                Array of shape (n_clusters, n_coordinates): the centre of each</span>
+<span class="sd">                cluster, in the original units (pixels, and seconds for time).</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                ``n_clusters`` and ``members_per_cluster`` (cluster ID to number of</span>
+<span class="sd">                points).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        RuntimeError</span>
-<span class="sd">            If the required detection module output is missing from previous_results.</span>
-
+<span class="sd">            If ``previous_results`` holds no detection output.</span>
 <span class="sd">        KeyError</span>
-<span class="sd">            If the expected coordinate keys are missing from any feature dictionary.</span>
+<span class="sd">            If the detection output lacks ``coord_key``, or a feature has neither</span>
+<span class="sd">            ``coord_columns`` nor ``centroid``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``min_k`` is more than the number of points.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        If ``min_k`` is more than ``max_k``, no clustering is done: the result has</span>
+<span class="sd">        ``min_k`` centres picked at random from the points.</span>
 <span class="sd">        """</span>
         <span class="c1"># Validate input dependencies</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -817,9 +814,34 @@
     <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">bic_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Core X-Means loop.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run X-means on an array of points.</span>
 
-<span class="sd">    Parameters are equivalent to those in `run` above.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        Points, shape (n_points, n_coordinates).</span>
+<span class="sd">    init_k : int</span>
+<span class="sd">        Number of clusters to start with.</span>
+<span class="sd">    max_k : int</span>
+<span class="sd">        Largest number of clusters allowed.</span>
+<span class="sd">    min_cluster_size : int</span>
+<span class="sd">        Smallest number of points in each half of a split.</span>
+<span class="sd">    distance : str</span>
+<span class="sd">        Not used; distances are always squared Euclidean.</span>
+<span class="sd">    replicates : int</span>
+<span class="sd">        Number of starts of each k-means run.</span>
+<span class="sd">    max_iter : int</span>
+<span class="sd">        Largest number of iterations of each k-means run.</span>
+<span class="sd">    bic_threshold : float</span>
+<span class="sd">        How much a split must raise the BIC to be accepted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    labels : numpy.ndarray</span>
+<span class="sd">        Index of each point's cluster: the nearest centre.</span>
+<span class="sd">    centers : numpy.ndarray</span>
+<span class="sd">        Cluster centres, shape (n_clusters, n_coordinates).</span>
 <span class="sd">    """</span>
     <span class="n">k</span> <span class="o">=</span> <span class="n">init_k</span>
     <span class="n">centers</span> <span class="o">=</span> <span class="n">initialize_centers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
@@ -879,19 +901,22 @@
 <div class="viewcode-block" id="compute_bic">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.compute_bic">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_bic</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Compute Bayesian Information Criterion for a cluster.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the Bayesian information criterion (BIC) of one cluster; higher is better.</span>
+
+<span class="sd">    The cluster is modelled as a spherical Gaussian around ``center``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    points : np.ndarray</span>
-<span class="sd">        Points in the cluster.</span>
-<span class="sd">    center : np.ndarray</span>
-<span class="sd">        Cluster center (shape (1, D)).</span>
+<span class="sd">    points : numpy.ndarray</span>
+<span class="sd">        The cluster's points, shape (n_points, n_coordinates).</span>
+<span class="sd">    center : numpy.ndarray</span>
+<span class="sd">        The cluster's centre, shape (1, n_coordinates).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
-<span class="sd">        BIC value.</span>
+<span class="sd">        The BIC, or ``-inf`` for fewer than 2 points.</span>
 <span class="sd">    """</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
@@ -910,7 +935,23 @@
 <div class="viewcode-block" id="initialize_centers">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.x_means_clustering.html#playnano.analysis.modules.x_means_clustering.initialize_centers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize_centers</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Initialize k centers using a k-means++-like heuristic."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Pick ``k`` starting centres from the points, spread out like k-means++.</span>
+
+<span class="sd">    Uses NumPy's global random generator, which is not seeded.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : numpy.ndarray</span>
+<span class="sd">        Points, shape (n_points, n_coordinates).</span>
+<span class="sd">    k : int</span>
+<span class="sd">        Number of centres.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The centres, shape (k, n_coordinates).</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="n">points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">)]]</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>

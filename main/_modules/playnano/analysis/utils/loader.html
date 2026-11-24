@@ -507,10 +507,10 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.utils.loader</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module for resolving and instantiating analysis modules.</span>
+<span class="sd">Find an analysis module by name and create it.</span>
 
-<span class="sd">Handles lookup in the built-in registry and via entry points</span>
-<span class="sd">registered under the group 'playnano.analysis'.</span>
+<span class="sd">Built-in modules are looked up first, then plugins registered under the</span>
+<span class="sd">``playnano.analysis`` entry point group.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -525,24 +525,24 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.utils.loader.html#playnano.analysis.utils.loader.load_analysis_module">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_analysis_module</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisModule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load and instantiate an AnalysisModule by name.</span>
+<span class="sd">    Create the analysis module with the given name.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
-<span class="sd">        Name of the analysis module to load.</span>
+<span class="sd">        The module's name, for example ``"feature_detection"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AnalysisModule</span>
-<span class="sd">        Instantiated module.</span>
+<span class="sd">        A new instance of the module.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the module cannot be found.</span>
+<span class="sd">        If no built-in module or plugin has this name.</span>
 <span class="sd">    TypeError</span>
-<span class="sd">        If the loaded object is not a subclass of AnalysisModule.</span>
+<span class="sd">        If the plugin is not an :class:`~playnano.analysis.base.AnalysisModule`.</span>
 <span class="sd">    """</span>
     <span class="bp">cls</span> <span class="o">=</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

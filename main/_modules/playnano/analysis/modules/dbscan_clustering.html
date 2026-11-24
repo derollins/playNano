@@ -507,39 +507,10 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.dbscan_clustering</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">DBSCAN clustering on features over the entire stack in 3D (x, y, time).</span>
+<span class="sd">Analysis module that groups detected features with DBSCAN, over all frames.</span>
 
-<span class="sd">This module extracts feature points from a previous analysis step, optionally</span>
-<span class="sd">normalizes them, applies DBSCAN, and returns clusters (with noise as label -1</span>
-<span class="sd">omitted or optionally retained), cluster cores, and a summary.</span>
-
-<span class="sd">Parameters</span>
-<span class="sd">----------</span>
-<span class="sd">coord_key : str</span>
-<span class="sd">    Key in previous_results containing `features_per_frame`.</span>
-
-<span class="sd">coord_columns : Sequence[str]</span>
-<span class="sd">    Which keys in each feature-dict to use (e.g. ("x","y")).</span>
-
-<span class="sd">use_time : bool</span>
-<span class="sd">    If True and coord_columns length is 2, append frame time as the third dimension.</span>
-
-<span class="sd">eps : float</span>
-<span class="sd">    The maximum distance between two samples for them to be considered as in the</span>
-<span class="sd">    same neighborhood (in normalized units if `normalise=True`).</span>
-
-<span class="sd">min_samples : int</span>
-<span class="sd">    The number of samples in a neighborhood for a point to be considered as a core</span>
-<span class="sd">    point.</span>
-
-<span class="sd">normalise : bool</span>
-<span class="sd">    If True, min-max normalize each axis before clustering.</span>
-
-<span class="sd">time_weight : float | None</span>
-<span class="sd">    If given, multiply the time axis by this weight.</span>
-
-<span class="sd">**dbscan_kwargs</span>
-<span class="sd">    Forwarded to sklearn.cluster.DBSCAN.</span>
+<span class="sd">DBSCAN groups points that have enough close neighbours and finds the number of</span>
+<span class="sd">clusters itself. Points in sparse regions are treated as noise and left out.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -554,30 +525,72 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.dbscan_clustering.html#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DBSCANClusteringModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    DBSCAN clustering of features across an AFMImageStack in (x, y, time) space.</span>
+<span class="sd">    Group detected features from all frames into clusters with DBSCAN.</span>
 
-<span class="sd">    This module extracts coordinates from per-frame features, optionally adds time</span>
-<span class="sd">    as a third dimension, normalizes the space, and applies DBSCAN clustering.</span>
-<span class="sd">    It returns clusters with point metadata, core point means as cluster centers,</span>
-<span class="sd">    and a summary of cluster sizes.</span>
+<span class="sd">    Pipeline name: ``"dbscan_clustering"``. It needs the output of</span>
+<span class="sd">    ``feature_detection`` from an earlier step.</span>
 
-<span class="sd">    Version</span>
-<span class="sd">    -------</span>
-<span class="sd">    0.1.0</span>
+<span class="sd">    Each detected feature becomes one point. By default its coordinates are the</span>
+<span class="sd">    feature's ``centroid``, (row, col) in pixels, with the frame time in seconds</span>
+<span class="sd">    added as a third coordinate. With ``normalise`` (the default), each coordinate</span>
+<span class="sd">    is rescaled to the range 0 to 1 before clustering.</span>
+
+<span class="sd">    A point with at least ``min_samples`` points (itself included) within ``eps``</span>
+<span class="sd">    is a core point; clusters are core points within ``eps`` of each other plus</span>
+<span class="sd">    their neighbours. Points in no cluster (noise) are not returned.</span>
+<span class="sd">    Each cluster's centre is the mean of its points.</span>
+
+<span class="sd">    Because coordinates are rescaled, ``eps`` is a fraction of the range of each</span>
+<span class="sd">    coordinate. With a time coordinate, frames further apart than ``eps`` of the</span>
+<span class="sd">    recording cannot be neighbours, so with few frames ``eps`` may need to be</span>
+<span class="sd">    larger than the default, or ``time_weight`` below 1.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Two particles over 4 frames, one moving to the right:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.feature_detection import (</span>
+<span class="sd">    ...     FeatureDetectionModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((4, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(4):</span>
+<span class="sd">    ...     data[t, 10:16, 10 + t : 16 + t] = 3.0</span>
+<span class="sd">    ...     data[t, 40:46, 40:46] = 3.0</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(4)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; detected = FeatureDetectionModule().run(</span>
+<span class="sd">    ...     stack, mask_fn="mask_threshold", threshold=1.0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; previous = {"feature_detection": detected}</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.dbscan_clustering import (</span>
+<span class="sd">    ...     DBSCANClusteringModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = DBSCANClusteringModule().run(</span>
+<span class="sd">    ...     stack, previous, eps=0.5, min_samples=2</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result["summary"]</span>
+<span class="sd">    {'n_clusters': 2, 'members_per_cluster': {0: 4, 1: 4}}</span>
+<span class="sd">    &gt;&gt;&gt; result["cluster_centers"].round(2)</span>
+<span class="sd">    array([[12.5 , 14.  ,  0.75],</span>
+<span class="sd">           [42.5 , 42.5 ,  0.75]])</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sklearn.cluster.DBSCAN : The clustering used.</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Name of the analysis module.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            The string identifier for this module: "dbscan_clustering".</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"dbscan_clustering"``."""</span>
         <span class="k">return</span> <span class="s2">"dbscan_clustering"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
@@ -600,66 +613,68 @@
         <span class="o">**</span><span class="n">dbscan_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Perform DBSCAN clustering on detected features in (x, y[, t]) space.</span>
+<span class="sd">        Cluster the detected features with DBSCAN.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The input stack with `.data` and `.time_for_frame()` method.</span>
-
-<span class="sd">        previous_results : dict[str, Any], optional</span>
-<span class="sd">            Output from previous analysis steps. Must contain features under</span>
-<span class="sd">            the given `detection_module` and `coord_key`.</span>
-
-<span class="sd">        detection_module : str</span>
-<span class="sd">            Which module's output to use from `previous_results`. Default</span>
-<span class="sd">            is "feature_detection".</span>
-
-<span class="sd">        coord_key : str</span>
-<span class="sd">            Key in `previous_results[detection_module]` containing the list</span>
-<span class="sd">            of per-frame features. Default is "features_per_frame".</span>
-
-<span class="sd">        coord_columns : Sequence[str]</span>
-<span class="sd">            Keys to extract coordinates from each feature. If missing, will fall back</span>
-<span class="sd">            to `centroid` tuple. Default is ("centroid_x", "centroid_y").</span>
-
-<span class="sd">        use_time : bool</span>
-<span class="sd">            Whether to append frame timestamp as a third coordinate. Dafaulr is True.</span>
-
-<span class="sd">        eps : float</span>
-<span class="sd">            Maximum distance for neighborhood inclusion (in normalized units if</span>
-<span class="sd">            `normalise=True`). Default is 0.3.</span>
-
-<span class="sd">        min_samples : int</span>
-<span class="sd">            Minimum number of points in a neighborhood to form a core point.</span>
-<span class="sd">            Default is 5.</span>
-
-<span class="sd">        normalise : bool</span>
-<span class="sd">            If True, normalize coordinate axes to [0, 1] range before clustering.</span>
-<span class="sd">            Default is True.</span>
-
-<span class="sd">        time_weight : float or None, optional</span>
-<span class="sd">            Scaling factor for the time axis (after normalization). If None,</span>
-<span class="sd">            no weighting is applied.</span>
-
-<span class="sd">        **dbscan_kwargs : dict</span>
-<span class="sd">            Additional keyword arguments forwarded to `sklearn.cluster.DBSCAN`.</span>
+<span class="sd">            The stack; used for the frame times.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold a detection output.</span>
+<span class="sd">        detection_module : str, optional</span>
+<span class="sd">            Name of the detection step to use. If it has not run,</span>
+<span class="sd">            ``log_blob_detection`` is tried, then ``feature_detection``. Default is</span>
+<span class="sd">            ``"feature_detection"``.</span>
+<span class="sd">        coord_key : str, optional</span>
+<span class="sd">            Key of the per-frame feature lists in the detection output. Default is</span>
+<span class="sd">            ``"features_per_frame"``.</span>
+<span class="sd">        coord_columns : list or tuple of str, optional</span>
+<span class="sd">            Keys of each feature's coordinates. If a feature lacks them, the first</span>
+<span class="sd">            two values of its ``centroid``, (row, col), are used instead.</span>
+<span class="sd">            ``feature_detection`` has no ``centroid_x`` or ``centroid_y``, so this is</span>
+<span class="sd">            what happens with the default. Default is</span>
+<span class="sd">            ``("centroid_x", "centroid_y")``.</span>
+<span class="sd">        use_time : bool, optional</span>
+<span class="sd">            Add each feature's frame time, in seconds, as a third coordinate (only</span>
+<span class="sd">            when there are two coordinates). Default is True.</span>
+<span class="sd">        eps : float, optional</span>
+<span class="sd">            Largest distance between two neighbouring points, in rescaled units if</span>
+<span class="sd">            ``normalise``. Default is 0.3.</span>
+<span class="sd">        min_samples : int, optional</span>
+<span class="sd">            Number of points, itself included, a point needs within ``eps`` to be a</span>
+<span class="sd">            core point. Default is 5.</span>
+<span class="sd">        normalise : bool, optional</span>
+<span class="sd">            Rescale each coordinate to the range 0 to 1 (minimum to maximum over</span>
+<span class="sd">            all points) before clustering. Default is True.</span>
+<span class="sd">        time_weight : float, optional</span>
+<span class="sd">            Multiply the rescaled time coordinate by this, so time counts more (above</span>
+<span class="sd">            1) or less (below 1) than position. Must be positive. Only used with</span>
+<span class="sd">            ``normalise`` and a time coordinate. Default is None (no weighting).</span>
+<span class="sd">        **dbscan_kwargs</span>
+<span class="sd">            Passed to :class:`sklearn.cluster.DBSCAN`, for example ``metric``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict[str, Any]</span>
-<span class="sd">            Output dictionary with the following keys:</span>
+<span class="sd">        dict</span>
+<span class="sd">            ``"clusters"``</span>
+<span class="sd">                One dict per cluster, with ``id`` (int), and for each member point</span>
+<span class="sd">                ``frames`` (frame index), ``point_indices`` (index in that frame's</span>
+<span class="sd">                feature list) and ``coords`` (the point's coordinates as clustered,</span>
+<span class="sd">                so rescaled if ``normalise``).</span>
+<span class="sd">            ``"cluster_centers"``</span>
+<span class="sd">                Array of shape (n_clusters, n_coordinates): the centre of each</span>
+<span class="sd">                cluster, in the original units (pixels, and seconds for time).</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                ``n_clusters`` and ``members_per_cluster`` (cluster ID to number of</span>
+<span class="sd">                points).</span>
 
-<span class="sd">                - "clusters": list of dicts, one per cluster, containing:</span>
-<span class="sd">                    - "id": cluster ID (int)</span>
-<span class="sd">                    - "frames": list of frame indices</span>
-<span class="sd">                    - "point_indices": list of feature indices within frames</span>
-<span class="sd">                    - "coords": list of 2D or 3D coordinates (post-normalization)</span>
-<span class="sd">                - "cluster_centers": np.ndarray of shape (n_clusters, D)</span>
-<span class="sd">                    Mean location of each cluster in original coordinate units.</span>
-<span class="sd">                - "summary": dict with:</span>
-<span class="sd">                    - "n_clusters": total number of clusters found</span>
-<span class="sd">                    - "members_per_cluster": dict of cluster ID to count</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If ``previous_results`` holds no detection output.</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If the detection output lacks ``coord_key``, or a feature has neither</span>
+<span class="sd">            ``coord_columns`` nor ``centroid``.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>

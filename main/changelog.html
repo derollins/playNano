@@ -537,6 +537,32 @@ None scales each frame separately; <code class="docutils literal notranslate"><s
 each export format keeps (OME-TIFF keeps no processed layers or masks), the errors the loaders raise, and the
 <code class="docutils literal notranslate"><span class="pre">.aris</span></code> reader, which returns heights in the file’s units (metres), not nm. Documented the missing <code class="docutils literal notranslate"><span class="pre">cmap_name</span></code>,
 <code class="docutils literal notranslate"><span class="pre">font_scale</span></code> and <code class="docutils literal notranslate"><span class="pre">fmt</span></code> parameters and the video formats (MP4, AVI, MOV, MKV).</p></li>
+<li><p>API reference for the core of <code class="docutils literal notranslate"><span class="pre">playnano.analysis</span></code> (<code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code>, <code class="docutils literal notranslate"><span class="pre">AnalysisModule</span></code>, <code class="docutils literal notranslate"><span class="pre">export</span></code> and <code class="docutils literal notranslate"><span class="pre">utils</span></code>):
+docstrings now match the code and render without warnings. The <code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code> examples showed made-up output
+and a wrong path into <code class="docutils literal notranslate"><span class="pre">results_by_name</span></code>; the class now has an example that runs as a doctest. Documented the errors
+<code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.run</span></code> raises, that its <code class="docutils literal notranslate"><span class="pre">log_to</span></code> JSON summarises arrays instead of writing them, the <code class="docutils literal notranslate"><span class="pre">version</span></code> and
+<code class="docutils literal notranslate"><span class="pre">requires</span></code> attributes of analysis modules, and the units of the particle tables. Corrected
+<code class="docutils literal notranslate"><span class="pre">load_analysis_from_hdf5</span></code> (integer-valued floats are converted only for files saved before 0.5.2) and
+<code class="docutils literal notranslate"><span class="pre">flatten_particle_features</span></code> (<code class="docutils literal notranslate"><span class="pre">object_key</span></code> is detected when not given).</p></li>
+<li><p>API reference for the detection and tracking modules (<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>, <code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code>, <code class="docutils literal notranslate"><span class="pre">count_nonzero</span></code>,
+<code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code>, <code class="docutils literal notranslate"><span class="pre">tracked_particle_boundary_size</span></code>): docstrings now match the code and render without warnings,
+and each module has an example that runs as a doctest instead of made-up output. Documented the units (positions,
+areas, distances and sizes are in pixels), that <code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code> uses <code class="docutils literal notranslate"><span class="pre">centroid</span></code> as (row, col) by default, links
+tracks greedily and links only moves shorter than <code class="docutils literal notranslate"><span class="pre">max_distance</span></code>, that <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> accepts a mask function’s
+name, and the errors each module raises. Noted that <code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code> output cannot yet be used by tracking or
+clustering, and that <code class="docutils literal notranslate"><span class="pre">mask_key</span></code> cannot find a mask through a pipeline.</p></li>
+<li><p>API reference for the clustering modules (<code class="docutils literal notranslate"><span class="pre">dbscan_clustering</span></code>, <code class="docutils literal notranslate"><span class="pre">k_means_clustering</span></code>, <code class="docutils literal notranslate"><span class="pre">x_means_clustering</span></code>): docstrings
+now match the code, and each module has an example that runs as a doctest. Documented that coordinates are
+<code class="docutils literal notranslate"><span class="pre">centroid</span></code> (row, col) in pixels plus time in seconds, that <code class="docutils literal notranslate"><span class="pre">eps</span></code> and <code class="docutils literal notranslate"><span class="pre">time_weight</span></code> act on coordinates rescaled to 0
+to 1, that cluster <code class="docutils literal notranslate"><span class="pre">coords</span></code> are rescaled while <code class="docutils literal notranslate"><span class="pre">cluster_centers</span></code> are in the original units, and how X-means chooses
+the number of clusters. Corrected DBSCAN, which always drops noise points and uses the mean of all members as the
+centre, not of core points.</p></li>
+<li><p>API reference for <code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code> and <code class="docutils literal notranslate"><span class="pre">particle_region_media_export</span></code>: docstrings now match the code and
+render without warnings, so the <code class="docutils literal notranslate"><span class="pre">analysis</span></code> reference builds without warnings. Documented that image crops come from
+<code class="docutils literal notranslate"><span class="pre">stack.data</span></code> (processed data, not raw), the order in which <code class="docutils literal notranslate"><span class="pre">padding</span></code>, <code class="docutils literal notranslate"><span class="pre">square</span></code> and <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> apply, the box
+coordinates, the output file names, and that padding and missing frames count towards the colour scale. Corrected
+<code class="docutils literal notranslate"><span class="pre">fps</span></code> (also used for GIFs) and noted that formats are not checked before writing starts, and that
+<code class="docutils literal notranslate"><span class="pre">fixed_size_mode=&quot;per_track&quot;</span></code> needs <code class="docutils literal notranslate"><span class="pre">fixed_box_size</span></code> to be set.</p></li>
 </ul>
 </section>
 <section id="changed">
@@ -544,6 +570,10 @@ each export format keeps (OME-TIFF keeps no processed layers or masks), the erro
 <ul class="simple">
 <li><p>The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and <code class="docutils literal notranslate"><span class="pre">CONTRIBUTING.md</span></code> has
 rules for writing types in docstrings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CONTRIBUTING.md</span></code>: AI use is disclosed in the pull request, not in source files, and module docstrings no longer
+have author or AI-use sections; authors are credited in <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>.</p></li>
+<li><p>The documentation links to the scikit-learn documentation. <code class="docutils literal notranslate"><span class="pre">docs/_generated/generated_module_list.rst</span></code> is no longer
+tracked by git; the docs build writes it.</p></li>
 </ul>
 </section>
 </section>

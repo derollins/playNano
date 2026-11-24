@@ -506,7 +506,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.count_nonzero</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Analysis module for counting non-zero data points in an array."""</span>
+<span></span><span class="sd">"""Analysis module that counts the non-zero pixels in each frame."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
@@ -517,61 +517,57 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.count_nonzero.html#playnano.analysis.modules.count_nonzero.CountNonzeroModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CountNonzeroModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Count non-zero pixels in each frame of an AFMImageStack.</span>
+<span class="sd">    Count the non-zero pixels in each frame.</span>
 
-<span class="sd">    This simple analysis module computes the number of non-zero pixels</span>
-<span class="sd">    per frame and returns the result as a 1D array.</span>
-
-<span class="sd">    Version</span>
-<span class="sd">    -------</span>
-<span class="sd">    0.1.0</span>
+<span class="sd">    Pipeline name: ``"count_nonzero"``. It has no parameters. NaN pixels count</span>
+<span class="sd">    as non-zero.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; module = CountNonzeroModule()</span>
-<span class="sd">    &gt;&gt;&gt; result = module.run(stack)</span>
-<span class="sd">    &gt;&gt;&gt; result['counts'].shape</span>
-<span class="sd">    (n_frames,)</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((3, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(3):</span>
+<span class="sd">    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0  # a 6 x 6 pixel particle</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.count_nonzero import CountNonzeroModule</span>
+<span class="sd">    &gt;&gt;&gt; CountNonzeroModule().run(stack)</span>
+<span class="sd">    {'counts': array([36, 36, 36])}</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Name of the analysis module.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            The string identifier for this module.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"count_nonzero"``."""</span>
         <span class="k">return</span> <span class="s2">"count_nonzero"</span>
 
 <div class="viewcode-block" id="CountNonzeroModule.run">
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.count_nonzero.html#playnano.analysis.modules.count_nonzero.CountNonzeroModule.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">previous_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Count non-zero pixels per frame in the AFMImageStack.</span>
+<span class="sd">        Count the non-zero pixels in each frame of ``stack.data``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            Stack of AFM frames with `.data` of shape (n_frames, H, W).</span>
-
-<span class="sd">        previous_results : dict[str, Any], optional</span>
-<span class="sd">            Ignored by this module. Included for API compatibility.</span>
-
-<span class="sd">        **params : dict</span>
-<span class="sd">            Additional parameters (unused).</span>
+<span class="sd">            The stack to analyse.</span>
+<span class="sd">        previous_results : dict, optional</span>
+<span class="sd">            Not used. Default is None.</span>
+<span class="sd">        **params</span>
+<span class="sd">            Not used; ignored.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Dictionary with key:</span>
-
-<span class="sd">                - "counts": np.ndarray of shape (n_frames,), number of non-zero</span>
-<span class="sd">                  pixels per frame.</span>
+<span class="sd">            ``{"counts": numpy.ndarray}``, the number of non-zero pixels in each</span>
+<span class="sd">            frame, shape (n_frames,).</span>
 <span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">data</span>  <span class="c1"># shape (n_frames, H, W)</span>
         <span class="c1"># Compute counts</span>

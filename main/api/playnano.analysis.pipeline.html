@@ -514,36 +514,81 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.pipeline">
 <span id="playnano-analysis-pipeline-module"></span><h1>playnano.analysis.pipeline module<a class="headerlink" href="#module-playnano.analysis.pipeline" title="Link to this heading">¶</a></h1>
-<p>Module for the AnalysisPipeline class for orchastration of analysis workflows.</p>
+<p>Run a sequence of analysis modules on an AFM image stack.</p>
+<p><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline" title="playnano.analysis.pipeline.AnalysisPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code></a> runs analysis modules (subclasses of
+<a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a>) in order and records their
+outputs and provenance. It is what <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">analyze</span></code> uses.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisPipeline">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.pipeline.</span></span><span class="sig-name descname"><span class="pre">AnalysisPipeline</span></span><a class="reference internal" href="../_modules/playnano/analysis/pipeline.html#AnalysisPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisPipeline" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Orchestrates a sequence of analysis steps on an AFMImageStack.</p>
-<p>Each step corresponds to an AnalysisModule (built-in or entry-point), invoked
-in order with the given parameters. Outputs of each step are stored in
-<cite>stack.analysis</cite> under keys ‘step_&lt;n&gt;_&lt;module_name&gt;’. Detailed provenance
-(timestamps, parameters, version, linking keys) is recorded in
-<cite>stack.provenance[“analysis”]</cite>. The run() method returns a dict containing
-environment info, the <cite>analysis</cite> dict, and its <cite>provenance</cite>.</p>
+<p>Run a list of analysis modules on a stack, in order.</p>
+<p>Add steps with <a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.add" title="playnano.analysis.pipeline.AnalysisPipeline.add"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add()</span></code></a>, then call <a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.run" title="playnano.analysis.pipeline.AnalysisPipeline.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a>. Each step names an
+analysis module, either a built-in one (see
+<a class="reference internal" href="playnano.analysis.html#playnano.analysis.BUILTIN_ANALYSIS_MODULES" title="playnano.analysis.BUILTIN_ANALYSIS_MODULES"><code class="xref py py-data docutils literal notranslate"><span class="pre">playnano.analysis.BUILTIN_ANALYSIS_MODULES</span></code></a>) or a plugin registered
+under the <code class="docutils literal notranslate"><span class="pre">playnano.analysis</span></code> entry point group. Each step’s outputs are
+stored in <code class="docutils literal notranslate"><span class="pre">stack.analysis[&quot;step_&lt;n&gt;_&lt;module_name&gt;&quot;]</span></code>, and its parameters,
+time and module version in <code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;analysis&quot;]</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisPipeline.steps">
+<span class="sig-name descname"><span class="pre">steps</span></span><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisPipeline.steps" title="Link to this definition">¶</a></dt>
+<dd><p>The steps added, as <code class="docutils literal notranslate"><span class="pre">(module_name,</span> <span class="pre">params)</span></code> pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Detect a particle that moves across three frames, then link it into a
+track:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalysisPipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_tracking"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
+<span class="go">['step_1_feature_detection', 'step_2_particle_tracking']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"step_1_feature_detection"</span><span class="p">][</span><span class="s2">"summary"</span><span class="p">]</span>
+<span class="go">{'total_frames': 3, 'total_features': 3, 'avg_features_per_frame': 1.0}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"step_2_particle_tracking"</span><span class="p">][</span><span class="s2">"n_tracks"</span><span class="p">]</span>
+<span class="go">1</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisPipeline.add">
 <span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/pipeline.html#AnalysisPipeline.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisPipeline.add" title="Link to this definition">¶</a></dt>
-<dd><p>Add an analysis module to the pipeline.</p>
+<dd><p>Add a step that runs an analysis module.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>module_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The name of the analysis module to add (must be registered).</p></li>
-<li><p><strong>**params</strong> – Keyword arguments passed to the module’s <cite>run()</cite> method.</p></li>
+<li><p><strong>module_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the analysis module, for example <code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>. It is
+not checked until <a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.run" title="playnano.analysis.pipeline.AnalysisPipeline.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a>.</p></li>
+<li><p><strong>**params</strong> – Keyword arguments passed to the module’s <code class="docutils literal notranslate"><span class="pre">run</span></code> method. If
+<code class="docutils literal notranslate"><span class="pre">mask_fn</span></code> is a str, it is replaced by the masking function of that
+name from <a class="reference internal" href="playnano.processing.mask_generators.html#module-playnano.processing.mask_generators" title="playnano.processing.mask_generators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.processing.mask_generators</span></code></a> when the step runs.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_tracking"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"particle_tracking"</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">('particle_tracking', {'max_distance': 5})</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -551,73 +596,66 @@ environment info, the <cite>analysis</cite> dict, and its <cite>provenance</cite
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisPipeline.clear">
 <span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/pipeline.html#AnalysisPipeline.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisPipeline.clear" title="Link to this definition">¶</a></dt>
-<dd><p>Remove all scheduled analysis steps and clear module cache.</p>
-<p>This allows reconfiguration of the pipeline without creating a new instance.</p>
+<dd><p>Remove all steps, so the pipeline can be set up again.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisPipeline.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/pipeline.html#AnalysisPipeline.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisPipeline.run" title="Link to this definition">¶</a></dt>
-<dd><p>Execute all added analysis steps on the given AFMImageStack.</p>
-<p>Each step:</p>
-<ul class="simple">
-<li><p>is resolved to an AnalysisModule instance</p></li>
-<li><p>invoked with <cite>(stack, previous_results=…, **params)</cite></p></li>
-<li><p>its outputs are stored under <cite>stack.analysis[“step_&lt;n&gt;_&lt;module_name&gt;”]</cite></p></li>
-<li><p>provenance is recorded in <cite>stack.provenance[“analysis”][“steps”]</cite></p></li>
-</ul>
-<p>The overall provenance sub-dict also collects:</p>
-<ul class="simple">
-<li><p>results_by_name: mapping module name to list of outputs</p></li>
-<li><p>frame_times: result of <cite>stack.get_frame_times()</cite>, or None</p></li>
-</ul>
-<p>The environment info (via gather_environment_info) is stored at
-<cite>stack.provenance[“environment”]</cite> (if not already set).</p>
+<dd><p>Run every step on a stack and return the results.</p>
+<p>Each step’s module receives the stack, the step’s parameters and
+<code class="docutils literal notranslate"><span class="pre">previous_results</span></code>: a dict mapping the name of each module run so far to
+its latest outputs. Results from an earlier call of <code class="docutils literal notranslate"><span class="pre">run</span></code> are discarded:
+<code class="docutils literal notranslate"><span class="pre">stack.analysis</span></code> and <code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;analysis&quot;]</span></code> are replaced.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFMImageStack to analyze.</p></li>
-<li><p><strong>log_to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Path to a JSON file where the combined record will be saved.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to analyse.</p></li>
+<li><p><strong>log_to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – If given, also write the record to this JSON file, creating missing
+folders. Arrays are summarised in the file (shape, dtype, minimum,
+maximum and mean), not written in full; see
+<a class="reference internal" href="playnano.analysis.utils.common.html#playnano.analysis.utils.common.sanitize_analysis_for_logging" title="playnano.analysis.utils.common.sanitize_analysis_for_logging"><code class="xref py py-func docutils literal notranslate"><span class="pre">sanitize_analysis_for_logging()</span></code></a>.
+Default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>AnalysisRecord</strong> (<em>dict</em>)</p></li>
-<li><p><em>{</em> – “environment”: &lt;dict of environment metadata&gt;,
-“analysis”: &lt;dict of outputs per step&gt;,
-“provenance”: &lt;dict with keys “steps”, “results_by_name”, “frame_times”&gt;</p></li>
-<li><p><em>}</em></p></li>
+<dd class="field-even"><p><p>The analysis record, with these keys:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;environment&quot;</span></code></dt><dd><p>Python, platform and package versions; the same dict as
+<code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;environment&quot;]</span></code>, which is only set if empty.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;analysis&quot;</span></code></dt><dd><p>The outputs of each step, keyed <code class="docutils literal notranslate"><span class="pre">&quot;step_&lt;n&gt;_&lt;module_name&gt;&quot;</span></code>, with
+<code class="docutils literal notranslate"><span class="pre">n</span></code> counting from 1 and spaces in the name replaced by <code class="docutils literal notranslate"><span class="pre">_</span></code>. The
+same dict as <code class="docutils literal notranslate"><span class="pre">stack.analysis</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;provenance&quot;</span></code></dt><dd><p>The same dict as <code class="docutils literal notranslate"><span class="pre">stack.provenance[&quot;analysis&quot;]</span></code>, with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;steps&quot;</span></code>: one dict per step, with <code class="docutils literal notranslate"><span class="pre">index</span></code>, <code class="docutils literal notranslate"><span class="pre">name</span></code>,
+<code class="docutils literal notranslate"><span class="pre">params</span></code> (as passed to the module, so a <code class="docutils literal notranslate"><span class="pre">mask_fn</span></code> name appears
+as the function), <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (ISO 8601, UTC), <code class="docutils literal notranslate"><span class="pre">version</span></code> (the
+module’s <code class="docutils literal notranslate"><span class="pre">version</span></code>, or None) and <code class="docutils literal notranslate"><span class="pre">analysis_key</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;results_by_name&quot;</span></code>: each module name mapped to a list with one
+<code class="docutils literal notranslate"><span class="pre">{&quot;analysis_key&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;outputs&quot;:</span> <span class="pre">...}</span></code> dict per time it ran.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;frame_times&quot;</span></code>: the stack’s frame times, in seconds.</p></li>
 </ul>
+</dd>
+</dl>
 </p>
 </dd>
-</dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>Raw outputs: accessible via <cite>stack.analysis[“step_&lt;n&gt;_&lt;module_name&gt;”]</cite>.</p></li>
-<li><p>Provenance: in <cite>stack.provenance[“analysis”]</cite>, with a list of step records.</p></li>
-<li><p>If stack.provenance or stack.analysis is absent, they are created.</p></li>
-<li><p>If log_to is provided, the same record dict is JSON-dumped using NumpyEncoder.</p></li>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a module name is not found, or <code class="docutils literal notranslate"><span class="pre">mask_fn</span></code> names no masking
+    function.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If a module declares <code class="docutils literal notranslate"><span class="pre">requires</span></code> and none of those modules ran
+    before it, or a plugin module fails to load.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If a plugin is not an <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><strong>Exception</strong></a> – Any error raised by a module is logged and raised again.</p></li>
 </ul>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><strong>Exception</strong></a> – Propagates any exception from module.run(…), after logging.</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"count_nonzero"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">"out.json"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access the outputs:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"step_1_count_nonzero"</span><span class="p">]</span>
-<span class="go">{'counts': [...], ...}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect provenance:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">step_info</span> <span class="ow">in</span> <span class="n">record</span><span class="p">[</span><span class="s2">"provenance"</span><span class="p">][</span><span class="s2">"steps"</span><span class="p">]:</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">step_info</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="n">step_info</span><span class="p">[</span><span class="s2">"analysis_key"</span><span class="p">])</span>
-<span class="go">count_nonzero step_1_count_nonzero</span>
-<span class="go">feature_detection step_2_feature_detection</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </dd></dl>
@@ -625,90 +663,13 @@ environment info, the <cite>analysis</cite> dict, and its <cite>provenance</cite
 <dl class="py data">
 <dt class="sig sig-object py" id="playnano.analysis.pipeline.AnalysisRecord">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.pipeline.</span></span><span class="sig-name descname"><span class="pre">AnalysisRecord</span></span><a class="headerlink" href="#playnano.analysis.pipeline.AnalysisRecord" title="Link to this definition">¶</a></dt>
-<dd><p>Structured output of an AnalysisPipeline run.</p>
-<p>This record contains:
-- environment : dict</p>
-<blockquote>
-<div><p>Metadata about the runtime environment (e.g. Python version, library versions).</p>
-</div></blockquote>
-<ul class="simple">
-<li><dl class="simple">
-<dt>analysis<span class="classifier">dict</span></dt><dd><p>Results of each analysis module run, with keys ‘step_&lt;n&gt;_&lt;module_name&gt;’.</p>
+<dd><p>a dict with the keys
+<code class="docutils literal notranslate"><span class="pre">&quot;environment&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;analysis&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;provenance&quot;</span></code>, described there.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type of the record <a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.run" title="playnano.analysis.pipeline.AnalysisPipeline.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AnalysisPipeline.run()</span></code></a> returns</p>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>provenance<span class="classifier">dict</span></dt><dd><dl class="simple">
-<dt>Metadata about the provenance of the analysis steps, with keys:</dt><dd><ul>
-<li><dl class="simple">
-<dt>steps<span class="classifier">list of dict</span></dt><dd><dl class="simple">
-<dt>Ordered list of executed analysis steps. Each entry contains:</dt><dd><ul>
-<li><dl class="simple">
-<dt>index<span class="classifier">int</span></dt><dd><p>1-based index of the step in the pipeline.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>name<span class="classifier">str</span></dt><dd><p>The name of the analysis module used.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>params<span class="classifier">dict</span></dt><dd><p>Parameters passed to the module.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>timestamp<span class="classifier">str</span></dt><dd><p>ISO 8601 UTC timestamp when the step was executed.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>version<span class="classifier">str or None</span></dt><dd><p>Optional version string provided by the module instance.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>analysis_key<span class="classifier">str</span></dt><dd><p>Key under which this step’s outputs are stored in the <cite>analysis</cite> dict.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>results_by_name<span class="classifier">dict[str, list]</span></dt><dd><p>Maps module names to lists of outputs from each occurrence.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>frame_times<span class="classifier">list[float] or None</span></dt><dd><p>Timestamps for each frame in the stack, from <cite>stack.get_frame_times()</cite>,
-or None if unavailable.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-</ul>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AnalysisPipeline</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">log_to</span><span class="o">=</span><span class="s2">"out.json"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access outputs:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">][</span><span class="s2">"step_1_feature_detection"</span><span class="p">][</span><span class="s2">"summary"</span><span class="p">]</span>
-<span class="go">{'total_features': 23, 'avg_per_frame': 3.8}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect provenance:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">record</span><span class="p">[</span><span class="s2">"provenance"</span><span class="p">][</span><span class="s2">"results_by_name"</span><span class="p">][</span><span class="s2">"feature_detection"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"summary"</span><span class="p">]</span>
-<span class="go">{'total_features': 23, 'avg_per_frame': 3.8}</span>
-</pre></div>
-</div>
 <p>alias of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>]</p>
 </dd></dl>
 
@@ -771,6 +732,7 @@ or None if unavailable.</p>
             <ul>
 <li><a class="reference internal" href="#">playnano.analysis.pipeline module</a><ul>
 <li><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.steps"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.steps</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.add"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.add()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.clear"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.clear()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.pipeline.AnalysisPipeline.run"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.run()</span></code></a></li>

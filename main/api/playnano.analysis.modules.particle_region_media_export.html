@@ -514,104 +514,49 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.particle_region_media_export">
 <span id="playnano-analysis-modules-particle-region-media-export-module"></span><h1>playnano.analysis.modules.particle_region_media_export module<a class="headerlink" href="#module-playnano.analysis.modules.particle_region_media_export" title="Link to this heading">¶</a></h1>
-<p>Particle region export module for the playNano analysis pipeline.</p>
-<p>This module exports per-particle GIFs, video files, and/or image sequences
-using the cropped image regions produced by <code class="docutils literal notranslate"><span class="pre">ParticleRegionExtractionModule</span></code>.</p>
-<p>For each tracked particle the per-frame crops are centre-padded to a
-consistent spatial size, assembled once into a <code class="docutils literal notranslate"><span class="pre">(T,</span> <span class="pre">H,</span> <span class="pre">W)</span></code> NumPy array, and
-passed to whichever of the following rendering functions are enabled:</p>
+<p>Analysis module that saves tracked particle regions as GIFs, videos or image sequences.</p>
+<p>It uses the crops made by <code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code>. For each track, the
+crops are padded to the size of the track’s largest crop and stacked, then
+written with the same rendering as the whole-stack exports:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="playnano.io.gif_export.html#playnano.io.gif_export.create_gif_with_scale_and_timestamp" title="playnano.io.gif_export.create_gif_with_scale_and_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.create_gif_with_scale_and_timestamp()</span></code></a> for
-animated GIF output.</p></li>
-<li><p><a class="reference internal" href="playnano.io.video_export.html#playnano.io.video_export.create_video_with_scale_and_timestamp" title="playnano.io.video_export.create_video_with_scale_and_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.video_export.create_video_with_scale_and_timestamp()</span></code></a> for
-MP4/AVI/MOV/MKV output.</p></li>
-<li><p><a class="reference internal" href="playnano.io.image_sequence_export.html#playnano.io.image_sequence_export.create_image_sequence" title="playnano.io.image_sequence_export.create_image_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.image_sequence_export.create_image_sequence()</span></code></a> for
-per-frame PNG/JPEG output.</p></li>
+<li><p><a class="reference internal" href="playnano.io.gif_export.html#playnano.io.gif_export.create_gif_with_scale_and_timestamp" title="playnano.io.gif_export.create_gif_with_scale_and_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.create_gif_with_scale_and_timestamp()</span></code></a>,</p></li>
+<li><p><a class="reference internal" href="playnano.io.video_export.html#playnano.io.video_export.create_video_with_scale_and_timestamp" title="playnano.io.video_export.create_video_with_scale_and_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.video_export.create_video_with_scale_and_timestamp()</span></code></a>,</p></li>
+<li><p><a class="reference internal" href="playnano.io.image_sequence_export.html#playnano.io.image_sequence_export.create_image_sequence" title="playnano.io.image_sequence_export.create_image_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.image_sequence_export.create_image_sequence()</span></code></a>.</p></li>
 </ul>
-<p>Any combination of the three export types can be produced in a single pipeline
-step from the same assembled stack.  At least one must be enabled.</p>
-<p>Output paths follow the pattern <code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;.&lt;ext&gt;</span></code>; image sequences
-are written into per-track sub-directories <code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;/</span></code> with frames
-named <code class="docutils literal notranslate"><span class="pre">frame_NNNN.&lt;fmt&gt;</span></code>.</p>
-<p>The module is designed to integrate with the playNano <code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code>.
-Its primary side-effects are writing files to disk; the returned results dict
-records a manifest of everything written, plus a summary.</p>
+<p>Any combination of the three can be written in one step.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.particle_region_media_export.</span></span><span class="sig-name descname"><span class="pre">ParticleRegionMediaExportModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_region_media_export.html#ParticleRegionMediaExportModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Analysis module to export GIFs, videos and image sequences of extracted particles.</p>
-<p>Export per-track GIFs, videos, and/or image sequences from pre-extracted
-particle image regions, with optional track filtering and sorting.</p>
-<p>One output is produced per tracked particle per enabled export type.
-All enabled types share the same padded <code class="docutils literal notranslate"><span class="pre">(T,</span> <span class="pre">H,</span> <span class="pre">W)</span></code> stack assembly step,
-so enabling multiple formats incurs no redundant work beyond the extra write
-calls.</p>
-<p>The module requires:
-- output from <code class="docutils literal notranslate"><span class="pre">ParticleRegionExtractionModule</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>)</p>
-<blockquote>
-<div><p>run with <code class="docutils literal notranslate"><span class="pre">include_image=True</span></code>.</p>
-</div></blockquote>
-<section id="parameters-accepted-in-run">
-<h2>Parameters accepted in <a class="reference internal" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run" title="playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a><a class="headerlink" href="#parameters-accepted-in-run" title="Link to this heading">¶</a></h2>
-<dl class="simple">
-<dt>track_ids<span class="classifier">list of int or None</span></dt><dd><p>Explicit whitelist of track IDs to export.  <code class="docutils literal notranslate"><span class="pre">None</span></code> exports all
-tracks.  Applied before <code class="docutils literal notranslate"><span class="pre">sort_by</span></code> and <code class="docutils literal notranslate"><span class="pre">max_tracks</span></code>.</p>
-</dd>
-<dt>max_tracks<span class="classifier">int or None</span></dt><dd><p>Maximum number of tracks to export.  Applied after <code class="docutils literal notranslate"><span class="pre">track_ids</span></code>
-filtering and <code class="docutils literal notranslate"><span class="pre">sort_by</span></code> ordering.  <code class="docutils literal notranslate"><span class="pre">None</span></code> exports all remaining
-tracks.</p>
-</dd>
-<dt>sort_by<span class="classifier">{“track_id”, “n_frames”, “n_detections”}</span></dt><dd><p>Sort order used before applying <code class="docutils literal notranslate"><span class="pre">max_tracks</span></code>.  <code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>
-(default) gives stable ascending order; <code class="docutils literal notranslate"><span class="pre">&quot;n_frames&quot;</span></code> and
-<code class="docutils literal notranslate"><span class="pre">&quot;n_detections&quot;</span></code> sort descending so the most complete tracks are
-exported first.</p>
-</dd>
-<dt>export_gif<span class="classifier">bool</span></dt><dd><p>Whether to write an animated GIF per track.  Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-</dd>
-<dt>export_video<span class="classifier">bool</span></dt><dd><p>Whether to write a video file per track.  Default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-</dd>
-<dt>video_fmt<span class="classifier">str</span></dt><dd><p>Video container format: <code class="docutils literal notranslate"><span class="pre">&quot;mp4&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;avi&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;mov&quot;</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">&quot;mkv&quot;</span></code>.  Default <code class="docutils literal notranslate"><span class="pre">&quot;mp4&quot;</span></code>.</p>
-</dd>
-<dt>export_sequence<span class="classifier">bool</span></dt><dd><p>Whether to write a per-frame image sequence per track.  Default
-<code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-</dd>
-<dt>sequence_fmt<span class="classifier">str</span></dt><dd><p>Image format for sequences: <code class="docutils literal notranslate"><span class="pre">&quot;png&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;jpg&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;jpeg&quot;</span></code>.
-Default <code class="docutils literal notranslate"><span class="pre">&quot;png&quot;</span></code>.</p>
-</dd>
-<dt>output_folder<span class="classifier">str or None</span></dt><dd><p>Directory to write output into.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;output&quot;</span></code>.</p>
-</dd>
-<dt>output_name<span class="classifier">str or None</span></dt><dd><p>Base name stem, derived from the stack file name when <code class="docutils literal notranslate"><span class="pre">None</span></code>.
-Videos are written as <code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;</span></code>.
-Sequence sub-directories are named <code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;/</span></code>.</p>
-</dd>
-<dt>fps<span class="classifier">float</span></dt><dd><p>Playback frame rate in frames per second.  Default <code class="docutils literal notranslate"><span class="pre">5.0</span></code>.</p>
-</dd>
-<dt>cmap_name<span class="classifier">str</span></dt><dd><p>Matplotlib colourmap name.  Default <code class="docutils literal notranslate"><span class="pre">DEFAULT_CMAP</span></code>.</p>
-</dd>
-<dt>zmin, zmax<span class="classifier">float, str, or None</span></dt><dd><p>Z-range for normalisation forwarded to the rendering functions.
-<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the 1st/99th percentile across all crops for the
-track; <code class="docutils literal notranslate"><span class="pre">None</span></code> normalises each frame independently.</p>
-</dd>
-<dt>draw_ts<span class="classifier">bool</span></dt><dd><p>Whether to annotate frames with a timestamp.  Default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-</dd>
-<dt>draw_scale<span class="classifier">bool</span></dt><dd><p>Whether to draw a scale bar.  Default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-</dd>
-<dt>scale_bar_length_nm<span class="classifier">int</span></dt><dd><p>Scale bar length in nm.  Default <code class="docutils literal notranslate"><span class="pre">100</span></code>.</p>
-</dd>
-<dt>font_scale<span class="classifier">float</span></dt><dd><p>Font scale for annotations.  Default <code class="docutils literal notranslate"><span class="pre">DEFAULT_FONT_SCALE</span></code>.</p>
-</dd>
-<dt>fill_value<span class="classifier">float</span></dt><dd><p>Fill value for padding and missing-frame placeholders.  Default <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.</p>
-</dd>
-<dt>extraction_module<span class="classifier">str</span></dt><dd><p>Key of the upstream extraction module in <code class="docutils literal notranslate"><span class="pre">previous_results</span></code>.
-Default <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>.</p>
-</dd>
-</dl>
+<p>Save each tracked particle’s crops as a GIF, video and/or image sequence.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_media_export&quot;</span></code>. It needs the output of
+<code class="docutils literal notranslate"><span class="pre">particle_region_extraction</span></code>, run with <code class="docutils literal notranslate"><span class="pre">include_image=True</span></code> (the
+default). Files are written to <code class="docutils literal notranslate"><span class="pre">output_folder</span></code>, overwriting any with the
+same name:</p>
+<ul class="simple">
+<li><p>GIF: <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_track_&lt;id&gt;.gif</span></code>;</p></li>
+<li><p>video: <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;</span></code>;</p></li>
+<li><p>image sequence: a folder <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_track_&lt;id&gt;/</span></code> of <code class="docutils literal notranslate"><span class="pre">frame_0000.png</span></code>,
+<code class="docutils literal notranslate"><span class="pre">frame_0001.png</span></code> and so on.</p></li>
+</ul>
+<p>Frames where the particle was not detected are filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.
+See <a class="reference internal" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run" title="playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> for the parameters and outputs.</p>
+<p class="rubric">Examples</p>
+<p>After detection, tracking and region extraction, write a GIF of the ten
+tracks with the most detections:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">"particle_region_media_export"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">export_gif</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">export_video</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sort_by</span><span class="o">=</span><span class="s2">"n_detections"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">max_tracks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Module name for registration in the analysis pipeline.</p>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_media_export&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -622,71 +567,60 @@ Default <code class="docutils literal notranslate"><span class="pre">&quot;parti
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">extraction_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'particle_region_extraction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tracks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'track_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_gif</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_video</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mp4'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'afm_brown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_length_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_region_media_export.html#ParticleRegionMediaExportModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Execute the video and/or image-sequence export.</p>
+<dd><p>Write the GIFs, videos and image sequences for the selected tracks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Input stack.  <code class="docutils literal notranslate"><span class="pre">stack.pixel_size_nm</span></code> and <code class="docutils literal notranslate"><span class="pre">stack.file_path</span></code> are
-used for scale bar calibration and default output naming.</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Outputs from earlier pipeline modules.  Must contain output from
-<code class="docutils literal notranslate"><span class="pre">extraction_module</span></code> with <code class="docutils literal notranslate"><span class="pre">include_image=True</span></code>.</p></li>
-<li><p><strong>extraction_module</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>) – Key identifying the region extraction module output.</p></li>
-<li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em>) – Directory to write output.  Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;output&quot;</span></code>.</p></li>
-<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em>) – Base file name stem.  Track ID is appended automatically.</p></li>
-<li><p><strong>track_ids</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>default None</em>) – Explicit whitelist of track IDs to export.  <code class="docutils literal notranslate"><span class="pre">None</span></code> exports all
-tracks.  IDs not present in the extraction output are silently
-ignored.</p></li>
-<li><p><strong>max_tracks</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>default None</em>) – Maximum number of tracks to export after filtering and sorting.
-Useful for QC runs: e.g. <code class="docutils literal notranslate"><span class="pre">sort_by=&quot;n_frames&quot;,</span> <span class="pre">max_tracks=10</span></code>
-exports the ten longest-lived particles.  <code class="docutils literal notranslate"><span class="pre">None</span></code> exports all
-remaining tracks.</p></li>
-<li><p><strong>sort_by</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>) – <p>Sort key applied after <code class="docutils literal notranslate"><span class="pre">track_ids</span></code> filtering and before
-<code class="docutils literal notranslate"><span class="pre">max_tracks</span></code>.  Options:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code> : ascending by track ID (stable default).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;n_frames&quot;</span></code> : descending by total frame count.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;n_detections&quot;</span></code> : descending by number of frames with a
-non-missing detection.</p></li>
-</ul>
-</p></li>
-<li><p><strong>export_gif</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default False</em>) – Write an animated GIF (<code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;.gif</span></code>) per track.</p></li>
-<li><p><strong>export_video</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Write a video file (<code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;.&lt;video_fmt&gt;</span></code>) per track.</p></li>
-<li><p><strong>video_fmt</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;mp4&quot;</span></code>) – Video container format.  One of <code class="docutils literal notranslate"><span class="pre">&quot;mp4&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;avi&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;mov&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;mkv&quot;</span></code>.</p></li>
-<li><p><strong>export_sequence</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default False</em>) – Write a folder of per-frame images
-(<code class="docutils literal notranslate"><span class="pre">&lt;base&gt;_track_&lt;id&gt;/frame_NNNN.&lt;sequence_fmt&gt;</span></code>) per track.</p></li>
-<li><p><strong>sequence_fmt</strong> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;png&quot;</span></code>) – Image format for sequence frames.  One of <code class="docutils literal notranslate"><span class="pre">&quot;png&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;jpg&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;jpeg&quot;</span></code>.</p></li>
-<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default 5.0</em>) – Playback frame rate in frames per second (video only).</p></li>
-<li><p><strong>cmap_name</strong> (str, default <code class="docutils literal notranslate"><span class="pre">DEFAULT_CMAP</span></code>) – Matplotlib colourmap for false-colour rendering.</p></li>
-<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, or </em><em>None</em>) – Lower bound for z-normalisation, forwarded to the rendering
-functions.</p></li>
-<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, or </em><em>None</em>) – Upper bound for z-normalisation, forwarded to the rendering
-functions.</p></li>
-<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Whether to overlay timestamps on frames.</p></li>
-<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default True</em>) – Whether to overlay a scale bar on frames.</p></li>
-<li><p><strong>scale_bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default 100</em>) – Scale bar length in nanometres.</p></li>
-<li><p><strong>font_scale</strong> (float, default <code class="docutils literal notranslate"><span class="pre">DEFAULT_FONT_SCALE</span></code>) – Font scale for timestamp and scale bar annotations.</p></li>
-<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default 0.0</em>) – Value used to fill padded pixels and missing-frame placeholders.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack: its <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> sets the scale bar and its file name
+the default output name.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold the output of <code class="docutils literal notranslate"><span class="pre">extraction_module</span></code>.</p></li>
+<li><p><strong>extraction_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the region extraction step. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;particle_region_extraction&quot;</span></code>.</p></li>
+<li><p><strong>output_folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Folder for the output; created if missing. If None, <code class="docutils literal notranslate"><span class="pre">./output</span></code>.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Start of each file name. If None, the name of the file the stack was
+loaded from.</p></li>
+<li><p><strong>track_ids</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Export only these tracks. IDs not found are ignored. If None, all
+tracks. Default is None.</p></li>
+<li><p><strong>max_tracks</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Export at most this many tracks, after <code class="docutils literal notranslate"><span class="pre">track_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">sort_by</span></code>.
+Default is None (no limit).</p></li>
+<li><p><strong>sort_by</strong> (<em>{&quot;track_id&quot;</em><em>, </em><em>&quot;n_frames&quot;</em><em>, </em><em>&quot;n_detections&quot;}</em><em>, </em><em>optional</em>) – Order of the tracks before <code class="docutils literal notranslate"><span class="pre">max_tracks</span></code> is applied: by ID
+(ascending), by number of frames spanned, or by number of frames with a
+detection (both descending). Default is <code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>.</p></li>
+<li><p><strong>export_gif</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Write a GIF per track. Default is False.</p></li>
+<li><p><strong>export_video</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Write a video per track. Default is True.</p></li>
+<li><p><strong>video_fmt</strong> (<em>{&quot;mp4&quot;</em><em>, </em><em>&quot;avi&quot;</em><em>, </em><em>&quot;mov&quot;</em><em>, </em><em>&quot;mkv&quot;}</em><em>, </em><em>optional</em>) – Video format. Default is <code class="docutils literal notranslate"><span class="pre">&quot;mp4&quot;</span></code>.</p></li>
+<li><p><strong>export_sequence</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Write a folder of images per track. Default is False.</p></li>
+<li><p><strong>sequence_fmt</strong> (<em>{&quot;png&quot;</em><em>, </em><em>&quot;jpg&quot;</em><em>, </em><em>&quot;jpeg&quot;}</em><em>, </em><em>optional</em>) – Image format of the sequences. Default is <code class="docutils literal notranslate"><span class="pre">&quot;png&quot;</span></code>.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Frames per second of the GIFs and videos. Default is 5.0.</p></li>
+<li><p><strong>cmap_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of a registered matplotlib colormap. Default is <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Colour scale limits, as for <a class="reference internal" href="playnano.io.gif_export.html#playnano.io.gif_export.export_gif" title="playnano.io.gif_export.export_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.export_gif()</span></code></a>:
+both None scales each frame separately; <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the 1st or
+99th percentile of the track. Padding and missing frames
+(<code class="docutils literal notranslate"><span class="pre">fill_value</span></code>) count towards both, so they can change the colours.
+Default is None.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Colour scale limits, as for <a class="reference internal" href="playnano.io.gif_export.html#playnano.io.gif_export.export_gif" title="playnano.io.gif_export.export_gif"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.io.gif_export.export_gif()</span></code></a>:
+both None scales each frame separately; <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the 1st or
+99th percentile of the track. Padding and missing frames
+(<code class="docutils literal notranslate"><span class="pre">fill_value</span></code>) count towards both, so they can change the colours.
+Default is None.</p></li>
+<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Draw each frame’s time. Default is True.</p></li>
+<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Draw a scale bar. Default is True.</p></li>
+<li><p><strong>scale_bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Length of the scale bar, in nm; 0 hides it. Default is 100.</p></li>
+<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Size of the annotation text for a frame 512 pixels high. Default is 2.0.</p></li>
+<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Value used for padding and for frames where the particle was not
+detected. Default is 0.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Keys:</p>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">gif_paths</span></code><span class="classifier">list of str</span></dt><dd><p>Absolute paths of written GIF files.  Empty when
-<code class="docutils literal notranslate"><span class="pre">export_gif=False</span></code>.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;gif_paths&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;video_paths&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;sequence_folders&quot;</span></code></dt><dd><p>Absolute paths of what was written, as str.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">video_paths</span></code><span class="classifier">list of str</span></dt><dd><p>Absolute paths of written video files.  Empty when
-<code class="docutils literal notranslate"><span class="pre">export_video=False</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;per_track&quot;</span></code></dt><dd><p>One dict per track written, with <code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">n_frames</span></code>,
+<code class="docutils literal notranslate"><span class="pre">frame_size</span></code> (height, width, in pixels) and its <code class="docutils literal notranslate"><span class="pre">gif_path</span></code>,
+<code class="docutils literal notranslate"><span class="pre">video_path</span></code> and <code class="docutils literal notranslate"><span class="pre">sequence_folder</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">sequence_folders</span></code><span class="classifier">list of str</span></dt><dd><p>Absolute paths of written sequence folders.  Empty when
-<code class="docutils literal notranslate"><span class="pre">export_sequence=False</span></code>.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">per_track</span></code><span class="classifier">list of dict</span></dt><dd><p>One entry per track containing <code class="docutils literal notranslate"><span class="pre">track_id</span></code>, <code class="docutils literal notranslate"><span class="pre">n_frames</span></code>,
-<code class="docutils literal notranslate"><span class="pre">frame_size</span></code>, and whichever of <code class="docutils literal notranslate"><span class="pre">gif_path</span></code> /
-<code class="docutils literal notranslate"><span class="pre">video_path</span></code> / <code class="docutils literal notranslate"><span class="pre">sequence_folder</span></code> were produced.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">summary</span></code><span class="classifier">dict</span></dt><dd><p>Bookkeeping counters and configuration echo.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p>Counts of tracks found, selected, written, skipped (no crops) and
+filtered out, and the settings used.</p>
 </dd>
 </dl>
 </p>
@@ -696,13 +630,18 @@ functions.</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If none of the export flags are enabled, or if required upstream
-    outputs are missing or misconfigured.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">sort_by</span></code>, <code class="docutils literal notranslate"><span class="pre">video_fmt</span></code>, or <code class="docutils literal notranslate"><span class="pre">sequence_fmt</span></code> is not a
-    supported value.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If no export is enabled, <code class="docutils literal notranslate"><span class="pre">previous_results</span></code> is None or lacks the
+    extraction output, or the extraction ran with <code class="docutils literal notranslate"><span class="pre">include_image=False</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">sort_by</span></code> is not recognised, <code class="docutils literal notranslate"><span class="pre">sequence_fmt</span></code> is not supported, or
+    <code class="docutils literal notranslate"><span class="pre">zmin</span></code> is greater than <code class="docutils literal notranslate"><span class="pre">zmax</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>Formats are not checked before writing starts, so with an unsupported
+format some files may already be written when the error is raised. An
+unsupported <code class="docutils literal notranslate"><span class="pre">video_fmt</span></code> raises <code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code> rather than
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. The scale bar uses the stack’s pixel size, not each frame’s.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -710,7 +649,6 @@ functions.</p></li>
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.particle_region_media_export.ParticleRegionMediaExportModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>

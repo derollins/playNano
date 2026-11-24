@@ -514,57 +514,68 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.particle_tracking">
 <span id="playnano-analysis-modules-particle-tracking-module"></span><h1>playnano.analysis.modules.particle_tracking module<a class="headerlink" href="#module-playnano.analysis.modules.particle_tracking" title="Link to this heading">¶</a></h1>
-<p>Module for linking particle features across frames to build trajectories.</p>
-<p>This module defines the ParticleTrackingModule, which links features
-detected in sequential frames of an AFM image stack using nearest-neighbor
-matching based on feature coordinates.</p>
-<p>Features are matched across frames if they lie within a specified maximum
-distance. Tracks are formed by chaining these matches over time.</p>
-<dl class="simple">
-<dt>Each resulting track includes:</dt><dd><ul class="simple">
-<li><p>A unique track ID</p></li>
-<li><p>A list of frames spanned by the track (first→last detection)</p></li>
-<li><p>A list of point indices aligned with frames; missing detections are None</p></li>
-<li><p>A list of coordinates describing the particle’s positions</p></li>
-</ul>
-</dd>
-</dl>
-<p>Optionally, per-track masks are extracted from the labeled feature masks.</p>
+<p>Analysis module that links detected features from frame to frame into tracks.</p>
+<p>Each feature is linked to the nearest feature of an existing track that is
+close enough; features that are not linked start new tracks. Tracks can
+continue across frames where the particle was not detected.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.2.0.</span></p>
+</div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference internal" href="playnano.analysis.modules.feature_detection.html#module-playnano.analysis.modules.feature_detection" title="playnano.analysis.modules.feature_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.analysis.modules.feature_detection</span></code></a></dt><dd><p>Mask based particle detection method.</p>
-</dd>
-<dt><a class="reference internal" href="playnano.analysis.modules.log_blob_detection.html#module-playnano.analysis.modules.log_blob_detection" title="playnano.analysis.modules.log_blob_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.analysis.modules.log_blob_detection</span></code></a></dt><dd><p>LoG-based particle detection method.</p>
+<dt><a class="reference internal" href="playnano.analysis.modules.feature_detection.html#module-playnano.analysis.modules.feature_detection" title="playnano.analysis.modules.feature_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.analysis.modules.feature_detection</span></code></a></dt><dd><p>Detects the features to track.</p>
 </dd>
 </dl>
-<p><code class="xref py py-obj docutils literal notranslate"></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Author</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">------</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Daniel</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">AI</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">--------------------</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">AI-based</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">and</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">refactoring</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">and</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">algorithms</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">and</span></code></p>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_tracking.ParticleTrackingModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.particle_tracking.</span></span><span class="sig-name descname"><span class="pre">ParticleTrackingModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_tracking.html#ParticleTrackingModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_tracking.ParticleTrackingModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Link detected features frame-to-frame to produce particle trajectories.</p>
-<p>This module links features detected by a prior feature detection module
-using nearest-neighbor coordinate matching across adjacent frames. A new
-track is created for each unmatched feature.</p>
-<section id="version">
-<h2>Version<a class="headerlink" href="#version" title="Link to this heading">¶</a></h2>
-<p>0.2.0</p>
-<p>Version 0.2.0 allows tracks to continue across missing detections
-and supports scaling the distance threshold with time since last detection.</p>
+<p>Link features detected in successive frames into tracks.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;particle_tracking&quot;</span></code>. It needs the output of
+<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> from an earlier step.</p>
+<p>In each frame, tracks are extended in the order they started: each takes
+the nearest feature not yet taken that is closer than <code class="docutils literal notranslate"><span class="pre">max_distance</span></code> to
+its last position. This is quick but not globally optimal: when particles
+come close, an older track can take a feature a newer one fits better.
+Features left over start new tracks.</p>
+<p>Version 0.2.0 added <code class="docutils literal notranslate"><span class="pre">max_missing</span></code> and <code class="docutils literal notranslate"><span class="pre">distance_scale</span></code>. See <a class="reference internal" href="#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run" title="playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a>
+for the parameters and outputs.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># a 6 x 6 pixel particle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.feature_detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">FeatureDetectionModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.particle_tracking</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">ParticleTrackingModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected</span> <span class="o">=</span> <span class="n">FeatureDetectionModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stack</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ParticleTrackingModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stack</span><span class="p">,</span> <span class="p">{</span><span class="s2">"feature_detection"</span><span class="p">:</span> <span class="n">detected</span><span class="p">},</span> <span class="n">max_distance</span><span class="o">=</span><span class="mi">5</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">track</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"tracks"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">track</span><span class="p">[</span><span class="s2">"frames"</span><span class="p">],</span> <span class="n">track</span><span class="p">[</span><span class="s2">"coords"</span><span class="p">]</span>
+<span class="go">([0, 1, 2], [(12.5, 12.5), (13.5, 12.5), (14.5, 12.5)])</span>
+</pre></div>
+</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_tracking.ParticleTrackingModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the analysis module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Unique identifier: “particle_tracking”.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
-</dd>
-</dl>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;particle_tracking&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -575,59 +586,68 @@ and supports scaling the distance threshold with time since last detection.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.15)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/particle_tracking.html#ParticleTrackingModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Track particles across frames using nearest-neighbor association.</p>
+<dd><p>Link the features detected in each frame into tracks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input AFM image stack.</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – <p>Must contain results from a detection module, including:</p>
-<ul>
-<li><p>coord_key (e.g., “features_per_frame”): list of dicts with per-frame
-features</p></li>
-<li><p>”labeled_masks”: per-frame mask of label regions</p></li>
-</ul>
-</p></li>
-<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Which module to read features from (default: “feature_detection”).</p></li>
-<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key in previous_results[detection_module] containing per-frame feature
-dicts (default: “features_per_frame”).</p></li>
-<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Keys to extract coordinates from each feature; falls back to “centroid” if
-needed. Default is (“centroid_x”, “centroid_y”).</p></li>
-<li><p><strong>max_distance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum allowed movement per frame in coordinate units (default: 5.0).</p></li>
-<li><p><strong>max_missing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum allowed consecutive missing detections before terminating a track.
-Default is 0 (no missing allowed).</p></li>
-<li><p><strong>distance_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – How to scale max_distance with time since last detection in frames:
-“constant” (default), “linear” (scale linearly with time), or “sqrt” (scale
-with square root of time).</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack; not used directly.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold a detection output with the
+<code class="docutils literal notranslate"><span class="pre">coord_key</span></code> list and <code class="docutils literal notranslate"><span class="pre">&quot;labeled_masks&quot;</span></code>.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the detection step to use. If it has not run,
+<code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code> is tried, then <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of the per-frame feature lists in the detection output. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>.</p></li>
+<li><p><strong>coord_columns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Keys of each feature’s two coordinates. If a feature lacks them, its
+<code class="docutils literal notranslate"><span class="pre">centroid</span></code> is used instead. <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> has no
+<code class="docutils literal notranslate"><span class="pre">centroid_x</span></code> or <code class="docutils literal notranslate"><span class="pre">centroid_y</span></code>, so with the default, coordinates are
+<code class="docutils literal notranslate"><span class="pre">centroid</span></code>: (row, col), in pixels. Default is
+<code class="docutils literal notranslate"><span class="pre">(&quot;centroid_x&quot;,</span> <span class="pre">&quot;centroid_y&quot;)</span></code>.</p></li>
+<li><p><strong>max_distance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Distance a particle can move between frames and still be linked, in
+the same units as the coordinates (pixels for <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>).
+Only moves strictly shorter than this are linked. Default is 5.0.</p></li>
+<li><p><strong>max_missing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of frames in a row a track can go without a feature before it
+ends. Default is 0: a track ends at its first missed frame.</p></li>
+<li><p><strong>distance_scale</strong> (<em>{&quot;constant&quot;</em><em>, </em><em>&quot;linear&quot;</em><em>, </em><em>&quot;sqrt&quot;}</em><em>, </em><em>optional</em>) – How <code class="docutils literal notranslate"><span class="pre">max_distance</span></code> grows after missed frames, with <code class="docutils literal notranslate"><span class="pre">dt</span></code> the number
+of frames since the track’s last feature: <code class="docutils literal notranslate"><span class="pre">&quot;constant&quot;</span></code> keeps it,
+<code class="docutils literal notranslate"><span class="pre">&quot;linear&quot;</span></code> multiplies it by <code class="docutils literal notranslate"><span class="pre">dt</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;sqrt&quot;</span></code> by <code class="docutils literal notranslate"><span class="pre">sqrt(dt)</span></code>.
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;constant&quot;</span></code>.</p></li>
+<li><p><strong>**params</strong> – Not used; ignored.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Dictionary with keys:</p>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;tracks&quot;</span></code></dt><dd><p>One dict per track, with:</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt>tracks<span class="classifier">list of dict</span></dt><dd><p>Per-track dictionaries containing:</p>
-<ul>
-<li><p>id : int
-Track ID</p></li>
-<li><p>frames : list[int]
-Frame indices spanned by track</p></li>
-<li><p>point_indices : list[Optional[int]]
-Indices into features_per_frame</p></li>
-<li><p>coords : list[Optional[tuple[float, float]]]
-Coordinates (coord0, coord1) aligned with frames; None indicates
-missing detection.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (int): from 0, in the order tracks started.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frames</span></code> (list of int): every frame from the track’s first
+feature to its last.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">point_indices</span></code> (list of int or None): the index of the
+track’s feature in each frame’s list in the detection output,
+or None for a missed frame.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coords</span></code> (list of tuple or None): the feature’s coordinates in
+each frame, or None for a missed frame.</p></li>
 </ul>
 </dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;track_masks&quot;</span></code></dt><dd><p>Maps each track ID to a boolean mask of its last feature, if the
+feature has a <code class="docutils literal notranslate"><span class="pre">label</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;n_tracks&quot;</span></code></dt><dd><p>The number of tracks.</p>
+</dd>
 </dl>
-</li>
-<li><p>track_masks : dict[int, np.ndarray]
-Last mask per track</p></li>
-<li><p>n_tracks : int
-Total number of tracks</p></li>
-</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If there is no detection output, or it lacks <code class="docutils literal notranslate"><span class="pre">coord_key</span></code> or
+    <code class="docutils literal notranslate"><span class="pre">&quot;labeled_masks&quot;</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">max_distance</span></code> or <code class="docutils literal notranslate"><span class="pre">max_missing</span></code> is negative, or
+    <code class="docutils literal notranslate"><span class="pre">distance_scale</span></code> is not recognised.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If a feature has neither <code class="docutils literal notranslate"><span class="pre">coord_columns</span></code> nor <code class="docutils literal notranslate"><span class="pre">centroid</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -637,7 +657,6 @@ Total number of tracks</p></li>
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.2.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.particle_tracking.ParticleTrackingModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>
