@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to 1, that cluster `coords` are rescaled while `cluster_centers` are in the original units, and how X-means chooses
   the number of clusters. Corrected DBSCAN, which always drops noise points and uses the mean of all members as the
   centre, not of core points.
+- API reference for `particle_region_extraction` and `particle_region_media_export`: docstrings now match the code and
+  render without warnings, so the `analysis` reference builds without warnings. Documented that image crops come from
+  `stack.data` (processed data, not raw), the order in which `padding`, `square` and `fixed_box_size` apply, the box
+  coordinates, the output file names, and that padding and missing frames count towards the colour scale. Corrected
+  `fps` (also used for GIFs) and noted that formats are not checked before writing starts, and that
+  `fixed_size_mode="per_track"` needs `fixed_box_size` to be set.
 
 ### Changed
 
