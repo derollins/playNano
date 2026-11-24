@@ -22,11 +22,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   each export format keeps (OME-TIFF keeps no processed layers or masks), the errors the loaders raise, and the
   `.aris` reader, which returns heights in the file's units (metres), not nm. Documented the missing `cmap_name`,
   `font_scale` and `fmt` parameters and the video formats (MP4, AVI, MOV, MKV).
+- API reference for the core of `playnano.analysis` (`AnalysisPipeline`, `AnalysisModule`, `export` and `utils`):
+  docstrings now match the code and render without warnings. The `AnalysisPipeline` examples showed made-up output
+  and a wrong path into `results_by_name`; the class now has an example that runs as a doctest. Documented the errors
+  `AnalysisPipeline.run` raises, that its `log_to` JSON summarises arrays instead of writing them, the `version` and
+  `requires` attributes of analysis modules, and the units of the particle tables. Corrected
+  `load_analysis_from_hdf5` (integer-valued floats are converted only for files saved before 0.5.2) and
+  `flatten_particle_features` (`object_key` is detected when not given).
+- API reference for the detection and tracking modules (`feature_detection`, `log_blob_detection`, `count_nonzero`,
+  `particle_tracking`, `tracked_particle_boundary_size`): docstrings now match the code and render without warnings,
+  and each module has an example that runs as a doctest instead of made-up output. Documented the units (positions,
+  areas, distances and sizes are in pixels), that `particle_tracking` uses `centroid` as (row, col) by default, links
+  tracks greedily and links only moves shorter than `max_distance`, that `feature_detection` accepts a mask function's
+  name, and the errors each module raises. Noted that `log_blob_detection` output cannot yet be used by tracking or
+  clustering, and that `mask_key` cannot find a mask through a pipeline.
+- API reference for the clustering modules (`dbscan_clustering`, `k_means_clustering`, `x_means_clustering`): docstrings
+  now match the code, and each module has an example that runs as a doctest. Documented that coordinates are
+  `centroid` (row, col) in pixels plus time in seconds, that `eps` and `time_weight` act on coordinates rescaled to 0
+  to 1, that cluster `coords` are rescaled while `cluster_centers` are in the original units, and how X-means chooses
+  the number of clusters. Corrected DBSCAN, which always drops noise points and uses the mean of all members as the
+  centre, not of core points.
+- API reference for `particle_region_extraction` and `particle_region_media_export`: docstrings now match the code and
+  render without warnings, so the `analysis` reference builds without warnings. Documented that image crops come from
+  `stack.data` (processed data, not raw), the order in which `padding`, `square` and `fixed_box_size` apply, the box
+  coordinates, the output file names, and that padding and missing frames count towards the colour scale. Corrected
+  `fps` (also used for GIFs) and noted that formats are not checked before writing starts, and that
+  `fixed_size_mode="per_track"` needs `fixed_box_size` to be set.
 
 ### Changed
 
 - The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and `CONTRIBUTING.md` has
   rules for writing types in docstrings.
+- `CONTRIBUTING.md`: AI use is disclosed in the pull request, not in source files, and module docstrings no longer
+  have author or AI-use sections; authors are credited in `CITATION.cff`.
+- The documentation links to the scikit-learn documentation. `docs/_generated/generated_module_list.rst` is no longer
+  tracked by git; the docs build writes it.
 
 ## [0.5.3] - 2026-11-20
 

@@ -230,6 +230,7 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
     "h5py": ("https://docs.h5py.org/en/stable", None),
     "skimage": ("https://scikit-image.org/docs/stable", None),
+    "sklearn": ("https://scikit-learn.org/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "matplotlib": ("https://matplotlib.org/stable", None),
     "qt": ("https://doc.qt.io/qtforpython-6/", None),

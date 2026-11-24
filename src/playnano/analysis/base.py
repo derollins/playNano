@@ -1,4 +1,4 @@
-"""Module holding the AnalysisModule base class."""
+"""The base class that every analysis module subclasses."""
 
 from abc import ABC, abstractmethod
 from typing import Any, Optional
@@ -10,24 +10,34 @@ AnalysisOutputs = dict[str, Any]
 
 class AnalysisModule(ABC):
     """
-    Abstract base class for analysis steps.
+    Base class for analysis modules.
 
-    Subclasses must implement:
+    An analysis module measures something in a stack (for example, detecting
+    features or tracking particles) and returns its results as a dict.
+    :class:`~playnano.analysis.pipeline.AnalysisPipeline` runs modules in order.
+    Built-in modules are in :mod:`playnano.analysis.modules`; plugins are
+    registered under the ``playnano.analysis`` entry point group.
 
-    - a ``name`` property returning a unique string identifier
-    - a ``run(stack, previous_results=None, **params) -> dict`` method
+    A subclass must define:
 
-    Inherits from :class:`abc.ABC`.
+    - :attr:`name`: the name used to add the module to a pipeline.
+    - :meth:`run`: the analysis.
 
+    and can set these class attributes:
+
+    - ``version`` (str): recorded in the provenance of each step.
+    - ``requires`` (list of str): names of modules, at least one of which must
+      run earlier in the pipeline; the pipeline raises ``RuntimeError``
+      otherwise.
     """
 
     @property
     @abstractmethod
     def name(self) -> str:
         """
-        Unique name for this analysis module, e.g. "particle_detect".
+        Name used to add the module to a pipeline, for example ``"feature_detection"``.
 
-        Used by pipeline to identify and refer to the module.
+        Must be unique among the installed modules.
         """
         raise NotImplementedError("Subclasses must implement 'name' property")
 
@@ -39,33 +49,26 @@ class AnalysisModule(ABC):
         **params,
     ) -> AnalysisOutputs:
         """
-        Perform the analysis on the given AFMImageStack.
+        Run the analysis on a stack.
 
         Parameters
         ----------
         stack : AFMImageStack
-            The AFMImageStack instance, containing `.data` and metadata.
-
-        previous_results : dict[str, Any] or None, optional
-            Outputs from earlier modules in the pipeline, if any.
-
-        **params : dict
-            Module-specific parameters, e.g., threshold, min_size, etc.
+            The stack to analyse.
+        previous_results : dict, optional
+            Outputs of the modules run earlier in the pipeline: each module name
+            mapped to the dict its latest run returned. Default is None.
+        **params
+            Parameters of this module, as given to
+            :meth:`~playnano.analysis.pipeline.AnalysisPipeline.add`.
 
         Returns
         -------
-        AnalysisOutputs
-            Dictionary mapping output names (strings) to results. Example::
+        dict
+            Outputs, keyed by str. The values can be anything, for example::
 
-                {
-                    "coords": numpy.ndarray of shape (N, 3),
-                    "masks": numpy.ndarray of shape (n_frames, H, W)
-                }
+                {"features_per_frame": [...], "summary": {"total_features": 23}}
 
-        Notes
-        -----
-        Subclasses must implement this method. The returned dictionary can
-        contain any data the analysis module produces, but must be keyed by
-        unique output names.
+            Later modules receive this dict through ``previous_results``.
         """
         raise NotImplementedError("Subclasses must implement 'run' method")

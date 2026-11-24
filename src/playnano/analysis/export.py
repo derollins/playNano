@@ -1,4 +1,4 @@
-"""Functions for exporting analysis results."""
+"""Write an analysis record to a JSON file."""
 
 import json
 import os
@@ -9,22 +9,24 @@ from playnano.analysis.utils.common import NumpyEncoder
 
 def export_analysis_to_json(out_path: str, analysis_record: dict[str, Any]) -> None:
     """
-    Write the analysis_record (returned by AnalysisPipeline.run) to JSON.
+    Write an analysis record to a JSON file, with arrays written in full.
+
+    Unlike ``AnalysisPipeline.run(log_to=...)``, which summarises arrays, this
+    writes every value: arrays become nested lists and NumPy numbers become
+    Python numbers (see :class:`~playnano.analysis.utils.common.NumpyEncoder`).
 
     Parameters
     ----------
     out_path : str
-        Output file path.
-
+        The JSON file to write. Missing folders are created.
     analysis_record : dict
-        Analysis record to serialize.
-
-    Returns
-    -------
-    None
+        The record returned by
+        :meth:`~playnano.analysis.pipeline.AnalysisPipeline.run`.
 
     Raises
     ------
+    TypeError
+        If the record holds a value that cannot be written as JSON.
     OSError
         If the file cannot be written.
     """

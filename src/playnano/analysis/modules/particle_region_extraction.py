@@ -1,26 +1,19 @@
 # mypy: disable-error-code=type-arg
 """
-Particle region extraction module for the playNano analysis pipeline.
+Analysis module that cuts out each tracked particle's region, frame by frame.
 
-This module extracts per-particle image regions over time using labeled masks
-from a detection module (e.g. ``feature_detection``) and particle associations
-from a tracking module (e.g. ``particle_tracking``).
+For each track from ``particle_tracking`` and each frame it spans, the module
+finds the particle's labelled region in the ``feature_detection`` output and
+records:
 
-For each tracked particle and each frame, the module locates the labeled region
-and extracts:
+- its tight bounding box,
+- a bounding box enlarged by padding, made square or set to a fixed size,
+- a crop of the frame to that box (optional),
+- a crop of the particle's mask to that box (optional).
 
-- the tight bounding-box coordinates of the region,
-- an optionally padded / squared / fixed-size bounding box,
-- a crop of the raw image stack frame (optional),
-- a crop of the binary object mask (optional).
-
-This module is a data-organisation step: it assembles per-track, per-frame
-region data into a consistent structure for downstream analysis and export.
-Per-frame statistics (mean, max, etc.) are already produced by the detection
-module; time-series statistics belong in a dedicated downstream module.
-
-All outputs are ``None`` / ``np.nan`` for frames where the particle is absent
-(dense tracks with missing detections) or where indices are out of range.
+It only organises data: per-frame measurements come from the detection step,
+and later modules such as ``tracked_particle_boundary_size`` and
+``particle_region_media_export`` use its output.
 """
 
 import warnings
@@ -148,50 +141,48 @@ def _square_bbox(
 
 class ParticleRegionExtractionModule(AnalysisModule):
     """
-    Extract per-particle image regions over time from tracked, labeled detections.
+    Cut out each tracked particle's region in every frame of its track.
 
-    For each tracked particle and frame the module resolves the labeled region
-    from the detection output, computes a bounding box, and optionally crops
-    the raw image frame and/or binary mask.
+    Pipeline name: ``"particle_region_extraction"``. It needs the outputs of
+    ``particle_tracking`` and of a detection step that gives labelled regions
+    (``feature_detection``). See :meth:`run` for the parameters and outputs.
 
-    This is a data-organisation step.  Per-frame statistics are available from
-    the detection module output; time-series analysis belongs in a downstream
-    module.
+    Bounding boxes are ``(min_row, min_col, max_row, max_col)`` in pixels, with
+    the maxima exclusive, so ``frame[min_row:max_row, min_col:max_col]`` is the
+    crop. Image crops are taken from ``stack.data``, so from processed data if the
+    stack was processed.
 
-    The module requires:
-    - output from a particle tracking module (e.g. ``particle_tracking``)
-    - output from a labeled detection module providing:
-        * ``features_per_frame`` — list of per-frame feature dicts with a
-          region label under ``label_key``.
-        * ``labeled_masks`` — list of 2-D integer-labeled NumPy arrays.
-
-    Parameters accepted in :meth:`run`
-    ------------------------------------
-    padding : int, default 0
-        Pixels to add around the tight bounding box (clipped to image bounds).
-    fixed_box_size : int or None, default None
-        Enforce a fixed-size crop centred on the detection, in pixels.
-    square : bool, default False
-        Force the bounding box to be square (ignored when ``fixed_box_size``
-        is set).
-    fixed_size_mode : {"global", "per_track"}, default ``"global"``
-        ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``
-        computes the size per track as the largest detection plus
-        ``2 * padding``.
-    include_image : bool, default True
-        Include ``"image_crop"`` (raw frame crop) in each region dict.
-    include_mask : bool, default True
-        Include ``"mask_crop"`` (binary foreground crop) in each region dict.
-    include_bbox : bool, default True
-        Include ``"bbox_tight"`` and ``"bbox_padded"`` in each region dict
-        and in the flat table.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> from playnano.analysis.pipeline import AnalysisPipeline
+    >>> data = np.zeros((3, 64, 64))
+    >>> for t in range(3):
+    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],
+    ... )
+    >>> pipeline = AnalysisPipeline()
+    >>> pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)
+    >>> pipeline.add("particle_tracking", max_distance=5)
+    >>> pipeline.add("particle_region_extraction", padding=2)
+    >>> record = pipeline.run(stack)
+    >>> output = record["analysis"]["step_3_particle_region_extraction"]
+    >>> region = output["per_track"][0]["regions"][1]
+    >>> region["bbox_tight"], region["bbox_padded"], region["image_crop"].shape
+    ((11, 10, 17, 16), (9, 8, 19, 18), (10, 10))
     """
 
     version = "0.1.0"
 
     @property
     def name(self) -> str:
-        """Module name for registration in the analysis pipeline."""
+        """Name of this module in a pipeline, ``"particle_region_extraction"``."""
         return "particle_region_extraction"
 
     requires = ["particle_tracking"]
@@ -367,61 +358,82 @@ class ParticleRegionExtractionModule(AnalysisModule):
         label_key: str = "label",
     ) -> Dict[str, Any]:
         """
-        Execute the region extraction.
+        Find, box and crop each tracked particle's region in each frame.
 
         Parameters
         ----------
         stack : AFMImageStack
-            Input image stack.  Must support ``stack[frame_idx]`` integer
-            indexing when ``include_image=True``.
-        previous_results : dict, optional
-            Outputs from earlier pipeline modules.
-        tracking_module : str, default ``"particle_tracking"``
-            Key of the tracking module in ``previous_results``.
-        detection_module : str, default ``"feature_detection"``
-            Key of the labeled detection module in ``previous_results``.
-        padding : int, default 0
-            Pixels to add around the tight bounding box on each side.
-        fixed_box_size : int or None, default None
-            Enforce a fixed crop size in pixels, centred on the detection.
-        square : bool, default False
-            Force the bounding box to be square (ignored when
-            ``fixed_box_size`` is set).
-        fixed_size_mode : {"global", "per_track"}, default ``"global"``
-            ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``
-            computes the size per track as the largest detection plus
-            ``2 * padding``.
-        include_image : bool, default True
-            Include ``"image_crop"`` in each region dict.
-        include_mask : bool, default True
-            Include ``"mask_crop"`` in each region dict.
-        include_bbox : bool, default True
-            Include ``"bbox_tight"`` / ``"bbox_padded"`` in each region dict
-            and in ``flat_table``.
-        label_key : str, default ``"label"``
-            Key used to look up the region label in each feature dict.
+            The stack: crops are taken from ``stack.data`` and times from its frame
+            metadata (the frame index if a frame has no time).
+        previous_results : dict
+            Outputs of earlier steps. Must hold the outputs of ``tracking_module``
+            and ``detection_module``.
+        tracking_module : str, optional
+            Name of the tracking step. Default is ``"particle_tracking"``.
+        detection_module : str, optional
+            Name of the detection step. Its output must have ``"labeled_masks"`` and
+            ``"features_per_frame"``. Default is ``"feature_detection"``.
+        padding : int, optional
+            Pixels added on each side of the tight box, limited by the frame edges.
+            Default is 0.
+        fixed_box_size : int, optional
+            Make every box this many pixels square, centred on the padded box and
+            shifted to stay inside the frame. Overrides ``square``. Default is None.
+        square : bool, optional
+            Make the padded box square, with sides equal to its longer side. Not
+            used if a fixed size is set. Default is False.
+        fixed_size_mode : {"global", "per_track"}, optional
+            ``"global"`` uses ``fixed_box_size`` for every track. ``"per_track"``
+            gives each track its own size: its largest tight box side plus
+            ``2 * padding``. ``"per_track"`` only takes effect if ``fixed_box_size``
+            is also set (to any value, which is then not used). Default is
+            ``"global"``.
+        include_image : bool, optional
+            Add ``"image_crop"`` to each region. Default is True.
+        include_mask : bool, optional
+            Add ``"mask_crop"`` to each region. Default is True.
+        include_bbox : bool, optional
+            Add the boxes to each region and to ``flat_table``. Default is True.
+        label_key : str, optional
+            Key of each feature's label in ``labeled_masks``. Default is
+            ``"label"``.
 
         Returns
         -------
         dict
-            ``per_track`` : list of dict
-                One entry per track with ``"track_id"``, ``"frames"``,
-                ``"timestamps"``, ``"fixed_box_size"``, and ``"regions"``.
-                Each region entry is ``None`` (missing detection) or a dict
-                containing:
+            ``"per_track"``
+                One dict per track, with ``track_id``, ``frames``, ``timestamps``
+                (s), ``fixed_box_size`` (the size used for this track, or None) and
+                ``regions``: for each frame, None if the particle was not detected,
+                otherwise a dict with:
 
-                - ``"frame"``, ``"timestamp"``, ``"label"``
-                - ``"bbox_tight"``, ``"bbox_padded"`` *(if include_bbox)*
-                - ``"image_crop"`` *(if include_image)*
-                - ``"mask_crop"`` *(if include_mask)*
+                - ``frame``, ``timestamp`` and ``label``;
+                - ``bbox_tight``: the box around the largest connected piece of the
+                  label, or None if the label is not in the mask;
+                - ``bbox_padded``: the box after ``padding``, ``square`` and
+                  ``fixed_box_size``;
+                - ``image_crop``: the frame cropped to ``bbox_padded`` (array);
+                - ``mask_crop``: boolean mask of the particle in that crop.
+            ``"flat_table"``
+                One dict per track and frame, with ``track_id``, ``frame``,
+                ``timestamp``, ``label`` and, if ``include_bbox``, the box corners as
+                ``bbox_tight_minr``, ``bbox_tight_minc``, ``bbox_tight_maxr``,
+                ``bbox_tight_maxc`` and the same for ``bbox_padded``. Missing values
+                are NaN. Crops are not included. Ready for :class:`pandas.DataFrame`.
+            ``"summary"``
+                Counts (``n_tracks``, ``n_rows``, ``n_skipped_index_errors``,
+                ``n_missing_region_measurements``) and the settings used.
 
-            ``flat_table`` : list of dict
-                Row-per-frame table suitable for ``pandas.DataFrame``.
-                Array crops are excluded; bbox columns are included when
-                ``include_bbox=True``.
+            Frames or feature indices out of range give a warning and a None region.
 
-            ``summary`` : dict
-                Bookkeeping counters and configuration echo.
+        Raises
+        ------
+        RuntimeError
+            If ``previous_results`` is None or lacks the tracking or detection
+            output (or their ``"tracks"``, ``"labeled_masks"`` or
+            ``"features_per_frame"``), or a tracked feature has no ``label_key``.
+        ValueError
+            If ``fixed_size_mode`` is not recognised.
         """
         if previous_results is None:
             raise RuntimeError(f"{self.name!r} requires previous results to run.")

@@ -1,28 +1,16 @@
 """
-Threshold-based feature detection for AFM image stacks.
+Analysis module that detects features using a mask of each frame.
 
-This is a playNano analysis module implementing a concrete subclass of the
-abstract `AnalysisModule` base class. It detects contiguous features in each
-frame of an AFM image stack using user-provided or precomputed masks, with
-optional hole filling, morphological separation, size and edge filtering, and
-per-feature statistics extraction.
-
-See Also
---------
-playnano.analysis.modules.log_blob_detection : LoG-based alternative detection method.
-playnano.analysis.modules.particle_tracking : Links detected features across frames.
+Pixels selected by a mask (for example, everything above a height threshold)
+are grouped into connected features, which can be separated, filtered by size
+and edge contact, and measured.
 
 .. versionadded:: 0.2.0
 
-Author
-------
-Daniel E. Rollins (d.e.rollins@leeds.ac.uk) / GitHub: derollins
-
-AI Transparency Note
---------------------
-AI-based tools were used for limited typing/formatting assistance
-and for debugging, refactoring, and documentation suggestions. All code paths,
-algorithms, and final behaviour were reviewed and validated by the author.
+See Also
+--------
+playnano.analysis.modules.log_blob_detection : Detects round features without a mask.
+playnano.analysis.modules.particle_tracking : Links detected features across frames.
 """
 
 import inspect
@@ -42,99 +30,57 @@ MASK_MAP = register_masking()
 
 class FeatureDetectionModule(AnalysisModule):
     """
-    Detect contiguous features in each frame of an AFM image stack.
+    Detect connected features in each frame using a mask.
 
-    This module accepts either a callable mask-generating function or a reference
-    to a boolean mask array stored in `previous_results`. Connected components are
-    identified per frame, optionally morphologically separated, filtered by size
-    and edge contact, and returned along with feature statistics and labeled masks.
+    Pipeline name: ``"feature_detection"``. For each frame:
 
-    Parameters
-    ----------
-    mask_fn : callable, optional
-        Function of the form `frame -> bool_2D_array` used to generate a mask
-        for each frame. Required if `mask_key` is not provided.
+    1. A mask is made with ``mask_fn`` (or read using ``mask_key``).
+    2. If ``fill_holes``, holes in the mask are filled.
+    3. Groups of mask pixels that touch, at a side or a corner, become
+       features.
+    4. If ``morph_opening``, touching features are separated.
+    5. Features smaller than ``min_size``, or touching the frame edge if
+       ``remove_edge``, are removed.
+    6. The remaining features are numbered from 1 and measured.
 
-    mask_key : str, optional
-        Key referencing a boolean mask array stored in `previous_results`.
-        Required if `mask_fn` is not provided.
-
-    morph_opening : bool, default False
-        If True, apply morphological opening to each labeled object to separate
-        touching features.
-
-    sep_radius : int, default 6
-        Radius of the disk structuring element used for morphological opening.
-
-    min_size : int, default 10
-        Minimum pixel area for a region to be retained.
-
-    remove_edge : bool, default True
-        If True, discard any region touching the frame boundary.
-
-    fill_holes : bool, default False
-        If True, fill holes within each mask before labeling.
-
-    hole_area : int or None, optional
-        Maximum size of holes to fill. If None, fill all holes.
-
-    **mask_kwargs : Any
-        Additional keyword arguments passed to `mask_fn(frame, **mask_kwargs)`.
-
-    Returns
-    -------
-    dict[str, Any]
-        - **features_per_frame** : list[list[dict]]
-          Per-frame list of feature stats dicts, each with:
-
-            - `"frame_timestamp"` : float
-            - `"label"`           : int
-            - `"area"`            : int
-            - `"min"`, `"max"`, `"mean"` : float
-            - `"bbox"`            : (min_row, min_col, max_row, max_col)
-            - `"centroid"`        : (row, col)
-
-        - **labeled_masks** : list[np.ndarray]
-              Integer-labeled masks for each frame.
-        - **summary** : dict
-              Aggregate values: total frames, total features, average features
-              per frame.
-
-    Raises
-    ------
-    ValueError
-        If mask configuration is invalid or mask has incorrect shape/dtype.
-
-    KeyError
-        If `mask_key` is supplied but missing from `previous_results`.
-
-    Version
-    -------
-    0.2.0
-
-    Version 0.2.0 adds morphological opening for separating close or touching particles.
+    Version 0.2.0 added ``morph_opening``. See :meth:`run` for the parameters
+    and outputs.
 
     Examples
     --------
-    >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset,
-    ...              min_size=20, fill_holes=True, hole_area=50)
-    >>> result = pipeline.run(stack)
-    >>> result["summary"]["total_features"]
-    123
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> data = np.zeros((3, 64, 64))
+    >>> for t in range(3):
+    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0  # a 6 x 6 pixel particle
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],
+    ... )
+    >>> from playnano.analysis.modules.feature_detection import (
+    ...     FeatureDetectionModule,
+    ... )
+    >>> result = FeatureDetectionModule().run(
+    ...     stack, mask_fn="mask_threshold", threshold=1.0
+    ... )
+    >>> result["summary"]
+    {'total_frames': 3, 'total_features': 3, 'avg_features_per_frame': 1.0}
+    >>> feature = result["features_per_frame"][1][0]
+    >>> feature["area"], feature["centroid"], feature["mean"]
+    (36.0, (13.5, 12.5), 3.0)
+
+    In a pipeline, the same step is added with
+    ``pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)``.
     """
 
     version = "0.2.0"
 
     @property
     def name(self) -> str:
-        """
-        Return the name of the analysis module.
-
-        Returns
-        -------
-        str
-            The identifier for this module: ``"feature_detection"``.
-        """
+        """Name of this module in a pipeline, ``"feature_detection"``."""
         return "feature_detection"
 
     def _get_mask_array(
@@ -403,42 +349,75 @@ class FeatureDetectionModule(AnalysisModule):
         **mask_kwargs,
     ) -> dict[str, Any]:
         """
-        Detect contiguous features on each frame of stack.data.
+        Detect and measure features in each frame of ``stack.data``.
 
         Parameters
         ----------
         stack : AFMImageStack
-            The AFM stack whose `.data` (3D array) and `.time_for_frame()` are used.
-
-        previous_results : dict[str, Any], optional
-            Mapping of earlier analysis outputs. If `mask_key` is given,
-            must contain a boolean mask array under that key.
-
-        mask_fn : callable, optional
-            Function frame->bool array for masking.
-            Required if `mask_key` is None.
+            The stack to analyse.
+        previous_results : dict, optional
+            Outputs of earlier steps; used only with ``mask_key``. Default is None.
+        mask_fn : callable or str, optional
+            Masking function, called as ``mask_fn(frame, **mask_kwargs)`` and
+            returning a boolean array the shape of the frame, or the name of one
+            in :mod:`playnano.processing.mask_generators`, for example
+            ``"mask_threshold"``. Give either this or ``mask_key``.
+        mask_key : str, optional
+            Key of a boolean array, shape (n_frames, height, width), in
+            ``previous_results``. Note that ``previous_results`` is keyed by
+            module name and holds dicts, so through a pipeline this cannot
+            currently find a mask.
+        morph_opening : bool, optional
+            Separate touching features with a morphological opening (with a disk
+            of radius ``sep_radius``), applied to each feature on its own. A
+            feature that would lose more than 60% of its area, or all of it, is
+            kept unchanged. Default is False.
+        sep_radius : int, optional
+            Radius of the opening disk, in pixels. Used only if ``morph_opening``.
+            Default is 6.
+        min_size : int, optional
+            Smallest feature kept, in pixels. Default is 10.
+        remove_edge : bool, optional
+            Remove features that touch the edge of the frame. Default is True.
+        fill_holes : bool, optional
+            Fill holes in the mask before finding features. Default is False.
+        hole_area : int, optional
+            With ``fill_holes``, fill only holes smaller than this, in pixels.
+            If None, fill all holes. Default is None.
+        **mask_kwargs
+            Passed to ``mask_fn``, for example ``threshold=1.0``. If ``mask_fn``
+            raises ``TypeError``, it is called again without them.
 
         Returns
         -------
-        dict[str, Any]
-            Dictionary containing:
+        dict
+            ``"features_per_frame"``
+                For each frame, a list of dicts, one per feature, with:
 
-            - features_per_frame : list of lists of dict
-            - labeled_masks : list of np.ndarray
-            - summary : dict with total_features, total_frames, avg_features_per_frame
+                - ``frame_timestamp`` (float): the frame's time, in s, or the frame
+                  index if the stack has no times.
+                - ``label`` (int): the feature's value in ``labeled_masks``.
+                - ``area`` (float): in pixels.
+                - ``min``, ``max``, ``mean`` (float): height inside the feature,
+                  in the units of the data (usually nm).
+                - ``bbox`` (tuple of int): ``(min_row, min_col, max_row,
+                  max_col)``, with the maxima exclusive.
+                - ``centroid`` (tuple of float): ``(row, col)``, in pixels.
+            ``"labeled_masks"``
+                For each frame, an int array the shape of the frame: 0 for
+                background and each feature's ``label`` inside it.
+            ``"summary"``
+                ``total_frames``, ``total_features`` and
+                ``avg_features_per_frame``.
 
         Raises
         ------
         ValueError
-            If `stack.data` is None or not 3D, or mask array invalid,
-            or neither `mask_fn` nor `mask_key` provided.
+            If ``stack.data`` is not a 3D array, neither ``mask_fn`` nor
+            ``mask_key`` is given, ``mask_fn`` names no masking function, or a
+            mask is not a boolean array of the right shape.
         KeyError
-            If `mask_key` not found in `previous_results`.
-
-        Examples
-        --------
-        >>> pipeline.add("feature_detection", mask_fn=mask_mean_offset, min_size=20)
-        >>> result = pipeline.run(stack)
+            If ``mask_key`` is not in ``previous_results``.
         """
         data = stack.data
         if data is None:

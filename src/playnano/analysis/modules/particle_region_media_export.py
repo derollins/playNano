@@ -1,31 +1,16 @@
 # mypy: disable-error-code=type-arg
 """
-Particle region export module for the playNano analysis pipeline.
+Analysis module that saves tracked particle regions as GIFs, videos or image sequences.
 
-This module exports per-particle GIFs, video files, and/or image sequences
-using the cropped image regions produced by ``ParticleRegionExtractionModule``.
+It uses the crops made by ``particle_region_extraction``. For each track, the
+crops are padded to the size of the track's largest crop and stacked, then
+written with the same rendering as the whole-stack exports:
 
-For each tracked particle the per-frame crops are centre-padded to a
-consistent spatial size, assembled once into a ``(T, H, W)`` NumPy array, and
-passed to whichever of the following rendering functions are enabled:
+- :func:`playnano.io.gif_export.create_gif_with_scale_and_timestamp`,
+- :func:`playnano.io.video_export.create_video_with_scale_and_timestamp`,
+- :func:`playnano.io.image_sequence_export.create_image_sequence`.
 
-- :func:`playnano.io.gif_export.create_gif_with_scale_and_timestamp` for
-  animated GIF output.
-- :func:`playnano.io.video_export.create_video_with_scale_and_timestamp` for
-  MP4/AVI/MOV/MKV output.
-- :func:`playnano.io.image_sequence_export.create_image_sequence` for
-  per-frame PNG/JPEG output.
-
-Any combination of the three export types can be produced in a single pipeline
-step from the same assembled stack.  At least one must be enabled.
-
-Output paths follow the pattern ``<base>_track_<id>.<ext>``; image sequences
-are written into per-track sub-directories ``<base>_track_<id>/`` with frames
-named ``frame_NNNN.<fmt>``.
-
-The module is designed to integrate with the playNano ``AnalysisPipeline``.
-Its primary side-effects are writing files to disk; the returned results dict
-records a manifest of everything written, plus a summary.
+Any combination of the three can be written in one step.
 """
 
 import logging
@@ -46,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers  (shared with particle_region_gif and particle_region_tiff)
+# Internal helpers
 # ---------------------------------------------------------------------------
 
 
@@ -214,81 +199,40 @@ def _filter_and_sort_tracks(
 
 class ParticleRegionMediaExportModule(AnalysisModule):
     """
-    Analysis module to export GIFs, videos and image sequences of extracted particles.
+    Save each tracked particle's crops as a GIF, video and/or image sequence.
 
-    Export per-track GIFs, videos, and/or image sequences from pre-extracted
-    particle image regions, with optional track filtering and sorting.
+    Pipeline name: ``"particle_region_media_export"``. It needs the output of
+    ``particle_region_extraction``, run with ``include_image=True`` (the
+    default). Files are written to ``output_folder``, overwriting any with the
+    same name:
 
-    One output is produced per tracked particle per enabled export type.
-    All enabled types share the same padded ``(T, H, W)`` stack assembly step,
-    so enabling multiple formats incurs no redundant work beyond the extra write
-    calls.
+    - GIF: ``<name>_track_<id>.gif``;
+    - video: ``<name>_track_<id>.<video_fmt>``;
+    - image sequence: a folder ``<name>_track_<id>/`` of ``frame_0000.png``,
+      ``frame_0001.png`` and so on.
 
-    The module requires:
-    - output from ``ParticleRegionExtractionModule`` (``"particle_region_extraction"``)
-      run with ``include_image=True``.
+    Frames where the particle was not detected are filled with ``fill_value``.
+    See :meth:`run` for the parameters and outputs.
 
-    Parameters accepted in :meth:`run`
-    ------------------------------------
-    track_ids : list of int or None
-        Explicit whitelist of track IDs to export.  ``None`` exports all
-        tracks.  Applied before ``sort_by`` and ``max_tracks``.
-    max_tracks : int or None
-        Maximum number of tracks to export.  Applied after ``track_ids``
-        filtering and ``sort_by`` ordering.  ``None`` exports all remaining
-        tracks.
-    sort_by : {"track_id", "n_frames", "n_detections"}
-        Sort order used before applying ``max_tracks``.  ``"track_id"``
-        (default) gives stable ascending order; ``"n_frames"`` and
-        ``"n_detections"`` sort descending so the most complete tracks are
-        exported first.
-    export_gif : bool
-        Whether to write an animated GIF per track.  Default ``False``.
-    export_video : bool
-        Whether to write a video file per track.  Default ``True``.
-    video_fmt : str
-        Video container format: ``"mp4"``, ``"avi"``, ``"mov"``, or
-        ``"mkv"``.  Default ``"mp4"``.
-    export_sequence : bool
-        Whether to write a per-frame image sequence per track.  Default
-        ``False``.
-    sequence_fmt : str
-        Image format for sequences: ``"png"``, ``"jpg"``, or ``"jpeg"``.
-        Default ``"png"``.
-    output_folder : str or None
-        Directory to write output into.  Defaults to ``"output"``.
-    output_name : str or None
-        Base name stem, derived from the stack file name when ``None``.
-        Videos are written as ``<base>_track_<id>.<video_fmt>``.
-        Sequence sub-directories are named ``<base>_track_<id>/``.
-    fps : float
-        Playback frame rate in frames per second.  Default ``5.0``.
-    cmap_name : str
-        Matplotlib colourmap name.  Default ``DEFAULT_CMAP``.
-    zmin, zmax : float, str, or None
-        Z-range for normalisation forwarded to the rendering functions.
-        ``"auto"`` uses the 1st/99th percentile across all crops for the
-        track; ``None`` normalises each frame independently.
-    draw_ts : bool
-        Whether to annotate frames with a timestamp.  Default ``True``.
-    draw_scale : bool
-        Whether to draw a scale bar.  Default ``True``.
-    scale_bar_length_nm : int
-        Scale bar length in nm.  Default ``100``.
-    font_scale : float
-        Font scale for annotations.  Default ``DEFAULT_FONT_SCALE``.
-    fill_value : float
-        Fill value for padding and missing-frame placeholders.  Default ``0.0``.
-    extraction_module : str
-        Key of the upstream extraction module in ``previous_results``.
-        Default ``"particle_region_extraction"``.
+    Examples
+    --------
+    After detection, tracking and region extraction, write a GIF of the ten
+    tracks with the most detections:
+
+    >>> pipeline.add(
+    ...     "particle_region_media_export",
+    ...     export_gif=True,
+    ...     export_video=False,
+    ...     sort_by="n_detections",
+    ...     max_tracks=10,
+    ... )  # doctest: +SKIP
     """
 
     version = "0.1.0"
 
     @property
     def name(self) -> str:
-        """Module name for registration in the analysis pipeline."""
+        """Name of this module in a pipeline, ``"particle_region_media_export"``."""
         return "particle_region_media_export"
 
     requires = ["particle_region_extraction"]
@@ -320,103 +264,93 @@ class ParticleRegionMediaExportModule(AnalysisModule):
         fill_value: float = 0.0,
     ) -> Dict[str, Any]:
         """
-        Execute the video and/or image-sequence export.
+        Write the GIFs, videos and image sequences for the selected tracks.
 
         Parameters
         ----------
         stack : AFMImageStack
-            Input stack.  ``stack.pixel_size_nm`` and ``stack.file_path`` are
-            used for scale bar calibration and default output naming.
-        previous_results : dict, optional
-            Outputs from earlier pipeline modules.  Must contain output from
-            ``extraction_module`` with ``include_image=True``.
-        extraction_module : str, default ``"particle_region_extraction"``
-            Key identifying the region extraction module output.
-        output_folder : str or None
-            Directory to write output.  Defaults to ``"output"``.
-        output_name : str or None
-            Base file name stem.  Track ID is appended automatically.
-        track_ids : list of int or None, default None
-            Explicit whitelist of track IDs to export.  ``None`` exports all
-            tracks.  IDs not present in the extraction output are silently
-            ignored.
-        max_tracks : int or None, default None
-            Maximum number of tracks to export after filtering and sorting.
-            Useful for QC runs: e.g. ``sort_by="n_frames", max_tracks=10``
-            exports the ten longest-lived particles.  ``None`` exports all
-            remaining tracks.
-        sort_by : str, default ``"track_id"``
-            Sort key applied after ``track_ids`` filtering and before
-            ``max_tracks``.  Options:
-
-            - ``"track_id"`` : ascending by track ID (stable default).
-            - ``"n_frames"`` : descending by total frame count.
-            - ``"n_detections"`` : descending by number of frames with a
-              non-missing detection.
-
-        export_gif : bool, default False
-            Write an animated GIF (``<base>_track_<id>.gif``) per track.
-        export_video : bool, default True
-            Write a video file (``<base>_track_<id>.<video_fmt>``) per track.
-        video_fmt : str, default ``"mp4"``
-            Video container format.  One of ``"mp4"``, ``"avi"``, ``"mov"``,
-            ``"mkv"``.
-        export_sequence : bool, default False
-            Write a folder of per-frame images
-            (``<base>_track_<id>/frame_NNNN.<sequence_fmt>``) per track.
-        sequence_fmt : str, default ``"png"``
-            Image format for sequence frames.  One of ``"png"``, ``"jpg"``,
-            ``"jpeg"``.
-        fps : float, default 5.0
-            Playback frame rate in frames per second (video only).
-        cmap_name : str, default ``DEFAULT_CMAP``
-            Matplotlib colourmap for false-colour rendering.
-        zmin : float, str, or None
-            Lower bound for z-normalisation, forwarded to the rendering
-            functions.
-        zmax : float, str, or None
-            Upper bound for z-normalisation, forwarded to the rendering
-            functions.
-        draw_ts : bool, default True
-            Whether to overlay timestamps on frames.
-        draw_scale : bool, default True
-            Whether to overlay a scale bar on frames.
-        scale_bar_length_nm : int, default 100
-            Scale bar length in nanometres.
-        font_scale : float, default ``DEFAULT_FONT_SCALE``
-            Font scale for timestamp and scale bar annotations.
-        fill_value : float, default 0.0
-            Value used to fill padded pixels and missing-frame placeholders.
+            The stack: its ``pixel_size_nm`` sets the scale bar and its file name
+            the default output name.
+        previous_results : dict
+            Outputs of earlier steps. Must hold the output of ``extraction_module``.
+        extraction_module : str, optional
+            Name of the region extraction step. Default is
+            ``"particle_region_extraction"``.
+        output_folder : str, optional
+            Folder for the output; created if missing. If None, ``./output``.
+        output_name : str, optional
+            Start of each file name. If None, the name of the file the stack was
+            loaded from.
+        track_ids : list of int, optional
+            Export only these tracks. IDs not found are ignored. If None, all
+            tracks. Default is None.
+        max_tracks : int, optional
+            Export at most this many tracks, after ``track_ids`` and ``sort_by``.
+            Default is None (no limit).
+        sort_by : {"track_id", "n_frames", "n_detections"}, optional
+            Order of the tracks before ``max_tracks`` is applied: by ID
+            (ascending), by number of frames spanned, or by number of frames with a
+            detection (both descending). Default is ``"track_id"``.
+        export_gif : bool, optional
+            Write a GIF per track. Default is False.
+        export_video : bool, optional
+            Write a video per track. Default is True.
+        video_fmt : {"mp4", "avi", "mov", "mkv"}, optional
+            Video format. Default is ``"mp4"``.
+        export_sequence : bool, optional
+            Write a folder of images per track. Default is False.
+        sequence_fmt : {"png", "jpg", "jpeg"}, optional
+            Image format of the sequences. Default is ``"png"``.
+        fps : float, optional
+            Frames per second of the GIFs and videos. Default is 5.0.
+        cmap_name : str, optional
+            Name of a registered matplotlib colormap. Default is ``"afm_brown"``.
+        zmin, zmax : float or str, optional
+            Colour scale limits, as for :func:`playnano.io.gif_export.export_gif`:
+            both None scales each frame separately; ``"auto"`` uses the 1st or
+            99th percentile of the track. Padding and missing frames
+            (``fill_value``) count towards both, so they can change the colours.
+            Default is None.
+        draw_ts : bool, optional
+            Draw each frame's time. Default is True.
+        draw_scale : bool, optional
+            Draw a scale bar. Default is True.
+        scale_bar_length_nm : int, optional
+            Length of the scale bar, in nm; 0 hides it. Default is 100.
+        font_scale : float, optional
+            Size of the annotation text for a frame 512 pixels high. Default is 2.0.
+        fill_value : float, optional
+            Value used for padding and for frames where the particle was not
+            detected. Default is 0.0.
 
         Returns
         -------
         dict
-            Keys:
-
-            ``gif_paths`` : list of str
-                Absolute paths of written GIF files.  Empty when
-                ``export_gif=False``.
-            ``video_paths`` : list of str
-                Absolute paths of written video files.  Empty when
-                ``export_video=False``.
-            ``sequence_folders`` : list of str
-                Absolute paths of written sequence folders.  Empty when
-                ``export_sequence=False``.
-            ``per_track`` : list of dict
-                One entry per track containing ``track_id``, ``n_frames``,
-                ``frame_size``, and whichever of ``gif_path`` /
-                ``video_path`` / ``sequence_folder`` were produced.
-            ``summary`` : dict
-                Bookkeeping counters and configuration echo.
+            ``"gif_paths"``, ``"video_paths"``, ``"sequence_folders"``
+                Absolute paths of what was written, as str.
+            ``"per_track"``
+                One dict per track written, with ``track_id``, ``n_frames``,
+                ``frame_size`` (height, width, in pixels) and its ``gif_path``,
+                ``video_path`` and ``sequence_folder``.
+            ``"summary"``
+                Counts of tracks found, selected, written, skipped (no crops) and
+                filtered out, and the settings used.
 
         Raises
         ------
         RuntimeError
-            If none of the export flags are enabled, or if required upstream
-            outputs are missing or misconfigured.
+            If no export is enabled, ``previous_results`` is None or lacks the
+            extraction output, or the extraction ran with ``include_image=False``.
         ValueError
-            If ``sort_by``, ``video_fmt``, or ``sequence_fmt`` is not a
-            supported value.
+            If ``sort_by`` is not recognised, ``sequence_fmt`` is not supported, or
+            ``zmin`` is greater than ``zmax``.
+
+        Notes
+        -----
+        Formats are not checked before writing starts, so with an unsupported
+        format some files may already be written when the error is raised. An
+        unsupported ``video_fmt`` raises ``FileNotFoundError`` rather than
+        ``ValueError``. The scale bar uses the stack's pixel size, not each frame's.
         """
         if previous_results is None:
             raise RuntimeError(f"{self.name!r} requires previous results to run.")

@@ -1,7 +1,8 @@
 """
-Public package initialization for analysis modules.
+The built-in analysis modules.
 
-:noindex:
+All submodules are imported with the package. Each defines one subclass of
+:class:`~playnano.analysis.base.AnalysisModule`.
 """
 
 import importlib
