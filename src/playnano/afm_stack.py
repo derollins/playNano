@@ -1050,7 +1050,7 @@ class AFMImageStack:
 
     def restore_raw(self) -> np.ndarray:
         """
-        Restore the original data from loading from the 'raw' snapshot in self.processed.
+        Restore the original data by loading from the 'raw' snapshot in self.processed.
 
         Copies ``processed["raw"]`` into :attr:`data` and calls
         :meth:`restore_frame_metadata`. :attr:`processed`, :attr:`masks` and
