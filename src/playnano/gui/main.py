@@ -1,4 +1,4 @@
-"""Main entry point for the playNano GUI application."""
+"""Start the playNano GUI (``playnano play``)."""
 
 import logging
 import sys
@@ -31,9 +31,9 @@ def load_app_icon() -> QIcon:
 
     Returns
     -------
-    QIcon
-        The application icon. It is null (``QIcon.isNull()``) if no icon
-        files could be found, in which case a warning is logged.
+    PySide6.QtGui.QIcon
+        The icon. It is empty (``QIcon.isNull()``) if no icon files were found,
+        in which case a warning is logged.
     """
     icon = QIcon()
     icons_dir = files("playnano.resources.icons")
@@ -76,43 +76,43 @@ def gui_entry(
     fps=5.0,
 ):
     """
-    Launch the playNano GUI with a given AFM stack and visualization/export settings.
+    Open the playNano window for a stack and run it until it is closed.
+
+    Called by ``playnano play`` (see
+    :func:`playnano.cli.actions.play_pipeline_mode`). It creates the Qt
+    application, applies the dark stylesheet and shows a
+    :class:`~playnano.gui.window.MainWindow`.
 
     Parameters
     ----------
     afm_stack : AFMImageStack
-        The AFM image stack to display and process.
-    output_dir : str or None, optional
-        Directory in which to save exported files (default: None, which uses
-        internal defaults).
+        The stack to show.
+    output_dir : str, optional
+        Folder for exports. If None, ``./output``. Default is None.
     output_name : str, optional
-        Base filename for any exports (default: "" - this triggers the default
-        behaviour when utils.io_utils.sanitize_output_name is called).
-    steps_with_kwargs : list of (str, dict) or None, optional
-        A list of (filter_name, kwargs) tuples for the default processing pipeline.
-        If None, the application's built-in defaults are used.
+        Start of the exported file names. If empty, the name of the file the
+        stack was loaded from. Default is ``""``.
+    steps_with_kwargs : list of tuple, optional
+        Processing steps, as ``(name, parameters)``, run when F is pressed. If
+        None or empty, F runs a built-in default pipeline. Default is None.
     scale_bar_nm : int, optional
-        Physical length of the scale bar in nanometers (default: 100).
-    zmin : float, "auto", or None, optional
-        Minimum height value for the initial colormap range. If "auto", uses the
-        1st percentile of the data; if None, uses the data minimum; if a float,
-        uses that value (default: "auto").
-    zmax : float, "auto", or None, optional
-        Maximum height value for the initial colormap range. If "auto", uses the
-        99th percentile of the data; if None, uses the data maximum; if a float,
-        uses that value (default: "auto").
+        Scale bar length, in nm; 0 opens the window with the scale bar off.
+        Default is 100.
+    zmin, zmax : float or str, optional
+        Initial colour scale limits: a number, ``"auto"`` (1st and 99th
+        percentiles) or None (data minimum or maximum). Default is ``"auto"``.
     cmap : str, optional
-        Name of the colormap to use for visualisation on launch (default=DEFAULT_CMAP).
+        Colormap the window opens with. Names not in the window's list are
+        replaced by ``"afm_brown"``. Default is ``"afm_brown"``.
     fps : float, optional
-        Initial frame rate for the GIF in frames per second (default=5.0).
+        Initial playback rate, in frames per second; also used for animated
+        exports. Default is 5.0.
 
-    Returns
-    -------
-    None
-
-    Notes
-    -----
-    This function will start a Qt event loop and will not return to the caller.
+    Raises
+    ------
+    SystemExit
+        Always, when the window is closed, with Qt's exit status. The function
+        never returns, so it cannot be used from a notebook.
     """
     _set_windows_app_id()
     app = QApplication(sys.argv)

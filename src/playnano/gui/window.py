@@ -1,11 +1,7 @@
 """
-Main GUI window for browsing and exporting HS-AFM image stacks.
+The playNano main window: playback, processing, colour scale and export.
 
-Provides:
-- Frame playback controls (play/pause, slider, FPS).
-- Raw vs. processed toggling and filter application.
-- Z-scale histogram with draggable range lines.
-- Export tabs for GIF, NPZ, OME-TIFF, HDF5.
+See the GUI page of the user guide for how to use it.
 """
 
 import logging
@@ -50,7 +46,59 @@ logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    """Main window for the playNano GUI application."""
+    """
+    Window for playing, processing and exporting an AFM stack.
+
+    Usually opened with :func:`playnano.gui.main.gui_entry`. The window has:
+
+    - the frame view, with optional time, scale bar and a "RAW" label when the
+      unprocessed data is shown;
+    - play/pause, a frame slider and the playback rate;
+    - **Apply Filters (F)**, which runs the processing steps (or, if none were
+      given, a built-in default pipeline:
+      ``playnano.utils.constants.default_steps_with_kwargs``), and
+      **Toggle Raw/Processed (R)**;
+    - a histogram of heights with draggable colour scale limits, number boxes
+      and **Auto** (1st and 99th percentiles);
+    - a colormap list;
+    - an Export tab: animated exports (GIF, MP4, AVI, PNG folder; **G** writes
+      only the GIF) and data exports (NPZ, OME-TIFF, HDF5; **E**), of the raw
+      or processed data. All formats are ticked at the start.
+
+    If the stack already has ``processed["raw"]`` (for example a saved
+    processed bundle), the window opens on the processed data and R shows the
+    raw data.
+
+    Parameters
+    ----------
+    afm_stack : AFMImageStack
+        The stack to show. Applying filters changes it.
+    processing_steps : list of tuple, optional
+        Processing steps, as ``(name, parameters)``, run by Apply Filters. If
+        None or empty, the default pipeline is used. Default is None.
+    output_dir : str, optional
+        Folder for exports. If None, ``./output``. Default is None.
+    output_name : str, optional
+        Start of the exported file names. If empty, the name of the file the
+        stack was loaded from. Default is ``""``.
+    scale_bar_nm : int, optional
+        Scale bar length, in nm; 0 opens the window with the scale bar off (it
+        is 100 nm if switched on). Default is 100.
+    zmin, zmax : float or str, optional
+        Initial colour scale limits: a number, ``"auto"`` or None. Default is
+        ``"auto"``.
+    cmap : str, optional
+        Initial colormap. Names not in the window's list are replaced by
+        ``"afm_brown"``. Default is ``"afm_brown"``.
+    fps : float, optional
+        Initial playback rate, also used for animated exports. Default is 5.0.
+
+    Raises
+    ------
+    ValueError
+        If ``zmin`` or ``zmax`` is not a number, ``"auto"`` or None, or
+        ``zmin`` is greater than ``zmax``.
+    """
 
     def __init__(
         self,
@@ -64,40 +112,7 @@ class MainWindow(QMainWindow):
         cmap: str = DEFAULT_CMAP,
         fps: float = 5.0,
     ):
-        """
-        Initialize the main application window.
-
-        Parameters
-        ----------
-        afm_stack : AFMImageStack
-            The loaded AFM image stack to display and process.
-        processing_steps : list of (str, dict), optional
-            A list of (filter_name, kwargs) tuples defining the default
-            processing pipeline steps.  If None, defaults will be used.
-        output_dir : str, optional
-            Base directory in which to write exported files.
-        output_name : str, default="playNano_export"
-            Base filename to use for exports.
-        scale_bar_nm : int, default=100
-            Physical length (nm) of the scale bar to draw on images. 0 starts the
-            GUI with the scale bar switched off.
-        zmin, zmax : 'auto' or float, default="auto"
-            Display range endpoints; if "auto", they will be computed
-            from the data.
-        cmap : str, default=DEFAULT_CMAP
-            Name of the colormap to use for visualisation on launch.
-        fps : float, default=5.0
-            Initial frame rate for the GIF in frames per second.
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        ValueError
-            If zmin/zmax cannot be parsed (not 'auto' or float).
-
-        """
+        """Build the window. The parameters are described in the class docstring."""
         super().__init__()
         self.setWindowTitle("playNano Player")
 
@@ -519,21 +534,19 @@ class MainWindow(QMainWindow):
 
     def apply_filters(self):
         """
-        Apply the selected processing pipeline to the AFM stack.
+        Run the processing steps on the stack and show the result (F).
 
-        Builds a ProcessingPipeline from `self.processing_steps` (or defaults),
-        runs it, updates the flattened data (`self._flat`), recomputes display
-        ranges, and refreshes the viewer.
-
-        Returns
-        -------
-        None
+        Uses the steps given to the window, or the default pipeline
+        (``playnano.utils.constants.default_steps_with_kwargs``) if there are
+        none. The steps run on :attr:`AFMImageStack.data
+        <playnano.afm_stack.AFMImageStack.data>` as it is, so pressing F again
+        processes the already processed data again. The colour scale is worked out
+        again for the processed data, and processed exports are enabled.
 
         Raises
         ------
-        RuntimeError
-            If the processing pipeline fails.
-
+        Exception
+            Any error from the processing pipeline.
         """
         # choose which steps
         steps = self.processing_steps or default_steps_with_kwargs
@@ -587,16 +600,7 @@ class MainWindow(QMainWindow):
         self.data_processed_radio.setChecked(True)
 
     def toggle_play(self):
-        """
-        Start or stop automatic frame advancement.
-
-        If playing, stops the QTimer; if paused, starts it at the current FPS.
-
-        Returns
-        -------
-        None
-
-        """
+        """Start or pause playback (Space), at the rate in the FPS box."""
         if self._timer.isActive():
             self._timer.stop()
             self.controls.play_btn.setText("▶️ Play")
@@ -622,21 +626,18 @@ class MainWindow(QMainWindow):
 
     def show_frame(self, idx: int):
         """
-        Render a specific frame in the viewer.
+        Show one frame, with its time and scale bar.
 
         Parameters
         ----------
         idx : int
-            Index of the frame to display (raw or processed, depending on state).
-
-        Returns
-        -------
-        None
+            Frame index. The raw or processed frame is shown, depending on the
+            current view.
 
         Raises
         ------
         IndexError
-            If `idx` is out of bounds.
+            If ``idx`` is out of range.
         """
         logger.debug(f"[show_frame] Showing index {idx}")
         self._idx = idx
@@ -713,29 +714,16 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, ev):
         """
-        Handle key press events for shortcuts.
+        Handle the keyboard shortcuts.
+
+        Space plays or pauses, F applies the processing, R switches between raw
+        and processed data, G exports a GIF and E exports the ticked data formats.
+        Other keys are passed to Qt.
 
         Parameters
         ----------
-        ev : QKeyEvent
-            The key event to handle.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        None
-
-        Notes
-        -----
-        Key mapping:
-        Space → toggle play/pause
-        F → apply filters
-        R → toggle raw/processed view
-        G → export GIF
-        E → export data in checked formats
+        ev : PySide6.QtGui.QKeyEvent
+            The key press.
         """
         k = ev.key()
         if k == Qt.Key_Space:
@@ -753,13 +741,10 @@ class MainWindow(QMainWindow):
 
     def toggle_processed(self):
         """
-        Flip between raw and processed (flattened) data views.
+        Switch between the raw and processed data (R).
 
-        If no processed data exists yet, does nothing.
-
-        Returns
-        -------
-        None
+        Does nothing until processing has been applied. The histogram, colour
+        scale limits and view are updated for the data shown.
         """
         # If we've never applied filters, nothing to toggle
         if self._flat is None:
@@ -1340,21 +1325,22 @@ class MainWindow(QMainWindow):
 
 def z_to_rgb(z_value, zmin, zmax, cmap_name=DEFAULT_CMAP):
     """
-    Map a single height value to an RGB triple via a matplotlib colormap.
+    Return the colour of one height value in a colormap.
 
     Parameters
     ----------
     z_value : float
-        Height value to map.
+        Height.
     zmin, zmax : float
-        Data range for normalization.  If zmax == zmin, returns black.
-    cmap_name : str, default=DEFAULT_CMAP
-        Name of the matplotlib colormap to use.
+        Colour scale limits; values outside are clipped.
+    cmap_name : str, optional
+        Registered colormap name. Default is ``"afm_brown"``.
 
     Returns
     -------
-    rgb : tuple of int
-        (R, G, B) values in [0, 255].
+    tuple of int
+        ``(R, G, B)``, each 0-255. Black if ``zmax`` is not greater than
+        ``zmin``.
     """
     span = zmax - zmin
     if span <= 0:
