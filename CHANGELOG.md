@@ -55,6 +55,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `export_analysis_log` currently always raises (with the alternative to use). Corrected the examples of
   `guess_height_data_units` (`'m'`, not `'nm'`) and `utc_now_iso` (includes microseconds), and replaced examples that
   could not run with ones that run as doctests.
+- API reference for `playnano.cli`: docstrings now match the code and render without warnings, and every function
+  documents its parameters. Documented the exit statuses of `playnano`, the wizard commands, that `play` applies the
+  processing steps only when F is pressed, that YAML processing and analysis files read `1e3` as text (write
+  `1.0e3`), and which errors each command raises. Replaced examples that could not run.
 
 ### Changed
 

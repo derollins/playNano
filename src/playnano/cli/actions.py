@@ -1,4 +1,11 @@
-"""Core logic for CLI actions in playNano."""
+"""
+Core logic for CLI actions in playNano. What the ``playnano`` subcommands do.
+
+``process``, ``analyze``, ``play``, ``wizard`` and ``env-info``.
+
+Called by :mod:`playnano.cli.handlers`; the functions can also be called
+from Python.
+"""
 
 from __future__ import annotations
 
@@ -65,50 +72,65 @@ def process_pipeline_mode(
     fps: float = 5.0,
 ) -> None:
     """
-    Apply a processing pipeline to an AFM file, then optionally export data and GIF.
+    Process a stack, then export it as files, a GIF, videos and/or images.
 
-    Steps
-    -----
-    1. Parse processing steps from either `processing_file` (YAML/JSON)
-       or `processing_str`.
-    2. Run the ProcessingPipeline on the AFM stack to apply all filters.
-    3. Export the processed stack to TIFF/NPZ/HDF5 formats (`export_bundles`).
-    4. Generate an animated GIF of the filtered data (`export_gif`).
+    This is ``playnano process``. Output files go in ``output_folder`` and are
+    named from ``output_name``; see :func:`playnano.io.export_data.export_bundles`,
+    :func:`playnano.io.gif_export.export_gif`,
+    :func:`playnano.io.video_export.export_video` and
+    :func:`playnano.io.image_sequence_export.export_image_sequence`.
 
     Parameters
     ----------
     input_file : str
-        Path to the AFM input file.
+        AFM file or folder to load.
     channel : str
-        Name of the data channel to extract (e.g., "height_trace").
+        Channel to load, for example ``"height_trace"``.
     processing_str : str or None
-        Semicolon-delimited inline pipeline string, e.g.
-        `"remove_plane;gaussian_filter:sigma=2"`.
+        Processing steps as text, for example
+        ``"remove_plane;gaussian_filter:sigma=2"`` (see
+        :func:`playnano.cli.utils.parse_processing_string`).
     processing_file : str or None
-        Path to a YAML/JSON file defining the processing steps.
+        YAML or JSON processing file (see
+        :func:`playnano.cli.utils.parse_processing_file`). Used instead of
+        ``processing_str`` if both are given. If neither is given, the data is
+        exported unprocessed.
     export : str or None
-        Comma-separated output formats for bundles (e.g. `"tif,npz,h5"`).
+        Comma-separated data formats: ``"tif"``, ``"npz"`` and/or ``"h5"``.
+        Surrounding quotes are removed. None exports no data files.
     make_gif : bool
-        Whether to create an animated GIF of the filtered stack.
+        Write an animated GIF.
+    make_video : str or None
+        Comma-separated video formats, for example ``"mp4"`` or ``"mp4,avi"``.
+        None writes no video.
+    make_sequence : bool
+        Write a folder of PNG images, one per frame.
     output_folder : str or None
-        Directory in which to write any export files.
+        Folder for all outputs; created if missing. If None, ``./output``.
     output_name : str or None
-        Base filename (no extension) for bundles/GIF; defaults to
-        the stem of `input_file`.
+        Start of the output file names. If None, the input file's name.
     scale_bar_nm : int or None
-        Length (in nm) of the scale bar overlaid on each GIF frame.
-    zmin : str
-        Minimum Z-value for GIF color normalization (float string or `"auto"`).
-    zmax : str
-        Maximum Z-value for GIF color normalization (float string or `"auto"`).
-    cmap : str
-        Name of the colormap to use for GIF export (default=DEFAULT_CMAP).
-    fps : float
-        Frame rate for the GIF in frames per second (default=5.0).
+        Scale bar length on the GIF, videos and images, in nm; 0 hides it. If
+        None, 100.
+    zmin, zmax : float or str, optional
+        Colour scale limits for the GIF, videos and images: a number,
+        ``"auto"`` (1st and 99th percentiles of the stack) or None (each frame
+        scaled separately). Default is ``"auto"``.
+    draw_ts : bool, optional
+        Draw each frame's time on the GIF, videos and images. Default is False.
+    cmap : str, optional
+        Colormap name; an unknown name gives a warning and ``"afm_brown"``.
+        Default is ``"afm_brown"``.
+    fps : float, optional
+        Frames per second of the GIF and videos. Default is 5.0.
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    SystemExit
+        With status 1, if loading or processing fails (the error is logged).
+    ValueError
+        If ``export`` names an unsupported format, or an output name or folder
+        is invalid.
     """
     logger.debug("Entering process_pipeline_mode: %r", locals())
 
@@ -191,9 +213,14 @@ def process_pipeline_mode(
 
 def warn_if_unprocessed(stack: AFMImageStack) -> None:
     """
-    Warn if the AFMImageStack has not been processed using the playNano pipeline.
+    Log a warning if a stack has not been through a processing pipeline.
 
-    Emits a warning if .processed is missing or does not contain a 'raw' key.
+    Checks for a ``"raw"`` entry in ``stack.processed``, which processing adds.
+
+    Parameters
+    ----------
+    stack : AFMImageStack
+        The stack to check.
     """
     processed = getattr(stack, "processed", None)
     if not (isinstance(processed, dict) and "raw" in processed):
@@ -213,46 +240,41 @@ def analyze_pipeline_mode(
     output_name: str | None,
 ) -> None:
     """
-    Run an analysis pipeline on an AFM stack and export both JSON and HDF5.
+    Analyse a stack and save the results as JSON and HDF5.
 
-    Steps
-    -----
-    1. Load the AFMImageStack from disk using `input_file` and `channel`.
-    2. Parse analysis modules from `analysis_file` or `analysis_str`.
-    3. Build and execute an `AnalysisPipeline` over the stack.
-    4. Sanitize the full record (`make_json_safe`) and write it to `<output>.json`.
-    5. Export the raw record to HDF5 via `export_to_hdf5`.
+    This is ``playnano analyze``. The stack is loaded as it is, so load a file
+    saved after processing (or one that needs none); a warning is logged if it
+    has not been processed.
 
-    Both files are attempted even if one fails, and any failure is raised at
-    the end, so the command exits with an error.
+    The JSON file holds the full analysis record, with arrays as lists; the
+    HDF5 file holds the same record (see
+    :func:`playnano.analysis.utils.common.export_to_hdf5`). Both are written
+    even if one fails.
 
     Parameters
     ----------
     input_file : str
-        Path to the AFM input file.
+        File or folder to load.
     channel : str
-        Name of the data channel to analyze (e.g., "height_trace").
+        Channel to load, for example ``"height_trace"``.
     analysis_str : str or None
-        Semicolon-delimited inline analysis string, e.g.
-        `"feature_detection:threshold=5;particle_tracking"`.
+        Analysis steps as text, for example
+        ``"feature_detection:threshold=5;particle_tracking"`` (see
+        :func:`playnano.cli.utils.parse_analysis_string`).
     analysis_file : str or None
-        Path to a YAML/JSON file defining the analysis pipeline.
+        YAML or JSON analysis file (see
+        :func:`playnano.cli.utils.parse_analysis_file`). Used instead of
+        ``analysis_str`` if both are given.
     output_folder : str or None
-        Directory in which to write JSON + HDF5 exports; defaults to ``./output``.
+        Folder for the two files; created if missing. If None, ``./output``.
     output_name : str or None
-        Base filename for both `<output>.json` and `<output>.h5`; defaults to
-        the stem of `input_file`. Any folder part is dropped and a known
-        extension such as ``.json`` or ``.h5`` is removed, as for ``process``,
-        so files are always written inside the output folder.
-
-    Returns
-    -------
-    None
+        Name of the two files, ``<name>.json`` and ``<name>.h5``. Any folder
+        part and a known extension are removed. If None, the input file's name.
 
     Raises
     ------
     ValueError
-        If either output file would overwrite `input_file`, or `output_name`
+        If an output file would overwrite ``input_file``, or ``output_name``
         contains invalid characters. Both are checked before the data is loaded.
     RuntimeError
         If the JSON or HDF5 file could not be written.
@@ -425,43 +447,45 @@ def play_pipeline_mode(
     cmap: str = DEFAULT_CMAP,
 ) -> None:
     """
-    Launch an interactive GUI to browse an AFM stack with optional filters.
+    Open a stack in the playNano GUI.
 
-    Steps
-    -----
-    1. Load the AFM stack from `input_file` and `channel`.
-    2. Optionally apply a processing pipeline (inline or YAML/JSON).
-    3. Display frames in a QT-based viewer with live filtering controls.
-    4. Allow on-the-fly export to bundles or GIF via GUI.
+    This is ``playnano play``. The processing steps are not applied when the
+    window opens: press F in the window to apply them (or, if none were given,
+    a default set of steps). The window can also export a GIF (G) and data
+    files (E).
 
     Parameters
     ----------
     input_file : str
-        Path to the AFM input file.
+        File or folder to load.
     channel : str
-        Data channel to display (e.g., "height_trace").
+        Channel to load, for example ``"height_trace"``.
     processing_str : str or None
-        Inline processing string as for `process_pipeline_mode`.
+        Processing steps as text, as for :func:`process_pipeline_mode`.
     processing_file : str or None
-        Path to a YAML/JSON file specifying processing steps.
+        YAML or JSON processing file. Used instead of ``processing_str`` if both
+        are given.
     output_folder : str or None
-        Directory for any GUI-triggered exports.
+        Folder for exports from the window.
     output_name : str or None
-        Base filename (no extension) for GUI exports.
+        Start of the exported file names.
     scale_bar_nm : int or None
-        Scale bar length (in nm) displayed on frames.
-    zmin : str
-        Minimum Z-value mapping (float or `"auto"`).
-    zmax : str
-        Maximum Z-value mapping (float or `"auto"`).
-    cmap : str
-        Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).
-    fps : float
-        Initial frame rate for the GIF in frames per second (default=5.0).
+        Scale bar length, in nm; 0 hides it. If None, 100.
+    fps : float or None
+        Playback frame rate. If None, the rate the data was recorded at, or
+        5 frames per second if that is unknown or slower than 1 frame per
+        second.
+    zmin, zmax : float or str, optional
+        Colour scale limits: a number, or ``"auto"`` (1st and 99th
+        percentiles). A value that is neither is logged as an error and passed
+        on unchanged. Default is ``"auto"``.
+    cmap : str, optional
+        Colormap the window opens with. Default is ``"afm_brown"``.
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    LoadError
+        If the file cannot be loaded.
     """
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
@@ -512,67 +536,81 @@ def play_pipeline_mode(
 
 class Wizard:
     """
-    Interactive processing + analysis wizard.
+    Interactive prompt for building and running processing and analysis.
 
-    This class provides a REPL interface for building and running processing and
-    analysis pipelines on AFM data. Users can add, remove, reorder, save, and load
-    both processing and analysis steps. Processing steps operate on 2D image data
-    and are applied in sequence to a stack, while analysis steps are executed on the
-    processed data or raw data if no processing is specified.
+    This is ``playnano wizard``. The stack is loaded when the wizard is made;
+    :meth:`run` then reads commands until ``quit``. Type ``help`` for the list.
 
-    The wizard can be driven interactively through text commands. It supports
-    saving and loading pipelines from YAML or JSON files, exporting processed
-    stacks in multiple formats, and creating animated GIFs.
+    Processing commands:
 
-    Examples
-    --------
-    >>> wiz = Wizard("data.afm", "height", ".", "output", 100)
-    >>> wiz.run()
+    - ``add <step>``: add a processing step, asking for its parameters;
+    - ``clear``: add a step that removes the current mask;
+    - ``remove <n>``, ``move <from> <to>``, ``list``: edit and show the steps;
+    - ``save <file>``, ``load <file>``: write or read a YAML processing file;
+    - ``run``: process the stack, then offer to export data files, a GIF and a
+      video.
+
+    Analysis commands:
+
+    - ``aadd <module>`` (asks for parameters) or
+      ``aadd <module>:key=value,...``: add an analysis step;
+    - ``aremove <n>``, ``amove <from> <to>``, ``alist``: edit and show the steps;
+    - ``asave <file>``, ``aload <file>``: write or read an analysis file;
+    - ``arun``: run the processing (if there are steps and they changed since
+      the last run) and then the analysis, and save the results as
+      ``<name>.json`` and ``<name>.h5``.
+
+    Step numbers start at 1. ``help`` lists most commands; ``load`` and
+    ``clear`` are missing from it.
 
     Parameters
     ----------
     input_file : str
-        Path to the AFM input file.
+        File or folder to load.
     channel : str
-        Channel name to load from the AFM file (e.g. "height_trace").
-    output_folder : Optional[str]
-        Directory to write exported analysis/processing outputs. If `None`,
-        the output directory defaults to the current working directory when
-        an export is performed (see `_run_analysis_and_export`).
-    output_name : Optional[str]
-        Base filename (no extension) for exported files. If `None`, the stem
-        of `input_file` will be used at export time.
-    scale_bar_nm : Optional[int]
-        Default scale bar size in nm used when creating GIFs. Use `0` to
-        explicitly disable the scale bar. This value is passed to `export_gif`
-        as given; that function determines how to interpret `0`.
-    io : IO or None, optional
-        I/O abstraction used for reading commands and printing output. If None,
-        standard input/output will be used. Mainly for testing and automation.
+        Channel to load, for example ``"height_trace"``.
+    output_folder : str or None
+        Folder for exports and analysis results. If None, ``./output``.
+    output_name : str or None
+        Start of the output file names. If None, the input file's name.
+    scale_bar_nm : int or None
+        Scale bar length used when a length typed at the ``run`` prompts is not
+        a whole number. If None, 100.
+    io : IO, optional
+        Reads commands and prints messages. Default is None (the terminal).
+        Mainly for tests.
     cmap : str, optional
-        Name of the colormap to use for GIF exports(default=DEFAULT_CMAP).
+        Colormap for GIF and video exports. Default is ``"afm_brown"``.
 
     Attributes
     ----------
-    process_steps : list[tuple[str, Dict]]
-        Ordered list of processing steps (name, kwargs).
-    analysis_steps : list[tuple[str, Dict]]
-        Ordered list of analysis steps (name, kwargs).
-    processed_stack : Optional[AFMImageStack]
-        Cached processed AFM stack produced by running the processing steps.
-    processed_steps_snapshot : list[tuple[str, Dict]]
-        Snapshot of `process_steps` at time `processed_stack` was produced.
     afm_stack : AFMImageStack
-        Raw loaded AFM stack.
+        The stack as loaded.
     input_path : pathlib.Path
-        Path object for `input_file`.
+        ``input_file`` as a path.
+    process_steps : list of tuple
+        Processing steps, as ``(name, parameters)``.
+    analysis_steps : list of tuple
+        Analysis steps, as ``(name, parameters)``.
+    processed_stack : AFMImageStack or None
+        Result of the last processing run, reused by ``arun`` while the steps
+        are unchanged.
+    processed_steps_snapshot : list of tuple
+        The processing steps ``processed_stack`` was made with.
 
     Raises
     ------
     FileNotFoundError
-        If `input_file` does not exist.
+        If ``input_file`` does not exist.
     LoadError
-        If the AFM stack cannot be loaded from the given file.
+        If it cannot be loaded.
+
+    Examples
+    --------
+    >>> wizard = Wizard(
+    ...     "sample.h5-jpk", "height_trace", None, None, None
+    ... )  # doctest: +SKIP
+    >>> wizard.run()  # doctest: +SKIP
     """
 
     def __init__(
@@ -585,34 +623,7 @@ class Wizard:
         io: Optional[IO] = None,
         cmap: str = DEFAULT_CMAP,
     ) -> None:
-        """
-        Initialize the Wizard for interactive processing and analysis of a AFM stack.
-
-        Parameters
-        ----------
-        input_file : str
-            Path to AFM input file.
-        channel : str
-            Data channel to load.
-        output_folder : Optional[str]
-            Directory for output files. If `None` no directory is set immediately;
-            a default of the current working directory will be used when export
-            functions are called.
-        output_name : Optional[str]
-            Base output filename.
-        scale_bar_nm : Optional[int]
-            Default scale bar length for GIFs.
-        io : object or None, optional
-            I/O abstraction with `input` and `print`-like methods. If None, standard
-            input/output will be used. Mainly intended for testing or scripted runs.
-
-        Raises
-        ------
-        FileNotFoundError
-            If `input_file` does not exist.
-        LoadError
-            If AFM file cannot be loaded into an AFMImageStack.
-        """
+        """Load the stack. The parameters are described in the class docstring."""
         self.input_file = input_file
         self.input_path = Path(input_file)
         self.channel = channel
@@ -640,7 +651,7 @@ class Wizard:
     # Utilities / UX
     # -------------------------
     def print_help(self) -> None:
-        """Print available wizard commands."""
+        """Print the wizard commands."""
         help_text = (
             "Commands:\n"
             "  add <filter_name>   - Add processing step\n"
@@ -662,7 +673,7 @@ class Wizard:
         self.io.say(help_text)
 
     def list_steps(self) -> None:
-        """Pretty-print current processing steps."""
+        """Print the processing steps, numbered from 1."""
         if not self.process_steps:
             self.io.say("  [no processing steps]")
             return
@@ -675,7 +686,7 @@ class Wizard:
         self.io.say("")
 
     def list_analysis(self) -> None:
-        """Pretty-print current analysis steps."""
+        """Print the analysis steps, numbered from 1."""
         if not self.analysis_steps:
             self.io.say("  [no analysis steps]")
             return
@@ -692,12 +703,13 @@ class Wizard:
     # -------------------------
     def prompt_for_processing_params(self, step_name: str) -> Dict[str, Any]:
         """
-        Prompt user for a processing step's parameters (simple fallback).
+        Ask for a few common parameters of a processing step.
 
-        This method provides a small set of built-in prompts for commonly-used
-        processing filters. It is a fallback — the module-level
-        `ask_for_processing_params` (which introspects/loads processing callables)
-        may provide a richer interactive experience and is used in `handle_add`.
+        Used by ``add`` when the step's parameters cannot be read from its
+        function. Only these are asked for: ``sigma`` (``gaussian_filter``),
+        ``order`` (``polynomial_flatten``), ``factor`` (``mask_mean_offset``) and
+        ``threshold`` (``mask_threshold``, ``mask_below_threshold``). Pressing
+        Enter uses the default shown; an invalid value is asked for again.
 
         Parameters
         ----------
@@ -706,8 +718,8 @@ class Wizard:
 
         Returns
         -------
-        Dict[str, Any]
-            Mapping of parameter names to values.
+        dict
+            Parameter names and values; empty for other steps.
         """
         params_to_ask = []
         if step_name == "gaussian_filter":
@@ -744,7 +756,15 @@ class Wizard:
         return kwargs
 
     def handle_add(self, parts: List[str]) -> None:
-        """Add a processing step interactively or from the command line."""
+        """
+        ``add <step>``: add a processing step, asking for each parameter.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) < 2:
             self.io.say("Usage: add <processing_step>")
             return
@@ -765,12 +785,28 @@ class Wizard:
         self.io.say(f"Added {step_type}: {step_name} {kwargs}")
 
     def handle_clear(self, parts: List[str]) -> None:
-        """Insert a clear-mask step into the processing pipeline."""
+        """
+        ``clear``: add a step that removes the current mask.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         self.process_steps.append(("clear", {}))
         self.io.say("Added clear-mask step.")
 
     def handle_remove(self, parts: List[str]) -> None:
-        """Remove a processing step by index."""
+        """
+        ``remove <n>``: remove processing step ``n`` (from 1).
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(self.process_steps) == 0:
             self.io.say("No processing steps to remove.")
             return
@@ -785,7 +821,15 @@ class Wizard:
         self.io.say(f"Removed step {idx}: {removed[0]}")
 
     def handle_move(self, parts: List[str]) -> None:
-        """Reorder processing steps by moving one from old_index to new_index."""
+        """
+        ``move <from> <to>``: move a processing step to a new position (from 1).
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) != 3 or not parts[1].isdigit() or not parts[2].isdigit():
             self.io.say("Usage: move <old_index> <new_index>")
             return
@@ -805,11 +849,19 @@ class Wizard:
 
     def handle_save(self, parts: list[str]) -> None:
         """
-        Save current processing steps to a YAML file.
+        ``save <file>``: write the processing steps to a YAML file.
 
-        Values are converted to plain YAML types first (tuples to lists, NumPy
-        numbers to Python numbers, paths to strings), so `load` can read the
-        file back with ``yaml.safe_load``.
+        Parameters that are None, or that do not apply (see
+        :func:`playnano.utils.param_utils.prune_kwargs`), are left out. Values are
+        converted to plain YAML types (tuples to lists, NumPy numbers to Python
+        numbers, paths to text), so ``load`` and ``--processing-file`` can read the
+        file. Missing folders are created.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
         """
         if len(parts) != 2:
             self.io.say("Usage: save <path/to/output.yaml>")
@@ -847,7 +899,18 @@ class Wizard:
             self.io.say(f"Error saving processing: {e}")
 
     def handle_load(self, parts: List[str]) -> None:
-        """Load processing steps from a YAML file exported by `save`."""
+        """
+        ``load <file>``: replace the processing steps with those in a YAML file.
+
+        Reads a ``filters:`` list as written by ``save``; entries without a
+        ``name`` are skipped.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) != 2:
             self.io.say("Usage: load <path/to/processing.yaml>")
             return
@@ -890,21 +953,17 @@ class Wizard:
 
     def run_processing_and_cache(self):
         """
-        Run the current processing steps and cache the processed AFM stack.
-
-        The method calls into `process_stack` with the accumulated `process_steps`
-        and stores the returned AFMImageStack in `self.processed_stack` for
-        subsequent in-memory analysis.
+        Load the file again, process it with the current steps, and keep the result.
 
         Returns
         -------
         AFMImageStack
-            The processed AFM stack object.
+            The processed stack, also stored in :attr:`processed_stack`.
 
         Raises
         ------
         LoadError
-            If loading/processing fails.
+            If loading or processing fails.
         """
         try:
             processed = process_stack(
@@ -931,17 +990,17 @@ class Wizard:
 
     def handle_run(self, parts: List[str]) -> None:
         """
-        Execute the currently queued processing steps and optionally export outputs.
+        ``run``: process the stack, then offer to export it.
 
-        Behavior
-        --------
-        - Runs processing and caches the result.
-        - Prompts the user whether to export (tif/npz/h5) and/or create a GIF.
+        Asks in turn whether to export data files (and in which formats), a GIF and
+        a video, and for each image export the colour scale limits, timestamps and
+        scale bar. The processed stack is kept for ``arun``.
 
         Parameters
         ----------
-        parts : List[str]
-            Tokenized user command (not currently used).
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
         """
         if not self.process_steps:
             self.io.say("No steps to run. Use `add <filter_name>` first.")
@@ -1060,12 +1119,33 @@ class Wizard:
     # Analysis handlers
     # -------------------------
     def handle_alist(self, parts: List[str]) -> None:
-        """List current analysis steps."""
+        """
+        ``alist``: print the analysis steps.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         self.io.say("Analysis steps:")
         self.list_analysis()
 
     def handle_aadd(self, parts: List[str]) -> None:
-        """Add an analysis step (inline or interactive)."""
+        """
+        ``aadd``: add an analysis step.
+
+        ``aadd <module>`` asks for each parameter;
+        ``aadd <module>:key=value,...`` gives them directly, read as by
+        :func:`playnano.cli.utils.parse_analysis_string` (several steps can be
+        given, separated by ``;``).
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) < 2:
             self.io.say(
                 "Usage: aadd <step[:param=val,...]> or `aadd <step>` for interactive."
@@ -1113,7 +1193,15 @@ class Wizard:
         self.io.say(f"Added: {module_name} {kwargs}")
 
     def handle_aremove(self, parts: List[str]) -> None:
-        """Remove an analysis step by index."""
+        """
+        ``aremove <n>``: remove analysis step ``n`` (from 1).
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(self.analysis_steps) == 0:
             self.io.say("No analysis steps to remove.")
             return
@@ -1128,7 +1216,15 @@ class Wizard:
         self.io.say(f"Removed analysis step {idx+1}: {removed[0]}")
 
     def handle_amove(self, parts: List[str]) -> None:
-        """Reorder analysis steps."""
+        """
+        ``amove <from> <to>``: move an analysis step to a new position (from 1).
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) != 3 or not parts[1].isdigit() or not parts[2].isdigit():
             self.io.say("Usage: amove <old> <new>")
             return
@@ -1141,7 +1237,19 @@ class Wizard:
         self.io.say(f"Moved analysis from {old+1} to {new+1}")
 
     def handle_aload(self, parts: List[str]) -> None:
-        """Load analysis steps from a YAML/JSON file, restoring Python types."""
+        """
+        ``aload <file>``: replace the analysis steps with those in a YAML or JSON file.
+
+        Accepts ``{"analysis": [...]}`` or a plain list of steps. Text values that
+        are Python literals, such as ``"[1, 2]"``, are converted. Entries without a
+        ``name`` are skipped.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) != 2:
             self.io.say("Usage: aload <path>")
             return
@@ -1199,7 +1307,18 @@ class Wizard:
             self.io.say(f"Error loading analysis file: {e}")
 
     def handle_asave(self, parts: list[str]) -> None:
-        """Save current analysis steps to a YAML file."""
+        """
+        ``asave <file>``: write the analysis steps to a YAML file.
+
+        Parameters that are None, or that do not apply, are left out, and values
+        are converted to plain YAML types. Missing folders are created.
+
+        Parameters
+        ----------
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
+        """
         if len(parts) != 2:
             self.io.say("Usage: asave <path/to/output.yaml>")
             return
@@ -1370,24 +1489,19 @@ class Wizard:
 
     def handle_arun(self, parts: List[str]) -> None:
         """
-        Execute the analysis pipeline, running processing if needed and export results.
+        ``arun``: run the analysis and save the results.
 
-        The function supports two modes:
-
-        * If the wizard has processing steps configured (self.process_steps), it will
-          ensure the processed stack is available and up-to-date and then run analysis
-          in-memory on that processed stack.
-        * If there are no processing steps, analysis runs directly on the loaded AFM
-          stack.
-
-        Results are exported as JSON and HDF5 into `self.output_folder` (or
-        ``./output``). The JSON is created with `make_json_safe` and both JSON/HDF5 are
-        written atomically.
+        If there are processing steps, the stack is processed first, unless it was
+        already processed with the same steps; otherwise the analysis runs on the
+        stack as loaded. Results are written to ``<name>.json`` and ``<name>.h5`` in
+        the output folder, each through a temporary file so a failed write leaves
+        no partial file.
 
         Parameters
         ----------
-        parts : List[str]
-            Tokenized CLI command (unused).
+        parts : list of str
+            The command line typed at the prompt, split on spaces; ``parts[0]`` is
+            the command.
         """
         if not self.analysis_steps:
             self.io.say("No analysis steps. Use aadd first.")
@@ -1423,7 +1537,14 @@ class Wizard:
     # REPL
     # -------------------------
     def run(self) -> None:
-        """Start the interactive REPL loop."""
+        """
+        Read and carry out commands until ``quit``.
+
+        Raises
+        ------
+        SystemExit
+            With status 0, on ``quit``, ``exit``, Ctrl+C or end of input.
+        """
         self.io.say(f"Loaded AFM stack: {self.input_path}")
         self.io.say(
             f"Channel: {self.channel}, frames={self.afm_stack.n_frames}, shape={self.afm_stack.image_shape}"  # noqa
@@ -1501,11 +1622,9 @@ class Wizard:
 
 def print_env_info():
     """
-    Print the current playNano environment metadata.
+    Print the software environment as JSON (``playnano env-info``).
 
-    Returns
-    -------
-    None
+    See :func:`playnano.utils.system_info.gather_environment_info`.
     """
     import json
 
@@ -1516,12 +1635,31 @@ def print_env_info():
 
 
 class IO:
-    """Simple I/O adapter used by Wizard for testability and swapping UI later."""
+    """Terminal input and output for :class:`Wizard`; tests replace it."""
 
     def ask(self, prompt: str) -> str:
-        """Prompt for a line of input from the user."""
+        """
+        Show a prompt and return the line typed.
+
+        Parameters
+        ----------
+        prompt : str
+            Text shown before the input.
+
+        Returns
+        -------
+        str
+            The line typed, without the newline.
+        """
         return input(prompt)
 
     def say(self, msg: str) -> None:
-        """Write a message to stdout."""
+        """
+        Print a message.
+
+        Parameters
+        ----------
+        msg : str
+            The message.
+        """
         print(msg)

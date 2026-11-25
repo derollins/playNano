@@ -1,4 +1,10 @@
-"""Handlers for the playNano CLI commands."""
+"""
+Functions that run each ``playnano`` subcommand from its parsed arguments.
+
+Each handler passes the options to the matching function in
+:mod:`playnano.cli.actions`. If that raises an error, the handler logs it
+(with the traceback at ``--log-level DEBUG``) and exits with status 1.
+"""
 
 import argparse
 import logging
@@ -35,28 +41,23 @@ def _exit_with_error(exc: Exception) -> NoReturn:
 
 def handle_play(args: argparse.Namespace) -> None:
     """
-    Handle the 'play' subcommand: feed arguments into the run_pipeline_mode function.
+    Run ``playnano play``: open a stack in the GUI.
+
+    Calls :func:`playnano.cli.actions.play_pipeline_mode`.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Must contain:
-        - input_file (str): path to AFM data
-        - channel (str)
-        - processing_str (str or None)
-        - processing_file (str or None)
-        - output_folder (str or None)
-        - output_name (str or None)
-        - scale_bar_nm (int or None), 0 turns off scale bar
-        - zmin (float or str), minimum Z-value for normalization
-        ('auto` for 1st percentile)
-        - zmax (float or str), maximum Z-value for normalization
-        ('auto` for 99th percentile)
-        - cmap (str), name of colormap to use for visualisation (default=afm_brown)
+        Parsed options: ``input_file``, ``channel``, ``processing``,
+        ``processing_file``, ``output_folder``, ``output_name``,
+        ``scale_bar_nm``, ``zmin``, ``zmax``, ``cmap`` and ``fps``.
 
-    Returns
-    -------
-    None
+    Raises
+    ------
+    ValueError
+        If ``input_file`` contains option flags such as ``--channel``, which
+        happens when a quoted Windows path ends in a backslash. This is raised
+        before the handler's error handling, so the command exits with status 2.
     """
     if isinstance(args.input_file, str):
         raw_input = args.input_file.strip()
@@ -100,31 +101,18 @@ def handle_play(args: argparse.Namespace) -> None:
 
 def handle_process(args: argparse.Namespace) -> None:
     """
-    Handle the 'process' subcommand: feed arguments into the run_pipeline_mode function.
+    Run ``playnano process``: process a stack and export the results.
+
+    Calls :func:`playnano.cli.actions.process_pipeline_mode`.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Must contain:
-        - input_file (str): path to AFM data
-        - channel (str)
-        - processing_str (str or None)
-        - processing_file (str or None)
-        - export (str or None), comma-separated formats like "tif,npz,h5"
-        - make_gif (bool), whether to create a GIF
-        - output_folder (str or None)
-        - output_name (str or None)
-        - scale_bar_nm (int or None), 0 turns off scale bar
-        - zmin (float or str), minimum Z-value for normalization
-        ('auto` for 1st percentile)
-        - zmax (float or str), maximum Z-value for normalization
-        ('auto` for 99th percentile)
-        - cmap (str), name of colormap to use for animated visualisation export
-        (default=afm_brown)
-
-    Returns
-    -------
-    None
+        Parsed options: ``input_file``, ``channel``, ``processing``,
+        ``processing_file``, ``export``, ``make_gif``, ``make_video``,
+        ``make_sequence``, ``output_folder``, ``output_name``,
+        ``scale_bar_nm``, ``zmin``, ``zmax``, ``draw_ts``, ``cmap`` and
+        ``fps``.
     """
     try:
         process_pipeline_mode(
@@ -151,33 +139,16 @@ def handle_process(args: argparse.Namespace) -> None:
 
 def handle_wizard(args: argparse.Namespace) -> None:
     """
-    Interactive wizard for building both processing and analysis pipelines.
+    Run ``playnano wizard``: build and run pipelines interactively.
 
-    Usage:
-      playnano processing <input_file> [--channel ...] \
-                                 [--output-folder ...] \
-                                 [--output-name ...]
-
-    After launch, commands include:
-      add/remove/move/list/save/load/run        for processing steps
-      aadd/aremove/amove/alist/asave/aload/arun  for analysis steps
-      help                                  show available commands
-      quit                                  exit without running
+    Starts a :class:`playnano.cli.actions.Wizard`; type ``help`` at its prompt
+    for the commands.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Must contain:
-        - input_file (str): path to AFM data
-        - channel (str)
-        - output_folder (str or None)
-        - output_name (str or None)
-        - scale_bar_nm (int or None), 0 disables scale bar
-        - cmap (str), name of colormap to use for visualisation (default=afm_brown)
-
-    Returns
-    -------
-    None
+        Parsed options: ``input_file``, ``channel``, ``output_folder``,
+        ``output_name``, ``scale_bar_nm`` and ``cmap``.
     """
     try:
         Wizard(
@@ -193,7 +164,17 @@ def handle_wizard(args: argparse.Namespace) -> None:
 
 
 def handle_analyze(args: argparse.Namespace) -> None:
-    """Handle the 'analyze' subcommand: run only analysis & export results."""
+    """
+    Run ``playnano analyze``: analyse a stack and save the results.
+
+    Calls :func:`playnano.cli.actions.analyze_pipeline_mode`.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed options: ``input_file``, ``channel``, ``analysis_steps``,
+        ``analysis_file``, ``output_folder`` and ``output_name``.
+    """
     try:
         analyze_pipeline_mode(
             input_file=args.input_file,

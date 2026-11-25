@@ -1,4 +1,4 @@
-"""Entry point for the playNano CLI."""
+"""The ``playnano`` command: argument parsing and dispatch to the subcommands."""
 
 import argparse
 import logging
@@ -20,12 +20,13 @@ logger = logging.getLogger(__name__)
 
 def setup_logging(level: int = logging.INFO) -> None:
     """
-    Configure the logging format and level.
+    Set the log format and level for the command line.
 
     Parameters
     ----------
     level : int, optional
-        Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.
+        Logging level, for example ``logging.DEBUG``. Default is
+        ``logging.INFO``.
     """
     logging.basicConfig(
         level=level,
@@ -35,7 +36,19 @@ def setup_logging(level: int = logging.INFO) -> None:
 
 
 def make_fps_type(fallback: float):
-    """Return an argparse type function with a configurable fallback FPS."""
+    """
+    Make an argparse ``type`` that reads a frame rate, with a fallback.
+
+    Parameters
+    ----------
+    fallback : float
+        Frame rate used, with a logged warning, when the value is not a number.
+
+    Returns
+    -------
+    callable
+        Function that converts the option's text to a float.
+    """
 
     def fps_type(value: str) -> float:
         """If a non-numerical value is provided for fps, return default value."""
@@ -52,31 +65,25 @@ def make_fps_type(fallback: float):
 
 def main() -> None:
     """
-    Parse command-line arguments and dispatch to the appropriate CLI subcommand.
+    Run the ``playnano`` command.
 
-    This function sets up the top-level argparse parser, configures logging,
-    and then calls the appropriate handler function (`handle_play`, `handle_process`,
-    `handle_analyze`, or `handle_processing_wizard`) based on the chosen subcommand.
+    Parses the command line, sets the log level (``--log-level``) and runs the
+    subcommand:
 
-    - Set up argument parsing for 'play', 'process' and 'wizard' subcommands,
-    each with their own options.
-    - Configure logging level based on user input.
-    - Show help and exit with code 2 if no subcommand is provided.
-    - Call the handler function associated with the chosen subcommand.
+    - ``play``: view a stack in the GUI (:func:`~playnano.cli.handlers.handle_play`);
+    - ``process``: process a stack and export it
+      (:func:`~playnano.cli.handlers.handle_process`);
+    - ``analyze``: analyse a stack and save the results
+      (:func:`~playnano.cli.handlers.handle_analyze`);
+    - ``wizard``: build and run processing and analysis interactively
+      (:func:`~playnano.cli.handlers.handle_wizard`);
+    - ``env-info``: print the software environment.
 
-    Usage:
-      playnano play    <input_file> [--processing …] [--output-folder …]
-        [--output-name …] [--scale-bar-nm …] [--channel …]
-      playnano process <input_file> [--processing …] [--export …] [--make-gif]
-        [--output-folder …] [--output-name …] [--scale-bar-nm …] [--channel …]
-      playnano analyze <input_file> [--analysis-steps … | --analysis-file …]
-        [--output-folder …] [--output-name …] [--channel …]
-      playnano wizard  <input_file> [--channel …] [--scale-bar-nm …]
-        [--output-folder …] [--output-name …]
+    Run ``playnano <subcommand> --help`` for each subcommand's options.
 
-    Returns
-    -------
-    None
+    Exit status is 0 on success; 1 if the command fails (the subcommands log
+    the error and exit with 1); 2 for a usage error, including no
+    subcommand, or an unexpected error.
     """
     parser = argparse.ArgumentParser(
         description="playNano: Load, filter, export, or play HS-AFM image stacks."

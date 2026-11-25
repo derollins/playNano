@@ -1,4 +1,9 @@
-"""Utility functions for the playNano CLI."""
+"""
+Helpers for the command line.
+
+Checking step names, reading processing and analysis steps from text or
+files, and asking for parameters interactively.
+"""
 
 import ast
 import inspect
@@ -60,7 +65,22 @@ logger = logging.getLogger(__name__)
 
 
 def is_valid_step(name: str) -> bool:
-    """Return True if `name` is a built-in filter, mask, plugin or the 'clear' step."""
+    """
+    Check whether a name is a processing step.
+
+    Parameters
+    ----------
+    name : str
+        Step name.
+
+    Returns
+    -------
+    bool
+        True for ``"clear"``, built-in filters, masks, video filters and stack
+        edits, and plugins registered under ``playnano.filters`` or
+        ``playnano.video_processing``. Masked filters are not steps of their
+        own: they are used automatically when a mask is set.
+    """
     return (
         name == "clear"
         or name in FILTER_MAP
@@ -73,7 +93,21 @@ def is_valid_step(name: str) -> bool:
 
 
 def is_valid_analysis_step(name: str) -> bool:
-    """Return True if `name` is a built-in analysis, plugin or the 'clear' step."""
+    """
+    Check whether a name is an analysis module.
+
+    Parameters
+    ----------
+    name : str
+        Module name.
+
+    Returns
+    -------
+    bool
+        True for built-in modules and plugins registered under
+        ``playnano.analysis``. Also True for ``"clear"``, although the analysis
+        pipeline has no such step, so it fails when the analysis runs.
+    """
     return (
         name == "clear"
         or name in BUILTIN_ANALYSIS_MODULES
@@ -235,41 +269,36 @@ def _parse_step_string(
 
 def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, object]]]:
     """
-    Parse a semicolon-delimited string of processing steps into a structured list.
+    Read processing steps from text, as given to ``--processing``.
 
-    Each step in the string can optionally include parameters, separated by commas.
-    Parameters are specified as key=value pairs.
+    Steps are separated by ``;``. A step can be followed by ``:`` and
+    parameters as ``key=value``, separated by ``,``. Separators inside brackets
+    or quotes do not count, so ``indices_to_drop=[0,1]`` stays whole. Values are
+    read with :func:`parse_param_value`.
 
     Parameters
     ----------
     processing_str : str
-        Semicolon-delimited string specifying processing steps.
-        Each step may have optional parameters (separated by commas) after a colon,
-        e.g., "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"
+        For example ``"remove_plane; gaussian_filter:sigma=2.0"``.
 
     Returns
     -------
     list of tuple
-        List of tuples, each containing:
-        - step_name (str): the name of the processing step
-        - kwargs (dict of str → object): dictionary of parameters for the step
+        ``(step_name, parameters)`` for each step, in order.
+
+    Raises
+    ------
+    ValueError
+        If a step name is not a processing step (see :func:`is_valid_step`), or
+        a parameter is not ``key=value``.
 
     Examples
     --------
-    >>> parse_processing_string("remove_plane")
-    [('remove_plane', {})]
-
-    >>> parse_processing_string("gaussian_filter:sigma=2.0,truncate=4.0")
-    [('gaussian_filter', {'sigma': 2.0, 'truncate': 4.0})]
-
-    >>> parse_processing_string(
-    ...     "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"
-    ... )
-    [
-        ('remove_plane', {}),
-        ('gaussian_filter', {'sigma': 2.0}),
-        ('mask_threshold', {'threshold': 2})
-    ]
+    >>> from playnano.cli.utils import parse_processing_string
+    >>> parse_processing_string("remove_plane; gaussian_filter:sigma=2.0")
+    [('remove_plane', {}), ('gaussian_filter', {'sigma': 2.0})]
+    >>> parse_processing_string("drop_frames:indices_to_drop=[0,1]")
+    [('drop_frames', {'indices_to_drop': [0, 1]})]
     """
     return _parse_step_string(
         processing_str, is_valid_step, "Unknown processing step", "step"
@@ -278,19 +307,39 @@ def parse_processing_string(processing_str: str) -> list[tuple[str, dict[str, ob
 
 def parse_processing_file(path: str) -> list[tuple[str, dict[str, object]]]:
     """
-    Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.
+    Read processing steps from a YAML or JSON file, as given to ``--processing-file``.
 
-    Expected YAML schema:
-      filters:
-        - name: remove_plane
-        - name: gaussian_filter
-          sigma: 2.0
-        - name: mask_threshold
-          threshold: 2
-        - name: polynomial_flatten
-          order: 2
+    The file has a ``filters`` list; each entry has a ``name`` and its
+    parameters::
 
-    Returns a list in the order listed under `filters`.
+        filters:
+          - name: remove_plane
+          - name: gaussian_filter
+            sigma: 2.0
+          - name: polynomial_flatten
+            order: 2
+
+    Values keep the types YAML gives them. YAML reads some values differently
+    from ``--processing``: write ``1.0e3`` rather than ``1e3``, which YAML
+    reads as text.
+
+    Parameters
+    ----------
+    path : str or pathlib.Path
+        The file. It is read as YAML, then as JSON if that fails.
+
+    Returns
+    -------
+    list of tuple
+        ``(step_name, parameters)`` for each step, in order.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file does not exist.
+    ValueError
+        If the file cannot be read, has no ``filters`` list, or an entry has no
+        ``name`` or names an unknown step.
     """
     p = Path(path)
     if not p.exists():
@@ -344,19 +393,32 @@ def parse_processing_file(path: str) -> list[tuple[str, dict[str, object]]]:
 
 def parse_analysis_string(analysis_str: str) -> list[tuple[str, dict[str, object]]]:
     """
-    Parse ; delimited analysis strings into a list (analysis_step_name, kwargs) tuples.
+    Read analysis steps from text, as given to ``--analysis-steps``.
 
-    Each segment in `analysis_str` is of the form:
-        analysis_module_name
-        analysis_module_name:param=value
-        analysis_module_name:param1=value1,param2=value2
+    Written in the same way as for :func:`parse_processing_string`.
 
-    Example:
-      "log_blob_detection:min_sigma=1.0,max_sigma=5.0;x_means_clustering:time_weight=0.2"
+    Parameters
+    ----------
+    analysis_str : str
+        For example
+        ``"feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking"``.
 
-    Returns a list in the order encountered, e.g.:
-      [("log_blob_detection", {"min_sigma":1.0,"max_sigma":5.0}),
-       ("x_means_clustering", {"time_weight": 0.2})]
+    Returns
+    -------
+    list of tuple
+        ``(module_name, parameters)`` for each step, in order.
+
+    Raises
+    ------
+    ValueError
+        If a name is not an analysis module (see
+        :func:`is_valid_analysis_step`), or a parameter is not ``key=value``.
+
+    Examples
+    --------
+    >>> from playnano.cli.utils import parse_analysis_string
+    >>> parse_analysis_string("feature_detection:threshold=1;particle_tracking")
+    [('feature_detection', {'threshold': 1}), ('particle_tracking', {})]
     """
     return _parse_step_string(
         analysis_str, is_valid_analysis_step, "Unknown analysis step", "analysis step"
@@ -365,62 +427,39 @@ def parse_analysis_string(analysis_str: str) -> list[tuple[str, dict[str, object
 
 def parse_analysis_file(path: str) -> list[tuple[str, dict[str, object]]]:
     """
-    Parse a YAML or JSON analysis file into a list of (name, parameters) tuples.
+    Read analysis steps from a YAML or JSON file, as given to ``--analysis-file``.
 
-    This reads a saved analysis pipeline definition, validates its structure,
-    and normalizes any complex types (e.g., tuples) into YAML/JSON-safe forms.
+    The file has an ``analysis`` list, or is just the list; each entry has a
+    ``name`` and its parameters::
+
+        analysis:
+          - name: feature_detection
+            mask_fn: mask_threshold
+            threshold: 1.0
+            min_size: 10
+          - name: particle_tracking
+            max_distance: 5.0
+
+    Values keep the types YAML or JSON gives them (in YAML, write ``1.0e3``
+    rather than ``1e3``, which is read as text).
 
     Parameters
     ----------
-    path : str
-        Path to the YAML or JSON file containing the analysis definition.
+    path : str or pathlib.Path
+        The file: read as JSON if it ends in ``.json``, otherwise as YAML.
 
     Returns
     -------
     list of tuple
-        A list where each element is ``(analysis_step_name, kwargs_dict)``.
-        The ``kwargs_dict`` contains parameters for that analysis step.
+        ``(module_name, parameters)`` for each step, in order.
 
     Raises
     ------
     FileNotFoundError
         If the file does not exist.
     ValueError
-        If the file cannot be parsed as YAML or JSON, or if the
-        top-level key ``analysis`` is missing.
-
-    Examples
-    --------
-    Example YAML format::
-
-        analysis:
-          - name: count_nonzero
-          - name: feature_detection
-            mask_fn: mask_threshold
-            min_size: 10
-            remove_edge: true
-          - name: particle_tracking
-            coord_columns: [centroid_x, centroid_y]
-            coord_key: features_per_frame
-            detection_module: feature_detection
-            max_distance: 5.0
-
-    This would be parsed as::
-
-        [
-            ("count_nonzero", {}),
-            ("feature_detection", {
-                "mask_fn": "mask_threshold",
-                "min_size": 10,
-                "remove_edge": True
-            }),
-            ("particle_tracking", {
-                "coord_columns": ["centroid_x", "centroid_y"],
-                "coord_key": "features_per_frame",
-                "detection_module": "feature_detection",
-                "max_distance": 5.0
-            })
-        ]
+        If the file cannot be read, has neither an ``analysis`` list nor a
+        list of steps, or an entry has no ``name`` or names an unknown module.
     """
     p = Path(path)
     text = p.read_text(encoding="utf8")
@@ -585,7 +624,30 @@ def _cast_input(s: str, expected_type: Any, default: Any):
 
 
 def ask_for_analysis_params(module_name: str) -> dict[str, Any]:
-    """Introspect a module's `run()` or parameter spec and ask for values."""
+    """
+    Ask in the terminal for each parameter of an analysis module.
+
+    Uses the module's ``parameters()`` list if it has one, otherwise the
+    arguments of its ``run`` method. Parameters whose condition (see
+    :func:`playnano.utils.param_utils.param_conditions`) is not met are not
+    asked. Pressing Enter uses the default; typed values are converted to the
+    parameter's type.
+
+    Parameters
+    ----------
+    module_name : str
+        Built-in analysis module or ``playnano.analysis`` plugin.
+
+    Returns
+    -------
+    dict
+        Parameter names and values.
+
+    Raises
+    ------
+    ValueError
+        If no module has that name.
+    """
     cls = _get_analysis_class(module_name)
 
     if hasattr(cls, "parameters") and callable(cls.parameters):
@@ -752,7 +814,21 @@ def _get_processing_callable(step_name: str):
 
 
 def get_processing_step_type(step_name: str) -> str:
-    """Return the type of a processing step."""
+    """
+    Name the kind of a processing step, for messages.
+
+    Parameters
+    ----------
+    step_name : str
+        Step name.
+
+    Returns
+    -------
+    str
+        ``"filter"``, ``"mask generator"``, ``"mask filter"``,
+        ``"plugin filter"``, ``"video plugin"``, ``"video filter"``,
+        ``"stack edit"`` or ``"unknown"``.
+    """
     if step_name in FILTER_MAP:
         return "filter"
     if step_name in MASK_MAP:
@@ -772,9 +848,28 @@ def get_processing_step_type(step_name: str) -> str:
 
 def ask_for_processing_params(step_name: str) -> dict[str, Any]:
     """
-    Introspect a processing callable's parameters and ask interactively.
+    Ask in the terminal for each parameter of a processing step.
 
-    Skips the first positional arguments (data, mask).
+    The parameters are read from the step's function. Data arguments (such as
+    ``data``, ``frame``, ``mask`` and ``stack``) are skipped, as are
+    parameters whose condition is not met. Pressing Enter uses the default
+    (None if there is none); typed values are converted to the parameter's
+    type.
+
+    Parameters
+    ----------
+    step_name : str
+        Processing step name.
+
+    Returns
+    -------
+    dict
+        Parameter names and values.
+
+    Raises
+    ------
+    ValueError
+        If no processing step has that name.
     """
     func = _get_processing_callable(step_name)  # your existing resolver
     sig = inspect.signature(func)
