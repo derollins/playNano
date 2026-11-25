@@ -1,19 +1,4 @@
-"""
-Timestamp and annotation utilities for playNano.
-
-This module provides functions for normalising per-frame timestamps,
-drawing scale bar and timestamp overlays onto AFM image frames, and
-generating UTC timestamps for provenance records.
-
-Functions
----------
-normalize_timestamps
-    Parse and normalise per-frame timestamp metadata to float seconds.
-draw_scale_and_timestamp
-    Draw a scale bar and timestamp overlay onto an AFM image frame.
-utc_now_iso
-    Return the current UTC time as an ISO 8601 string.
-"""
+"""Helpers for frame times and for drawing the time and scale bar on frames."""
 
 from __future__ import annotations
 
@@ -37,26 +22,31 @@ from PIL import Image, ImageDraw, ImageFont
 
 def normalize_timestamps(metadata_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
-    Normalize timestamp data to a float in seconds.
+    Convert each frame's ``"timestamp"`` to seconds as a float, or None.
 
-    Given a list of per-frame metadata dicts, parse each 'timestamp' entry
-    (if present) into a float (seconds). Returns a new list of dicts
-    with 'timestamp' replaced by float or None.
-
-    - ISO-format strings → parsed with dateutil.isoparse()
-    - datetime objects       → .timestamp()
-    - numeric (int/float)    → float()
-    - missing/unparsable     → None
+    - Python ``int`` and ``float``: converted to ``float`` (``bool`` counts
+      as ``int``).
+    - :class:`datetime.datetime`: seconds since 1970 (Unix time).
+    - ISO 8601 strings: parsed, then seconds since 1970. Times without a time
+      zone are read as local time.
+    - Anything else, including NumPy numbers such as ``numpy.int64``, a
+      missing key and strings that cannot be parsed: None.
 
     Parameters
     ----------
     metadata_list : list of dict
-        List of metadata dictionaries, each possibly containing a 'timestamp'.
+        Per-frame metadata. Not changed.
 
     Returns
     -------
     list of dict
-        List of metadata dicts with 'timestamp' normalized to float seconds or None.
+        Shallow copies of the dicts, each with a ``"timestamp"`` key.
+
+    Examples
+    --------
+    >>> from playnano.utils.time_utils import normalize_timestamps
+    >>> normalize_timestamps([{"timestamp": 1}, {}, {"timestamp": "bad"}])
+    [{'timestamp': 1.0}, {'timestamp': None}, {'timestamp': None}]
     """
     normalized: list[dict[str, Any]] = []
     for md in metadata_list:
@@ -101,56 +91,51 @@ def draw_scale_and_timestamp(
     color: tuple = (255, 255, 255),
 ) -> np.ndarray:
     """
-    Draw a scale bar and/or timestamp overlay onto an AFM image frame.
+    Draw the time and a scale bar on an RGB frame.
 
-    Two separate scale factors are used to decouple physical accuracy from
-    visual consistency. ``resize_scale`` ensures the scale bar length correctly
-    represents the physical nanometre distance regardless of how the frame was
-    resized. ``annotation_scale`` ensures margins, bar thickness, and text
-    positions appear proportionally identical at any output resolution.
+    The time is drawn at the top left as ``"1.23 s"``, the scale bar and its
+    label (``"100 nm"``) at the bottom left, in the bundled Steps-Mono font
+    (or Pillow's default font if it cannot be loaded).
 
     Parameters
     ----------
-    image : np.ndarray
-        RGB image array of shape (H, W, 3), dtype uint8.
+    image : numpy.ndarray
+        RGB frame, shape (height, width, 3), dtype uint8. Not changed.
     timestamp : float
-        Timestamp in seconds to display in the top-left corner.
+        Time to show, in seconds.
     pixel_size_nm : float
-        Physical size of one pixel in the original (pre-resize) frame,
-        in nanometres. Used to compute the scale bar length in pixels.
+        Pixel size of the frame before resizing, in nm.
     resize_scale : float
-        Factor by which the frame was upscaled from its original resolution
-        (``output_height / original_height``). Used only for computing the
-        physically accurate scale bar width.
+        How much the frame was enlarged (new height / old height). Sets the
+        scale bar's length in pixels.
     annotation_scale : float
-        Factor relative to ``REFERENCE_HEIGHT`` used to scale all annotation
-        geometry — margins, bar thickness, label gaps, and text position
-        (``output_height / REFERENCE_HEIGHT``). Ensures annotations occupy
-        the same visual proportion at any output resolution.
-    bar_length_nm : int
-        Desired scale bar length in nanometres. Default is 100.
-    font_scale : float
-        Multiplier applied to the base font point size (15 pt). Default is 1.
-    draw_ts : bool
-        Whether to draw the timestamp in the top-left corner. Default is
-        ``True``.
-    draw_scale : bool
-        Whether to draw the scale bar and label in the bottom-left corner.
-        Default is ``True``.
-    color : tuple
-        RGB colour for all annotations. Default is white ``(255, 255, 255)``.
+        Frame height divided by the 512-pixel reference height. Sets margins,
+        bar thickness and text positions so they look the same at any size.
+    bar_length_nm : int, optional
+        Length of the scale bar, in nm. Default is 100.
+    font_scale : float, optional
+        Text height is ``15 * font_scale`` pixels. Default is 1.
+    draw_ts : bool, optional
+        Draw the time. Default is True.
+    draw_scale : bool, optional
+        Draw the scale bar, if ``bar_length_nm`` and ``pixel_size_nm`` are both
+        positive. Default is True.
+    color : tuple of int, optional
+        RGB colour of the text and bar. Default is white, ``(255, 255, 255)``.
 
     Returns
     -------
-    np.ndarray
-        Annotated image as a uint8 array of shape (H, W, 3).
+    numpy.ndarray
+        A new annotated frame, shape (height, width, 3), dtype uint8.
 
-    Notes
-    -----
-    - Requires the Steps-Mono font bundled in ``playnano.resources.fonts``.
-      Falls back to the PIL default font if the file cannot be loaded.
-    - The scale bar is only drawn when ``pixel_size_nm > 0`` and
-      ``bar_length_nm > 0``.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.utils.time_utils import draw_scale_and_timestamp
+    >>> frame = np.zeros((100, 100, 3), dtype=np.uint8)
+    >>> out = draw_scale_and_timestamp(frame, 1.5, 1.0, 1.0, 1.0, bar_length_nm=50)
+    >>> out.shape, out.dtype
+    ((100, 100, 3), dtype('uint8'))
     """
     # Convert to PIL for drawing
     pil = Image.fromarray(image)
@@ -215,6 +200,6 @@ def utc_now_iso() -> str:
     Returns
     -------
     str
-        UTC timestamp in ISO 8601 format, e.g. ``'2024-01-15T10:30:00Z'``.
+        For example ``"2024-01-15T10:30:00.123456Z"``.
     """
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")

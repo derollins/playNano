@@ -1,4 +1,4 @@
-"""Module containing helper functions for collecting system info."""
+"""Record the software environment for provenance."""
 
 import importlib.metadata
 import platform
@@ -20,7 +20,17 @@ KEY_DEPENDENCIES = [
 
 
 def gather_environment_info() -> dict:
-    """Gather the system info for provenance records."""
+    """
+    Describe the software environment, for provenance records.
+
+    Returns
+    -------
+    dict
+        ``"timestamp"`` (UTC, ISO 8601), ``"python_version"``, ``"platform"``
+        (system, release and machine), ``"playnano_version"`` (None if playNano
+        is not installed) and ``"<package>_version"`` for each package in
+        ``KEY_DEPENDENCIES`` that is installed.
+    """
     info = {
         "timestamp": utc_now_iso(),
         "python_version": sys.version.replace("\n", " "),

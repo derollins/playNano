@@ -48,6 +48,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   coordinates, the output file names, and that padding and missing frames count towards the colour scale. Corrected
   `fps` (also used for GIFs) and noted that formats are not checked before writing starts, and that
   `fixed_size_mode="per_track"` needs `fixed_box_size` to be set.
+- API reference for `AFMImageStack` and `playnano.utils`: docstrings now match the code and render without warnings.
+  The `AFMImageStack` constructor parameters now appear in the reference (they were only in `__init__`, which is not
+  rendered). Documented the step lookup order and keyword handling of `apply`, that `stack[a:b]` returns a stack
+  without processed data or results, which NumPy number types are rejected or lose their value, and that
+  `export_analysis_log` currently always raises (with the alternative to use). Corrected the examples of
+  `guess_height_data_units` (`'m'`, not `'nm'`) and `utc_now_iso` (includes microseconds), and replaced examples that
+  could not run with ones that run as doctests.
 
 ### Changed
 

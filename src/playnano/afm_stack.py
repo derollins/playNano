@@ -1,4 +1,10 @@
-"""Defines AFMImageStack for managing AFM time-series data and processing steps."""
+"""
+The :class:`AFMImageStack` class, which holds an AFM video and everything done to it.
+
+The module also builds the lookup tables of built-in steps that
+:meth:`AFMImageStack.apply` and the processing pipeline use: ``FILTER_MAP``,
+``MASK_MAP``, ``MASK_FILTERS_MAP``, ``VIDEO_FILTER_MAP`` and ``STACK_EDIT_MAP``.
+"""
 
 from __future__ import annotations
 
@@ -33,51 +39,88 @@ logger = logging.getLogger(__name__)
 
 class AFMImageStack:
     """
-    Manage stacks of AFM images with metadata, analysis results, and provenance.
+    An AFM video: frames, pixel size, per-frame metadata, results and provenance.
 
-    Contains snapshots of each stage of processing (including the raw data after the
-    first processing step), any masks generated, analysis results, and the provenance
-    of each processing and analysis step.
+    Usually made by :meth:`load_data` or
+    :func:`playnano.io.loader.load_afm_stack`, and changed by
+    :class:`playnano.processing.pipeline.ProcessingPipeline` and
+    :class:`playnano.analysis.pipeline.AnalysisPipeline`.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        Frames, shape (n_frames, height, width), heights in nm. Stored as given,
+        without copying.
+    pixel_size_nm : int or float
+        Pixel size in nm, used when a frame has no ``frame_pixel_size_nm``. Must
+        be a positive Python ``int`` or ``float``: NumPy numbers are rejected.
+    channel : str
+        Channel name, for example ``"height_trace"``.
+    file_path : str or pathlib.Path
+        File or folder the data came from. Stored as given; used for default
+        output names.
+    frame_metadata : list of dict, optional
+        One dict per frame, with keys from ``FRAME_METADATA_KEYS`` in
+        :mod:`playnano.utils.io_utils`; other keys give a warning. A shorter
+        list is padded with empty dicts. Timestamps are converted with
+        :func:`playnano.utils.time_utils.normalize_timestamps`, and a frame
+        without one gets ``"timestamp": None``. Default is None (no metadata).
 
     Attributes
     ----------
-    data : np.ndarray
-        3D array of shape (n_frames, ``height``, ``width``) holding the raw or current
-        data.
-
+    data : numpy.ndarray
+        The current frames, shape (n_frames, height, width). Processing
+        replaces this array.
     pixel_size_nm : float
-        Physical pixel size in nanometers of the first frame (fallback).
-
+        Pixel size in nm for frames without their own.
     channel : str
         Channel name.
+    file_path : str or pathlib.Path
+        File or folder the data came from.
+    frame_metadata : list of dict
+        One dict per frame. Every dict has ``"timestamp"`` (s, or None); files
+        loaded by playNano also have the other ``FRAME_METADATA_KEYS``.
+    processed : dict
+        Copies of the data, as arrays: ``"raw"`` before the first step, then
+        one per step, keyed ``"step_<n>_<name>"`` by the processing pipeline
+        or by step name by :meth:`apply`.
+    masks : dict
+        Boolean mask arrays from the processing pipeline, keyed
+        ``"step_<n>_<name>"``.
+    analysis : dict
+        Analysis results, keyed ``"step_<n>_<module name>"``.
+    provenance : dict
+        What was done and with what: ``"environment"`` (software versions),
+        ``"acquisition"`` (see :attr:`acquisition`), ``"processing"`` (steps and
+        their keys) and ``"analysis"`` (steps, results by name, frame times).
+    state_backups : dict
+        Data kept so changes can be undone: ``"frame_metadata_before_edit"``
+        holds the frame metadata from before frames were removed.
 
-    file_path : Path
-        Path to the source file or folder.
+    Raises
+    ------
+    TypeError
+        If ``data`` is not a NumPy array.
+    ValueError
+        If ``data`` is not 3D, ``pixel_size_nm`` is not a positive int or
+        float, or ``frame_metadata`` has more entries than there are frames.
 
-    frame_metadata : list[dict[str, Any]]
-        Per-frame metadata dicts; each will include a normalized 'timestamp' key and
-        per frame 'frame_pixel_size_nm'.
-
-    processed : dict[str, np.ndarray]
-        Snapshots of processed data arrays from filters. Keys like
-        'step_1_remove_plane'.
-
-    masks : dict[str, np.ndarray]
-        Boolean mask arrays from mask steps. Keys like 'step_2_threshold'.
-
-    analysis : dict[str, Any]
-        Results of analysis modules, keyed by 'step_<i>_<module_name>'.
-
-    provenance : dict[str, Any]
-        Records environment info and provenance of processing and analysis pipelines::
-
-            {
-                "environment": {...},
-                "acquisition": {...},
-                "processing": {"steps": [...], "keys_by_name": {...}},
-                "analysis": {"frame_times": [...], "steps": [...],
-                "results_by_name": {...}},
-            }
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.afm_stack import AFMImageStack
+    >>> data = np.zeros((3, 64, 64))
+    >>> stack = AFMImageStack(
+    ...     data,
+    ...     pixel_size_nm=2.0,
+    ...     channel="height_trace",
+    ...     file_path="demo.h5-jpk",
+    ...     frame_metadata=[{"timestamp": 0.0}, {"timestamp": 0.5}],
+    ... )
+    >>> stack.n_frames, stack.image_shape
+    (3, (64, 64))
+    >>> stack.get_frame_times()
+    [0.0, 0.5, 2.0]
     """
 
     def __init__(
@@ -88,39 +131,7 @@ class AFMImageStack:
         file_path: Path,
         frame_metadata: list[dict[str, Any]] = None,
     ) -> None:
-        """
-        Initialize AFMImageStack with data, spatial metadata, and per-frame metadata.
-
-        Parameters
-        ----------
-        data : np.ndarray
-            3D array of shape (n_frames, ``height``, ``width``) containing AFM image
-            stack.
-
-        pixel_size_nm : float
-            Pixel size in nanometers for the first frame; must be positive.
-
-        channel : str
-            Channel name (e.g., 'height_trace').
-
-        file_path : Path
-            Source file or folder path.
-
-        frame_metadata : list of dict, optional
-            List of per-frame metadata dicts. Will be padded or trimmed to length
-            n_frames. After initialization, each entry is normalized to include a
-            numeric 'timestamp' (fallback to frame index if missing). A pixel scaling
-            value for each frame `frame_pixel_size_nm` is also recorded when data is
-            loaded from a raw or processed file.
-
-        Raises
-        ------
-        TypeError
-            If data is not an np.ndarray.
-
-        ValueError
-            If data.ndim != 3 or pixel_size_nm <= 0, or metadata length mismatch.
-        """
+        """Create the stack. The parameters are described in the class docstring."""
         # Validate that data is a 3D NumPy array
         if not isinstance(data, np.ndarray):
             raise TypeError(f"`data` must be a NumPy array; got {type(data).__name__}")
@@ -530,7 +541,13 @@ class AFMImageStack:
         return new_arr
 
     def restore_frame_metadata(self):
-        """Restore frame metadata from the last state backup, if available."""
+        """
+        Put back the frame metadata saved before frames were removed.
+
+        Takes it out of ``state_backups["frame_metadata_before_edit"]``. Does
+        nothing if there is none. :attr:`data` is not changed; see
+        :meth:`restore_raw`.
+        """
         backup = self.state_backups.pop("frame_metadata_before_edit", None)
         if backup is not None:
             self.frame_metadata = backup
@@ -543,19 +560,31 @@ class AFMImageStack:
         cls, path: str | Path, channel: str = "height_trace"
     ) -> AFMImageStack:
         """
-        Load AFM data from a file or folder into AFMImageStack, normalizing timestamps.
+        Load a stack from an AFM file, a folder of frames, or a saved playNano file.
+
+        Calls :func:`playnano.io.loader.load_afm_stack`, which picks the reader
+        from the file extension.
 
         Parameters
         ----------
-        path : str or Path
-            Path to AFM data file or folder.
+        path : str or pathlib.Path
+            File or folder to load.
         channel : str, optional
-            Channel name to load; default "height_trace".
+            Channel to read. Ignored for files saved by playNano, which keep their
+            own channel. Default is ``"height_trace"``.
 
         Returns
         -------
         AFMImageStack
-            Fully reconstructed AFMImageStack with processed snapshots and provenance.
+            The stack. Files saved by playNano also restore ``processed``,
+            ``masks`` and ``provenance``.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the path does not exist, or a folder holds no known file type.
+        ValueError
+            If the file type is not supported.
         """
         from playnano.io.loader import load_afm_stack
 
@@ -567,90 +596,65 @@ class AFMImageStack:
 
     @property
     def n_frames(self) -> int:
-        """
-        Number of frames in the stack.
-
-        Returns
-        -------
-        int
-            Number of frames (size along axis 0).
-        """
+        """Number of frames."""
         return self.data.shape[0]
 
     @property
     def height(self) -> int:
-        """
-        Get the number of pixel rows (frame height).
-
-        Returns
-        -------
-        int
-            Number of rows per frame.
-        """
+        """Height of each frame, in pixels (rows)."""
         return self.data.shape[1]
 
     @property
     def width(self) -> int:
-        """
-        Get the frame number of pixel columns.
-
-        Returns
-        -------
-        int
-            Number of columns per frame.
-        """
+        """Width of each frame, in pixels (columns)."""
         return self.data.shape[2]
 
     @property
     def image_shape(self) -> tuple[int, int]:
-        """
-        Spatial dimensions of a single frame.
-
-        Returns
-        -------
-        tuple of (``height``, ``width``)
-        """
+        """Shape of each frame, ``(height, width)``, in pixels."""
         return self.data.shape[1:]
 
     def get_frame(self, index: int) -> np.ndarray:
         """
-        Retrieve the 2D image array for a specific frame index.
+        Return one frame.
 
         Parameters
         ----------
         index : int
-            Frame index to retrieve.
+            Frame index; negative values count from the end.
 
         Returns
         -------
-        np.ndarray
-            2D array of shape (``height``, ``width``) for the frame.
+        numpy.ndarray
+            The frame, shape (height, width). It is a view of :attr:`data`, so
+            changing it changes the stack.
 
         Raises
         ------
         IndexError
-            If index is out of bounds.
+            If ``index`` is out of range.
         """
         return self.data[index]
 
     def get_frame_metadata(self, index: int) -> dict[str, Any]:
         """
-        Retrieve metadata dict for a specific frame index.
+        Return one frame's metadata.
 
         Parameters
         ----------
         index : int
-            Frame index.
+            Frame index, from 0 to ``n_frames - 1``. Negative values are not
+            accepted.
 
         Returns
         -------
-        dict[str, Any]
-            Metadata dict for that frame (includes normalized 'timestamp').
+        dict
+            The frame's metadata dict itself, not a copy.
 
         Raises
         ------
         IndexError
-            If index is out of range.
+            If ``index`` is out of range.
         """
         if 0 <= index < len(self.frame_metadata):
             return self.frame_metadata[index]
@@ -659,27 +663,23 @@ class AFMImageStack:
 
     def get_frames(self) -> list[np.ndarray]:
         """
-        Return a list of all individual 2D frame arrays.
+        Return all frames as a list.
 
         Returns
         -------
-        list of np.ndarray
-            List of length n_frames, each a 2D array.
+        list of numpy.ndarray
+            One 2D array per frame; each is a view of :attr:`data`.
         """
         return [self.get_frame(i) for i in range(self.n_frames)]
 
     def frames_with_metadata(self):
         """
-        Yield tuples of (index, frame_array, metadata) for all frames.
+        Iterate over the frames with their index and metadata.
 
         Yields
         ------
-        tuple[int, np.ndarray, dict[str, Any]]
-            Frame index, 2D image array, and metadata dict.
-
-        Notes
-        -----
-        If any frame array is None, it is skipped with a warning log.
+        tuple of (int, numpy.ndarray, dict)
+            Frame index, frame (a view of :attr:`data`) and metadata dict.
         """
         for idx, (image, meta) in enumerate(
             zip(self.data, self.frame_metadata, strict=False)
@@ -691,23 +691,27 @@ class AFMImageStack:
 
     def __getitem__(self, idx: int | slice) -> np.ndarray | AFMImageStack:
         """
-        Index or slice the stack.
+        Return a frame (``stack[i]``) or a new stack of some frames (``stack[a:b]``).
 
         Parameters
         ----------
         idx : int or slice
-            - If int: return 2D array for that frame.
-            - If slice: return new AFMImageStack with subset of frames.
+            A Python ``int`` gives that frame; NumPy integers are not accepted. A
+            slice gives a new stack with those frames and their metadata, the same
+            pixel size, channel and file path, and no processed data, masks,
+            results or provenance. Its data is a view of this stack's data.
 
         Returns
         -------
-        np.ndarray or AFMImageStack
-            2D array for int index, or new AFMImageStack for slice.
+        numpy.ndarray or AFMImageStack
+            The frame, or the new stack.
 
         Raises
         ------
         TypeError
-            If idx is neither int nor slice.
+            If ``idx`` is neither an ``int`` nor a slice.
+        IndexError
+            If an ``int`` index is out of range.
         """
         if isinstance(idx, int):
             return self.data[idx]
@@ -735,25 +739,16 @@ class AFMImageStack:
 
     def export_processing_log(self, path: str) -> None:
         """
-        Export processing provenance and environment metadata to a JSON file.
+        Save the environment and processing provenance as a JSON file.
 
-        Writes
-        ------
-
-        Example JSON structure::
-
-            {
-            "environment": { ... },
-            "processing": {
-                "steps": [ ... ],
-                "keys_by_name": { ... }
-            }
-            }
+        The file holds ``{"environment": ..., "processing": {"steps": ...,
+        "keys_by_name": ...}}`` from :attr:`provenance`.
 
         Parameters
         ----------
-        path : str
-            File path to write the JSON log. Creates parent dirs as needed.
+        path : str or pathlib.Path
+            File to write. Its folder is created if missing; an existing file is
+            overwritten.
         """
         from playnano.analysis.utils.common import NumpyEncoder
 
@@ -770,34 +765,23 @@ class AFMImageStack:
 
     def export_analysis_log(self, path: str) -> None:
         """
-        Export analysis provenance and results to a JSON file.
+        Save the analysis results as a JSON file. Currently always raises an error.
 
-        Expects that stack.analysis (or stack.analysis_results) and
-        stack.provenance["analysis"] are populated by AnalysisPipeline.run().
-
-        Writes
-        ------
-        Example JSON structure::
-
-            {
-            "environment": { ... },
-            "analysis": { <step_key>: outputs, ... },
-            "provenance": {
-                "steps": [ ... ],
-                "results_by_name": { ... },
-                "frame_times": [...],
-            }
-            }
+        It looks for results in an ``analysis_results`` attribute, which nothing in
+        playNano sets, so it raises ``ValueError`` even after an analysis has run.
+        To save results, pass the record returned by
+        :meth:`playnano.analysis.pipeline.AnalysisPipeline.run` to
+        :func:`playnano.analysis.export.export_analysis_to_json`.
 
         Parameters
         ----------
-        path : str
-            File path to write the JSON log. Creates parent dirs as needed.
+        path : str or pathlib.Path
+            File to write. Its folder is created if missing.
 
         Raises
         ------
         ValueError
-            If no analysis results found on this stack.
+            If the stack has no ``analysis_results`` attribute, or it is empty.
         """
         from playnano.analysis.utils.common import NumpyEncoder
 
@@ -814,40 +798,62 @@ class AFMImageStack:
 
     def apply(self, steps: list[str], **kwargs) -> np.ndarray:
         """
-        Apply a sequence of processing steps to each frame in the AFM image stack.
+        Apply processing steps by name, without recording provenance.
 
-        Steps can be:
+        A quick way to process a stack interactively. For processing you can
+        repeat and report, use
+        :class:`playnano.processing.pipeline.ProcessingPipeline`.
 
-          - "clear"       : reset any existing mask
-          - mask names    : keys in MASK_MAP
-          - filter names  : keys in FILTER_MAP
-          - plugin names  : entry points in 'playnano.filters' or
-            'playnano.video_processing'
-          - method names  : bound methods on this class
+        Each name is looked up in this order:
 
-        ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.
-
-        This is a stateless convenience: applies clear/mask/filter steps in order,
-        snapshots 'raw' and the data after each filter step in self.processed, but does
-        not assign unique keys per step or update provenance.
+        1. ``"clear"``: forget the current mask;
+        2. a mask generator (``MASK_MAP``), which sets the mask for later
+           filters;
+        3. a method of this class;
+        4. a plugin registered under ``playnano.filters`` or
+           ``playnano.video_processing``;
+        5. a built-in filter (``FILTER_MAP``); if a mask is set and the filter
+           has a masked version (``MASK_FILTERS_MAP``), that version is used;
+        6. a video filter (``VIDEO_FILTER_MAP``);
+        7. a stack edit (``STACK_EDIT_MAP``), which also clears the mask.
 
         Parameters
         ----------
         steps : list of str
-            Sequence of step names (e.g. ["remove_plane", "mask_threshold",
-            "gaussian_filter"]).
+            Step names, applied in order, for example
+            ``["remove_plane", "mask_threshold", "row_median_align"]``.
         **kwargs
-            Forwarded to each mask/filter function.
+            Passed to every step. A step that does not accept them is called
+            without any.
 
         Returns
         -------
-        np.ndarray
-            Final processed 3D array (shape (n_frames, ``height``, ``width``)).
+        numpy.ndarray
+            The processed data, also stored in :attr:`data`.
+
+        Raises
+        ------
+        ValueError
+            If a step name is not found.
 
         Notes
         -----
-        For tracked, reproducible processing,
-        use ProcessingPipeline.
+        :attr:`processed` gets ``"raw"`` (if not already there) and a copy of the
+        data after each step except ``"clear"`` and masks, keyed by step name, so a
+        repeated step replaces its earlier copy. Masks are not stored. If a filter
+        fails on a frame, that frame is left unchanged and a warning is logged; if
+        a video filter fails, the step is skipped.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from playnano.afm_stack import AFMImageStack
+        >>> yy, xx = np.mgrid[0:32, 0:32]
+        >>> data = np.stack([0.1 * xx + 0.05 * yy] * 2).astype(float)
+        >>> stack = AFMImageStack(data, 1.0, "height_trace", "demo.h5-jpk")
+        >>> out = stack.apply(["remove_plane"])
+        >>> sorted(stack.processed), bool(np.allclose(out, 0))
+        (['raw', 'remove_plane'], True)
         """
         # 1) Snapshot raw data once
         if "raw" not in self.processed:
@@ -911,7 +917,7 @@ class AFMImageStack:
 
     def time_for_frame(self, idx: int) -> float:
         """
-        Get timestamp for a given frame index, fallback to index if missing.
+        Return a frame's time in seconds, or its index if it has no time.
 
         Parameters
         ----------
@@ -921,35 +927,34 @@ class AFMImageStack:
         Returns
         -------
         float
-            Timestamp in seconds; if metadata lacks 'timestamp', returns float(idx).
+            The frame's ``"timestamp"``, or ``float(idx)`` if it is missing or
+            None.
 
         Raises
         ------
         IndexError
-            If idx is out of range.
-
-        Notes
-        -----
-        This fallback (index-as-time) assumes uniform frame intervals
-        and is useful for stacks without explicit time metadata.
+            If ``idx`` is out of range.
 
         Examples
         --------
-        >>> stack.frame_metadata = [{"timestamp": 0.0}, {}, {"timestamp": 2.0}]
-        >>> stack.time_for_frame(1)
-        1.0
-        >>> stack.time_for_frame(2)
-        2.0
+        >>> import numpy as np
+        >>> from playnano.afm_stack import AFMImageStack
+        >>> stack = AFMImageStack(
+        ...     np.zeros((3, 4, 4)),
+        ...     1.0,
+        ...     "height_trace",
+        ...     "demo.h5-jpk",
+        ...     frame_metadata=[{"timestamp": 0.0}, {}, {"timestamp": 0.4}],
+        ... )
+        >>> stack.time_for_frame(1), stack.time_for_frame(2)
+        (1.0, 0.4)
         """
         ts = self.frame_metadata[idx].get("timestamp", None)
         return float(idx) if ts is None else ts
 
     def scaling_for_frame(self, idx: int) -> float:
         """
-        Get the frame_pixel_size_nm for a given frame index.
-
-        If the frame_metadata dictionaries or frame_pixel_size_nm values are missing
-        fallback to the pixel_size_nm attribute.
+        Return a frame's pixel size in nm.
 
         Parameters
         ----------
@@ -959,65 +964,60 @@ class AFMImageStack:
         Returns
         -------
         float
-            Pixel to nanometer scaling factor.
+            The frame's ``"frame_pixel_size_nm"``, or :attr:`pixel_size_nm` if the
+            frame has no such key. A key set to None returns None.
 
         Raises
         ------
         IndexError
-            If idx is out of range.
-
-        Notes
-        -----
-        The fallback to pixel_size_nm is valid for stacks with a constant size.
+            If ``idx`` is out of range.
 
         Examples
         --------
-        >>> stack.pixel_size_nm = 1.0   # fallback value
-        >>> stack.frame_metadata = [
-        ...     {"frame_pixel_size_nm": 1.0},
-        ...     {},
-        ...     {"frame_pixel_size_nm": 2.0},
-        ... ]
-        >>> stack.scaling_for_frame(0)
-        1.0
-        >>> stack.scaling_for_frame(1)
-        1.0          # falls back to stack.pixel_size_nm
-        >>> stack.scaling_for_frame(2)
-        2.0
+        >>> import numpy as np
+        >>> from playnano.afm_stack import AFMImageStack
+        >>> stack = AFMImageStack(
+        ...     np.zeros((2, 4, 4)),
+        ...     1.0,
+        ...     "height_trace",
+        ...     "demo.h5-jpk",
+        ...     frame_metadata=[{"frame_pixel_size_nm": 2.0}, {}],
+        ... )
+        >>> stack.scaling_for_frame(0), stack.scaling_for_frame(1)
+        (2.0, 1.0)
         """
         return self.frame_metadata[idx].get("frame_pixel_size_nm", self.pixel_size_nm)
 
     def get_frame_times(self) -> list[float]:
         """
-        Return a list of timestamps (in seconds) for each frame in the stack.
+        Return every frame's time in seconds.
 
-        This method uses `time_for_frame()` to retrieve the timestamp for
-        each frame, which allows central control over fallback behavior.
+        Uses :meth:`time_for_frame`, so a frame without a time gets its index.
 
         Returns
         -------
-        list[float]
-            List of timestamps per frame. If unavailable, the frame index is
-            used as a fallback.
+        list of float
+            One time per frame.
 
         Examples
         --------
-        >>> stack.frame_metadata = [{"timestamp": 0.0}, {"timestamp": 1.0}]
+        >>> import numpy as np
+        >>> from playnano.afm_stack import AFMImageStack
+        >>> stack = AFMImageStack(
+        ...     np.zeros((3, 4, 4)),
+        ...     1.0,
+        ...     "height_trace",
+        ...     "demo.h5-jpk",
+        ...     frame_metadata=[{"timestamp": 0.0}, {"timestamp": 0.5}],
+        ... )
         >>> stack.get_frame_times()
-        [0.0, 1.0]
-
-        >>> stack.frame_metadata = [{"timestamp": 0.0}, {}]
-        >>> stack.get_frame_times()
-        [0.0, 1.0]
+        [0.0, 0.5, 2.0]
         """
         return [self.time_for_frame(i) for i in range(len(self.frame_metadata))]
 
     def channel_for_frame(self, idx: int) -> str:
         """
-        Get the channel name for a given frame index.
-
-        Returns the value of the 'channel' key in the frame's metadata if present,
-        otherwise falls back to the global stack-level channel.
+        Return a frame's channel name.
 
         Parameters
         ----------
@@ -1027,36 +1027,44 @@ class AFMImageStack:
         Returns
         -------
         str
-            Channel name for the frame.
+            The frame's ``"channel"`` metadata if it has one, otherwise
+            :attr:`channel`.
+
+        Raises
+        ------
+        IndexError
+            If ``idx`` is out of range.
         """
         return self.frame_metadata[idx].get("channel", self.channel)
 
     @property
     def acquisition(self) -> dict[str, Any]:
         """
-        File-level acquisition metadata.
+        Settings of the whole recording, from the file's header.
 
-        May include bidirectional, motion setting, absolute start time, etc. Populated
-        by the format reader; empty when unavailable.
-
-        Survives frame edits, these are properties of the acquisition, not the frame
-        set.
+        For example whether the scan was bidirectional, or the file version,
+        depending on the format; empty if the reader found none. Stored in
+        ``provenance["acquisition"]``, and kept when frames are removed.
         """
         return self.provenance.setdefault("acquisition", {})
 
     def restore_raw(self) -> np.ndarray:
         """
-        Restore self.data from the 'raw' snapshot in self.processed.
+        Restore the original data from loading from the 'raw' snapshot in self.processed.
+
+        Copies ``processed["raw"]`` into :attr:`data` and calls
+        :meth:`restore_frame_metadata`. :attr:`processed`, :attr:`masks` and
+        :attr:`provenance` are not changed.
 
         Returns
         -------
-        np.ndarray
-            The restored raw data.
+        numpy.ndarray
+            The restored data.
 
         Raises
         ------
         KeyError
-            If 'raw' data is not available in self.processed.
+            If there is no ``processed["raw"]``.
         """
         if "raw" not in self.processed:
             raise KeyError("No raw data snapshot available to restore.")
