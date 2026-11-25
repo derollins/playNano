@@ -342,6 +342,22 @@ def test_get_loader_for_file_no_extension():
         get_loader_for_file(Path("noext"), {}, {})
 
 
+@pytest.mark.parametrize("flip_image", [True, False])
+def test_load_jpk_folder_flips_once(resource_path, flip_image):
+    """Frames match AFMReader's load_jpk with the same flip_image (one flip, #33)."""
+    from AFMReader.jpk import load_jpk
+
+    folder = resource_path / "jpk_folder_0"
+    stack = load_jpk_folder(folder, "height_trace", flip_image=flip_image)
+    for i, f in enumerate(sorted(folder.glob("*.jpk"))):
+        expected, _, _ = unpack_afmreader_result(
+            load_jpk(f, "height_trace", flip_image=flip_image)
+        )
+        np.testing.assert_array_equal(stack.data[i], expected)
+    # The test frames must not be symmetric, or the test would prove nothing.
+    assert not np.array_equal(stack.data[0], np.flipud(stack.data[0]))
+
+
 def test_open_file(resource_path):
     """Test if the file can be read."""
     with h5py.File(resource_path / "sample_0.h5-jpk", "r") as f:
@@ -597,7 +613,8 @@ def test_read_jpk_valid_files(
     assert result.data.dtype == np.dtype(image_dtype)
     assert isinstance(result.frame_metadata, list)
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
-    assert result.data.sum() == stack_sum
+    # The sum does not depend on orientation, but the summation order does.
+    assert result.data.sum() == pytest.approx(stack_sum, rel=1e-12)
     assert len(result.frame_metadata) == result.data.shape[0]
 
 

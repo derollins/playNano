@@ -202,9 +202,10 @@ def load_jpk_folder(
         Channel to load, for example ``"height_trace"``; the same names as
         AFMReader's ``load_jpk``.
     flip_image : bool, optional
-        Flip each frame vertically. AFMReader already flips ``.jpk`` frames, so
-        True (the default) returns frames in the row order stored in the file,
-        and False returns AFMReader's orientation.
+        Passed to AFMReader's ``load_jpk``, which flips each frame vertically
+        from the row order stored in the file; playNano does not flip again.
+        Same meaning as in :func:`~playnano.io.formats.read_h5jpk.load_h5jpk`.
+        Default is True.
 
     Returns
     -------
@@ -236,7 +237,7 @@ def load_jpk_folder(
 
     # Load first image to get shape, pixel size and scan rate
     first_img, first_pixel_size_nm, _ = unpack_afmreader_result(
-        load_jpk(jpk_files[0], channel)
+        load_jpk(jpk_files[0], channel, flip_image=flip_image)
     )
 
     height_px, width_px = first_img.shape
@@ -264,11 +265,12 @@ def load_jpk_folder(
     # Load all images
     for i, fpath in enumerate(jpk_files):
         logger.debug(f"Loading {fpath.name}")
-        img, px_size_nm, _ = unpack_afmreader_result(load_jpk(fpath, channel))
+        # AFMReader does the flip; flipping here too cancelled it (#33).
+        img, px_size_nm, _ = unpack_afmreader_result(
+            load_jpk(fpath, channel, flip_image=flip_image)
+        )
         if img.shape != (height_px, width_px):
             raise ValueError(f"Inconsistent image shape in {fpath}")
-        if flip_image:
-            img = np.flipud(img)
         image_stack[i] = img
 
         scan_direction = _scan_direction(fpath)
