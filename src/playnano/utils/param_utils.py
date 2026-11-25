@@ -1,19 +1,41 @@
-"""Utility to attach parameter-condition functions to processing callables."""
+"""
+Mark which parameters of a processing or analysis function apply when.
+
+The command line uses these conditions to skip questions and drop settings
+that do not apply, for example a hole size when holes are not filled.
+"""
 
 from typing import Callable
 
 
 def param_conditions(**conds: Callable[[dict], bool]):
     """
-    Decorate a processing or analysis callable with parameter-conditions.
+    Attach conditions saying when a function's parameters apply.
 
-    Each keyword is the parameter name and the value is a callable that will be
-    called with the currently collected kwargs (a dict) and must return True if
-    that parameter should be asked/present, False otherwise.
+    Parameters
+    ----------
+    **conds : callable
+        One per parameter name: a function taking the dict of parameters given
+        so far and returning True if this parameter applies.
 
-    Uses example:
-    @param_conditions(hole_area=lambda p: p.get("fill_holes", False)
-    def run()
+    Returns
+    -------
+    callable
+        A decorator that stores ``conds`` on the function as
+        ``_param_conditions`` and returns the function unchanged.
+
+    See Also
+    --------
+    prune_kwargs : Remove parameters that do not apply.
+
+    Examples
+    --------
+    >>> from playnano.utils.param_utils import param_conditions
+    >>> @param_conditions(hole_area=lambda p: p.get("fill_holes", False))
+    ... def mask_fn(frame, fill_holes=False, hole_area=None):
+    ...     return frame
+    >>> sorted(mask_fn._param_conditions)
+    ['hole_area']
     """
 
     def decorator(fn: Callable) -> Callable:
@@ -24,7 +46,32 @@ def param_conditions(**conds: Callable[[dict], bool]):
 
 
 def prune_kwargs(fn, kwargs):
-    """Remove inactive or None-valued parameters from kwargs."""
+    """
+    Remove parameters that are None or whose condition is not met.
+
+    Parameters
+    ----------
+    fn : callable
+        Function the parameters are for, possibly decorated with
+        :func:`param_conditions`.
+    kwargs : dict
+        Parameters. Not changed.
+
+    Returns
+    -------
+    dict
+        The parameters that are not None and whose condition, if any, returns
+        True for ``kwargs``. A condition that raises an error counts as False.
+
+    Examples
+    --------
+    >>> from playnano.utils.param_utils import param_conditions, prune_kwargs
+    >>> @param_conditions(hole_area=lambda p: p.get("fill_holes", False))
+    ... def mask_fn(frame, fill_holes=False, hole_area=None, sigma=None):
+    ...     return frame
+    >>> prune_kwargs(mask_fn, {"fill_holes": False, "hole_area": 10, "sigma": None})
+    {'fill_holes': False}
+    """
     cleaned = {}
     conds = getattr(fn, "_param_conditions", {})
 
