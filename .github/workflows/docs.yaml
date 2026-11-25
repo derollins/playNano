@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      # Import Qt without a display.
+      QT_QPA_PLATFORM: offscreen
 
     steps:
       - name: Checkout (full history incl. tags)
@@ -40,6 +42,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      # PySide6 needs these system libraries to import. Without them autodoc
+      # cannot import playnano.gui or playnano.cli (which imports the GUI), and
+      # their API pages are published empty. Same list as test.yaml.
+      - name: Install Qt system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libxrender1 libxext6 libx11-6
 
       - name: Install docs dependencies
         run: |

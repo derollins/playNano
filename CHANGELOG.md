@@ -74,6 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pull-request docs builds run with `-n -W`, so any warning, including a broken cross-reference, fails the check; a
   failed build is retried once in case an intersphinx inventory could not be downloaded. Inventory downloads time out
   after 30 seconds instead of waiting indefinitely, and two `nitpick_ignore` entries that hid mistakes were removed.
+- The documentation build installs the system libraries Qt needs. Without them the API reference pages for
+  `playnano.cli` and `playnano.gui` were published empty.
 
 ## [0.5.3] - 2026-11-20
 
