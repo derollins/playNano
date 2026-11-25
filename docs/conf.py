@@ -201,10 +201,11 @@ nitpick_ignore = [
     ("py:class", "numpy.ndarray"),
     ("py:class", "json.encoder.JSONEncoder"),
     ("py:class", "pd.DataFrame"),
-    ("py:class", "lists"),
     ("py:class", "Axes"),
     ("py:class", "matplotlib Axes"),
     ("py:class", "matplotlib.axes._axes.Axes"),
+    # Qt names in signatures are written unqualified, so they cannot be resolved.
+    ("py:class", "QIcon"),
     ("py:class", "QWidget"),
     ("py:class", "PySide6.QtWidgets.QWidget"),
     ("py:class", "QResizeEvent"),
@@ -215,15 +216,18 @@ nitpick_ignore = [
     ("py:class", "h5py._hl.group.Group"),
     ("py:class", "Path"),
     ("py:class", "pathlib.Path"),
+    # Words numpydoc allows in type lines ("int, optional", "callable").
     ("py:class", "optional"),
     ("py:class", "callable"),
+    # Type alias in playnano.analysis.base.
     ("py:class", "AnalysisOutputs"),
-    ("py:class", "analysis_record"),
 ]
 # Choices written in numpydoc form, e.g. {"pad", "crop"}, are values, not types.
 nitpick_ignore_regex = [
     ("py:class", r"""\{?\s*["'][^"']*["']\s*\}?"""),
 ]
+# Give up on an unreachable inventory after 30 s instead of waiting forever.
+intersphinx_timeout = 30
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable", None),

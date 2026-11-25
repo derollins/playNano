@@ -59,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   documents its parameters. Documented the exit statuses of `playnano`, the wizard commands, that `play` applies the
   processing steps only when F is pressed, that YAML processing and analysis files read `1e3` as text (write
   `1.0e3`), and which errors each command raises. Replaced examples that could not run.
+- API reference for `playnano.gui`: docstrings now match the code and render without warnings. The `MainWindow`
+  parameters now appear in the reference, and the window's controls, keys and default processing pipeline are
+  described. With this, the whole documentation builds with `sphinx-build -n` without warnings (#30).
 
 ### Changed
 
@@ -68,6 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   have author or AI-use sections; authors are credited in `CITATION.cff`.
 - The documentation links to the scikit-learn documentation. `docs/_generated/generated_module_list.rst` is no longer
   tracked by git; the docs build writes it.
+- Pull-request docs builds run with `-n -W`, so any warning, including a broken cross-reference, fails the check; a
+  failed build is retried once in case an intersphinx inventory could not be downloaded. Inventory downloads time out
+  after 30 seconds instead of waiting indefinitely, and two `nitpick_ignore` entries that hid mistakes were removed.
 
 ## [0.5.3] - 2026-11-20
 
