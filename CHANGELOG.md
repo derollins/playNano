@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`.aris` heights are now loaded in nm, not metres (changes results).** `load_aris` returned the values as stored,
+  so ARIS stacks were 1e9 times too small compared with the other readers, and thresholds, colour scales, scale
+  annotations and analysis heights were wrong. Channels whose `DataUnits` is a length (height and amplitude) are now
+  converted to nm; others, such as phase in degrees, are unchanged; a missing unit is guessed from the data range with
+  a warning. Results from `.aris` files must be regenerated (#32).
+- Asking for a channel an `.aris` file does not have now lists the channels it does have, as the other readers do.
 - **`.jpk` folders are now loaded the right way up (changes results).** `load_jpk_folder` flipped each frame
   after AFMReader had already flipped it, so the two flips cancelled and frames were upside down compared with
   AFMReader and with the `.h5-jpk` reader. Frames are now flipped once. Anything that depends on orientation
@@ -70,6 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Tests use a real ARIS file: 2 frames of a DNA origami recording (G. Heath, Zenodo 10670413, CC BY 4.0), 356 KB.
+  Its citation and changes are in `tests/resources/README.md` (#40).
 - The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and `CONTRIBUTING.md` has
   rules for writing types in docstrings.
 - `CONTRIBUTING.md`: AI use is disclosed in the pull request, not in source files, and module docstrings no longer

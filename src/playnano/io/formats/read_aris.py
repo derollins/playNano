@@ -6,9 +6,9 @@ pixel size is stored in its ``frame_metadata`` entry as
 ``frame_pixel_size_nm``; the stack's ``pixel_size_nm`` is that of the first
 frame.
 
-.. warning::
-   Heights are returned in the units stored in the file, which is metres for
-   height channels, not nm as the other readers return.
+Channels with a length unit (heights, and amplitude, which ARIS files store
+in metres) are converted to nm, like the other readers. Other channels, such
+as phase in degrees, are returned in the units stored in the file.
 """
 
 import logging
@@ -19,7 +19,13 @@ import h5py
 import numpy as np
 
 from playnano.afm_stack import AFMImageStack
-from playnano.utils.io_utils import build_frame_metadata, decode_hdf5_attr
+from playnano.utils.io_utils import (
+    HEIGHT_UNITS,
+    build_frame_metadata,
+    convert_height_units_to_nm,
+    decode_hdf5_attr,
+    guess_height_data_units,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +118,80 @@ def _aris_global_pixel_to_nm_scaling_h5(info: h5py.Group) -> float:
         raise KeyError(
             f"Missing required attribute '{missing}' in HDF5 measurement group."
         ) from e
+
+
+def _get_channel_unit(info: h5py.Group, channel: str) -> str | None:
+    """
+    Return the unit of a channel's values, or None if the file does not say.
+
+    Read from the ``DataUnits`` attribute of
+    ``/DataSetInfo/Global/Channels/<channel>/ImageDims``. Some ARIS files store
+    it as Latin-1 bytes (for example ``°`` for phase), which are decoded here.
+    ``µ`` and ``μ`` are written as ``u``, so ``µm`` becomes ``um``.
+
+    Parameters
+    ----------
+    info : h5py.Group
+        The ``/DataSetInfo`` group.
+    channel : str
+        Channel name.
+
+    Returns
+    -------
+    str or None
+        The unit, for example ``"m"`` or ``"°"``.
+    """
+    try:
+        unit = info["Global/Channels"][channel]["ImageDims"].attrs["DataUnits"]
+    except KeyError:
+        return None
+    if isinstance(unit, bytes):
+        try:
+            unit = unit.decode("utf-8")
+        except UnicodeDecodeError:
+            unit = unit.decode("latin-1")
+    else:
+        unit = str(unit)
+        try:
+            unit.encode("utf-8")
+        except UnicodeEncodeError:
+            # h5py passes undecodable bytes through as surrogates.
+            unit = unit.encode("utf-8", "surrogateescape").decode("latin-1")
+    unit = unit.strip().replace("\u00b5", "u").replace("\u03bc", "u")
+    return unit or None
+
+
+def _to_nm_if_length(images: np.ndarray, unit: str | None, channel: str) -> np.ndarray:
+    """
+    Convert a channel to nm if its unit is a length.
+
+    Parameters
+    ----------
+    images : numpy.ndarray
+        The channel's frames, in the units stored in the file.
+    unit : str or None
+        The channel's unit from :func:`_get_channel_unit`. If None, the unit
+        is guessed from the range of the data and a warning is logged.
+    channel : str
+        Channel name, used in log messages.
+
+    Returns
+    -------
+    numpy.ndarray
+        The frames in nm if the unit is a length, otherwise unchanged.
+    """
+    if unit is None:
+        unit = guess_height_data_units(images)
+        logger.warning(
+            "Channel '%s' has no DataUnits; guessed '%s' from the data range.",
+            channel,
+            unit,
+        )
+    if unit in HEIGHT_UNITS:
+        logger.debug("Converting channel '%s' from %s to nm.", channel, unit)
+        return convert_height_units_to_nm(images, unit)
+    logger.info("Channel '%s' is in '%s'; not converted to nm.", channel, unit)
+    return images
 
 
 def _get_sorted_frame_keys(data: h5py.Group) -> list[str]:
@@ -219,8 +299,10 @@ def load_aris(
     Returns
     -------
     AFMImageStack
-        The stack. Heights are in the units stored in the file (metres for
-        height channels), not nm. Each ``frame_metadata`` entry holds
+        The stack. Channels with a length unit are in nm; others (such as
+        phase) are in the units stored in the file. If the file gives no unit
+        for the channel, it is guessed from the data range and a warning is
+        logged. Each ``frame_metadata`` entry holds
         ``timestamp`` (s from the first frame), ``frame_pixel_size_nm``,
         ``line_rate`` (the global scan rate, in lines per second) and
         ``start_epoch_ms`` (if the file records its start time).
@@ -243,9 +325,15 @@ def load_aris(
         if channel in file_channels:
             selected_ch = channel
         else:
-            raise ValueError(f"Channel '{channel}' is not available.")
+            raise ValueError(
+                f"Channel '{channel}' is not in {file_path.name}. "
+                f"Available channels: {', '.join(file_channels)}."
+            )
 
         image_stack, pixel_sizes_nm = load_frames_and_scaling(data, info, selected_ch)
+        image_stack = _to_nm_if_length(
+            image_stack, _get_channel_unit(info, selected_ch), selected_ch
+        )
 
         # Read timestamps and line_rate
         timestamps = info["Series"]["Time"][:]
