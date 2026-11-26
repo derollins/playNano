@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Opening an `.npz` bundle could run code stored in the file.** `load_npz_bundle` loaded with
+  `allow_pickle=True`, so a crafted `.npz` received from someone else could execute code when opened with
+  `playnano play`/`process`/`analyze` or `load_afm_stack`. Files you saved yourself were never a risk. Bundles are
+  now written without pickled arrays (text is stored as plain NumPy strings) and read with `allow_pickle=False`.
+  Bundles saved by earlier versions still open: their text fields are read with a restricted unpickler that can only
+  rebuild arrays of text, and a file containing anything else is refused with an error. Upgrade if you open `.npz`
+  files from other people (#14).
+
 ### Fixed
 
 - **`.aris` heights are now loaded in nm, not metres (changes results).** `load_aris` returned the values as stored,
