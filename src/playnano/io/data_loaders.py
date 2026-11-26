@@ -15,6 +15,7 @@ the file extension.
 
 import json
 import logging
+import pickle
 from pathlib import Path
 
 import h5py
@@ -25,12 +26,100 @@ from playnano.afm_stack import AFMImageStack
 
 logger = logging.getLogger(__name__)
 
+#: The only pickle globals an object array of text needs: NumPy's array
+#: constructor (``numpy.core`` in NumPy 1, ``numpy._core`` in NumPy 2), the
+#: array class and the dtype class.
+_SAFE_NUMPY_GLOBALS = {
+    ("numpy", "ndarray"),
+    ("numpy", "dtype"),
+    ("numpy.core.multiarray", "_reconstruct"),
+    ("numpy._core.multiarray", "_reconstruct"),
+}
+
+
+class _TextArrayUnpickler(pickle.Unpickler):
+    """Unpickler that can rebuild NumPy arrays of text and nothing else."""
+
+    def find_class(self, module: str, name: str):
+        if (module, name) not in _SAFE_NUMPY_GLOBALS:
+            raise pickle.UnpicklingError(f"refused global {module}.{name}")
+        if name == "ndarray":
+            return np.ndarray
+        if name == "dtype":
+            return np.dtype
+        try:
+            from numpy._core.multiarray import _reconstruct
+        except ImportError:  # NumPy 1
+            from numpy.core.multiarray import _reconstruct
+        return _reconstruct
+
+
+def _read_legacy_text_array(npz, key: str, path) -> np.ndarray:
+    """
+    Read an object array written by playNano before 0.5.4, without running code.
+
+    ``save_npz_bundle`` used to store the channel name and JSON text as object
+    arrays, which NumPy pickles. They are unpickled here with
+    :class:`_TextArrayUnpickler`, which can only rebuild NumPy arrays, and the
+    result must hold only ``str`` or ``bytes``.
+
+    Raises
+    ------
+    ValueError
+        If the array holds anything other than text, or cannot be read.
+    """
+    member = f"{key}.npy"
+    try:
+        with npz.zip.open(member) as fp:
+            version = np.lib.format.read_magic(fp)
+            if version == (1, 0):
+                np.lib.format.read_array_header_1_0(fp)
+            elif version == (2, 0):
+                np.lib.format.read_array_header_2_0(fp)
+            else:
+                raise ValueError(f"unsupported .npy version {version}")
+            arr = _TextArrayUnpickler(fp).load()
+    except (pickle.UnpicklingError, ValueError, EOFError, AttributeError) as e:
+        raise ValueError(
+            f"{path}: array '{key}' is not plain text and was not loaded, "
+            f"because it could run code ({e}). Only open .npz files you trust."
+        ) from None
+    if not isinstance(arr, np.ndarray) or not all(
+        isinstance(v, (str, bytes)) for v in arr.flat
+    ):
+        raise ValueError(f"{path}: array '{key}' is not plain text and was not loaded.")
+    logger.debug("Read '%s' saved by playNano before 0.5.4.", key)
+    return arr
+
+
+def _read_npz_without_pickle(path) -> dict[str, np.ndarray]:
+    """
+    Read every array of an ``.npz`` file without running pickled code.
+
+    Plain arrays are read with ``allow_pickle=False``; object arrays go
+    through :func:`_read_legacy_text_array`.
+    """
+    arrays = {}
+    with np.load(str(path), allow_pickle=False) as npz:
+        for key in npz.files:
+            try:
+                arrays[key] = npz[key]
+            except ValueError as e:
+                if "allow_pickle" not in str(e):
+                    raise
+                arrays[key] = _read_legacy_text_array(npz, key, path)
+    return arrays
+
 
 def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     """
     Load a stack from an NPZ bundle.
 
     Reads files written by :func:`~playnano.io.export_data.save_npz_bundle`.
+    The file is read without running any code it contains: bundles from
+    playNano 0.5.4 and later hold only plain arrays, and the text fields of
+    older bundles (stored as pickled object arrays) are read with a restricted
+    unpickler that only rebuilds arrays of text.
 
     Parameters
     ----------
@@ -54,10 +143,11 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     KeyError
         If ``data``, ``pixel_size_nm`` or ``channel`` is missing.
     ValueError
-        If ``frame_metadata_json`` or ``provenance_json`` is missing, or a JSON
-        entry cannot be decoded.
+        If ``frame_metadata_json`` or ``provenance_json`` is missing, a JSON
+        entry cannot be decoded, or the file contains pickled objects other
+        than text (which could run code).
     """
-    arrs = np.load(str(path), allow_pickle=True)
+    arrs = _read_npz_without_pickle(path)
 
     # Core data
     data = arrs["data"]
@@ -109,7 +199,7 @@ def load_npz_bundle(path: Path, channel: str = "height_trace") -> AFMImageStack:
     stack.provenance = saved_prov
 
     # Processed and mask layers
-    for key in arrs.files:
+    for key in arrs:
         if key.startswith("processed__"):
             step = key.split("__", 1)[1]
             stack.processed[step] = arrs[key].astype(np.float32)

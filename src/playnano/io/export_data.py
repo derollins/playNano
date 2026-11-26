@@ -198,6 +198,10 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
     - ``pixel_size_nm``: float32 scalar.
     - ``channel``: the channel name.
 
+    Text is stored as NumPy unicode arrays, so no array is pickled and the file
+    can be opened with ``np.load(path, allow_pickle=False)``. Bundles written
+    before playNano 0.5.4 stored text as object arrays, which need pickle.
+
     Parameters
     ----------
     path : pathlib.Path
@@ -225,22 +229,20 @@ def save_npz_bundle(path: Path, stack: AFMImageStack, raw: bool = False) -> None
     path.parent.mkdir(parents=True, exist_ok=True)
 
     # --- Core metadata ---
-    channel = np.array(stack.channel, dtype=object)
-    provenance_clean = make_json_safe(stack.provenance)
-    provenance_json = json.dumps(provenance_clean).encode("utf-8")
+    # Text is stored as NumPy unicode arrays, not object arrays, so the bundle
+    # can be read with allow_pickle=False (object arrays are pickled).
+    provenance_json = json.dumps(make_json_safe(stack.provenance))
 
     arrays = {
         "pixel_size_nm": np.array(stack.pixel_size_nm, dtype=np.float32),
-        "channel": channel,
-        "frame_metadata_json": np.array(json.dumps(stack.frame_metadata), dtype=object),
-        "provenance_json": np.array(provenance_json, dtype=object),
+        "channel": np.array(str(stack.channel)),
+        "frame_metadata_json": np.array(json.dumps(stack.frame_metadata)),
+        "provenance_json": np.array(provenance_json),
     }
 
     # only save state_backups if it exists
     if hasattr(stack, "state_backups"):
-        arrays["state_backups_json"] = np.array(
-            json.dumps(stack.state_backups), dtype=object
-        )
+        arrays["state_backups_json"] = np.array(json.dumps(stack.state_backups))
 
     # --- Data and optional layers ---
     if raw and "raw" in stack.processed:
