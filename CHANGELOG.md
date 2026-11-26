@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`.jpk` folders are now loaded the right way up (changes results).** `load_jpk_folder` flipped each frame
+  after AFMReader had already flipped it, so the two flips cancelled and frames were upside down compared with
+  AFMReader and with the `.h5-jpk` reader. Frames are now flipped once. Anything that depends on orientation
+  (images, exports, tracks, drift direction, anything "up" or "down") changes for `.jpk` data; to get the old
+  orientation, pass `flip_image=False` (#33).
 - API reference for `playnano.processing`: docstrings now match the code and render without warnings. Corrected
   `zero_mean` (documented a `mask` parameter it does not have), `mask_morphological` (masks by absolute height, so
   holes below `-threshold` are masked too), `mask_adaptive` (non-overlapping blocks), `ProcessingPipeline.run`

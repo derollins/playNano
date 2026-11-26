@@ -207,7 +207,7 @@ def convert_height_units_to_nm(data: np.ndarray, unit: str) -> np.ndarray:
 
 def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     """
-    Scale an image to 0–255 as uint8, from its minimum to its maximum.
+    Scale an image to 0-255 as uint8, from its minimum to its maximum.
 
     NaN and infinite values are set to 0 first, so they count as 0. Values are
     rounded down. An image with one value gives all zeros.

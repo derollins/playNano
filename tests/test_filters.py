@@ -514,7 +514,7 @@ def test_zero_median_masked_shape_mismatch():
         zero_median_masked(data, mask)
 
 
-# --- Polynomial and plane fits: scaled coordinates and NaN pixels (#105) ---
+# --- Polynomial and plane fits: scaled coordinates and NaN pixels ---
 
 
 def _polynomial_surface(n: int, order: int, seed: int = 0) -> np.ndarray:
