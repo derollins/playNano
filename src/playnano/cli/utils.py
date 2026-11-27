@@ -105,14 +105,9 @@ def is_valid_analysis_step(name: str) -> bool:
     -------
     bool
         True for built-in modules and plugins registered under
-        ``playnano.analysis``. Also True for ``"clear"``, although the analysis
-        pipeline has no such step, so it fails when the analysis runs.
+        ``playnano.analysis``.
     """
-    return (
-        name == "clear"
-        or name in BUILTIN_ANALYSIS_MODULES
-        or name in _ANALYSIS_PLUGIN_ENTRYPOINTS
-    )
+    return name in BUILTIN_ANALYSIS_MODULES or name in _ANALYSIS_PLUGIN_ENTRYPOINTS
 
 
 _NONE_WORDS = ("none", "null")

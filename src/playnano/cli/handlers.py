@@ -52,13 +52,21 @@ def handle_play(args: argparse.Namespace) -> None:
         ``processing_file``, ``output_folder``, ``output_name``,
         ``scale_bar_nm``, ``zmin``, ``zmax``, ``cmap`` and ``fps``.
 
-    Raises
-    ------
-    ValueError
-        If ``input_file`` contains option flags such as ``--channel``, which
-        happens when a quoted Windows path ends in a backslash. This is raised
-        before the handler's error handling, so the command exits with status 2.
+    Notes
+    -----
+    If ``input_file`` contains option flags such as ``--channel``, which
+    happens when a quoted Windows path ends in a backslash, the error explains
+    how to fix the path. Any error is logged and the command exits with
+    status 1.
     """
+    try:
+        _play(args)
+    except Exception as e:
+        _exit_with_error(e)
+
+
+def _play(args: argparse.Namespace) -> None:
+    """Check the input path, then call ``play_pipeline_mode`` (see ``handle_play``)."""
     if isinstance(args.input_file, str):
         raw_input = args.input_file.strip()
 
@@ -68,10 +76,10 @@ def handle_play(args: argparse.Namespace) -> None:
         if re.search(r"(^|\s)--[A-Za-z]", raw_input):
             raise ValueError(
                 f"\nInvalid input path: '{raw_input}'\n"
-                "⚠️  It looks like your input path includes CLI flags (e.g., '--channel').\n"  # noqa: E501
+                "It looks like your input path includes CLI flags (e.g., '--channel').\n"  # noqa: E501
                 "This usually happens when a quoted Windows path ends with a backslash, "  # noqa: E501
                 "which escapes the closing quote.\n\n"
-                "💡 FIX: Either:\n"
+                "FIX: Either:\n"
                 '  - Add another backslash: "C:\\path\\to\\folder\\\\"\n'
                 '  - Remove the trailing backslash: "C:\\path\\to\\folder"\n'
                 '  - Use forward slashes: "C:/path/to/folder"\n'
@@ -81,22 +89,19 @@ def handle_play(args: argparse.Namespace) -> None:
     else:
         file_path = Path(args.input_file)
 
-    try:
-        play_pipeline_mode(
-            input_file=file_path,
-            channel=args.channel,
-            processing_str=args.processing,
-            processing_file=args.processing_file,
-            output_folder=args.output_folder,
-            output_name=args.output_name,
-            scale_bar_nm=args.scale_bar_nm,
-            zmin=args.zmin,
-            zmax=args.zmax,
-            cmap=args.cmap,
-            fps=args.fps,
-        )
-    except Exception as e:
-        _exit_with_error(e)
+    play_pipeline_mode(
+        input_file=file_path,
+        channel=args.channel,
+        processing_str=args.processing,
+        processing_file=args.processing_file,
+        output_folder=args.output_folder,
+        output_name=args.output_name,
+        scale_bar_nm=args.scale_bar_nm,
+        zmin=args.zmin,
+        zmax=args.zmax,
+        cmap=args.cmap,
+        fps=args.fps,
+    )
 
 
 def handle_process(args: argparse.Namespace) -> None:

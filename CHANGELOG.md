@@ -86,6 +86,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (GitHub #50).
 - The GUI no longer logs "Skipped scale bar" warnings on every repaint while the scale bar is switched off, and a
   missing pixel size no longer logs an error each frame.
+- `playnano play` with an invalid `--zmin` or `--zmax` (not a number or `auto`) now warns and opens the window with
+  `auto` limits, which can be changed in the window, instead of logging an error and then failing (#41).
+- `playnano play` with option flags inside the input path (a quoted Windows path ending in `\`) now reports the fix
+  as a normal error with exit status 1, instead of a traceback and status 2 (#41).
+- `clear` is no longer accepted as an analysis step: it is a processing step only, and was accepted and then failed
+  when the analysis ran (#41).
+- The wizard's `help` lists the `load` and `clear` commands, and that `exit` also quits (#41).
 - An unknown `--cmap` in the GUI is now reported with a warning listing the colormaps available, instead of being
   replaced silently.
 - The error for an unknown processing step lists the step names by type, without Python's internal methods.
