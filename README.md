@@ -15,7 +15,7 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/v/release/derollins/playNano?color=green)](https://github.com/derollins/playNano/releases)
-[![DOI](https://zenodo.org/badge/989819242.svg)](https://doi.org/10.5281/zenodo.24354757)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24354757.svg)](https://doi.org/10.5281/zenodo.24354757)
 [![PyPI version](https://img.shields.io/pypi/v/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/playNano?color=blue)](https://pypi.org/project/playNano/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=github)](https://derollins.github.io/playNano/)
