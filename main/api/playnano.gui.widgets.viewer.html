@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,13 +508,105 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-gui-widgets-viewer-module">
-<h1>playnano.gui.widgets.viewer module<a class="headerlink" href="#playnano-gui-widgets-viewer-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.gui.widgets.viewer">
+<span id="playnano-gui-widgets-viewer-module"></span><h1>playnano.gui.widgets.viewer module<a class="headerlink" href="#module-playnano.gui.widgets.viewer" title="Link to this heading">¶</a></h1>
+<p>The frame view of the playNano window.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.gui.widgets.viewer.</span></span><span class="sig-name descname"><span class="pre">ViewerWidget</span></span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QWidget.html#PySide6.QtWidgets.QWidget" title="(in PySide v6.12.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></a></p>
+<p>Shows one RGB frame, scaled to fit, with optional time, scale bar and “RAW” label.</p>
+<p>The frame keeps its aspect ratio and is enlarged or shrunk with Qt’s smooth
+(bilinear) scaling, for display only. Space around it is filled with a
+background colour.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.display_frame">
+<span class="sig-name descname"><span class="pre">display_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.display_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.display_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Show a new frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – RGB image, shape (height, width, 3), dtype uint8.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.paintEvent">
+<span class="sig-name descname"><span class="pre">paintEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.paintEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.paintEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Draw the background, the frame and the overlays (Qt calls this).</p>
+<p>The time is drawn at the top left, “RAW” at the top right and the scale
+bar, sized from the pixel size and the display scale, at the bottom left.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPaintEvent.html#PySide6.QtGui.QPaintEvent" title="(in PySide v6.12.0)"><em>PySide6.QtGui.QPaintEvent</em></a>) – The paint event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.resizeEvent">
+<span class="sig-name descname"><span class="pre">resizeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QResizeEvent.html#PySide6.QtGui.QResizeEvent" title="(in PySide v6.12.0)"><span class="pre">QResizeEvent</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.resizeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.resizeEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Scale the frame to the new size (Qt calls this).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> (<a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QResizeEvent.html#PySide6.QtGui.QResizeEvent" title="(in PySide v6.12.0)"><em>PySide6.QtGui.QResizeEvent</em></a>) – The resize event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.set_annotation_font">
+<span class="sig-name descname"><span class="pre">set_annotation_font</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">font</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QFont.html#PySide6.QtGui.QFont" title="(in PySide v6.12.0)"><span class="pre">QFont</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.set_annotation_font"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.set_annotation_font" title="Link to this definition">¶</a></dt>
+<dd><p>Set the font of the overlay text.</p>
+<p>The font’s family is used at 18 pt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>font</strong> (<a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QFont.html#PySide6.QtGui.QFont" title="(in PySide v6.12.0)"><em>PySide6.QtGui.QFont</em></a>) – The font.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.set_annotations">
+<span class="sig-name descname"><span class="pre">set_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_raw_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.set_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.set_annotations" title="Link to this definition">¶</a></dt>
+<dd><p>Set the overlays drawn on the frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em>) – Time to show, in seconds; None shows none.</p></li>
+<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Show the time.</p></li>
+<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Show the scale bar.</p></li>
+<li><p><strong>draw_raw_label</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Show “RAW” at the top right.</p></li>
+<li><p><strong>pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em>) – Pixel size of the frame, in nm, used to size the scale bar.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em>) – Scale bar length, in nm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.set_background_color">
+<span class="sig-name descname"><span class="pre">set_background_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/viewer.html#ViewerWidget.set_background_color"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.set_background_color" title="Link to this definition">¶</a></dt>
+<dd><p>Set the colour that fills the space around the frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rgb</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code>, each 0-255.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.gui.widgets.viewer.ViewerWidget.staticMetaObject">
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;ViewerWidget&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QWidget&quot;:</span> <span class="pre">)</span></em><a class="headerlink" href="#playnano.gui.widgets.viewer.ViewerWidget.staticMetaObject" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -559,8 +652,36 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.gui.widgets.viewer module</a><ul>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget"><code class="docutils literal notranslate"><span class="pre">ViewerWidget</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.display_frame"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.display_frame()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.paintEvent"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.paintEvent()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.resizeEvent"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.resizeEvent()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.set_annotation_font"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.set_annotation_font()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.set_annotations"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.set_annotations()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.set_background_color"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.set_background_color()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.viewer.ViewerWidget.staticMetaObject"><code class="docutils literal notranslate"><span class="pre">ViewerWidget.staticMetaObject</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -537,10 +538,13 @@ and an interactive wizard for building pipelines.</p>
 <section id="quick-examples">
 <h3>Quick examples<a class="headerlink" href="#quick-examples" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>playnano<span class="w"> </span>play<span class="w"> </span>data.h5-jpk
-playnano<span class="w"> </span>process<span class="w"> </span>data.ARIS<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span>--make-gif
+playnano<span class="w"> </span>process<span class="w"> </span>data.ARIS<span class="w"> </span>--channel<span class="w"> </span>HeightTrace<span class="w"> </span>--processing<span class="w"> </span><span class="s2">"remove_plane"</span><span class="w"> </span>--make-gif
 playnano<span class="w"> </span>analyze<span class="w"> </span>processed.h5<span class="w"> </span>--analysis-file<span class="w"> </span>analysis.yaml
 </pre></div>
 </div>
+<p>The default channel, <code class="docutils literal notranslate"><span class="pre">height_trace</span></code>, is a JPK channel name. For other formats, give the
+file’s own name with <code class="docutils literal notranslate"><span class="pre">--channel</span></code>, for example <code class="docutils literal notranslate"><span class="pre">HeightTrace</span></code> for <code class="docutils literal notranslate"><span class="pre">.aris</span></code> files; a wrong
+name gives an error listing the channels the file has.</p>
 </section>
 </section>
 <section id="global-options">
@@ -553,7 +557,7 @@ playnano<span class="w"> </span>analyze<span class="w"> </span>processed.h5<span
 </pre></div>
 </div>
 <p>Example output:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>playnano 0.5.3
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>playnano 0.5.4
 </pre></div>
 </div>
 <p>(The version shown is the one you have installed.)</p>
@@ -761,7 +765,9 @@ AFM stack contains only raw data).</p></li>
 <h4>Notes about z-range<a class="headerlink" href="#notes-about-z-range" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--zmin</span></code> / <code class="docutils literal notranslate"><span class="pre">--zmax</span></code> accept a float or the string <code class="docutils literal notranslate"><span class="pre">auto</span></code> (default).
-When <code class="docutils literal notranslate"><span class="pre">auto</span></code> is used values are computed as the 1st and 99th percentiles of the stack.</p></li>
+When <code class="docutils literal notranslate"><span class="pre">auto</span></code> is used values are computed as the 1st and 99th percentiles of the stack.
+In <code class="docutils literal notranslate"><span class="pre">play</span></code>, a value that is neither is replaced by <code class="docutils literal notranslate"><span class="pre">auto</span></code> with a warning, since the
+limits can be changed in the window.</p></li>
 </ul>
 <p>Find out more on the GUI docs page: <a class="reference internal" href="gui.html"><span class="doc">GUI: Interactive Playback</span></a></p>
 </section>

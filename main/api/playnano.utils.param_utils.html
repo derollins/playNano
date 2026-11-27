@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,23 +515,73 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.utils.param_utils">
 <span id="playnano-utils-param-utils-module"></span><h1>playnano.utils.param_utils module<a class="headerlink" href="#module-playnano.utils.param_utils" title="Link to this heading">¶</a></h1>
-<p>Utility to attach parameter-condition functions to processing callables.</p>
+<p>Mark which parameters of a processing or analysis function apply when.</p>
+<p>The command line uses these conditions to skip questions and drop settings
+that do not apply, for example a hole size when holes are not filled.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.param_utils.param_conditions">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.param_utils.</span></span><span class="sig-name descname"><span class="pre">param_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/utils/param_utils.html#param_conditions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.param_utils.param_conditions" title="Link to this definition">¶</a></dt>
-<dd><p>Decorate a processing or analysis callable with parameter-conditions.</p>
-<p>Each keyword is the parameter name and the value is a callable that will be
-called with the currently collected kwargs (a dict) and must return True if
-that parameter should be asked/present, False otherwise.</p>
-<p>Uses example:
-&#64;param_conditions(hole_area=lambda p: p.get(“fill_holes”, False)
-def run()</p>
+<dd><p>Attach conditions saying when a function’s parameters apply.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**conds</strong> (<em>callable</em>) – One per parameter name: a function taking the dict of parameters given
+so far and returning True if this parameter applies.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A decorator that stores <code class="docutils literal notranslate"><span class="pre">conds</span></code> on the function as
+<code class="docutils literal notranslate"><span class="pre">_param_conditions</span></code> and returns the function unchanged.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#playnano.utils.param_utils.prune_kwargs" title="playnano.utils.param_utils.prune_kwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune_kwargs</span></code></a></dt><dd><p>Remove parameters that do not apply.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.param_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">param_conditions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@param_conditions</span><span class="p">(</span><span class="n">hole_area</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fill_holes"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">mask_fn</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">fill_holes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hole_area</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">frame</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">mask_fn</span><span class="o">.</span><span class="n">_param_conditions</span><span class="p">)</span>
+<span class="go">['hole_area']</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.param_utils.prune_kwargs">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.param_utils.</span></span><span class="sig-name descname"><span class="pre">prune_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/utils/param_utils.html#prune_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.param_utils.prune_kwargs" title="Link to this definition">¶</a></dt>
-<dd><p>Remove inactive or None-valued parameters from kwargs.</p>
+<dd><p>Remove parameters that are None or whose condition is not met.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>callable</em>) – Function the parameters are for, possibly decorated with
+<a class="reference internal" href="#playnano.utils.param_utils.param_conditions" title="playnano.utils.param_utils.param_conditions"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_conditions()</span></code></a>.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Parameters. Not changed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parameters that are not None and whose condition, if any, returns
+True for <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>. A condition that raises an error counts as False.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.param_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">param_conditions</span><span class="p">,</span> <span class="n">prune_kwargs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@param_conditions</span><span class="p">(</span><span class="n">hole_area</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fill_holes"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">mask_fn</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">fill_holes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hole_area</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">frame</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prune_kwargs</span><span class="p">(</span><span class="n">mask_fn</span><span class="p">,</span> <span class="p">{</span><span class="s2">"fill_holes"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"hole_area"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+<span class="go">{'fill_holes': False}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -527,9 +528,10 @@ nm. Frames are taken in file-name order.</p>
 <li><p><strong>folder_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – Folder of <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> files, one per frame. Files are sorted by name.</p></li>
 <li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>; the same names as
 AFMReader’s <code class="docutils literal notranslate"><span class="pre">load_jpk</span></code>.</p></li>
-<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Flip each frame vertically. AFMReader already flips <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> frames, so
-True (the default) returns frames in the row order stored in the file,
-and False returns AFMReader’s orientation.</p></li>
+<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Passed to AFMReader’s <code class="docutils literal notranslate"><span class="pre">load_jpk</span></code>, which flips each frame vertically
+from the row order stored in the file; playNano does not flip again.
+Same meaning as in <a class="reference internal" href="playnano.io.formats.read_h5jpk.html#playnano.io.formats.read_h5jpk.load_h5jpk" title="playnano.io.formats.read_h5jpk.load_h5jpk"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_h5jpk()</span></code></a>.
+Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

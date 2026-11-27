@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -714,6 +715,10 @@
 <span class="sd">    - ``pixel_size_nm``: float32 scalar.</span>
 <span class="sd">    - ``channel``: the channel name.</span>
 
+<span class="sd">    Text is stored as NumPy unicode arrays, so no array is pickled and the file</span>
+<span class="sd">    can be opened with ``np.load(path, allow_pickle=False)``. Bundles written</span>
+<span class="sd">    before playNano 0.5.4 stored text as object arrays, which need pickle.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : pathlib.Path</span>
@@ -741,22 +746,20 @@
     <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># --- Core metadata ---</span>
-    <span class="n">channel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-    <span class="n">provenance_clean</span> <span class="o">=</span> <span class="n">make_json_safe</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">)</span>
-    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">provenance_clean</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="c1"># Text is stored as NumPy unicode arrays, not object arrays, so the bundle</span>
+    <span class="c1"># can be read with allow_pickle=False (object arrays are pickled).</span>
+    <span class="n">provenance_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">make_json_safe</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">provenance</span><span class="p">))</span>
 
     <span class="n">arrays</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"pixel_size_nm"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-        <span class="s2">"channel"</span><span class="p">:</span> <span class="n">channel</span><span class="p">,</span>
-        <span class="s2">"frame_metadata_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
-        <span class="s2">"provenance_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+        <span class="s2">"channel"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">channel</span><span class="p">)),</span>
+        <span class="s2">"frame_metadata_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">)),</span>
+        <span class="s2">"provenance_json"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">provenance_json</span><span class="p">),</span>
     <span class="p">}</span>
 
     <span class="c1"># only save state_backups if it exists</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"state_backups"</span><span class="p">):</span>
-        <span class="n">arrays</span><span class="p">[</span><span class="s2">"state_backups_json"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span>
-        <span class="p">)</span>
+        <span class="n">arrays</span><span class="p">[</span><span class="s2">"state_backups_json"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">state_backups</span><span class="p">))</span>
 
     <span class="c1"># --- Data and optional layers ---</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>

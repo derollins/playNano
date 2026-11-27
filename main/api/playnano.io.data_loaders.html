@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -564,7 +565,11 @@ loaders can be called the same way by
 <dt class="sig sig-object py" id="playnano.io.data_loaders.load_npz_bundle">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.data_loaders.</span></span><span class="sig-name descname"><span class="pre">load_npz_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/data_loaders.html#load_npz_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.data_loaders.load_npz_bundle" title="Link to this definition">¶</a></dt>
 <dd><p>Load a stack from an NPZ bundle.</p>
-<p>Reads files written by <a class="reference internal" href="playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_npz_bundle()</span></code></a>.</p>
+<p>Reads files written by <a class="reference internal" href="playnano.io.export_data.html#playnano.io.export_data.save_npz_bundle" title="playnano.io.export_data.save_npz_bundle"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_npz_bundle()</span></code></a>.
+The file is read without running any code it contains: bundles from
+playNano 0.5.4 and later hold only plain arrays, and the text fields of
+older bundles (stored as pickled object arrays) are read with a restricted
+unpickler that only rebuilds arrays of text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -586,8 +591,9 @@ loaders can be called the same way by
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> or <code class="docutils literal notranslate"><span class="pre">channel</span></code> is missing.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code> or <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> is missing, or a JSON
-    entry cannot be decoded.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">frame_metadata_json</span></code> or <code class="docutils literal notranslate"><span class="pre">provenance_json</span></code> is missing, a JSON
+    entry cannot be decoded, or the file contains pickled objects other
+    than text (which could run code).</p></li>
 </ul>
 </dd>
 </dl>

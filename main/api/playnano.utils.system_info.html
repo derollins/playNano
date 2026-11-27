@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,11 +515,22 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.utils.system_info">
 <span id="playnano-utils-system-info-module"></span><h1>playnano.utils.system_info module<a class="headerlink" href="#module-playnano.utils.system_info" title="Link to this heading">¶</a></h1>
-<p>Module containing helper functions for collecting system info.</p>
+<p>Record the software environment for provenance.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.system_info.gather_environment_info">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.system_info.</span></span><span class="sig-name descname"><span class="pre">gather_environment_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/system_info.html#gather_environment_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.system_info.gather_environment_info" title="Link to this definition">¶</a></dt>
-<dd><p>Gather the system info for provenance records.</p>
+<dd><p>Describe the software environment, for provenance records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">&quot;timestamp&quot;</span></code> (UTC, ISO 8601), <code class="docutils literal notranslate"><span class="pre">&quot;python_version&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;platform&quot;</span></code>
+(system, release and machine), <code class="docutils literal notranslate"><span class="pre">&quot;playnano_version&quot;</span></code> (None if playNano
+is not installed) and <code class="docutils literal notranslate"><span class="pre">&quot;&lt;package&gt;_version&quot;</span></code> for each package in
+<code class="docutils literal notranslate"><span class="pre">KEY_DEPENDENCIES</span></code> that is installed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

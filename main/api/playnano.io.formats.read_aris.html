@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -519,11 +520,9 @@
 pixel size is stored in its <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry as
 <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>; the stack’s <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> is that of the first
 frame.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Heights are returned in the units stored in the file, which is metres for
-height channels, not nm as the other readers return.</p>
-</div>
+<p>Channels with a length unit (heights, and amplitude, which ARIS files store
+in metres) are converted to nm, like the other readers. Other channels, such
+as phase in degrees, are returned in the units stored in the file.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_aris.load_aris">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_aris.</span></span><span class="sig-name descname"><span class="pre">load_aris</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_aris.html#load_aris"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_aris.load_aris" title="Link to this definition">¶</a></dt>
@@ -538,8 +537,10 @@ file.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The stack. Heights are in the units stored in the file (metres for
-height channels), not nm. Each <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry holds
+<dd class="field-even"><p>The stack. Channels with a length unit are in nm; others (such as
+phase) are in the units stored in the file. If the file gives no unit
+for the channel, it is guessed from the data range and a warning is
+logged. Each <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry holds
 <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (s from the first frame), <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>,
 <code class="docutils literal notranslate"><span class="pre">line_rate</span></code> (the global scan rate, in lines per second) and
 <code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> (if the file records its start time).</p>

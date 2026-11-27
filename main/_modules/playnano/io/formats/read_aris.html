@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,9 +515,9 @@
 <span class="sd">``frame_pixel_size_nm``; the stack's ``pixel_size_nm`` is that of the first</span>
 <span class="sd">frame.</span>
 
-<span class="sd">.. warning::</span>
-<span class="sd">   Heights are returned in the units stored in the file, which is metres for</span>
-<span class="sd">   height channels, not nm as the other readers return.</span>
+<span class="sd">Channels with a length unit (heights, and amplitude, which ARIS files store</span>
+<span class="sd">in metres) are converted to nm, like the other readers. Other channels, such</span>
+<span class="sd">as phase in degrees, are returned in the units stored in the file.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -527,7 +528,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_frame_metadata</span><span class="p">,</span> <span class="n">decode_hdf5_attr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HEIGHT_UNITS</span><span class="p">,</span>
+    <span class="n">build_frame_metadata</span><span class="p">,</span>
+    <span class="n">convert_height_units_to_nm</span><span class="p">,</span>
+    <span class="n">decode_hdf5_attr</span><span class="p">,</span>
+    <span class="n">guess_height_data_units</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -620,6 +627,80 @@
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"Missing required attribute '</span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">' in HDF5 measurement group."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_channel_unit</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the unit of a channel's values, or None if the file does not say.</span>
+
+<span class="sd">    Read from the ``DataUnits`` attribute of</span>
+<span class="sd">    ``/DataSetInfo/Global/Channels/&lt;channel&gt;/ImageDims``. Some ARIS files store</span>
+<span class="sd">    it as Latin-1 bytes (for example ``°`` for phase), which are decoded here.</span>
+<span class="sd">    ``µ`` and ``μ`` are written as ``u``, so ``µm`` becomes ``um``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    info : h5py.Group</span>
+<span class="sd">        The ``/DataSetInfo`` group.</span>
+<span class="sd">    channel : str</span>
+<span class="sd">        Channel name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        The unit, for example ``"m"`` or ``"°"``.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Global/Channels"</span><span class="p">][</span><span class="n">channel</span><span class="p">][</span><span class="s2">"ImageDims"</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"DataUnits"</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"latin-1"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">unit</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+            <span class="c1"># h5py passes undecodable bytes through as surrogates.</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="s2">"surrogateescape"</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"latin-1"</span><span class="p">)</span>
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\u00b5</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\u03bc</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"u"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unit</span> <span class="ow">or</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_nm_if_length</span><span class="p">(</span><span class="n">images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert a channel to nm if its unit is a length.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    images : numpy.ndarray</span>
+<span class="sd">        The channel's frames, in the units stored in the file.</span>
+<span class="sd">    unit : str or None</span>
+<span class="sd">        The channel's unit from :func:`_get_channel_unit`. If None, the unit</span>
+<span class="sd">        is guessed from the range of the data and a warning is logged.</span>
+<span class="sd">    channel : str</span>
+<span class="sd">        Channel name, used in log messages.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The frames in nm if the unit is a length, otherwise unchanged.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"Channel '</span><span class="si">%s</span><span class="s2">' has no DataUnits; guessed '</span><span class="si">%s</span><span class="s2">' from the data range."</span><span class="p">,</span>
+            <span class="n">channel</span><span class="p">,</span>
+            <span class="n">unit</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">HEIGHT_UNITS</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Converting channel '</span><span class="si">%s</span><span class="s2">' from </span><span class="si">%s</span><span class="s2"> to nm."</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">convert_height_units_to_nm</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Channel '</span><span class="si">%s</span><span class="s2">' is in '</span><span class="si">%s</span><span class="s2">'; not converted to nm."</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">images</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_sorted_frame_keys</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -732,8 +813,10 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        The stack. Heights are in the units stored in the file (metres for</span>
-<span class="sd">        height channels), not nm. Each ``frame_metadata`` entry holds</span>
+<span class="sd">        The stack. Channels with a length unit are in nm; others (such as</span>
+<span class="sd">        phase) are in the units stored in the file. If the file gives no unit</span>
+<span class="sd">        for the channel, it is guessed from the data range and a warning is</span>
+<span class="sd">        logged. Each ``frame_metadata`` entry holds</span>
 <span class="sd">        ``timestamp`` (s from the first frame), ``frame_pixel_size_nm``,</span>
 <span class="sd">        ``line_rate`` (the global scan rate, in lines per second) and</span>
 <span class="sd">        ``start_epoch_ms`` (if the file records its start time).</span>
@@ -756,9 +839,15 @@
         <span class="k">if</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">file_channels</span><span class="p">:</span>
             <span class="n">selected_ch</span> <span class="o">=</span> <span class="n">channel</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' is not available."</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' is not in </span><span class="si">{</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">. "</span>
+                <span class="sa">f</span><span class="s2">"Available channels: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_channels</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
 
         <span class="n">image_stack</span><span class="p">,</span> <span class="n">pixel_sizes_nm</span> <span class="o">=</span> <span class="n">load_frames_and_scaling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">selected_ch</span><span class="p">)</span>
+        <span class="n">image_stack</span> <span class="o">=</span> <span class="n">_to_nm_if_length</span><span class="p">(</span>
+            <span class="n">image_stack</span><span class="p">,</span> <span class="n">_get_channel_unit</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">selected_ch</span><span class="p">),</span> <span class="n">selected_ch</span>
+        <span class="p">)</span>
 
         <span class="c1"># Read timestamps and line_rate</span>
         <span class="n">timestamps</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"Series"</span><span class="p">][</span><span class="s2">"Time"</span><span class="p">][:]</span>

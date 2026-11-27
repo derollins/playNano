@@ -60,7 +60,11 @@ Arguments & common options
   Mutually exclusive with ``--processing-file``.
 
 - **--processing-file** (*YAML/JSON*)
-  Path to a processing YAML with the filters to apply on load.
+  Path to a processing YAML file with the steps to run.
+
+  With either option, the steps are not run when the window opens: they run when you
+  click the **Apply Filters (F)** button or press the **F** key. Without either option,
+  the button and key run a built-in default pipeline.
 
 - **--output-folder** (*str*) / **--output-name** (*str*)
   Base folder/name for exports created from the GUI.
@@ -113,9 +117,9 @@ Raw vs Processed data behaviour
 - If the loaded stack contains a saved ``"raw"`` snapshot (e.g. when loading a bundle),
   the GUI treats that snapshot as the unprocessed data and ``stack.data`` as the
   processed/flattened frames. Otherwise ``stack.data`` is considered the raw frames.
-- Applying filters via **Apply Filters (F)** runs the processing pipeline and updates
-  the processed view. After applying filters, the GUI switches to the processed view by
-  default, and export options for processed data become available.
+- Applying filters (the **Apply Filters (F)** button or the **F** key) runs the processing
+  pipeline and updates the processed view. After applying filters, the GUI switches to the
+  processed view by default, and export options for processed data become available.
 
 
 Export behaviour & filenames

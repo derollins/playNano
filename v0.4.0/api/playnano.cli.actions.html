@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -503,13 +503,590 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-cli-actions-module">
-<h1>playnano.cli.actions module<a class="headerlink" href="#playnano-cli-actions-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.cli.actions">
+<span id="playnano-cli-actions-module"></span><h1>playnano.cli.actions module<a class="headerlink" href="#module-playnano.cli.actions" title="Link to this heading">¶</a></h1>
+<p>Core logic for CLI actions in playNano.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playnano.cli.actions.IO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">IO</span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#IO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.IO" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Simple I/O adapter used by Wizard for testability and swapping UI later.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.IO.ask">
+<span class="sig-name descname"><span class="pre">ask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#IO.ask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.IO.ask" title="Link to this definition">¶</a></dt>
+<dd><p>Prompt for a line of input from the user.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.IO.say">
+<span class="sig-name descname"><span class="pre">say</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#IO.say"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.IO.say" title="Link to this definition">¶</a></dt>
+<dd><p>Write a message to stdout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">Wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">io</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#playnano.cli.actions.IO" title="playnano.cli.actions.IO"><span class="pre">IO</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'afm_brown'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Interactive processing + analysis wizard.</p>
+<p>This class provides a REPL interface for building and running processing and
+analysis pipelines on AFM data. Users can add, remove, reorder, save, and load
+both processing and analysis steps. Processing steps operate on 2D image data
+and are applied in sequence to a stack, while analysis steps are executed on the
+processed data or raw data if no processing is specified.</p>
+<p>The wizard can be driven interactively through text commands. It supports
+saving and loading pipelines from YAML or JSON files, exporting processed
+stacks in multiple formats, and creating animated GIFs.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wiz</span> <span class="o">=</span> <span class="n">Wizard</span><span class="p">(</span><span class="s2">"data.afm"</span><span class="p">,</span> <span class="s2">"height"</span><span class="p">,</span> <span class="s2">"."</span><span class="p">,</span> <span class="s2">"output"</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wiz</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the AFM input file.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel name to load from the AFM file (e.g. “height_trace”).</p></li>
+<li><p><strong>output_folder</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Directory to write exported analysis/processing outputs. If <cite>None</cite>,
+the output directory defaults to the current working directory when
+an export is performed (see <cite>_run_analysis_and_export</cite>).</p></li>
+<li><p><strong>output_name</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Base filename (no extension) for exported files. If <cite>None</cite>, the stem
+of <cite>input_file</cite> will be used at export time.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Default scale bar size in nm used when creating GIFs. Use <cite>0</cite> to
+explicitly disable the scale bar. This value is passed to <cite>export_gif</cite>
+as given; that function determines how to interpret <cite>0</cite>.</p></li>
+<li><p><strong>io</strong> (<a class="reference internal" href="#playnano.cli.actions.IO" title="playnano.cli.actions.IO"><em>IO</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – I/O abstraction used for reading commands and printing output. If None,
+standard input/output will be used. Mainly for testing and automation.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the colormap to use for GIF exports(default=DEFAULT_CMAP).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.process_steps">
+<span class="sig-name descname"><span class="pre">process_steps</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.process_steps" title="Link to this definition">¶</a></dt>
+<dd><p>Ordered list of processing steps (name, kwargs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.analysis_steps">
+<span class="sig-name descname"><span class="pre">analysis_steps</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.analysis_steps" title="Link to this definition">¶</a></dt>
+<dd><p>Ordered list of analysis steps (name, kwargs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.processed_stack">
+<span class="sig-name descname"><span class="pre">processed_stack</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.processed_stack" title="Link to this definition">¶</a></dt>
+<dd><p>Cached processed AFM stack produced by running the processing steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.processed_steps_snapshot">
+<span class="sig-name descname"><span class="pre">processed_steps_snapshot</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.processed_steps_snapshot" title="Link to this definition">¶</a></dt>
+<dd><p>Snapshot of <cite>process_steps</cite> at time <cite>processed_stack</cite> was produced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.afm_stack">
+<span class="sig-name descname"><span class="pre">afm_stack</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.afm_stack" title="Link to this definition">¶</a></dt>
+<dd><p>Raw loaded AFM stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.input_path">
+<span class="sig-name descname"><span class="pre">input_path</span></span><a class="headerlink" href="#playnano.cli.actions.Wizard.input_path" title="Link to this definition">¶</a></dt>
+<dd><p>Path object for <cite>input_file</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)">pathlib.Path</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If <cite>input_file</cite> does not exist.</p></li>
+<li><p><a class="reference internal" href="playnano.errors.html#playnano.errors.LoadError" title="playnano.errors.LoadError"><strong>LoadError</strong></a> – If the AFM stack cannot be loaded from the given file.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_aadd">
+<span class="sig-name descname"><span class="pre">handle_aadd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_aadd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_aadd" title="Link to this definition">¶</a></dt>
+<dd><p>Add an analysis step (inline or interactive).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_add">
+<span class="sig-name descname"><span class="pre">handle_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_add" title="Link to this definition">¶</a></dt>
+<dd><p>Add a processing step interactively or from the command line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_alist">
+<span class="sig-name descname"><span class="pre">handle_alist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_alist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_alist" title="Link to this definition">¶</a></dt>
+<dd><p>List current analysis steps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_aload">
+<span class="sig-name descname"><span class="pre">handle_aload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_aload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_aload" title="Link to this definition">¶</a></dt>
+<dd><p>Load analysis steps from a YAML/JSON file, restoring Python types.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_amove">
+<span class="sig-name descname"><span class="pre">handle_amove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_amove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_amove" title="Link to this definition">¶</a></dt>
+<dd><p>Reorder analysis steps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_aremove">
+<span class="sig-name descname"><span class="pre">handle_aremove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_aremove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_aremove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove an analysis step by index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_arun">
+<span class="sig-name descname"><span class="pre">handle_arun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_arun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_arun" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the analysis pipeline, running processing if needed and export results.</p>
+<p>The function supports two modes:</p>
+<ul class="simple">
+<li><p>If the wizard has processing steps configured (self.process_steps), it will
+ensure the processed stack is available and up-to-date and then run analysis
+in-memory on that processed stack.</p></li>
+<li><p>If there are no processing steps, analysis runs directly on the loaded AFM
+stack.</p></li>
+</ul>
+<p>Results are exported as JSON and HDF5 into <cite>self.output_folder</cite> (or current
+directory). The JSON is created with <cite>make_json_safe</cite> and both JSON/HDF5 are
+written atomically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parts</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Tokenized CLI command (unused).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_asave">
+<span class="sig-name descname"><span class="pre">handle_asave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_asave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_asave" title="Link to this definition">¶</a></dt>
+<dd><p>Save current analysis steps to a YAML file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_clear">
+<span class="sig-name descname"><span class="pre">handle_clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_clear" title="Link to this definition">¶</a></dt>
+<dd><p>Insert a clear-mask step into the processing pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_load">
+<span class="sig-name descname"><span class="pre">handle_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_load" title="Link to this definition">¶</a></dt>
+<dd><p>Load processing steps from a YAML file exported by <cite>save</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_move">
+<span class="sig-name descname"><span class="pre">handle_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_move" title="Link to this definition">¶</a></dt>
+<dd><p>Reorder processing steps by moving one from old_index to new_index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_remove">
+<span class="sig-name descname"><span class="pre">handle_remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a processing step by index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_run">
+<span class="sig-name descname"><span class="pre">handle_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_run" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the currently queued processing steps and optionally export outputs.</p>
+<section id="behavior">
+<h2>Behavior<a class="headerlink" href="#behavior" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Runs processing and caches the result.</p></li>
+<li><p>Prompts the user whether to export (tif/npz/h5) and/or create a GIF.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">param parts<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tokenized user command (not currently used).</p>
+</dd>
+<dt class="field-even">type parts<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.handle_save">
+<span class="sig-name descname"><span class="pre">handle_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.handle_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.handle_save" title="Link to this definition">¶</a></dt>
+<dd><p>Save current processing steps to a YAML file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.list_analysis">
+<span class="sig-name descname"><span class="pre">list_analysis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.list_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.list_analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print current analysis steps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.list_steps">
+<span class="sig-name descname"><span class="pre">list_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.list_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.list_steps" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print current processing steps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.print_help">
+<span class="sig-name descname"><span class="pre">print_help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.print_help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.print_help" title="Link to this definition">¶</a></dt>
+<dd><p>Print available wizard commands.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.prompt_for_processing_params">
+<span class="sig-name descname"><span class="pre">prompt_for_processing_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.prompt_for_processing_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.prompt_for_processing_params" title="Link to this definition">¶</a></dt>
+<dd><p>Prompt user for a processing step’s parameters (simple fallback).</p>
+<p>This method provides a small set of built-in prompts for commonly-used
+processing filters. It is a fallback — the module-level
+<cite>ask_for_processing_params</cite> (which introspects/loads processing callables)
+may provide a richer interactive experience and is used in <cite>handle_add</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>step_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the processing step.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mapping of parameter names to values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.run" title="Link to this definition">¶</a></dt>
+<dd><p>Start the interactive REPL loop.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.cli.actions.Wizard.run_processing_and_cache">
+<span class="sig-name descname"><span class="pre">run_processing_and_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/cli/actions.html#Wizard.run_processing_and_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.Wizard.run_processing_and_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Run the current processing steps and cache the processed AFM stack.</p>
+<p>The method calls into <cite>process_stack</cite> with the accumulated <cite>process_steps</cite>
+and stores the returned AFMImageStack in <cite>self.processed_stack</cite> for
+subsequent in-memory analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The processed AFM stack object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="playnano.errors.html#playnano.errors.LoadError" title="playnano.errors.LoadError"><strong>LoadError</strong></a> – If loading/processing fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.actions.analyze_pipeline_mode">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">analyze_pipeline_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#analyze_pipeline_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.analyze_pipeline_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Run an analysis pipeline on an AFM stack and export both JSON and HDF5.</p>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Load the AFMImageStack from disk using <cite>input_file</cite> and <cite>channel</cite>.</p></li>
+<li><p>Parse analysis modules from <cite>analysis_file</cite> or <cite>analysis_str</cite>.</p></li>
+<li><p>Build and execute an <cite>AnalysisPipeline</cite> over the stack.</p></li>
+<li><p>Sanitize the full record (<cite>make_json_safe</cite>) and write it to <cite>&lt;output&gt;.json</cite>.</p></li>
+<li><p>Export the raw record to HDF5 via <cite>export_to_hdf5</cite>.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">param input_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to the AFM input file.</p>
+</dd>
+<dt class="field-even">type input_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param channel<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of the data channel to analyze (e.g., “height_trace”).</p>
+</dd>
+<dt class="field-even">type channel<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param analysis_str<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Semicolon-delimited inline analysis string, e.g.
+<cite>“feature_detection:threshold=5;particle_tracking”</cite>.</p>
+</dd>
+<dt class="field-even">type analysis_str<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param analysis_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to a YAML/JSON file defining the analysis pipeline.</p>
+</dd>
+<dt class="field-even">type analysis_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param output_folder<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory in which to write JSON + HDF5 exports.</p>
+</dd>
+<dt class="field-even">type output_folder<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param output_name<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Base filename (no extension) for both <cite>&lt;output&gt;.json</cite> and <cite>&lt;output&gt;.h5</cite>;
+defaults to the stem of <cite>input_file</cite>.</p>
+</dd>
+<dt class="field-even">type output_name<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">rtype<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.actions.play_pipeline_mode">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">play_pipeline_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'afm_brown'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#play_pipeline_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.play_pipeline_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Launch an interactive GUI to browse an AFM stack with optional filters.</p>
+<section id="id1">
+<h2>Steps<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Load the AFM stack from <cite>input_file</cite> and <cite>channel</cite>.</p></li>
+<li><p>Optionally apply a processing pipeline (inline or YAML/JSON).</p></li>
+<li><p>Display frames in a QT-based viewer with live filtering controls.</p></li>
+<li><p>Allow on-the-fly export to bundles or GIF via GUI.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">param input_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to the AFM input file.</p>
+</dd>
+<dt class="field-even">type input_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param channel<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data channel to display (e.g., “height_trace”).</p>
+</dd>
+<dt class="field-even">type channel<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param processing_str<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Inline processing string as for <cite>process_pipeline_mode</cite>.</p>
+</dd>
+<dt class="field-even">type processing_str<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param processing_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to a YAML/JSON file specifying processing steps.</p>
+</dd>
+<dt class="field-even">type processing_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param output_folder<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory for any GUI-triggered exports.</p>
+</dd>
+<dt class="field-even">type output_folder<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param output_name<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Base filename (no extension) for GUI exports.</p>
+</dd>
+<dt class="field-even">type output_name<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param scale_bar_nm<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Scale bar length (in nm) displayed on frames.</p>
+</dd>
+<dt class="field-even">type scale_bar_nm<span class="colon">:</span></dt>
+<dd class="field-even"><p>int or None</p>
+</dd>
+<dt class="field-odd">param zmin<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Minimum Z-value mapping (float or <cite>“auto”</cite>).</p>
+</dd>
+<dt class="field-even">type zmin<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param zmax<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum Z-value mapping (float or <cite>“auto”</cite>).</p>
+</dd>
+<dt class="field-even">type zmax<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param cmap<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).</p>
+</dd>
+<dt class="field-even">type cmap<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param fps<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Initial frame rate for the GIF in frames per second (default=5.0).</p>
+</dd>
+<dt class="field-even">type fps<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">rtype<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.actions.print_env_info">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">print_env_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/cli/actions.html#print_env_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.print_env_info" title="Link to this definition">¶</a></dt>
+<dd><p>Print the current playNano environment metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.actions.process_pipeline_mode">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">process_pipeline_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">export</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_gif</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_video</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'afm_brown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#process_pipeline_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.process_pipeline_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a processing pipeline to an AFM file, then optionally export data and GIF.</p>
+<section id="id2">
+<h2>Steps<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Parse processing steps from either <cite>processing_file</cite> (YAML/JSON)
+or <cite>processing_str</cite>.</p></li>
+<li><p>Run the ProcessingPipeline on the AFM stack to apply all filters.</p></li>
+<li><p>Export the processed stack to TIFF/NPZ/HDF5 formats (<cite>export_bundles</cite>).</p></li>
+<li><p>Generate an animated GIF of the filtered data (<cite>export_gif</cite>).</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">param input_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to the AFM input file.</p>
+</dd>
+<dt class="field-even">type input_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param channel<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of the data channel to extract (e.g., “height_trace”).</p>
+</dd>
+<dt class="field-even">type channel<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param processing_str<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Semicolon-delimited inline pipeline string, e.g.
+<cite>“remove_plane;gaussian_filter:sigma=2”</cite>.</p>
+</dd>
+<dt class="field-even">type processing_str<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param processing_file<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to a YAML/JSON file defining the processing steps.</p>
+</dd>
+<dt class="field-even">type processing_file<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param export<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Comma-separated output formats for bundles (e.g. <cite>“tif,npz,h5”</cite>).</p>
+</dd>
+<dt class="field-even">type export<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param make_gif<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether to create an animated GIF of the filtered stack.</p>
+</dd>
+<dt class="field-even">type make_gif<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param output_folder<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Directory in which to write any export files.</p>
+</dd>
+<dt class="field-even">type output_folder<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param output_name<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Base filename (no extension) for bundles/GIF; defaults to
+the stem of <cite>input_file</cite>.</p>
+</dd>
+<dt class="field-even">type output_name<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+<dt class="field-odd">param scale_bar_nm<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Length (in nm) of the scale bar overlaid on each GIF frame.</p>
+</dd>
+<dt class="field-even">type scale_bar_nm<span class="colon">:</span></dt>
+<dd class="field-even"><p>int or None</p>
+</dd>
+<dt class="field-odd">param zmin<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Minimum Z-value for GIF color normalization (float string or <cite>“auto”</cite>).</p>
+</dd>
+<dt class="field-even">type zmin<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param zmax<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum Z-value for GIF color normalization (float string or <cite>“auto”</cite>).</p>
+</dd>
+<dt class="field-even">type zmax<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param cmap<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Name of the colormap to use for GIF export (default=DEFAULT_CMAP).</p>
+</dd>
+<dt class="field-even">type cmap<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param fps<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Frame rate for the GIF in frames per second (default=5.0).</p>
+</dd>
+<dt class="field-even">type fps<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">rtype<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.actions.warn_if_unprocessed">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.actions.</span></span><span class="sig-name descname"><span class="pre">warn_if_unprocessed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/actions.html#warn_if_unprocessed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.actions.warn_if_unprocessed" title="Link to this definition">¶</a></dt>
+<dd><p>Warn if the AFMImageStack has not been processed using the playNano pipeline.</p>
+<p>Emits a warning if .processed is missing or does not contain a ‘raw’ key.</p>
+</dd></dl>
+
 </section>
 
         </article>
@@ -555,8 +1132,65 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.cli.actions module</a><ul>
+<li><a class="reference internal" href="#playnano.cli.actions.IO"><code class="docutils literal notranslate"><span class="pre">IO</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.cli.actions.IO.ask"><code class="docutils literal notranslate"><span class="pre">IO.ask()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.IO.say"><code class="docutils literal notranslate"><span class="pre">IO.say()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard"><code class="docutils literal notranslate"><span class="pre">Wizard</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.process_steps"><code class="docutils literal notranslate"><span class="pre">Wizard.process_steps</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.analysis_steps"><code class="docutils literal notranslate"><span class="pre">Wizard.analysis_steps</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.processed_stack"><code class="docutils literal notranslate"><span class="pre">Wizard.processed_stack</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.processed_steps_snapshot"><code class="docutils literal notranslate"><span class="pre">Wizard.processed_steps_snapshot</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.afm_stack"><code class="docutils literal notranslate"><span class="pre">Wizard.afm_stack</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.input_path"><code class="docutils literal notranslate"><span class="pre">Wizard.input_path</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_aadd"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_aadd()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_add"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_add()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_alist"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_alist()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_aload"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_aload()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_amove"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_amove()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_aremove"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_aremove()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_arun"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_arun()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_asave"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_asave()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_clear"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_clear()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_load"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_load()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_move"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_move()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_remove"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_remove()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_run"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_run()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.handle_save"><code class="docutils literal notranslate"><span class="pre">Wizard.handle_save()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.list_analysis"><code class="docutils literal notranslate"><span class="pre">Wizard.list_analysis()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.list_steps"><code class="docutils literal notranslate"><span class="pre">Wizard.list_steps()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.print_help"><code class="docutils literal notranslate"><span class="pre">Wizard.print_help()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.prompt_for_processing_params"><code class="docutils literal notranslate"><span class="pre">Wizard.prompt_for_processing_params()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.run"><code class="docutils literal notranslate"><span class="pre">Wizard.run()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.Wizard.run_processing_and_cache"><code class="docutils literal notranslate"><span class="pre">Wizard.run_processing_and_cache()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#playnano.cli.actions.analyze_pipeline_mode"><code class="docutils literal notranslate"><span class="pre">analyze_pipeline_mode()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.play_pipeline_mode"><code class="docutils literal notranslate"><span class="pre">play_pipeline_mode()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.print_env_info"><code class="docutils literal notranslate"><span class="pre">print_env_info()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.process_pipeline_mode"><code class="docutils literal notranslate"><span class="pre">process_pipeline_mode()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.actions.warn_if_unprocessed"><code class="docutils literal notranslate"><span class="pre">warn_if_unprocessed()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

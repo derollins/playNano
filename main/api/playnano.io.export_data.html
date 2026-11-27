@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -630,6 +631,9 @@ JSON text.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code>: float32 scalar.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code>: the channel name.</p></li>
 </ul>
+<p>Text is stored as NumPy unicode arrays, so no array is pickled and the file
+can be opened with <code class="docutils literal notranslate"><span class="pre">np.load(path,</span> <span class="pre">allow_pickle=False)</span></code>. Bundles written
+before playNano 0.5.4 stored text as object arrays, which need pickle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

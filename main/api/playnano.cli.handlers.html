@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,13 +508,79 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-cli-handlers-module">
-<h1>playnano.cli.handlers module<a class="headerlink" href="#playnano-cli-handlers-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.cli.handlers">
+<span id="playnano-cli-handlers-module"></span><h1>playnano.cli.handlers module<a class="headerlink" href="#module-playnano.cli.handlers" title="Link to this heading">¶</a></h1>
+<p>Functions that run each <code class="docutils literal notranslate"><span class="pre">playnano</span></code> subcommand from its parsed arguments.</p>
+<p>Each handler passes the options to the matching function in
+<a class="reference internal" href="playnano.cli.actions.html#module-playnano.cli.actions" title="playnano.cli.actions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.cli.actions</span></code></a>. If that raises an error, the handler logs it
+(with the traceback at <code class="docutils literal notranslate"><span class="pre">--log-level</span> <span class="pre">DEBUG</span></code>) and exits with status 1.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_analyze">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_analyze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_analyze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_analyze" title="Link to this definition">¶</a></dt>
+<dd><p>Run <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">analyze</span></code>: analyse a stack and save the results.</p>
+<p>Calls <a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.analyze_pipeline_mode" title="playnano.cli.actions.analyze_pipeline_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.cli.actions.analyze_pipeline_mode()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Parsed options: <code class="docutils literal notranslate"><span class="pre">input_file</span></code>, <code class="docutils literal notranslate"><span class="pre">channel</span></code>, <code class="docutils literal notranslate"><span class="pre">analysis_steps</span></code>,
+<code class="docutils literal notranslate"><span class="pre">analysis_file</span></code>, <code class="docutils literal notranslate"><span class="pre">output_folder</span></code> and <code class="docutils literal notranslate"><span class="pre">output_name</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_play">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_play"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_play" title="Link to this definition">¶</a></dt>
+<dd><p>Run <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code>: open a stack in the GUI.</p>
+<p>Calls <a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.play_pipeline_mode" title="playnano.cli.actions.play_pipeline_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.cli.actions.play_pipeline_mode()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Parsed options: <code class="docutils literal notranslate"><span class="pre">input_file</span></code>, <code class="docutils literal notranslate"><span class="pre">channel</span></code>, <code class="docutils literal notranslate"><span class="pre">processing</span></code>,
+<code class="docutils literal notranslate"><span class="pre">processing_file</span></code>, <code class="docutils literal notranslate"><span class="pre">output_folder</span></code>, <code class="docutils literal notranslate"><span class="pre">output_name</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scale_bar_nm</span></code>, <code class="docutils literal notranslate"><span class="pre">zmin</span></code>, <code class="docutils literal notranslate"><span class="pre">zmax</span></code>, <code class="docutils literal notranslate"><span class="pre">cmap</span></code> and <code class="docutils literal notranslate"><span class="pre">fps</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">input_file</span></code> contains option flags such as <code class="docutils literal notranslate"><span class="pre">--channel</span></code>, which
+happens when a quoted Windows path ends in a backslash, the error explains
+how to fix the path. Any error is logged and the command exits with
+status 1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_process">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_process" title="Link to this definition">¶</a></dt>
+<dd><p>Run <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">process</span></code>: process a stack and export the results.</p>
+<p>Calls <a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.process_pipeline_mode" title="playnano.cli.actions.process_pipeline_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.cli.actions.process_pipeline_mode()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Parsed options: <code class="docutils literal notranslate"><span class="pre">input_file</span></code>, <code class="docutils literal notranslate"><span class="pre">channel</span></code>, <code class="docutils literal notranslate"><span class="pre">processing</span></code>,
+<code class="docutils literal notranslate"><span class="pre">processing_file</span></code>, <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">make_gif</span></code>, <code class="docutils literal notranslate"><span class="pre">make_video</span></code>,
+<code class="docutils literal notranslate"><span class="pre">make_sequence</span></code>, <code class="docutils literal notranslate"><span class="pre">output_folder</span></code>, <code class="docutils literal notranslate"><span class="pre">output_name</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scale_bar_nm</span></code>, <code class="docutils literal notranslate"><span class="pre">zmin</span></code>, <code class="docutils literal notranslate"><span class="pre">zmax</span></code>, <code class="docutils literal notranslate"><span class="pre">draw_ts</span></code>, <code class="docutils literal notranslate"><span class="pre">cmap</span></code> and
+<code class="docutils literal notranslate"><span class="pre">fps</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_wizard">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_wizard" title="Link to this definition">¶</a></dt>
+<dd><p>Run <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">wizard</span></code>: build and run pipelines interactively.</p>
+<p>Starts a <a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.Wizard" title="playnano.cli.actions.Wizard"><code class="xref py py-class docutils literal notranslate"><span class="pre">playnano.cli.actions.Wizard</span></code></a>; type <code class="docutils literal notranslate"><span class="pre">help</span></code> at its prompt
+for the commands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Parsed options: <code class="docutils literal notranslate"><span class="pre">input_file</span></code>, <code class="docutils literal notranslate"><span class="pre">channel</span></code>, <code class="docutils literal notranslate"><span class="pre">output_folder</span></code>,
+<code class="docutils literal notranslate"><span class="pre">output_name</span></code>, <code class="docutils literal notranslate"><span class="pre">scale_bar_nm</span></code> and <code class="docutils literal notranslate"><span class="pre">cmap</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -559,8 +626,30 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.cli.handlers module</a><ul>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_analyze"><code class="docutils literal notranslate"><span class="pre">handle_analyze()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_play"><code class="docutils literal notranslate"><span class="pre">handle_play()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_process"><code class="docutils literal notranslate"><span class="pre">handle_process()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_wizard"><code class="docutils literal notranslate"><span class="pre">handle_wizard()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

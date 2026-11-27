@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -330,13 +330,45 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-gui-main-module">
-<h1>playnano.gui.main module<a class="headerlink" href="#playnano-gui-main-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.gui.main">
+<span id="playnano-gui-main-module"></span><h1>playnano.gui.main module<a class="headerlink" href="#module-playnano.gui.main" title="Link to this heading">¶</a></h1>
+<p>Main entry point for the playNano GUI application.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.gui.main.gui_entry">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">gui_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_with_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/main.html#gui_entry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.main.gui_entry" title="Link to this definition">¶</a></dt>
+<dd><p>Launch the playNano GUI with a given AFM stack and visualization/export settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFM image stack to display and process.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Directory in which to save exported files (default: None, which uses
+internal defaults).</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Base filename for any exports (default: “” - this triggers the default
+behaviour when utils.io_utils.sanitize_output_name is called).</p></li>
+<li><p><strong>steps_with_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>) or </em><em>None</em><em>, </em><em>optional</em>) – A list of (filter_name, kwargs) tuples for the default processing pipeline.
+If None, the application’s built-in defaults are used.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Physical length of the scale bar in nanometers (default: 100).</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em>, or </em><em>None</em><em>, </em><em>optional</em>) – Minimum height value for the initial colormap range. If “auto”, uses the
+1st percentile of the data; if None, uses the data minimum; if a float,
+uses that value (default: “auto”).</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em>, or </em><em>None</em><em>, </em><em>optional</em>) – Maximum height value for the initial colormap range. If “auto”, uses the
+99th percentile of the data; if None, uses the data maximum; if a float,
+uses that value (default: “auto”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function will start a Qt event loop and will not return to the caller.</p>
+</dd></dl>
+
 </section>
 
         </article>
@@ -382,8 +414,27 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.gui.main module</a><ul>
+<li><a class="reference internal" href="#playnano.gui.main.gui_entry"><code class="docutils literal notranslate"><span class="pre">gui_entry()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

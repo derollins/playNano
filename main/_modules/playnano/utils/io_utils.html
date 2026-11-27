@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.io_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Utility functions for IO operations in playNano."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Helpers for reading and writing data.</span>
+
+<span class="sd">Frame metadata, height units, scaling images to 8-bit, output names and</span>
+<span class="sd">folders, and converting results to types JSON can store.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -571,39 +577,34 @@
     <span class="n">line_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Build a canonical per-frame metadata dict shared by all playNano readers.</span>
+<span class="sd">    Make one frame's metadata dict, as every playNano reader does.</span>
 
-<span class="sd">    Every value is cast to a native Python type so the dict is JSON-serialisable</span>
-<span class="sd">    (frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise</span>
-<span class="sd">    raise TypeError).</span>
-
-<span class="sd">    Fields a format cannot provide are stored as ``None``.</span>
-
-<span class="sd">    Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not</span>
-<span class="sd">    here. ``start_time`` (human-readable ISO) is derived from the first frame's</span>
-<span class="sd">    ``start_epoch_ms`` at the stack level; don't duplicate it per frame.</span>
+<span class="sd">    Values are converted to plain Python types so the dict can be saved as</span>
+<span class="sd">    JSON. Settings of the whole recording, such as bidirectional scanning, go in</span>
+<span class="sd">    :attr:`playnano.afm_stack.AFMImageStack.acquisition` instead.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    timestamp : float</span>
-<span class="sd">        Frame time in seconds relative to frame 0. Required.</span>
+<span class="sd">        Time of the frame in seconds, from the start of frame 0.</span>
 <span class="sd">    frame_pixel_size_nm : float</span>
-<span class="sd">        Physical size of one pixel in nanometres for this frame. Required.</span>
+<span class="sd">        Pixel size of this frame, in nm.</span>
 <span class="sd">    frame_duration_s : float, optional</span>
-<span class="sd">        Frame acquisition duration in seconds; ``None`` if unknown.</span>
+<span class="sd">        Time taken to record the frame, in seconds. Default is None (unknown).</span>
 <span class="sd">    start_epoch_ms : int, optional</span>
-<span class="sd">        Frame start as Unix epoch milliseconds (UTC); ``None`` for formats</span>
-<span class="sd">        without absolute timing.</span>
+<span class="sd">        Start of the frame, in milliseconds since 1970 (UTC). Default is None</span>
+<span class="sd">        (unknown).</span>
 <span class="sd">    scan_direction : str, optional</span>
-<span class="sd">        Slow-axis frame direction (e.g. ``'topDown'``/``'bottomUp'``). Per-frame</span>
-<span class="sd">        because NanoScope spm sequences can alternate.</span>
+<span class="sd">        Slow-scan direction of this frame, for example ``"topDown"`` or</span>
+<span class="sd">        ``"bottomUp"`` (NanoScope ``.spm`` sequences can alternate). Default is</span>
+<span class="sd">        None (unknown).</span>
 <span class="sd">    line_rate : float, optional</span>
-<span class="sd">        Fast-scan line rate (lines per second); ``None`` if unknown.</span>
+<span class="sd">        Lines scanned per second. Default is None (unknown).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    dict</span>
-<span class="sd">        Exactly the keys in ``FRAME_METADATA_KEYS``.</span>
+<span class="sd">        The keys of ``FRAME_METADATA_KEYS``, with None for unknown values.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">"timestamp"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">timestamp</span><span class="p">),</span>
@@ -625,40 +626,40 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.guess_height_data_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">guess_height_data_units</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Guess the most likely units of AFM height data from the data range.</span>
+<span class="sd">    Guess the unit of height data from the range of its values.</span>
+
+<span class="sd">    The range (largest minus smallest finite value) gives:</span>
+
+<span class="sd">    - more than 1e4: ``"pm"``;</span>
+<span class="sd">    - more than 1e-2, up to 1e4: ``"nm"``;</span>
+<span class="sd">    - more than 1e-4, up to 1e-2: ``"um"``;</span>
+<span class="sd">    - more than 1e-5, up to 1e-4: ``"mm"``;</span>
+<span class="sd">    - up to 1e-5: ``"m"``.</span>
+
+<span class="sd">    A single extreme value can change the result.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : np.ndarray</span>
-<span class="sd">        AFM height data array, typically 2D or 3D. Non-finite values</span>
-<span class="sd">        (NaN or infinity) are ignored when determining the range.</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        Height data, any shape. NaN and infinite values are ignored.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    str</span>
-<span class="sd">        A string indicating the guessed unit of the height data, one of:</span>
-<span class="sd">        'pm' (picometers), 'nm' (nanometers), 'um' (micrometers),</span>
-<span class="sd">        'mm' (millimeters), or 'm' (meters).</span>
+<span class="sd">    {"pm", "nm", "um", "mm", "m"}</span>
+<span class="sd">        The guessed unit.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the input array contains no finite values.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    The unit is estimated based on the numeric range of the data as follows:</span>
-<span class="sd">        - Range &gt; 1e4           : 'pm'</span>
-<span class="sd">        - 1e-2 &lt; Range &lt;= 1e4   : 'nm'</span>
-<span class="sd">        - 1e-4 &lt; Range &lt;= 1e-2  : 'um'</span>
-<span class="sd">        - 1e-5 &lt; Range &lt;= 1e-4  : 'mm'</span>
-<span class="sd">        - Range &lt;= 1e-5         : 'm'</span>
+<span class="sd">        If there are no finite values.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; data = np.array([[0, 5e-9], [1e-8, 2e-8]])</span>
-<span class="sd">    &gt;&gt;&gt; guess_height_data_units(data)</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.io_utils import guess_height_data_units</span>
+<span class="sd">    &gt;&gt;&gt; guess_height_data_units(np.array([0.0, 5e-9, 2e-8]))</span>
+<span class="sd">    'm'</span>
+<span class="sd">    &gt;&gt;&gt; guess_height_data_units(np.array([0.0, 3.0]))</span>
 <span class="sd">    'nm'</span>
 <span class="sd">    """</span>
     <span class="n">finite</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">stack</span><span class="p">)]</span>
@@ -683,25 +684,24 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.convert_height_units_to_nm">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_height_units_to_nm</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Convert AFM height data from the guessed unit to nanometers.</span>
+<span class="sd">    Convert height data to nm.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        Input height data array, typically 2D or 3D.</span>
-<span class="sd">    unit : str</span>
-<span class="sd">        Unit string as returned by `guess_height_data_units`. Must be one of:</span>
-<span class="sd">        'pm', 'nm', 'um', 'mm', or 'm'.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        Height data.</span>
+<span class="sd">    unit : {"pm", "nm", "um", "mm", "m"}</span>
+<span class="sd">        Unit of ``data``, for example from :func:`guess_height_data_units`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        The input data converted to nanometers.</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        A new array in nm.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the provided unit string is not recognized.</span>
+<span class="sd">        If ``unit`` is not one of the units above.</span>
 <span class="sd">    """</span>
     <span class="n">unit_to_multiplier</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"pm"</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>  <span class="c1"># 1 pm = 1e-3 nm</span>
@@ -727,17 +727,20 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.normalize_to_uint8">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_to_uint8</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Normalize a float image to the uint8 [0, 255] range, handling NaNs and Infs.</span>
+<span class="sd">    Scale an image to 0-255 as uint8, from its minimum to its maximum.</span>
+
+<span class="sd">    NaN and infinite values are set to 0 first, so they count as 0. Values are</span>
+<span class="sd">    rounded down. An image with one value gives all zeros.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    image : np.ndarray</span>
-<span class="sd">        Input image as a NumPy array of floats. May contain NaNs or infinite values.</span>
+<span class="sd">    image : numpy.ndarray</span>
+<span class="sd">        Image, any shape.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        Normalized image as a uint8 NumPy array with values in the range [0, 255].</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Array of the same shape, dtype uint8.</span>
 <span class="sd">    """</span>
     <span class="c1"># Replace NaNs and Infs with 0</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -766,30 +769,47 @@
     <span class="n">upper_percentile</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Compute robust Z-scale bounds (height or intensity range) for normalization.</span>
+<span class="sd">    Work out the lower and upper limits of a colour scale.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        2D or 3D array of AFM image data.</span>
-<span class="sd">    zmin : float, "auto", or None</span>
-<span class="sd">        Lower bound: "auto" uses percentile, None uses data min, float uses value.</span>
-<span class="sd">    zmax : float or "auto"</span>
-<span class="sd">        Upper bound: "auto" uses percentile, None uses data max, float uses value.</span>
-<span class="sd">    lower_percentile : int, optional</span>
-<span class="sd">        Percentile to use for lower bound when zmin == "auto". Default is 1.</span>
-<span class="sd">    upper_percentile : int, optional</span>
-<span class="sd">        Percentile to use for upper bound when zmax == "auto". Default is 99.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        Heights, any shape. NaN and infinite values are ignored.</span>
+<span class="sd">    zmin : float, "auto" or None, optional</span>
+<span class="sd">        Lower limit: a number is used as given, ``"auto"`` uses the</span>
+<span class="sd">        ``lower_percentile`` percentile of ``data`` and None its minimum.</span>
+<span class="sd">        Default is ``"auto"``.</span>
+<span class="sd">    zmax : float, "auto" or None, optional</span>
+<span class="sd">        Upper limit, in the same way, using ``upper_percentile`` or the</span>
+<span class="sd">        maximum. Default is ``"auto"``.</span>
+<span class="sd">    lower_percentile : float, optional</span>
+<span class="sd">        Percentile for ``zmin="auto"``. Default is 1.</span>
+<span class="sd">    upper_percentile : float, optional</span>
+<span class="sd">        Percentile for ``zmax="auto"``. Default is 99.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    (float, float)</span>
-<span class="sd">        zmin and zmax values suitable for normalization.</span>
+<span class="sd">    tuple of float</span>
+<span class="sd">        ``(zmin, zmax)``.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If zmin &gt; zmax after processing or invalid input types.</span>
+<span class="sd">        If ``zmin`` or ``zmax`` is not a number, ``"auto"`` or None, or the</span>
+<span class="sd">        lower limit is greater than the upper. Also if ``data`` has no finite</span>
+<span class="sd">        values and a limit is None.</span>
+<span class="sd">    IndexError</span>
+<span class="sd">        If ``data`` has no finite values and a limit is ``"auto"``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.io_utils import compute_zscale_range</span>
+<span class="sd">    &gt;&gt;&gt; data = np.arange(101.0)</span>
+<span class="sd">    &gt;&gt;&gt; [float(z) for z in compute_zscale_range(data)]</span>
+<span class="sd">    [1.0, 99.0]</span>
+<span class="sd">    &gt;&gt;&gt; [float(z) for z in compute_zscale_range(data, zmin=None, zmax=50)]</span>
+<span class="sd">    [0.0, 50.0]</span>
 <span class="sd">    """</span>
     <span class="n">flat</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
     <span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">flat</span><span class="p">)]</span>
@@ -832,22 +852,37 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.sanitize_output_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sanitize_output_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Sanitize output file names by removing a file extension and stripping whitespace.</span>
+<span class="sd">    Clean a user-supplied output name.</span>
 
-<span class="sd">    Only known output extensions (see ``OUTPUT_EXTENSIONS``) are removed, so dots</span>
-<span class="sd">    elsewhere in the name are kept: ``"exp_1.5nM.gif"`` becomes ``"exp_1.5nM"``.</span>
+<span class="sd">    Folders and surrounding spaces are removed, then one known extension</span>
+<span class="sd">    (``OUTPUT_EXTENSIONS``, in any case), so other dots are kept:</span>
+<span class="sd">    ``"exp_1.5nM.gif"`` becomes ``"exp_1.5nM"``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    name : str</span>
-<span class="sd">        The output file name provided by the user.</span>
+<span class="sd">    name : str or None</span>
+<span class="sd">        The name given by the user.</span>
 <span class="sd">    default : str</span>
-<span class="sd">        Default name to use if `name` is empty or None.</span>
+<span class="sd">        Returned if ``name`` is None or empty, or nothing is left after</span>
+<span class="sd">        cleaning.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
-<span class="sd">        Sanitized base file name without extension.</span>
+<span class="sd">        The cleaned name, without an extension.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the cleaned name contains a character in ``INVALID_CHARS``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.io_utils import sanitize_output_name</span>
+<span class="sd">    &gt;&gt;&gt; sanitize_output_name(" results/exp_1.5nM.GIF ", "default")</span>
+<span class="sd">    'exp_1.5nM'</span>
+<span class="sd">    &gt;&gt;&gt; sanitize_output_name(None, "default")</span>
+<span class="sd">    'default'</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
@@ -872,24 +907,25 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.prepare_output_directory">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">prepare_output_directory</span><span class="p">(</span><span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"output"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Validate, resolve, and create the output directory if it doesn't exist.</span>
+<span class="sd">    Check an output folder and create it if missing.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    folder : str or None</span>
-<span class="sd">        User-provided output folder path. If None, use `default`.</span>
+<span class="sd">    folder : str, pathlib.Path or None</span>
+<span class="sd">        The folder; relative paths are relative to the current folder. If None</span>
+<span class="sd">        or empty, ``default``.</span>
 <span class="sd">    default : str, optional</span>
-<span class="sd">        Default folder name to use if `folder` not specified.</span>
+<span class="sd">        Folder used when ``folder`` is not given. Default is ``"output"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Path</span>
-<span class="sd">        A Path object pointing to the created output directory.</span>
+<span class="sd">    pathlib.Path</span>
+<span class="sd">        The absolute path of the folder, which now exists.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If any part of the folder path contains invalid characters.</span>
+<span class="sd">        If any part of the path contains any of ``* ? " &lt; &gt; |``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">folder</span> <span class="o">=</span> <span class="n">default</span>
@@ -965,7 +1001,35 @@
 <div class="viewcode-block" id="make_json_safe">
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.make_json_safe">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_json_safe</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Recursively convert NumPy types and non-JSON objects into serializable ones."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert NumPy values and functions in nested data to types JSON can store.</span>
+
+<span class="sd">    - NumPy arrays become lists, and NumPy integers and floats become ``int``</span>
+<span class="sd">      and ``float``.</span>
+<span class="sd">    - Dicts, lists and tuples are converted item by item; tuples stay tuples</span>
+<span class="sd">      (JSON writes them as lists). Dict keys that JSON cannot store become</span>
+<span class="sd">      strings.</span>
+<span class="sd">    - Functions and classes are replaced by their name.</span>
+<span class="sd">    - Anything else is returned unchanged, including NumPy booleans and sets,</span>
+<span class="sd">      which JSON cannot store.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : object</span>
+<span class="sd">        The data to convert. Not changed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    object</span>
+<span class="sd">        The converted data.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.io_utils import make_json_safe</span>
+<span class="sd">    &gt;&gt;&gt; make_json_safe({"n": np.int64(3), "xy": np.array([1.5, 2.0]), "f": len})</span>
+<span class="sd">    {'n': 3, 'xy': [1.5, 2.0], 'f': 'len'}</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)):</span>
@@ -992,17 +1056,18 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.io_utils.html#playnano.utils.io_utils.decode_hdf5_attr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">decode_hdf5_attr</span><span class="p">(</span><span class="n">attr</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Decode an attribute that may be bytes or a string.</span>
+<span class="sd">    Return an HDF5 attribute as a string.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    attr : bytes or str</span>
-<span class="sd">        The attribute to decode.</span>
+<span class="sd">        The attribute value. Bytes are decoded as UTF-8; anything else is</span>
+<span class="sd">        passed to ``str``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
-<span class="sd">        The decoded string.</span>
+<span class="sd">        The value as a string.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">attr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>

@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.param_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Utility to attach parameter-condition functions to processing callables."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Mark which parameters of a processing or analysis function apply when.</span>
+
+<span class="sd">The command line uses these conditions to skip questions and drop settings</span>
+<span class="sd">that do not apply, for example a hole size when holes are not filled.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 
@@ -515,15 +521,32 @@
 <a class="viewcode-back" href="../../../api/playnano.utils.param_utils.html#playnano.utils.param_utils.param_conditions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">param_conditions</span><span class="p">(</span><span class="o">**</span><span class="n">conds</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Decorate a processing or analysis callable with parameter-conditions.</span>
+<span class="sd">    Attach conditions saying when a function's parameters apply.</span>
 
-<span class="sd">    Each keyword is the parameter name and the value is a callable that will be</span>
-<span class="sd">    called with the currently collected kwargs (a dict) and must return True if</span>
-<span class="sd">    that parameter should be asked/present, False otherwise.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    **conds : callable</span>
+<span class="sd">        One per parameter name: a function taking the dict of parameters given</span>
+<span class="sd">        so far and returning True if this parameter applies.</span>
 
-<span class="sd">    Uses example:</span>
-<span class="sd">    @param_conditions(hole_area=lambda p: p.get("fill_holes", False)</span>
-<span class="sd">    def run()</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        A decorator that stores ``conds`` on the function as</span>
+<span class="sd">        ``_param_conditions`` and returns the function unchanged.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    prune_kwargs : Remove parameters that do not apply.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.param_utils import param_conditions</span>
+<span class="sd">    &gt;&gt;&gt; @param_conditions(hole_area=lambda p: p.get("fill_holes", False))</span>
+<span class="sd">    ... def mask_fn(frame, fill_holes=False, hole_area=None):</span>
+<span class="sd">    ...     return frame</span>
+<span class="sd">    &gt;&gt;&gt; sorted(mask_fn._param_conditions)</span>
+<span class="sd">    ['hole_area']</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
@@ -537,7 +560,32 @@
 <div class="viewcode-block" id="prune_kwargs">
 <a class="viewcode-back" href="../../../api/playnano.utils.param_utils.html#playnano.utils.param_utils.prune_kwargs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">prune_kwargs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Remove inactive or None-valued parameters from kwargs."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Remove parameters that are None or whose condition is not met.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fn : callable</span>
+<span class="sd">        Function the parameters are for, possibly decorated with</span>
+<span class="sd">        :func:`param_conditions`.</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Parameters. Not changed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The parameters that are not None and whose condition, if any, returns</span>
+<span class="sd">        True for ``kwargs``. A condition that raises an error counts as False.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.utils.param_utils import param_conditions, prune_kwargs</span>
+<span class="sd">    &gt;&gt;&gt; @param_conditions(hole_area=lambda p: p.get("fill_holes", False))</span>
+<span class="sd">    ... def mask_fn(frame, fill_holes=False, hole_area=None, sigma=None):</span>
+<span class="sd">    ...     return frame</span>
+<span class="sd">    &gt;&gt;&gt; prune_kwargs(mask_fn, {"fill_holes": False, "hole_area": 10, "sigma": None})</span>
+<span class="sd">    {'fill_holes': False}</span>
+<span class="sd">    """</span>
     <span class="n">cleaned</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">conds</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">"_param_conditions"</span><span class="p">,</span> <span class="p">{})</span>
 

@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -506,13 +506,36 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-gui-widgets-controls-module">
-<h1>playnano.gui.widgets.controls module<a class="headerlink" href="#playnano-gui-widgets-controls-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.gui.widgets.controls">
+<span id="playnano-gui-widgets-controls-module"></span><h1>playnano.gui.widgets.controls module<a class="headerlink" href="#module-playnano.gui.widgets.controls" title="Link to this heading">¶</a></h1>
+<p>Defines ViewerWidget, a Qt widget for viewing AFM height map stacks.</p>
+<p>The data is viewed as a resizable image with optional timestamp,
+scale-bar and “RAW” label overlays. Playback controls allow video
+playback of a image stack.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>ViewerWidget</dt><dd><p>QWidget subclass that renders one frame of AFM data and draws annotations.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="playnano.gui.widgets.controls.PlaybackControls">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.gui.widgets.controls.</span></span><span class="sig-name descname"><span class="pre">PlaybackControls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/widgets/controls.html#PlaybackControls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.widgets.controls.PlaybackControls" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QWidget.html#PySide6.QtWidgets.QWidget" title="(in PySide v6.12.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></a></p>
+<p>Widget containing playback controls; play button, slider, and FPS control.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.gui.widgets.controls.PlaybackControls.staticMetaObject">
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;PlaybackControls&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QWidget&quot;:</span> <span class="pre">)</span></em><a class="headerlink" href="#playnano.gui.widgets.controls.PlaybackControls.staticMetaObject" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -558,8 +581,31 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.gui.widgets.controls module</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#playnano.gui.widgets.controls.PlaybackControls"><code class="docutils literal notranslate"><span class="pre">PlaybackControls</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.gui.widgets.controls.PlaybackControls.staticMetaObject"><code class="docutils literal notranslate"><span class="pre">PlaybackControls.staticMetaObject</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

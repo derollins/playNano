@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.utils.system_info</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module containing helper functions for collecting system info."""</span>
+<span></span><span class="sd">"""Record the software environment for provenance."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
@@ -530,7 +531,17 @@
 <div class="viewcode-block" id="gather_environment_info">
 <a class="viewcode-back" href="../../../api/playnano.utils.system_info.html#playnano.utils.system_info.gather_environment_info">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gather_environment_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Gather the system info for provenance records."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Describe the software environment, for provenance records.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``"timestamp"`` (UTC, ISO 8601), ``"python_version"``, ``"platform"``</span>
+<span class="sd">        (system, release and machine), ``"playnano_version"`` (None if playNano</span>
+<span class="sd">        is not installed) and ``"&lt;package&gt;_version"`` for each package in</span>
+<span class="sd">        ``KEY_DEPENDENCIES`` that is installed.</span>
+<span class="sd">    """</span>
     <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"timestamp"</span><span class="p">:</span> <span class="n">utc_now_iso</span><span class="p">(),</span>
         <span class="s2">"python_version"</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">),</span>

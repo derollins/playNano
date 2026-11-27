@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -712,9 +713,10 @@
 <span class="sd">        Channel to load, for example ``"height_trace"``; the same names as</span>
 <span class="sd">        AFMReader's ``load_jpk``.</span>
 <span class="sd">    flip_image : bool, optional</span>
-<span class="sd">        Flip each frame vertically. AFMReader already flips ``.jpk`` frames, so</span>
-<span class="sd">        True (the default) returns frames in the row order stored in the file,</span>
-<span class="sd">        and False returns AFMReader's orientation.</span>
+<span class="sd">        Passed to AFMReader's ``load_jpk``, which flips each frame vertically</span>
+<span class="sd">        from the row order stored in the file; playNano does not flip again.</span>
+<span class="sd">        Same meaning as in :func:`~playnano.io.formats.read_h5jpk.load_h5jpk`.</span>
+<span class="sd">        Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -746,7 +748,7 @@
 
     <span class="c1"># Load first image to get shape, pixel size and scan rate</span>
     <span class="n">first_img</span><span class="p">,</span> <span class="n">first_pixel_size_nm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span>
-        <span class="n">load_jpk</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">)</span>
+        <span class="n">load_jpk</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="p">,</span> <span class="n">flip_image</span><span class="o">=</span><span class="n">flip_image</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span> <span class="o">=</span> <span class="n">first_img</span><span class="o">.</span><span class="n">shape</span>
@@ -774,11 +776,15 @@
     <span class="c1"># Load all images</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">jpk_files</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span><span class="n">load_jpk</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+        <span class="c1"># AFMReader does the flip; no additional flipping needed.</span>
+        <span class="c1"># If you do want to flip the image as part of processing then use the</span>
+        <span class="c1"># provenance tracked "flip_vertical" processing step through the</span>
+        <span class="c1"># ProcessingPipeline on the AFMImageStack after loading.</span>
+        <span class="n">img</span><span class="p">,</span> <span class="n">px_size_nm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpack_afmreader_result</span><span class="p">(</span>
+            <span class="n">load_jpk</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">flip_image</span><span class="o">=</span><span class="n">flip_image</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Inconsistent image shape in </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">flip_image</span><span class="p">:</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="n">image_stack</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
 
         <span class="n">scan_direction</span> <span class="o">=</span> <span class="n">_scan_direction</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>

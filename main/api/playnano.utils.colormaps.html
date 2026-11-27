@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,19 +515,18 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.utils.colormaps">
 <span id="playnano-utils-colormaps-module"></span><h1>playnano.utils.colormaps module<a class="headerlink" href="#module-playnano.utils.colormaps" title="Link to this heading">¶</a></h1>
-<p>Utilities for loading, registering, and validating custom colormaps.</p>
-<p>This module provides helper functions to register custom colormaps shipped
-with the playNano package, validate colormap names, and safely resolve
-user-provided colormap inputs with sensible fallbacks.</p>
+<p>playNano’s colormaps, and helpers for checking colormap names.</p>
+<p>Importing <a class="reference internal" href="playnano.html#module-playnano" title="playnano"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano</span></code></a> registers the colormaps <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code> (the
+default), <code class="docutils literal notranslate"><span class="pre">&quot;playnano_gold&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;classic_afm&quot;</span></code>, each with a reversed
+<code class="docutils literal notranslate"><span class="pre">&quot;_r&quot;</span></code> version, so they can be used by name anywhere in Matplotlib.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.colormaps.get_available_cmaps">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.colormaps.</span></span><span class="sig-name descname"><span class="pre">get_available_cmaps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/utils/colormaps.html#get_available_cmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.colormaps.get_available_cmaps" title="Link to this definition">¶</a></dt>
-<dd><p>Return a sorted list of available colormap names.</p>
-<p>This includes all built-in Matplotlib colormaps as well as any custom
-colormaps that have been registered.</p>
+<dd><p>Return the names of all registered colormaps, sorted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Sorted list of colormap names.</p>
+<dd class="field-odd"><p>Matplotlib’s and playNano’s colormaps, including reversed <code class="docutils literal notranslate"><span class="pre">_r</span></code>
+versions.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
@@ -537,17 +537,14 @@ colormaps that have been registered.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.colormaps.is_valid_cmap">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.colormaps.</span></span><span class="sig-name descname"><span class="pre">is_valid_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/colormaps.html#is_valid_cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.colormaps.is_valid_cmap" title="Link to this definition">¶</a></dt>
-<dd><p>Check whether a colormap name is available in Matplotlib.</p>
-<p>This includes both:
-- Built-in Matplotlib colormaps
-- Custom playNano colormaps (if registered)</p>
+<dd><p>Check whether a name is a registered Matplotlib colormap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the colormap to check.</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Colormap name. Matplotlib’s own and playNano’s colormaps are both
+registered.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True if the colormap exists and can be used by Matplotlib,
-False otherwise.</p>
+<dd class="field-even"><p>True if <code class="docutils literal notranslate"><span class="pre">name</span></code> is a string naming a registered colormap.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
@@ -558,53 +555,46 @@ False otherwise.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.colormaps.register_custom_colormaps">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.colormaps.</span></span><span class="sig-name descname"><span class="pre">register_custom_colormaps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/colormaps.html#register_custom_colormaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.colormaps.register_custom_colormaps" title="Link to this definition">¶</a></dt>
-<dd><p>Load and register all custom playNano colormaps.</p>
-<p>Colormap definitions are stored as CSV files within the
-<code class="docutils literal notranslate"><span class="pre">playnano.resources.colormaps</span></code> package. Each colormap is registered
-globally with Matplotlib under its canonical name, along with a reversed
-variant (<code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_r</span></code>).</p>
-<p>This function is safe to call multiple times; colormaps that are already
-registered will not be re-registered.</p>
-<p>Any failures encountered while loading individual colormaps are logged
-as errors, but do not prevent remaining colormaps from being processed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<dd><p>Register playNano’s colormaps with Matplotlib.</p>
+<p>Reads <code class="docutils literal notranslate"><span class="pre">afm_brown</span></code>, <code class="docutils literal notranslate"><span class="pre">playnano_gold</span></code> and <code class="docutils literal notranslate"><span class="pre">classic_afm</span></code> from the
+package’s <code class="docutils literal notranslate"><span class="pre">resources/colormaps</span></code> folder and registers each, with its
+reversed <code class="docutils literal notranslate"><span class="pre">_r</span></code> version. Colormaps already registered are skipped, so it is
+safe to call again. A colormap that fails to load is logged as an error and
+the others are still registered.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.colormaps.resolve_cmap">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.colormaps.</span></span><span class="sig-name descname"><span class="pre">resolve_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/colormaps.html#resolve_cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.colormaps.resolve_cmap" title="Link to this definition">¶</a></dt>
-<dd><p>Resolve a user-provided colormap name to a valid colormap.</p>
-<p>If the requested colormap is not recognized, a warning is logged and
-a default colormap is returned instead. This function never raises
-an exception and always returns a usable colormap name.</p>
+<dd><p>Return a colormap name that can be used, falling back to the default.</p>
+<p>For names given by users, for example on the command line: an unknown
+name gives a logged warning and <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code> (<code class="docutils literal notranslate"><span class="pre">DEFAULT_CMAP</span></code>) instead
+of an error.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the requested colormap.</p>
+<dd class="field-odd"><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Requested colormap name.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A valid colormap name. If <cite>cmap</cite> is invalid or unknown, this will be
-<cite>DEFAULT_CMAP</cite>.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">cmap</span></code> if it is a registered colormap, otherwise <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>This function is intended for user-facing inputs (e.g. CLI arguments,
-configuration files, or API parameters) where robustness is preferred
-over strict validation.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference internal" href="#playnano.utils.colormaps.is_valid_cmap" title="playnano.utils.colormaps.is_valid_cmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_valid_cmap</span></code></a></dt><dd><p>Check whether a colormap name is supported.</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_CMAP</span></code></dt><dd><p>Default colormap used as a fallback.</p>
+<dt><a class="reference internal" href="#playnano.utils.colormaps.is_valid_cmap" title="playnano.utils.colormaps.is_valid_cmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_valid_cmap</span></code></a></dt><dd><p>Check a name without a fallback.</p>
 </dd>
 </dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.colormaps</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cmap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_cmap</span><span class="p">(</span><span class="s2">"viridis"</span><span class="p">)</span>
+<span class="go">'viridis'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_cmap</span><span class="p">(</span><span class="s2">"not_a_colormap"</span><span class="p">)</span>
+<span class="go">'afm_brown'</span>
+</pre></div>
 </div>
 </dd></dl>
 

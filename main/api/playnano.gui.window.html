@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,13 +508,153 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-gui-window-module">
-<h1>playnano.gui.window module<a class="headerlink" href="#playnano-gui-window-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.gui.window">
+<span id="playnano-gui-window-module"></span><h1>playnano.gui.window module<a class="headerlink" href="#module-playnano.gui.window" title="Link to this heading">¶</a></h1>
+<p>The playNano main window: playback, processing, colour scale and export.</p>
+<p>See the GUI page of the user guide for how to use it.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.gui.window.</span></span><span class="sig-name descname"><span class="pre">MainWindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">processing_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'afm_brown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QMainWindow.html#PySide6.QtWidgets.QMainWindow" title="(in PySide v6.12.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QMainWindow</span></code></a></p>
+<p>Window for playing, processing and exporting an AFM stack.</p>
+<p>Usually opened with <a class="reference internal" href="playnano.gui.main.html#playnano.gui.main.gui_entry" title="playnano.gui.main.gui_entry"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.gui.main.gui_entry()</span></code></a>. The window has:</p>
+<ul class="simple">
+<li><p>the frame view, with optional time, scale bar and a “RAW” label when the
+unprocessed data is shown;</p></li>
+<li><p>play/pause, a frame slider and the playback rate;</p></li>
+<li><p><strong>Apply Filters (F)</strong>, which runs the processing steps (or, if none were
+given, a built-in default pipeline:
+<code class="docutils literal notranslate"><span class="pre">playnano.utils.constants.default_steps_with_kwargs</span></code>), and
+<strong>Toggle Raw/Processed (R)</strong>;</p></li>
+<li><p>a histogram of heights with draggable colour scale limits, number boxes
+and <strong>Auto</strong> (1st and 99th percentiles);</p></li>
+<li><p>a colormap list;</p></li>
+<li><p>an Export tab: animated exports (GIF, MP4, AVI, PNG folder; <strong>G</strong> writes
+only the GIF) and data exports (NPZ, OME-TIFF, HDF5; <strong>E</strong>), of the raw
+or processed data. All formats are ticked at the start.</p></li>
+</ul>
+<p>If the stack already has <code class="docutils literal notranslate"><span class="pre">processed[&quot;raw&quot;]</span></code> (for example a saved
+processed bundle), the window opens on the processed data and R shows the
+raw data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to show. Applying filters changes it.</p></li>
+<li><p><strong>processing_steps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – Processing steps, as <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">parameters)</span></code>, run by Apply Filters. If
+None or empty, the default pipeline is used. Default is None.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Folder for exports. If None, <code class="docutils literal notranslate"><span class="pre">./output</span></code>. Default is None.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Start of the exported file names. If empty, the name of the file the
+stack was loaded from. Default is <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Scale bar length, in nm; 0 opens the window with the scale bar off (it
+is 100 nm if switched on). Default is 100.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> or None. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> or None. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colormap. Names not in the window’s list are replaced by
+<code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>, with a warning. Default is <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Initial playback rate, also used for animated exports. Default is 5.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">zmin</span></code> or <code class="docutils literal notranslate"><span class="pre">zmax</span></code> is not a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> or None, or
+    <code class="docutils literal notranslate"><span class="pre">zmin</span></code> is greater than <code class="docutils literal notranslate"><span class="pre">zmax</span></code>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.apply_filters">
+<span class="sig-name descname"><span class="pre">apply_filters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow.apply_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow.apply_filters" title="Link to this definition">¶</a></dt>
+<dd><p>Run the processing steps on the stack and show the result (F).</p>
+<p>Uses the steps given to the window, or the default pipeline
+(<code class="docutils literal notranslate"><span class="pre">playnano.utils.constants.default_steps_with_kwargs</span></code>) if there are
+none. The steps run on <a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.data" title="playnano.afm_stack.AFMImageStack.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">AFMImageStack.data</span></code></a> as it is, so pressing F again
+processes the already processed data again. The colour scale is worked out
+again for the processed data, and processed exports are enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><strong>Exception</strong></a> – Any error from the processing pipeline.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.keyPressEvent">
+<span class="sig-name descname"><span class="pre">keyPressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ev</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow.keyPressEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow.keyPressEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the keyboard shortcuts.</p>
+<p>Space plays or pauses, F applies the processing, R switches between raw
+and processed data, G exports a GIF and E exports the ticked data formats.
+Other keys are passed to Qt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ev</strong> (<a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QKeyEvent.html#PySide6.QtGui.QKeyEvent" title="(in PySide v6.12.0)"><em>PySide6.QtGui.QKeyEvent</em></a>) – The key press.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.show_frame">
+<span class="sig-name descname"><span class="pre">show_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow.show_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow.show_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Show one frame, with its time and scale bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Frame index. The raw or processed frame is shown, depending on the
+current view.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#IndexError" title="(in Python v3.15)"><strong>IndexError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">idx</span></code> is out of range.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.staticMetaObject">
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;MainWindow&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QMainWindow&quot;:</span> <span class="pre">)</span></em><a class="headerlink" href="#playnano.gui.window.MainWindow.staticMetaObject" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.toggle_play">
+<span class="sig-name descname"><span class="pre">toggle_play</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow.toggle_play"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow.toggle_play" title="Link to this definition">¶</a></dt>
+<dd><p>Start or pause playback (Space), at the rate in the FPS box.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="playnano.gui.window.MainWindow.toggle_processed">
+<span class="sig-name descname"><span class="pre">toggle_processed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#MainWindow.toggle_processed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.MainWindow.toggle_processed" title="Link to this definition">¶</a></dt>
+<dd><p>Switch between the raw and processed data (R).</p>
+<p>Does nothing until processing has been applied. The histogram, colour
+scale limits and view are updated for the data shown.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.gui.window.z_to_rgb">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.window.</span></span><span class="sig-name descname"><span class="pre">z_to_rgb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'afm_brown'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/window.html#z_to_rgb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.window.z_to_rgb" title="Link to this definition">¶</a></dt>
+<dd><p>Return the colour of one height value in a colormap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>z_value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Height.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Colour scale limits; values outside are clipped.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Colour scale limits; values outside are clipped.</p></li>
+<li><p><strong>cmap_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Registered colormap name. Default is <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">G,</span> <span class="pre">B)</span></code>, each 0-255. Black if <code class="docutils literal notranslate"><span class="pre">zmax</span></code> is not greater than
+<code class="docutils literal notranslate"><span class="pre">zmin</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -559,8 +700,36 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.gui.window module</a><ul>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow"><code class="docutils literal notranslate"><span class="pre">MainWindow</span></code></a><ul>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.apply_filters"><code class="docutils literal notranslate"><span class="pre">MainWindow.apply_filters()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.keyPressEvent"><code class="docutils literal notranslate"><span class="pre">MainWindow.keyPressEvent()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.show_frame"><code class="docutils literal notranslate"><span class="pre">MainWindow.show_frame()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.staticMetaObject"><code class="docutils literal notranslate"><span class="pre">MainWindow.staticMetaObject</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.toggle_play"><code class="docutils literal notranslate"><span class="pre">MainWindow.toggle_play()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.window.MainWindow.toggle_processed"><code class="docutils literal notranslate"><span class="pre">MainWindow.toggle_processed()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#playnano.gui.window.z_to_rgb"><code class="docutils literal notranslate"><span class="pre">z_to_rgb()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

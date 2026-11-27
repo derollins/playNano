@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -506,13 +506,104 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-cli-handlers-module">
-<h1>playnano.cli.handlers module<a class="headerlink" href="#playnano-cli-handlers-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.cli.handlers">
+<span id="playnano-cli-handlers-module"></span><h1>playnano.cli.handlers module<a class="headerlink" href="#module-playnano.cli.handlers" title="Link to this heading">¶</a></h1>
+<p>Handlers for the playNano CLI commands.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_analyze">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_analyze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_analyze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_analyze" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the ‘analyze’ subcommand: run only analysis &amp; export results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_play">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_play"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_play" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the ‘play’ subcommand: feed arguments into the run_pipeline_mode function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- processing_str (str or None)
+- processing_file (str or None)
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 turns off scale bar
+- zmin (float or str), minimum Z-value for normalization
+(‘auto` for 1st percentile)
+- zmax (float or str), maximum Z-value for normalization
+(‘auto` for 99th percentile)
+- cmap (str), name of colormap to use for visualisation (default=afm_brown)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_process">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_process" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the ‘process’ subcommand: feed arguments into the run_pipeline_mode function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- processing_str (str or None)
+- processing_file (str or None)
+- export (str or None), comma-separated formats like “tif,npz,h5”
+- make_gif (bool), whether to create a GIF
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 turns off scale bar
+- zmin (float or str), minimum Z-value for normalization
+(‘auto` for 1st percentile)
+- zmax (float or str), maximum Z-value for normalization
+(‘auto` for 99th percentile)
+- cmap (str), name of colormap to use for animated visualisation export
+(default=afm_brown)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.handlers.handle_wizard">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.handlers.</span></span><span class="sig-name descname"><span class="pre">handle_wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><span class="pre">Namespace</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/handlers.html#handle_wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.handlers.handle_wizard" title="Link to this definition">¶</a></dt>
+<dd><p>Interactive wizard for building both processing and analysis pipelines.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>playnano processing &lt;input_file&gt; [–channel …]                                  [–output-folder …]                                  [–output-name …]</p>
+</dd>
+<dt>After launch, commands include:</dt><dd><p>add/remove/move/list/save/load/run        for processing steps
+aadd/aremove/amove/alist/asave/aload/arun  for analysis steps
+help                                  show available commands
+quit                                  exit without running</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.15)"><em>argparse.Namespace</em></a>) – Must contain:
+- input_file (str): path to AFM data
+- channel (str)
+- output_folder (str or None)
+- output_name (str or None)
+- scale_bar_nm (int or None), 0 disables scale bar
+- cmap (str), name of colormap to use for visualisation (default=afm_brown)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -558,8 +649,30 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.cli.handlers module</a><ul>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_analyze"><code class="docutils literal notranslate"><span class="pre">handle_analyze()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_play"><code class="docutils literal notranslate"><span class="pre">handle_play()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_process"><code class="docutils literal notranslate"><span class="pre">handle_process()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.handlers.handle_wizard"><code class="docutils literal notranslate"><span class="pre">handle_wizard()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

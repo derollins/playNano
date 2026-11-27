@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -504,13 +504,65 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-cli-entrypoint-module">
-<h1>playnano.cli.entrypoint module<a class="headerlink" href="#playnano-cli-entrypoint-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.cli.entrypoint">
+<span id="playnano-cli-entrypoint-module"></span><h1>playnano.cli.entrypoint module<a class="headerlink" href="#module-playnano.cli.entrypoint" title="Link to this heading">¶</a></h1>
+<p>Entry point for the playNano CLI.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.entrypoint.main">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.main" title="Link to this definition">¶</a></dt>
+<dd><p>Parse command-line arguments and dispatch to the appropriate CLI subcommand.</p>
+<p>This function sets up the top-level argparse parser, configures logging,
+and then calls the appropriate handler function (<cite>handle_play</cite>, <cite>handle_process</cite>,
+<cite>handle_analyze</cite>, or <cite>handle_processing_wizard</cite>) based on the chosen subcommand.</p>
+<ul class="simple">
+<li><p>Set up argument parsing for ‘play’, ‘process’ and ‘wizard’ subcommands,</p></li>
+</ul>
+<p>each with their own options.
+- Configure logging level based on user input.
+- Show help and exit if no subcommand is provided.
+- Call the handler function associated with the chosen subcommand.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><dl class="simple">
+<dt>playnano play    &lt;input_file&gt; [–processing …] [–output-folder …]</dt><dd><p>[–output-name …] [–scale-bar-nm …] [–channel …]</p>
+</dd>
+<dt>playnano process &lt;input_file&gt; [–processing …] [–export …] [–make-gif]</dt><dd><p>[–output-folder …] [–output-name …] [–scale-bar-nm …] [–channel …]</p>
+</dd>
+<dt>playnano analyze &lt;input_file&gt; [–analysis-steps … | –analysis-file …]</dt><dd><p>[–output-folder …] [–output-name …] [–channel …]</p>
+</dd>
+<dt>playnano wizard  &lt;input_file&gt; [–channel …] [–scale-bar-nm …]</dt><dd><p>[–output-folder …] [–output-name …]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.entrypoint.make_fps_type">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">make_fps_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fallback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#make_fps_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.make_fps_type" title="Link to this definition">¶</a></dt>
+<dd><p>Return an argparse type function with a configurable fallback FPS.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.cli.entrypoint.setup_logging">
+<span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.setup_logging" title="Link to this definition">¶</a></dt>
+<dd><p>Configure the logging format and level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -556,8 +608,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.cli.entrypoint module</a><ul>
+<li><a class="reference internal" href="#playnano.cli.entrypoint.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.entrypoint.make_fps_type"><code class="docutils literal notranslate"><span class="pre">make_fps_type()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.cli.entrypoint.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

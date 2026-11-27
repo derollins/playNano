@@ -175,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,13 +508,80 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="playnano-gui-main-module">
-<h1>playnano.gui.main module<a class="headerlink" href="#playnano-gui-main-module" title="Link to this heading">¶</a></h1>
+          <section id="module-playnano.gui.main">
+<span id="playnano-gui-main-module"></span><h1>playnano.gui.main module<a class="headerlink" href="#module-playnano.gui.main" title="Link to this heading">¶</a></h1>
+<p>Start the playNano GUI (<code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code>).</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="playnano.gui.main.ICON_SIZES">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">ICON_SIZES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(16,</span> <span class="pre">32,</span> <span class="pre">48,</span> <span class="pre">64,</span> <span class="pre">128,</span> <span class="pre">256,</span> <span class="pre">512)</span></em><a class="headerlink" href="#playnano.gui.main.ICON_SIZES" title="Link to this definition">¶</a></dt>
+<dd><p>Pixel sizes of the bundled application icon PNGs. The 16 and 32 px icons are
+simplified, pixel-aligned versions of the logo; larger sizes use the full mark.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="playnano.gui.main.WINDOWS_APP_ID">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">WINDOWS_APP_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'playnano.gui'</span></em><a class="headerlink" href="#playnano.gui.main.WINDOWS_APP_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Windows taskbar identity for the GUI process (see <code class="docutils literal notranslate"><span class="pre">_set_windows_app_id</span></code>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.gui.main.gui_entry">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">gui_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_with_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'afm_brown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/main.html#gui_entry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.main.gui_entry" title="Link to this definition">¶</a></dt>
+<dd><p>Open the playNano window for a stack and run it until it is closed.</p>
+<p>Called by <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code> (see
+<a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.play_pipeline_mode" title="playnano.cli.actions.play_pipeline_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.cli.actions.play_pipeline_mode()</span></code></a>). It creates the Qt
+application, applies the dark stylesheet and shows a
+<a class="reference internal" href="playnano.gui.window.html#playnano.gui.window.MainWindow" title="playnano.gui.window.MainWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">MainWindow</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to show.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Folder for exports. If None, <code class="docutils literal notranslate"><span class="pre">./output</span></code>. Default is None.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Start of the exported file names. If empty, the name of the file the
+stack was loaded from. Default is <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p></li>
+<li><p><strong>steps_with_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – Processing steps, as <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">parameters)</span></code>, run when F is pressed. If
+None or empty, F runs a built-in default pipeline. Default is None.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Scale bar length, in nm; 0 opens the window with the scale bar off.
+Default is 100.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (1st and 99th
+percentiles) or None (data minimum or maximum). Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (1st and 99th
+percentiles) or None (data minimum or maximum). Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Colormap the window opens with. Names not in the window’s list are
+replaced by <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>, with a warning. Default is <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Initial playback rate, in frames per second; also used for animated
+exports. Default is 5.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#SystemExit" title="(in Python v3.15)"><strong>SystemExit</strong></a> – Always, when the window is closed, with Qt’s exit status. The function
+    never returns, so it cannot be used from a notebook.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="playnano.gui.main.load_app_icon">
+<span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">load_app_icon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QIcon.html#PySide6.QtGui.QIcon" title="(in PySide v6.12.0)"><span class="pre">QIcon</span></a></span></span><a class="reference internal" href="../_modules/playnano/gui/main.html#load_app_icon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.main.load_app_icon" title="Link to this definition">¶</a></dt>
+<dd><p>Build the playNano application icon from the bundled PNG files.</p>
+<p>Each size is added separately so Qt picks the hand-tuned bitmap for small
+sizes (title bar, taskbar) instead of downscaling a large image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The icon. It is empty (<code class="docutils literal notranslate"><span class="pre">QIcon.isNull()</span></code>) if no icon files were found,
+in which case a warning is logged.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QIcon.html#PySide6.QtGui.QIcon" title="(in PySide v6.12.0)">PySide6.QtGui.QIcon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -559,8 +627,30 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">playnano.gui.main module</a><ul>
+<li><a class="reference internal" href="#playnano.gui.main.ICON_SIZES"><code class="docutils literal notranslate"><span class="pre">ICON_SIZES</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.main.WINDOWS_APP_ID"><code class="docutils literal notranslate"><span class="pre">WINDOWS_APP_ID</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.main.gui_entry"><code class="docutils literal notranslate"><span class="pre">gui_entry()</span></code></a></li>
+<li><a class="reference internal" href="#playnano.gui.main.load_app_icon"><code class="docutils literal notranslate"><span class="pre">load_app_icon()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

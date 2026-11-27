@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -614,8 +615,8 @@
     <span class="n">channel_map</span> <span class="o">=</span> <span class="n">_discover_available_channels</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">channel_map</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' not found in file."</span>
-            <span class="sa">f</span><span class="s2">"Available channels: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">channel_map</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"Channel '</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">' is not in </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Available channels: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">channel_map</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
     <span class="n">channel_path</span> <span class="o">=</span> <span class="n">channel_map</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span>
     <span class="n">channel_group</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">channel_path</span><span class="p">]</span>
