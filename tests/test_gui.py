@@ -1335,3 +1335,19 @@ def test_unknown_cmap_is_replaced_with_warning(qtbot, caplog, cmap, warned):
         wnd._timer.stop()
         wnd.close()
         wnd.deleteLater()
+
+
+@pytest.mark.parametrize("module", ["playnano.gui.window", "playnano.cli.actions"])
+def test_importing_gui_leaves_root_logger_alone(module):
+    """Importing the GUI must not configure logging; that is the application's job."""
+    code = (
+        "import logging, sys\n"
+        f"import {module}\n"
+        "root = logging.getLogger()\n"
+        "sys.exit(0 if not root.handlers and root.level == logging.WARNING else 1)\n"
+    )
+    env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    result = subprocess.run(
+        [sys.executable, "-c", code], env=env, capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr
