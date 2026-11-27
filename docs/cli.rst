@@ -275,6 +275,8 @@ Notes about z-range
 
 - ``--zmin`` / ``--zmax`` accept a float or the string ``auto`` (default).
   When ``auto`` is used values are computed as the 1st and 99th percentiles of the stack.
+  In ``play``, a value that is neither is replaced by ``auto`` with a warning, since the
+  limits can be changed in the window.
 
 
 Find out more on the GUI docs page: :doc:`gui`

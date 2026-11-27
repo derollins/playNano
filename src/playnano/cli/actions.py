@@ -437,6 +437,39 @@ def _default_playback_fps(afm_stack) -> float:
     return fps
 
 
+def _zlimit_or_auto(name: str, value):
+    """
+    Return a ``--zmin``/``--zmax`` value as a float, or ``"auto"`` if it is not one.
+
+    Used by ``playnano play``: the limits can be changed in the window, so a
+    mistyped value should not stop it opening.
+
+    Parameters
+    ----------
+    name : str
+        Option name, for the warning (``"zmin"`` or ``"zmax"``).
+    value : float or str or None
+        The value given.
+
+    Returns
+    -------
+    float or str
+        The value as a float, or ``"auto"``.
+    """
+    if value == "auto":
+        return value
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        logger.warning(
+            "--%s %r is not a number or 'auto'; using 'auto'. "
+            "Adjust it in the window's Z-scale controls.",
+            name,
+            value,
+        )
+        return "auto"
+
+
 def play_pipeline_mode(
     input_file: str,
     channel: str,
@@ -481,8 +514,9 @@ def play_pipeline_mode(
         second.
     zmin, zmax : float or str, optional
         Colour scale limits: a number, or ``"auto"`` (1st and 99th
-        percentiles). A value that is neither is logged as an error and passed
-        on unchanged. Default is ``"auto"``.
+        percentiles). A value that is neither is replaced by ``"auto"`` with a
+        warning; the limits can be changed in the window. Default is
+        ``"auto"``.
     cmap : str, optional
         Colormap the window opens with. Default is ``"afm_brown"``.
 
@@ -509,21 +543,8 @@ def play_pipeline_mode(
     else:
         steps_with_kwargs = []
 
-    if zmin != "auto":
-        try:
-            zmin = float(zmin)
-        except (TypeError, ValueError):
-            logger.error(
-                "The value of zmin must be either a number or the string 'auto'."
-            )
-
-    if zmax != "auto":
-        try:
-            zmax = float(zmax)
-        except (TypeError, ValueError):
-            logger.error(
-                "The value of zmax must be either a number or the string 'auto'."
-            )
+    zmin = _zlimit_or_auto("zmin", zmin)
+    zmax = _zlimit_or_auto("zmax", zmax)
 
     gui_entry(
         afm_stack,
@@ -659,10 +680,12 @@ class Wizard:
         help_text = (
             "Commands:\n"
             "  add <filter_name>   - Add processing step\n"
+            "  clear               - Add a step that removes the current mask\n"
             "  remove <index>      - Remove processing step\n"
             "  move <old> <new>    - Reorder processing steps\n"
             "  list                - List processing steps\n"
             "  save <path>         - Save processing to YAML file\n"
+            "  load <path>         - Load processing steps from a YAML file\n"
             "  run                 - Execute processing now (returns to prompt)\n"
             "  aadd <spec|name>    - Add analysis step inline or interactive (aadd name)\n"  # noqa
             "  aremove <index>     - Remove analysis step\n"
@@ -672,7 +695,7 @@ class Wizard:
             "  aload <path>        - Load analysis file YAML/JSON\n"
             "  arun                - Execute analysis now (runs processing first if needed)\n"  # noqa
             "  help                - Show this message\n"
-            "  quit                - Exit without running\n"
+            "  quit (or exit)      - Exit without running\n"
         )
         self.io.say(help_text)
 

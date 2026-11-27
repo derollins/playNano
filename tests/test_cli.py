@@ -445,18 +445,26 @@ def test_play_pipeline_mode_with_valid_zmin_zmax(
     assert kwargs["zmax"] == 1.0
 
 
+@pytest.mark.parametrize(
+    ("zmin", "zmax", "expected"),
+    [
+        ("not_a_number", "auto", ("auto", "auto")),
+        ("auto", "not_a_number", ("auto", "auto")),
+        ("not_a_number", "3", ("auto", 3.0)),
+    ],
+)
 @patch("playnano.cli.actions.gui_entry")
 @patch("playnano.cli.actions.AFMImageStack.load_data")
-def test_play_pipeline_mode_with_invalid_zmin_logs_error(
-    mock_load_data, mock_gui_entry, caplog, tmp_path
+def test_play_pipeline_mode_invalid_zlimit_warns_and_uses_auto(
+    mock_load_data, mock_gui_entry, caplog, tmp_path, zmin, zmax, expected
 ):
-    """Test that play_pipeline_mode logs an error for invalid zmin."""
+    """An invalid --zmin/--zmax warns and opens the window with 'auto' (#41)."""
     mock_stack = MagicMock()
     mock_stack.frame_metadata = [{"line_rate": 256}]
     mock_stack.image_shape = (256, 256)
     mock_load_data.return_value = mock_stack
 
-    with caplog.at_level("ERROR"):
+    with caplog.at_level("WARNING"):
         actions.play_pipeline_mode(
             input_file="dummy.afm",
             channel="height_trace",
@@ -466,39 +474,18 @@ def test_play_pipeline_mode_with_invalid_zmin_logs_error(
             output_name="test_output",
             scale_bar_nm=100,
             fps=3.0,
-            zmin="not_a_number",
-            zmax="auto",
+            zmin=zmin,
+            zmax=zmax,
         )
 
-    assert "zmin must be either a number or the string 'auto'" in caplog.text
-
-
-@patch("playnano.cli.actions.gui_entry")
-@patch("playnano.cli.actions.AFMImageStack.load_data")
-def test_play_pipeline_mode_with_invalid_zmax_logs_error(
-    mock_load_data, mock_gui_entry, caplog, tmp_path
-):
-    """Test that play_pipeline_mode logs an error for invalid zmax."""
-    mock_stack = MagicMock()
-    mock_stack.frame_metadata = [{"line_rate": 512}]
-    mock_stack.image_shape = (512, 512)
-    mock_load_data.return_value = mock_stack
-
-    with caplog.at_level("ERROR"):
-        actions.play_pipeline_mode(
-            input_file="dummy.afm",
-            channel="height_trace",
-            processing_str=None,
-            processing_file=None,
-            output_folder=str(tmp_path),
-            output_name="test_output",
-            scale_bar_nm=100,
-            fps=3.0,
-            zmin="auto",
-            zmax="not_a_number",
-        )
-
-    assert "zmax must be either a number or the string 'auto'" in caplog.text
+    kwargs = mock_gui_entry.call_args.kwargs
+    assert (kwargs["zmin"], kwargs["zmax"]) == expected
+    warnings = [r for r in caplog.records if r.levelname == "WARNING"]
+    assert len(warnings) == 1
+    assert (
+        "'not_a_number' is not a number or 'auto'; using 'auto'" in warnings[0].message
+    )
+    assert not [r for r in caplog.records if r.levelname == "ERROR"]
 
 
 @patch("playnano.cli.actions.parse_processing_file")
@@ -1278,7 +1265,7 @@ def test_handle_play_accepts_path_object():
         assert called_path == input_path
 
 
-def test_handle_play_invalid_path_with_cli_flags():
+def test_handle_play_invalid_path_with_cli_flags(caplog):
     """Test handle_play provides infomative value error if cli flags in input_file."""
     bad_path = "C:\\Users\\test\\AFMdata\\ --channel Height"
     args = Namespace(
@@ -1291,12 +1278,17 @@ def test_handle_play_invalid_path_with_cli_flags():
         scale_bar_nm=100,
     )
 
-    with pytest.raises(ValueError) as excinfo:
-        handle_play(args)
+    with patch("playnano.cli.handlers.play_pipeline_mode") as mock_play:
+        with pytest.raises(SystemExit) as excinfo:
+            handle_play(args)
 
-    assert "includes CLI flags" in str(excinfo.value)
-    assert "--channel" in str(excinfo.value)
-    assert "💡 FIX" in str(excinfo.value)
+    # Reported like any other error: status 1, not argparse's 2 (#41).
+    assert excinfo.value.code == 1
+    mock_play.assert_not_called()
+    message = caplog.text
+    assert "includes CLI flags" in message
+    assert "--channel" in message
+    assert "FIX" in message
 
 
 def make_args(**kwargs) -> argparse.Namespace:
@@ -3055,3 +3047,36 @@ def test_wizard_pad_prompt_gives_a_tuple_that_saves_and_loads(tmp_path, monkeypa
     Wizard.handle_load(wiz, ["load", str(out)])
 
     assert wiz.process_steps == [("intersection_crop", {"pad": [2, 3]})], said
+
+
+def test_wizard_help_lists_every_command():
+    """The wizard's help lists every command it accepts, including load, clear."""
+    import re
+
+    from playnano.cli.actions import Wizard
+
+    wizard = Wizard.__new__(Wizard)  # help needs no loaded stack
+    wizard.io = MagicMock()
+    wizard.print_help()
+    help_text = wizard.io.say.call_args.args[0]
+    for command in (
+        "add", "clear", "remove", "move", "list", "save", "load", "run",
+        "aadd", "aremove", "amove", "alist", "asave", "aload", "arun", "help", "quit",
+        "exit",
+    ):  # fmt: skip
+        listed = rf"^\s+{command}\b|\(or {command}\)"
+        assert re.search(listed, help_text, re.MULTILINE), command
+
+
+def test_clear_is_not_an_analysis_step():
+    """'clear' is a processing step only, so analysis steps reject it at once."""
+    from playnano.cli.utils import (
+        is_valid_analysis_step,
+        is_valid_step,
+        parse_analysis_string,
+    )
+
+    assert is_valid_step("clear")
+    assert not is_valid_analysis_step("clear")
+    with pytest.raises(ValueError, match="clear"):
+        parse_analysis_string("clear")
