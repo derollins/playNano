@@ -31,8 +31,12 @@ Quick examples
 .. code-block:: bash
 
    playnano play data.h5-jpk
-   playnano process data.ARIS --processing "remove_plane" --make-gif
+   playnano process data.ARIS --channel HeightTrace --processing "remove_plane" --make-gif
    playnano analyze processed.h5 --analysis-file analysis.yaml
+
+The default channel, ``height_trace``, is a JPK channel name. For other formats, give the
+file's own name with ``--channel``, for example ``HeightTrace`` for ``.aris`` files; a wrong
+name gives an error listing the channels the file has.
 
 Global options
 --------------

@@ -265,7 +265,10 @@ def load_jpk_folder(
     # Load all images
     for i, fpath in enumerate(jpk_files):
         logger.debug(f"Loading {fpath.name}")
-        # AFMReader does the flip; flipping here too cancelled it (#33).
+        # AFMReader does the flip; no additional flipping needed.
+        # If you do want to flip the image as part of processing then use the
+        # provenance tracked "flip_vertical" processing step through the
+        # ProcessingPipeline on the AFMImageStack after loading.
         img, px_size_nm, _ = unpack_afmreader_result(
             load_jpk(fpath, channel, flip_image=flip_image)
         )

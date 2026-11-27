@@ -344,7 +344,7 @@ def test_get_loader_for_file_no_extension():
 
 @pytest.mark.parametrize("flip_image", [True, False])
 def test_load_jpk_folder_flips_once(resource_path, flip_image):
-    """Frames match AFMReader's load_jpk with the same flip_image (one flip, #33)."""
+    """Frames match AFMReader's load_jpk with the same flip_image (one flip, #119)."""
     from AFMReader.jpk import load_jpk
 
     folder = resource_path / "jpk_folder_0"
@@ -1429,7 +1429,7 @@ def test_load_aris_timestamp_mismatch(tmp_path):
     [("m", 1e9), ("nm", 1.0), ("um", 1e3), ("\u00b5m", 1e3), ("V", 1.0), ("deg", 1.0)],
 )
 def test_load_aris_converts_length_units_to_nm(tmp_path, data_units, factor):
-    """Channels with a length unit are converted to nm; others are unchanged (#32)."""
+    """Channels with a length unit are converted to nm; others are unchanged (#118)."""
     file_path = tmp_path / "units.aris"
     create_aris_file_on_disk(file_path, data_units=data_units)
     stack = load_aris(file_path, "height_trace")
@@ -1465,7 +1465,7 @@ def test_load_aris_missing_unit_is_guessed_with_warning(tmp_path, caplog):
 
 
 def test_load_aris_real_file(resource_path):
-    """Real ARIS file (Zenodo 10670413, CC BY 4.0): heights in nm (#32, #40)."""
+    """Real ARIS file (Zenodo 10670413, CC BY 4.0): heights in nm (#118)."""
     from playnano.processing.pipeline import ProcessingPipeline
 
     path = resource_path / "aris_sample_0.aris"
@@ -1612,7 +1612,7 @@ def test_wrong_channel_error_lists_available_channels(
 
 
 def test_process_load_error_keeps_the_reason(resource_path):
-    """process_stack's LoadError says why loading failed (GitHub #50)."""
+    """process_stack's LoadError says why loading failed (#50)."""
     from playnano.errors import LoadError
     from playnano.processing.core import process_stack
 

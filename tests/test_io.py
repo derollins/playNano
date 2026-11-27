@@ -2297,7 +2297,7 @@ def test_validate_analysis_record_minimal():
     validate_analysis_record(record)
 
 
-# --- NPZ bundles must load without running pickled code (#14) ---
+# --- NPZ bundles must load without running pickled code ---
 
 
 class _MarkerPayload:

@@ -458,7 +458,7 @@ def test_play_pipeline_mode_with_valid_zmin_zmax(
 def test_play_pipeline_mode_invalid_zlimit_warns_and_uses_auto(
     mock_load_data, mock_gui_entry, caplog, tmp_path, zmin, zmax, expected
 ):
-    """An invalid --zmin/--zmax warns and opens the window with 'auto' (#41)."""
+    """An invalid --zmin/--zmax warns and opens the window with 'auto'."""
     mock_stack = MagicMock()
     mock_stack.frame_metadata = [{"line_rate": 256}]
     mock_stack.image_shape = (256, 256)
@@ -1282,7 +1282,7 @@ def test_handle_play_invalid_path_with_cli_flags(caplog):
         with pytest.raises(SystemExit) as excinfo:
             handle_play(args)
 
-    # Reported like any other error: status 1, not argparse's 2 (#41).
+    # Reported like any other error: status 1, not argparse's 2.
     assert excinfo.value.code == 1
     mock_play.assert_not_called()
     message = caplog.text
