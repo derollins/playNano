@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.core - playnano v0.5.3 documentation</title>
+        <title>playnano.processing.core - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.core</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Core functions for loading and processing AFMImageStacks."""</span>
+<span></span><span class="sd">"""Load an AFM file and run a list of processing steps on it."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -524,37 +525,43 @@
     <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an AFMImageStack from a file, apply a list of processing steps, and return it.</span>
+<span class="sd">    Load an AFM file, run a list of processing steps on it and return the stack.</span>
+
+<span class="sd">    This is what ``playnano process`` uses.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_path : Path</span>
-<span class="sd">        Path to the AFM stack file.</span>
-
+<span class="sd">    input_path : pathlib.Path</span>
+<span class="sd">        AFM file, or folder of frame files, to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to load (e.g., 'h', 'z', etc.).</span>
-
-<span class="sd">    steps : list of tuple</span>
-<span class="sd">        List of processing steps in the form (step_name, kwargs). Special step_name</span>
-<span class="sd">        values:</span>
-<span class="sd">        - "clear" : clears the current mask</span>
-<span class="sd">        - "mask"  : applies a mask function with kwargs</span>
-<span class="sd">        - otherwise : treated as a filter name with kwargs</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
+<span class="sd">    steps : list of tuple of (str, dict)</span>
+<span class="sd">        Processing steps in order, as ``(name, kwargs)`` pairs, for example</span>
+<span class="sd">        ``[("remove_plane", {}), ("mask_threshold", {"threshold": 1.0})]``. A</span>
+<span class="sd">        name can be any filter, mask, video processing or stack edit step;</span>
+<span class="sd">        ``"clear"`` clears the current mask.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        The processed AFMImageStack.</span>
+<span class="sd">        The processed stack. ``stack.data`` holds the result and</span>
+<span class="sd">        ``stack.processed["raw"]`` the original data.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    LoadError</span>
-<span class="sd">        If the AFM stack cannot be loaded from `input_path`.</span>
+<span class="sd">        If the file cannot be loaded.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a step name is not recognised.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    playnano.processing.pipeline.ProcessingPipeline : Runs the steps.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="n">pipeline</span> <span class="o">=</span> <span class="n">ProcessingPipeline</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
@@ -599,7 +606,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

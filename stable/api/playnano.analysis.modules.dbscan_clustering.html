@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.dbscan_clustering module - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.dbscan_clustering module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,83 +515,74 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.dbscan_clustering">
 <span id="playnano-analysis-modules-dbscan-clustering-module"></span><h1>playnano.analysis.modules.dbscan_clustering module<a class="headerlink" href="#module-playnano.analysis.modules.dbscan_clustering" title="Link to this heading">¶</a></h1>
-<p>DBSCAN clustering on features over the entire stack in 3D (x, y, time).</p>
-<p>This module extracts feature points from a previous analysis step, optionally
-normalizes them, applies DBSCAN, and returns clusters (with noise as label -1
-omitted or optionally retained), cluster cores, and a summary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">param coord_key<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Key in previous_results containing <cite>features_per_frame</cite>.</p>
-</dd>
-<dt class="field-even">type coord_key<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
-</dd>
-<dt class="field-odd">param coord_columns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Which keys in each feature-dict to use (e.g. (“x”,”y”)).</p>
-</dd>
-<dt class="field-even">type coord_columns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sequence[str]</p>
-</dd>
-<dt class="field-odd">param use_time<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If True and coord_columns length is 2, append frame time as the third dimension.</p>
-</dd>
-<dt class="field-even">type use_time<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-<dt class="field-odd">param eps<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The maximum distance between two samples for them to be considered as in the
-same neighborhood (in normalized units if <cite>normalise=True</cite>).</p>
-</dd>
-<dt class="field-even">type eps<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-<dt class="field-odd">param min_samples<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The number of samples in a neighborhood for a point to be considered as a core
-point.</p>
-</dd>
-<dt class="field-even">type min_samples<span class="colon">:</span></dt>
-<dd class="field-even"><p>int</p>
-</dd>
-<dt class="field-odd">param normalise<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If True, min-max normalize each axis before clustering.</p>
-</dd>
-<dt class="field-even">type normalise<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-<dt class="field-odd">param time_weight<span class="colon">:</span></dt>
-<dd class="field-odd"><p>If given, multiply the time axis by this weight.</p>
-</dd>
-<dt class="field-even">type time_weight<span class="colon">:</span></dt>
-<dd class="field-even"><p>float | None</p>
-</dd>
-<dt class="field-odd">param **dbscan_kwargs<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Forwarded to sklearn.cluster.DBSCAN.</p>
-</dd>
-</dl>
+<p>Analysis module that groups detected features with DBSCAN, over all frames.</p>
+<p>DBSCAN groups points that have enough close neighbours and finds the number of
+clusters itself. Points in sparse regions are treated as noise and left out.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.dbscan_clustering.</span></span><span class="sig-name descname"><span class="pre">DBSCANClusteringModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/dbscan_clustering.html#DBSCANClusteringModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>DBSCAN clustering of features across an AFMImageStack in (x, y, time) space.</p>
-<p>This module extracts coordinates from per-frame features, optionally adds time
-as a third dimension, normalizes the space, and applies DBSCAN clustering.
-It returns clusters with point metadata, core point means as cluster centers,
-and a summary of cluster sizes.</p>
-<section id="version">
-<h2>Version<a class="headerlink" href="#version" title="Link to this heading">¶</a></h2>
-<p>0.1.0</p>
+<p>Group detected features from all frames into clusters with DBSCAN.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;dbscan_clustering&quot;</span></code>. It needs the output of
+<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> from an earlier step.</p>
+<p>Each detected feature becomes one point. By default its coordinates are the
+feature’s <code class="docutils literal notranslate"><span class="pre">centroid</span></code>, (row, col) in pixels, with the frame time in seconds
+added as a third coordinate. With <code class="docutils literal notranslate"><span class="pre">normalise</span></code> (the default), each coordinate
+is rescaled to the range 0 to 1 before clustering.</p>
+<p>A point with at least <code class="docutils literal notranslate"><span class="pre">min_samples</span></code> points (itself included) within <code class="docutils literal notranslate"><span class="pre">eps</span></code>
+is a core point; clusters are core points within <code class="docutils literal notranslate"><span class="pre">eps</span></code> of each other plus
+their neighbours. Points in no cluster (noise) are not returned.
+Each cluster’s centre is the mean of its points.</p>
+<p>Because coordinates are rescaled, <code class="docutils literal notranslate"><span class="pre">eps</span></code> is a fraction of the range of each
+coordinate. With a time coordinate, frames further apart than <code class="docutils literal notranslate"><span class="pre">eps</span></code> of the
+recording cannot be neighbours, so with few frames <code class="docutils literal notranslate"><span class="pre">eps</span></code> may need to be
+larger than the default, or <code class="docutils literal notranslate"><span class="pre">time_weight</span></code> below 1.</p>
+<p class="rubric">Examples</p>
+<p>Two particles over 4 frames, one moving to the right:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.feature_detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">FeatureDetectionModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">46</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">46</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detected</span> <span class="o">=</span> <span class="n">FeatureDetectionModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stack</span><span class="p">,</span> <span class="n">mask_fn</span><span class="o">=</span><span class="s2">"mask_threshold"</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">previous</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"feature_detection"</span><span class="p">:</span> <span class="n">detected</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.dbscan_clustering</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">DBSCANClusteringModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">DBSCANClusteringModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stack</span><span class="p">,</span> <span class="n">previous</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">2</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s2">"summary"</span><span class="p">]</span>
+<span class="go">{'n_clusters': 2, 'members_per_cluster': {0: 4, 1: 4}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s2">"cluster_centers"</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([[12.5 , 14.  ,  0.75],</span>
+<span class="go">       [42.5 , 42.5 ,  0.75]])</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" title="(in scikit-learn v1.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn.cluster.DBSCAN</span></code></a></dt><dd><p>The clustering used.</p>
+</dd>
+</dl>
+</div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the analysis module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string identifier for this module: “dbscan_clustering”.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
-</dd>
-</dl>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;dbscan_clustering&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -601,64 +593,61 @@ and a summary of cluster sizes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'feature_detection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features_per_frame'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.15)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('centroid_x',</span> <span class="pre">'centroid_y')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dbscan_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/dbscan_clustering.html#DBSCANClusteringModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Perform DBSCAN clustering on detected features in (x, y[, t]) space.</p>
+<dd><p>Cluster the detected features with DBSCAN.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The input stack with <cite>.data</cite> and <cite>.time_for_frame()</cite> method.</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Output from previous analysis steps. Must contain features under
-the given <cite>detection_module</cite> and <cite>coord_key</cite>.</p></li>
-<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Which module’s output to use from <cite>previous_results</cite>. Default
-is “feature_detection”.</p></li>
-<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Key in <cite>previous_results[detection_module]</cite> containing the list
-of per-frame features. Default is “features_per_frame”.</p></li>
-<li><p><strong>coord_columns</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Keys to extract coordinates from each feature. If missing, will fall back
-to <cite>centroid</cite> tuple. Default is (“centroid_x”, “centroid_y”).</p></li>
-<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to append frame timestamp as a third coordinate. Dafaulr is True.</p></li>
-<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Maximum distance for neighborhood inclusion (in normalized units if
-<cite>normalise=True</cite>). Default is 0.3.</p></li>
-<li><p><strong>min_samples</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Minimum number of points in a neighborhood to form a core point.
-Default is 5.</p></li>
-<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If True, normalize coordinate axes to [0, 1] range before clustering.
-Default is True.</p></li>
-<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Scaling factor for the time axis (after normalization). If None,
-no weighting is applied.</p></li>
-<li><p><strong>**dbscan_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Additional keyword arguments forwarded to <cite>sklearn.cluster.DBSCAN</cite>.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack; used for the frame times.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Outputs of earlier steps. Must hold a detection output.</p></li>
+<li><p><strong>detection_module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the detection step to use. If it has not run,
+<code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code> is tried, then <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;feature_detection&quot;</span></code>.</p></li>
+<li><p><strong>coord_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of the per-frame feature lists in the detection output. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>.</p></li>
+<li><p><strong>coord_columns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Keys of each feature’s coordinates. If a feature lacks them, the first
+two values of its <code class="docutils literal notranslate"><span class="pre">centroid</span></code>, (row, col), are used instead.
+<code class="docutils literal notranslate"><span class="pre">feature_detection</span></code> has no <code class="docutils literal notranslate"><span class="pre">centroid_x</span></code> or <code class="docutils literal notranslate"><span class="pre">centroid_y</span></code>, so this is
+what happens with the default. Default is
+<code class="docutils literal notranslate"><span class="pre">(&quot;centroid_x&quot;,</span> <span class="pre">&quot;centroid_y&quot;)</span></code>.</p></li>
+<li><p><strong>use_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add each feature’s frame time, in seconds, as a third coordinate (only
+when there are two coordinates). Default is True.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Largest distance between two neighbouring points, in rescaled units if
+<code class="docutils literal notranslate"><span class="pre">normalise</span></code>. Default is 0.3.</p></li>
+<li><p><strong>min_samples</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of points, itself included, a point needs within <code class="docutils literal notranslate"><span class="pre">eps</span></code> to be a
+core point. Default is 5.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Rescale each coordinate to the range 0 to 1 (minimum to maximum over
+all points) before clustering. Default is True.</p></li>
+<li><p><strong>time_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Multiply the rescaled time coordinate by this, so time counts more (above
+1) or less (below 1) than position. Must be positive. Only used with
+<code class="docutils literal notranslate"><span class="pre">normalise</span></code> and a time coordinate. Default is None (no weighting).</p></li>
+<li><p><strong>**dbscan_kwargs</strong> – Passed to <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.cluster.DBSCAN</span></code></a>, for example <code class="docutils literal notranslate"><span class="pre">metric</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Output dictionary with the following keys:</p>
-<blockquote>
-<div><ul class="simple">
-<li><dl class="simple">
-<dt>”clusters”: list of dicts, one per cluster, containing:</dt><dd><ul>
-<li><p>”id”: cluster ID (int)</p></li>
-<li><p>”frames”: list of frame indices</p></li>
-<li><p>”point_indices”: list of feature indices within frames</p></li>
-<li><p>”coords”: list of 2D or 3D coordinates (post-normalization)</p></li>
-</ul>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;clusters&quot;</span></code></dt><dd><p>One dict per cluster, with <code class="docutils literal notranslate"><span class="pre">id</span></code> (int), and for each member point
+<code class="docutils literal notranslate"><span class="pre">frames</span></code> (frame index), <code class="docutils literal notranslate"><span class="pre">point_indices</span></code> (index in that frame’s
+feature list) and <code class="docutils literal notranslate"><span class="pre">coords</span></code> (the point’s coordinates as clustered,
+so rescaled if <code class="docutils literal notranslate"><span class="pre">normalise</span></code>).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;cluster_centers&quot;</span></code></dt><dd><p>Array of shape (n_clusters, n_coordinates): the centre of each
+cluster, in the original units (pixels, and seconds for time).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">n_clusters</span></code> and <code class="docutils literal notranslate"><span class="pre">members_per_cluster</span></code> (cluster ID to number of
+points).</p>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>”cluster_centers”: np.ndarray of shape (n_clusters, D)</dt><dd><p>Mean location of each cluster in original coordinate units.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>”summary”: dict with:</dt><dd><ul>
-<li><p>”n_clusters”: total number of clusters found</p></li>
-<li><p>”members_per_cluster”: dict of cluster ID to count</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div></blockquote>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Any]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">previous_results</span></code> holds no detection output.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If the detection output lacks <code class="docutils literal notranslate"><span class="pre">coord_key</span></code>, or a feature has neither
+    <code class="docutils literal notranslate"><span class="pre">coord_columns</span></code> nor <code class="docutils literal notranslate"><span class="pre">centroid</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -668,7 +657,6 @@ no weighting is applied.</p></li>
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.dbscan_clustering.DBSCANClusteringModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>
@@ -747,7 +735,7 @@ no weighting is applied.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

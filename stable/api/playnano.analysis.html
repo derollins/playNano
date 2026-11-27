@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis package - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis package - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -610,6 +611,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playnano.analysis.pipeline.html">playnano.analysis.pipeline module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.steps"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.steps</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.add"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.add()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.clear"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.clear()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline.run"><code class="docutils literal notranslate"><span class="pre">AnalysisPipeline.run()</span></code></a></li>
@@ -623,7 +625,20 @@
 </section>
 <section id="module-playnano.analysis">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-playnano.analysis" title="Link to this heading">¶</a></h2>
-<p>Public package initialization. Analysis modules live here.</p>
+<p>Analysis of AFM image stacks: feature detection, tracking, clustering and more.</p>
+<p>Analysis steps are subclasses of <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a>
+and are run in order by <a class="reference internal" href="playnano.analysis.pipeline.html#playnano.analysis.pipeline.AnalysisPipeline" title="playnano.analysis.pipeline.AnalysisPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisPipeline</span></code></a>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="playnano.analysis.BUILTIN_ANALYSIS_MODULES">
+<span class="sig-prename descclassname"><span class="pre">playnano.analysis.</span></span><span class="sig-name descname"><span class="pre">BUILTIN_ANALYSIS_MODULES</span></span><a class="headerlink" href="#playnano.analysis.BUILTIN_ANALYSIS_MODULES" title="Link to this definition">¶</a></dt>
+<dd><p>Maps the name of each built-in analysis module (str) to its class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -685,7 +700,10 @@
 <li><a class="reference internal" href="#">playnano.analysis package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-playnano.analysis">Module contents</a></li>
+<li><a class="reference internal" href="#module-playnano.analysis">Module contents</a><ul>
+<li><a class="reference internal" href="#playnano.analysis.BUILTIN_ANALYSIS_MODULES"><code class="docutils literal notranslate"><span class="pre">BUILTIN_ANALYSIS_MODULES</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -697,7 +715,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.core module - playnano v0.5.3 documentation</title>
+        <title>playnano.processing.core module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,33 +515,44 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.processing.core">
 <span id="playnano-processing-core-module"></span><h1>playnano.processing.core module<a class="headerlink" href="#module-playnano.processing.core" title="Link to this heading">¶</a></h1>
-<p>Core functions for loading and processing AFMImageStacks.</p>
+<p>Load an AFM file and run a list of processing steps on it.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.core.process_stack">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.core.</span></span><span class="sig-name descname"><span class="pre">process_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.15)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/core.html#process_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.core.process_stack" title="Link to this definition">¶</a></dt>
-<dd><p>Load an AFMImageStack from a file, apply a list of processing steps, and return it.</p>
+<dd><p>Load an AFM file, run a list of processing steps on it and return the stack.</p>
+<p>This is what <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">process</span></code> uses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_path</strong> (<em>Path</em>) – Path to the AFM stack file.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load (e.g., ‘h’, ‘z’, etc.).</p></li>
-<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a>) – List of processing steps in the form (step_name, kwargs). Special step_name
-values:
-- “clear” : clears the current mask
-- “mask”  : applies a mask function with kwargs
-- otherwise : treated as a filter name with kwargs</p></li>
+<li><p><strong>input_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – AFM file, or folder of frame files, to load.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>.</p></li>
+<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>)</em>) – Processing steps in order, as <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">kwargs)</span></code> pairs, for example
+<code class="docutils literal notranslate"><span class="pre">[(&quot;remove_plane&quot;,</span> <span class="pre">{}),</span> <span class="pre">(&quot;mask_threshold&quot;,</span> <span class="pre">{&quot;threshold&quot;:</span> <span class="pre">1.0})]</span></code>. A
+name can be any filter, mask, video processing or stack edit step;
+<code class="docutils literal notranslate"><span class="pre">&quot;clear&quot;</span></code> clears the current mask.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The processed AFMImageStack.</p>
+<dd class="field-even"><p>The processed stack. <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> holds the result and
+<code class="docutils literal notranslate"><span class="pre">stack.processed[&quot;raw&quot;]</span></code> the original data.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="playnano.errors.html#playnano.errors.LoadError" title="playnano.errors.LoadError"><strong>LoadError</strong></a> – If the AFM stack cannot be loaded from <cite>input_path</cite>.</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="playnano.errors.html#playnano.errors.LoadError" title="playnano.errors.LoadError"><strong>LoadError</strong></a> – If the file cannot be loaded.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a step name is not recognised.</p></li>
+</ul>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline" title="playnano.processing.pipeline.ProcessingPipeline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.processing.pipeline.ProcessingPipeline</span></code></a></dt><dd><p>Runs the steps.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>
@@ -613,7 +625,7 @@ values:
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

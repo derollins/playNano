@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.mask_generators module - playnano v0.5.3 documentation</title>
+        <title>playnano.processing.mask_generators module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,24 +515,35 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.processing.mask_generators">
 <span id="playnano-processing-mask-generators-module"></span><h1>playnano.processing.mask_generators module<a class="headerlink" href="#module-playnano.processing.mask_generators" title="Link to this heading">¶</a></h1>
-<p>Module for masking features of AFM images in Numpy arrays.</p>
+<p>Functions that make boolean masks of features in 2D AFM frames.</p>
+<p>Each function takes a frame and returns a boolean array of the same shape, in
+which True marks foreground (features) and False marks background. In a
+<a class="reference internal" href="playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline" title="playnano.processing.pipeline.ProcessingPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessingPipeline</span></code></a>, masks made one after
+another are combined with logical OR until a <code class="docutils literal notranslate"><span class="pre">clear</span></code> step. Masked filters
+(<a class="reference internal" href="playnano.processing.masked_filters.html#module-playnano.processing.masked_filters" title="playnano.processing.masked_filters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">playnano.processing.masked_filters</span></code></a>) use the mask to leave features out
+of background fits.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.mask_adaptive">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_adaptive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#mask_adaptive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.mask_adaptive" title="Link to this definition">¶</a></dt>
-<dd><p>Adaptive local mean threshold per block.</p>
+<dd><p>Mask pixels above the mean of their local block.</p>
+<p>The image is divided into non-overlapping square blocks of <code class="docutils literal notranslate"><span class="pre">block_size</span></code>
+pixels (smaller at the right and bottom edges), and each pixel is compared
+with the mean of its own block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Input 2D array.</p></li>
-<li><p><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Size of the local block. Default is 15.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Value added to local mean when thresholding. Default is 0.0.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Side length of each block, in pixels. Default is 15.</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Added to each block mean before comparing, in the units of <code class="docutils literal notranslate"><span class="pre">data</span></code>.
+Default is 0.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Boolean mask array where True indicates pixels above the threshold.</p>
+<dd class="field-even"><p>Boolean mask, True where a pixel is greater than its block mean plus
+<code class="docutils literal notranslate"><span class="pre">offset</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -539,19 +551,20 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.mask_below_threshold">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_below_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#mask_below_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.mask_below_threshold" title="Link to this definition">¶</a></dt>
-<dd><p>Mask where data &lt; threshold.</p>
+<dd><p>Mask pixels lower than a threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Input 2D array.</p></li>
-<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Threshold value. Pixels less than this will be True. Default is 0.0.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Height threshold, in the units of <code class="docutils literal notranslate"><span class="pre">data</span></code> (usually nm). Default is 0.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Boolean mask array.</p>
+<dd class="field-even"><p>Boolean mask, True where <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">&lt;</span> <span class="pre">threshold</span></code>. NaN and infinite pixels
+are False.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -559,20 +572,20 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.mask_mean_offset">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_mean_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#mask_mean_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.mask_mean_offset" title="Link to this definition">¶</a></dt>
-<dd><p>Mask values greater than mean plus factor * standard deviation.</p>
+<dd><p>Mask pixels more than <code class="docutils literal notranslate"><span class="pre">factor</span></code> standard deviations above the mean.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Input 2D array.</p></li>
-<li><p><strong>factor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Factor multiplied by the standard deviation to define the threshold.
-Default is 1.0.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>factor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Number of standard deviations above the image mean at which pixels are
+masked. Default is 1.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Boolean mask array.</p>
+<dd class="field-even"><p>Boolean mask, True where <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">mean(data)</span> <span class="pre">&gt;</span> <span class="pre">factor</span> <span class="pre">*</span> <span class="pre">std(data)</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -580,40 +593,52 @@ Default is 1.0.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.mask_morphological">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_morphological</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#mask_morphological"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.mask_morphological" title="Link to this definition">¶</a></dt>
-<dd><p>Apply threshold and morphological closing to mask foreground.</p>
+<dd><p>Mask pixels far from zero, then close small gaps with binary closing.</p>
+<p>Unlike <a class="reference internal" href="#playnano.processing.mask_generators.mask_threshold" title="playnano.processing.mask_generators.mask_threshold"><code class="xref py py-func docutils literal notranslate"><span class="pre">mask_threshold()</span></code></a>, this uses the absolute height, so both
+features above <code class="docutils literal notranslate"><span class="pre">threshold</span></code> and holes below <code class="docutils literal notranslate"><span class="pre">-threshold</span></code> are masked.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Input 2D array.</p></li>
-<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Threshold value. Default is 0.0.</p></li>
-<li><p><strong>structure_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Size of the structuring element for binary closing. Default is 3.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image, normally already flattened so the background is near zero.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Pixels with <code class="docutils literal notranslate"><span class="pre">abs(data)</span> <span class="pre">&gt;</span> <span class="pre">threshold</span></code> are masked before closing. Default
+is 0.0, which masks every pixel that is not exactly zero.</p></li>
+<li><p><strong>structure_size</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Side length, in pixels, of the square structuring element used for
+closing. Default is 3.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Boolean mask array after morphological closing.</p>
+<dd class="field-even"><p>Boolean mask after closing.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.binary_closing.html#scipy.ndimage.binary_closing" title="(in SciPy v1.18.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.ndimage.binary_closing</span></code></a></dt><dd><p>The closing operation used.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.mask_threshold">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">mask_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#mask_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.mask_threshold" title="Link to this definition">¶</a></dt>
-<dd><p>Mask where data &gt; threshold.</p>
+<dd><p>Mask pixels higher than a threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Input 2D array.</p></li>
-<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Threshold value. Pixels greater than this will be True. Default is 0.0.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D AFM image.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Height threshold, in the units of <code class="docutils literal notranslate"><span class="pre">data</span></code> (usually nm). Default is 0.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Boolean mask array.</p>
+<dd class="field-even"><p>Boolean mask, True where <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">&gt;</span> <span class="pre">threshold</span></code>. NaN and infinite pixels
+are False.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -621,10 +646,11 @@ Default is 1.0.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.processing.mask_generators.register_masking">
 <span class="sig-prename descclassname"><span class="pre">playnano.processing.mask_generators.</span></span><span class="sig-name descname"><span class="pre">register_masking</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/processing/mask_generators.html#register_masking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.processing.mask_generators.register_masking" title="Link to this definition">¶</a></dt>
-<dd><p>Return dictionary of available masking functions.</p>
+<dd><p>Return the built-in mask functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Keys are function names (str), values are the corresponding callable functions.</p>
+<dd class="field-odd"><p>Maps each step name (str) to its function, for example
+<code class="docutils literal notranslate"><span class="pre">&quot;mask_threshold&quot;</span></code> to <a class="reference internal" href="#playnano.processing.mask_generators.mask_threshold" title="playnano.processing.mask_generators.mask_threshold"><code class="xref py py-func docutils literal notranslate"><span class="pre">mask_threshold()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
@@ -707,7 +733,7 @@ Default is 1.0.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

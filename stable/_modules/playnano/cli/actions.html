@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.actions - playnano v0.5.3 documentation</title>
+        <title>playnano.cli.actions - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,14 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.cli.actions</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Core logic for CLI actions in playNano."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Core logic for CLI actions in playNano. What the ``playnano`` subcommands do.</span>
+
+<span class="sd">``process``, ``analyze``, ``play``, ``wizard`` and ``env-info``.</span>
+
+<span class="sd">Called by :mod:`playnano.cli.handlers`; the functions can also be called</span>
+<span class="sd">from Python.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -575,50 +583,65 @@
     <span class="n">fps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Apply a processing pipeline to an AFM file, then optionally export data and GIF.</span>
+<span class="sd">    Process a stack, then export it as files, a GIF, videos and/or images.</span>
 
-<span class="sd">    Steps</span>
-<span class="sd">    -----</span>
-<span class="sd">    1. Parse processing steps from either `processing_file` (YAML/JSON)</span>
-<span class="sd">       or `processing_str`.</span>
-<span class="sd">    2. Run the ProcessingPipeline on the AFM stack to apply all filters.</span>
-<span class="sd">    3. Export the processed stack to TIFF/NPZ/HDF5 formats (`export_bundles`).</span>
-<span class="sd">    4. Generate an animated GIF of the filtered data (`export_gif`).</span>
+<span class="sd">    This is ``playnano process``. Output files go in ``output_folder`` and are</span>
+<span class="sd">    named from ``output_name``; see :func:`playnano.io.export_data.export_bundles`,</span>
+<span class="sd">    :func:`playnano.io.gif_export.export_gif`,</span>
+<span class="sd">    :func:`playnano.io.video_export.export_video` and</span>
+<span class="sd">    :func:`playnano.io.image_sequence_export.export_image_sequence`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    input_file : str</span>
-<span class="sd">        Path to the AFM input file.</span>
+<span class="sd">        AFM file or folder to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Name of the data channel to extract (e.g., "height_trace").</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
 <span class="sd">    processing_str : str or None</span>
-<span class="sd">        Semicolon-delimited inline pipeline string, e.g.</span>
-<span class="sd">        `"remove_plane;gaussian_filter:sigma=2"`.</span>
+<span class="sd">        Processing steps as text, for example</span>
+<span class="sd">        ``"remove_plane;gaussian_filter:sigma=2"`` (see</span>
+<span class="sd">        :func:`playnano.cli.utils.parse_processing_string`).</span>
 <span class="sd">    processing_file : str or None</span>
-<span class="sd">        Path to a YAML/JSON file defining the processing steps.</span>
+<span class="sd">        YAML or JSON processing file (see</span>
+<span class="sd">        :func:`playnano.cli.utils.parse_processing_file`). Used instead of</span>
+<span class="sd">        ``processing_str`` if both are given. If neither is given, the data is</span>
+<span class="sd">        exported unprocessed.</span>
 <span class="sd">    export : str or None</span>
-<span class="sd">        Comma-separated output formats for bundles (e.g. `"tif,npz,h5"`).</span>
+<span class="sd">        Comma-separated data formats: ``"tif"``, ``"npz"`` and/or ``"h5"``.</span>
+<span class="sd">        Surrounding quotes are removed. None exports no data files.</span>
 <span class="sd">    make_gif : bool</span>
-<span class="sd">        Whether to create an animated GIF of the filtered stack.</span>
+<span class="sd">        Write an animated GIF.</span>
+<span class="sd">    make_video : str or None</span>
+<span class="sd">        Comma-separated video formats, for example ``"mp4"`` or ``"mp4,avi"``.</span>
+<span class="sd">        None writes no video.</span>
+<span class="sd">    make_sequence : bool</span>
+<span class="sd">        Write a folder of PNG images, one per frame.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory in which to write any export files.</span>
+<span class="sd">        Folder for all outputs; created if missing. If None, ``./output``.</span>
 <span class="sd">    output_name : str or None</span>
-<span class="sd">        Base filename (no extension) for bundles/GIF; defaults to</span>
-<span class="sd">        the stem of `input_file`.</span>
+<span class="sd">        Start of the output file names. If None, the input file's name.</span>
 <span class="sd">    scale_bar_nm : int or None</span>
-<span class="sd">        Length (in nm) of the scale bar overlaid on each GIF frame.</span>
-<span class="sd">    zmin : str</span>
-<span class="sd">        Minimum Z-value for GIF color normalization (float string or `"auto"`).</span>
-<span class="sd">    zmax : str</span>
-<span class="sd">        Maximum Z-value for GIF color normalization (float string or `"auto"`).</span>
-<span class="sd">    cmap : str</span>
-<span class="sd">        Name of the colormap to use for GIF export (default=DEFAULT_CMAP).</span>
-<span class="sd">    fps : float</span>
-<span class="sd">        Frame rate for the GIF in frames per second (default=5.0).</span>
+<span class="sd">        Scale bar length on the GIF, videos and images, in nm; 0 hides it. If</span>
+<span class="sd">        None, 100.</span>
+<span class="sd">    zmin, zmax : float or str, optional</span>
+<span class="sd">        Colour scale limits for the GIF, videos and images: a number,</span>
+<span class="sd">        ``"auto"`` (1st and 99th percentiles of the stack) or None (each frame</span>
+<span class="sd">        scaled separately). Default is ``"auto"``.</span>
+<span class="sd">    draw_ts : bool, optional</span>
+<span class="sd">        Draw each frame's time on the GIF, videos and images. Default is False.</span>
+<span class="sd">    cmap : str, optional</span>
+<span class="sd">        Colormap name; an unknown name gives a warning and ``"afm_brown"``.</span>
+<span class="sd">        Default is ``"afm_brown"``.</span>
+<span class="sd">    fps : float, optional</span>
+<span class="sd">        Frames per second of the GIF and videos. Default is 5.0.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    SystemExit</span>
+<span class="sd">        With status 1, if loading or processing fails (the error is logged).</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``export`` names an unsupported format, or an output name or folder</span>
+<span class="sd">        is invalid.</span>
 <span class="sd">    """</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Entering process_pipeline_mode: </span><span class="si">%r</span><span class="s2">"</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
 
@@ -635,9 +658,13 @@
     <span class="c1"># 2) Process stack with the steps</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">afm_stack</span> <span class="o">=</span> <span class="n">process_stack</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">input_file</span><span class="p">),</span> <span class="n">channel</span><span class="p">,</span> <span class="n">steps_with_kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">LoadError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># The message already says why (for example, the channels available);</span>
+        <span class="c1"># a traceback would only hide it.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="c1"># Catch any exception (including LoadError or</span>
-        <span class="c1"># unexpected exceptions from AFMImageStack)</span>
+        <span class="c1"># Unexpected errors from processing: keep the traceback.</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Failed to process AFM stack: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
@@ -704,9 +731,14 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.warn_if_unprocessed">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">warn_if_unprocessed</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Warn if the AFMImageStack has not been processed using the playNano pipeline.</span>
+<span class="sd">    Log a warning if a stack has not been through a processing pipeline.</span>
 
-<span class="sd">    Emits a warning if .processed is missing or does not contain a 'raw' key.</span>
+<span class="sd">    Checks for a ``"raw"`` entry in ``stack.processed``, which processing adds.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stack : AFMImageStack</span>
+<span class="sd">        The stack to check.</span>
 <span class="sd">    """</span>
     <span class="n">processed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="s2">"processed"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">processed</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"raw"</span> <span class="ow">in</span> <span class="n">processed</span><span class="p">):</span>
@@ -729,46 +761,41 @@
     <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Run an analysis pipeline on an AFM stack and export both JSON and HDF5.</span>
+<span class="sd">    Analyse a stack and save the results as JSON and HDF5.</span>
 
-<span class="sd">    Steps</span>
-<span class="sd">    -----</span>
-<span class="sd">    1. Load the AFMImageStack from disk using `input_file` and `channel`.</span>
-<span class="sd">    2. Parse analysis modules from `analysis_file` or `analysis_str`.</span>
-<span class="sd">    3. Build and execute an `AnalysisPipeline` over the stack.</span>
-<span class="sd">    4. Sanitize the full record (`make_json_safe`) and write it to `&lt;output&gt;.json`.</span>
-<span class="sd">    5. Export the raw record to HDF5 via `export_to_hdf5`.</span>
+<span class="sd">    This is ``playnano analyze``. The stack is loaded as it is, so load a file</span>
+<span class="sd">    saved after processing (or one that needs none); a warning is logged if it</span>
+<span class="sd">    has not been processed.</span>
 
-<span class="sd">    Both files are attempted even if one fails, and any failure is raised at</span>
-<span class="sd">    the end, so the command exits with an error.</span>
+<span class="sd">    The JSON file holds the full analysis record, with arrays as lists; the</span>
+<span class="sd">    HDF5 file holds the same record (see</span>
+<span class="sd">    :func:`playnano.analysis.utils.common.export_to_hdf5`). Both are written</span>
+<span class="sd">    even if one fails.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    input_file : str</span>
-<span class="sd">        Path to the AFM input file.</span>
+<span class="sd">        File or folder to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Name of the data channel to analyze (e.g., "height_trace").</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
 <span class="sd">    analysis_str : str or None</span>
-<span class="sd">        Semicolon-delimited inline analysis string, e.g.</span>
-<span class="sd">        `"feature_detection:threshold=5;particle_tracking"`.</span>
+<span class="sd">        Analysis steps as text, for example</span>
+<span class="sd">        ``"feature_detection:threshold=5;particle_tracking"`` (see</span>
+<span class="sd">        :func:`playnano.cli.utils.parse_analysis_string`).</span>
 <span class="sd">    analysis_file : str or None</span>
-<span class="sd">        Path to a YAML/JSON file defining the analysis pipeline.</span>
+<span class="sd">        YAML or JSON analysis file (see</span>
+<span class="sd">        :func:`playnano.cli.utils.parse_analysis_file`). Used instead of</span>
+<span class="sd">        ``analysis_str`` if both are given.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory in which to write JSON + HDF5 exports; defaults to ``./output``.</span>
+<span class="sd">        Folder for the two files; created if missing. If None, ``./output``.</span>
 <span class="sd">    output_name : str or None</span>
-<span class="sd">        Base filename for both `&lt;output&gt;.json` and `&lt;output&gt;.h5`; defaults to</span>
-<span class="sd">        the stem of `input_file`. Any folder part is dropped and a known</span>
-<span class="sd">        extension such as ``.json`` or ``.h5`` is removed, as for ``process``,</span>
-<span class="sd">        so files are always written inside the output folder.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        Name of the two files, ``&lt;name&gt;.json`` and ``&lt;name&gt;.h5``. Any folder</span>
+<span class="sd">        part and a known extension are removed. If None, the input file's name.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If either output file would overwrite `input_file`, or `output_name`</span>
+<span class="sd">        If an output file would overwrite ``input_file``, or ``output_name``</span>
 <span class="sd">        contains invalid characters. Both are checked before the data is loaded.</span>
 <span class="sd">    RuntimeError</span>
 <span class="sd">        If the JSON or HDF5 file could not be written.</span>
@@ -928,6 +955,39 @@
     <span class="k">return</span> <span class="n">fps</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_zlimit_or_auto</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a ``--zmin``/``--zmax`` value as a float, or ``"auto"`` if it is not one.</span>
+
+<span class="sd">    Used by ``playnano play``: the limits can be changed in the window, so a</span>
+<span class="sd">    mistyped value should not stop it opening.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Option name, for the warning (``"zmin"`` or ``"zmax"``).</span>
+<span class="sd">    value : float or str or None</span>
+<span class="sd">        The value given.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float or str</span>
+<span class="sd">        The value as a float, or ``"auto"``.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"--</span><span class="si">%s</span><span class="s2"> </span><span class="si">%r</span><span class="s2"> is not a number or 'auto'; using 'auto'. "</span>
+            <span class="s2">"Adjust it in the window's Z-scale controls."</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"auto"</span>
+
+
 <div class="viewcode-block" id="play_pipeline_mode">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.play_pipeline_mode">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">play_pipeline_mode</span><span class="p">(</span>
@@ -944,48 +1004,51 @@
     <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Launch an interactive GUI to browse an AFM stack with optional filters.</span>
+<span class="sd">    Open a stack in the playNano GUI.</span>
 
-<span class="sd">    Steps</span>
-<span class="sd">    -----</span>
-<span class="sd">    1. Load the AFM stack from `input_file` and `channel`.</span>
-<span class="sd">    2. Optionally apply a processing pipeline (inline or YAML/JSON).</span>
-<span class="sd">    3. Display frames in a QT-based viewer with live filtering controls.</span>
-<span class="sd">    4. Allow on-the-fly export to bundles or GIF via GUI.</span>
+<span class="sd">    This is ``playnano play``. The processing steps are not applied when the</span>
+<span class="sd">    window opens: press F in the window to apply them (or, if none were given,</span>
+<span class="sd">    a default set of steps). The window can also export a GIF (G) and data</span>
+<span class="sd">    files (E).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    input_file : str</span>
-<span class="sd">        Path to the AFM input file.</span>
+<span class="sd">        File or folder to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Data channel to display (e.g., "height_trace").</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
 <span class="sd">    processing_str : str or None</span>
-<span class="sd">        Inline processing string as for `process_pipeline_mode`.</span>
+<span class="sd">        Processing steps as text, as for :func:`process_pipeline_mode`.</span>
 <span class="sd">    processing_file : str or None</span>
-<span class="sd">        Path to a YAML/JSON file specifying processing steps.</span>
+<span class="sd">        YAML or JSON processing file. Used instead of ``processing_str`` if both</span>
+<span class="sd">        are given.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory for any GUI-triggered exports.</span>
+<span class="sd">        Folder for exports from the window.</span>
 <span class="sd">    output_name : str or None</span>
-<span class="sd">        Base filename (no extension) for GUI exports.</span>
+<span class="sd">        Start of the exported file names.</span>
 <span class="sd">    scale_bar_nm : int or None</span>
-<span class="sd">        Scale bar length (in nm) displayed on frames.</span>
-<span class="sd">    zmin : str</span>
-<span class="sd">        Minimum Z-value mapping (float or `"auto"`).</span>
-<span class="sd">    zmax : str</span>
-<span class="sd">        Maximum Z-value mapping (float or `"auto"`).</span>
-<span class="sd">    cmap : str</span>
-<span class="sd">        Name of the colormap to use for visualisation  on launch (default=DEFAULT_CMAP).</span>
-<span class="sd">    fps : float</span>
-<span class="sd">        Initial frame rate for the GIF in frames per second (default=5.0).</span>
+<span class="sd">        Scale bar length, in nm; 0 hides it. If None, 100.</span>
+<span class="sd">    fps : float or None</span>
+<span class="sd">        Playback frame rate. If None, the rate the data was recorded at, or</span>
+<span class="sd">        5 frames per second if that is unknown or slower than 1 frame per</span>
+<span class="sd">        second.</span>
+<span class="sd">    zmin, zmax : float or str, optional</span>
+<span class="sd">        Colour scale limits: a number, or ``"auto"`` (1st and 99th</span>
+<span class="sd">        percentiles). A value that is neither is replaced by ``"auto"`` with a</span>
+<span class="sd">        warning; the limits can be changed in the window. Default is</span>
+<span class="sd">        ``"auto"``.</span>
+<span class="sd">    cmap : str, optional</span>
+<span class="sd">        Colormap the window opens with. Default is ``"afm_brown"``.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    LoadError</span>
+<span class="sd">        If the file cannot be loaded.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">afm_stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="c1"># Not logged here: the caller reports the LoadError, which keeps the reason.</span>
         <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="k">if</span> <span class="n">fps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1000,21 +1063,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">steps_with_kwargs</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">if</span> <span class="n">zmin</span> <span class="o">!=</span> <span class="s2">"auto"</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmin</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">"The value of zmin must be either a number or the string 'auto'."</span>
-            <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">zmax</span> <span class="o">!=</span> <span class="s2">"auto"</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">zmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zmax</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                <span class="s2">"The value of zmax must be either a number or the string 'auto'."</span>
-            <span class="p">)</span>
+    <span class="n">zmin</span> <span class="o">=</span> <span class="n">_zlimit_or_auto</span><span class="p">(</span><span class="s2">"zmin"</span><span class="p">,</span> <span class="n">zmin</span><span class="p">)</span>
+    <span class="n">zmax</span> <span class="o">=</span> <span class="n">_zlimit_or_auto</span><span class="p">(</span><span class="s2">"zmax"</span><span class="p">,</span> <span class="n">zmax</span><span class="p">)</span>
 
     <span class="n">gui_entry</span><span class="p">(</span>
         <span class="n">afm_stack</span><span class="p">,</span>
@@ -1034,67 +1084,81 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Wizard</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Interactive processing + analysis wizard.</span>
+<span class="sd">    Interactive prompt for building and running processing and analysis.</span>
 
-<span class="sd">    This class provides a REPL interface for building and running processing and</span>
-<span class="sd">    analysis pipelines on AFM data. Users can add, remove, reorder, save, and load</span>
-<span class="sd">    both processing and analysis steps. Processing steps operate on 2D image data</span>
-<span class="sd">    and are applied in sequence to a stack, while analysis steps are executed on the</span>
-<span class="sd">    processed data or raw data if no processing is specified.</span>
+<span class="sd">    This is ``playnano wizard``. The stack is loaded when the wizard is made;</span>
+<span class="sd">    :meth:`run` then reads commands until ``quit``. Type ``help`` for the list.</span>
 
-<span class="sd">    The wizard can be driven interactively through text commands. It supports</span>
-<span class="sd">    saving and loading pipelines from YAML or JSON files, exporting processed</span>
-<span class="sd">    stacks in multiple formats, and creating animated GIFs.</span>
+<span class="sd">    Processing commands:</span>
 
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; wiz = Wizard("data.afm", "height", ".", "output", 100)</span>
-<span class="sd">    &gt;&gt;&gt; wiz.run()</span>
+<span class="sd">    - ``add &lt;step&gt;``: add a processing step, asking for its parameters;</span>
+<span class="sd">    - ``clear``: add a step that removes the current mask;</span>
+<span class="sd">    - ``remove &lt;n&gt;``, ``move &lt;from&gt; &lt;to&gt;``, ``list``: edit and show the steps;</span>
+<span class="sd">    - ``save &lt;file&gt;``, ``load &lt;file&gt;``: write or read a YAML processing file;</span>
+<span class="sd">    - ``run``: process the stack, then offer to export data files, a GIF and a</span>
+<span class="sd">      video.</span>
+
+<span class="sd">    Analysis commands:</span>
+
+<span class="sd">    - ``aadd &lt;module&gt;`` (asks for parameters) or</span>
+<span class="sd">      ``aadd &lt;module&gt;:key=value,...``: add an analysis step;</span>
+<span class="sd">    - ``aremove &lt;n&gt;``, ``amove &lt;from&gt; &lt;to&gt;``, ``alist``: edit and show the steps;</span>
+<span class="sd">    - ``asave &lt;file&gt;``, ``aload &lt;file&gt;``: write or read an analysis file;</span>
+<span class="sd">    - ``arun``: run the processing (if there are steps and they changed since</span>
+<span class="sd">      the last run) and then the analysis, and save the results as</span>
+<span class="sd">      ``&lt;name&gt;.json`` and ``&lt;name&gt;.h5``.</span>
+
+<span class="sd">    Step numbers start at 1. ``help`` lists most commands; ``load`` and</span>
+<span class="sd">    ``clear`` are missing from it.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    input_file : str</span>
-<span class="sd">        Path to the AFM input file.</span>
+<span class="sd">        File or folder to load.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel name to load from the AFM file (e.g. "height_trace").</span>
-<span class="sd">    output_folder : Optional[str]</span>
-<span class="sd">        Directory to write exported analysis/processing outputs. If `None`,</span>
-<span class="sd">        the output directory defaults to the current working directory when</span>
-<span class="sd">        an export is performed (see `_run_analysis_and_export`).</span>
-<span class="sd">    output_name : Optional[str]</span>
-<span class="sd">        Base filename (no extension) for exported files. If `None`, the stem</span>
-<span class="sd">        of `input_file` will be used at export time.</span>
-<span class="sd">    scale_bar_nm : Optional[int]</span>
-<span class="sd">        Default scale bar size in nm used when creating GIFs. Use `0` to</span>
-<span class="sd">        explicitly disable the scale bar. This value is passed to `export_gif`</span>
-<span class="sd">        as given; that function determines how to interpret `0`.</span>
-<span class="sd">    io : IO or None, optional</span>
-<span class="sd">        I/O abstraction used for reading commands and printing output. If None,</span>
-<span class="sd">        standard input/output will be used. Mainly for testing and automation.</span>
+<span class="sd">        Channel to load, for example ``"height_trace"``.</span>
+<span class="sd">    output_folder : str or None</span>
+<span class="sd">        Folder for exports and analysis results. If None, ``./output``.</span>
+<span class="sd">    output_name : str or None</span>
+<span class="sd">        Start of the output file names. If None, the input file's name.</span>
+<span class="sd">    scale_bar_nm : int or None</span>
+<span class="sd">        Scale bar length used when a length typed at the ``run`` prompts is not</span>
+<span class="sd">        a whole number. If None, 100.</span>
+<span class="sd">    io : IO, optional</span>
+<span class="sd">        Reads commands and prints messages. Default is None (the terminal).</span>
+<span class="sd">        Mainly for tests.</span>
 <span class="sd">    cmap : str, optional</span>
-<span class="sd">        Name of the colormap to use for GIF exports(default=DEFAULT_CMAP).</span>
+<span class="sd">        Colormap for GIF and video exports. Default is ``"afm_brown"``.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    process_steps : list[tuple[str, Dict]]</span>
-<span class="sd">        Ordered list of processing steps (name, kwargs).</span>
-<span class="sd">    analysis_steps : list[tuple[str, Dict]]</span>
-<span class="sd">        Ordered list of analysis steps (name, kwargs).</span>
-<span class="sd">    processed_stack : Optional[AFMImageStack]</span>
-<span class="sd">        Cached processed AFM stack produced by running the processing steps.</span>
-<span class="sd">    processed_steps_snapshot : list[tuple[str, Dict]]</span>
-<span class="sd">        Snapshot of `process_steps` at time `processed_stack` was produced.</span>
 <span class="sd">    afm_stack : AFMImageStack</span>
-<span class="sd">        Raw loaded AFM stack.</span>
+<span class="sd">        The stack as loaded.</span>
 <span class="sd">    input_path : pathlib.Path</span>
-<span class="sd">        Path object for `input_file`.</span>
+<span class="sd">        ``input_file`` as a path.</span>
+<span class="sd">    process_steps : list of tuple</span>
+<span class="sd">        Processing steps, as ``(name, parameters)``.</span>
+<span class="sd">    analysis_steps : list of tuple</span>
+<span class="sd">        Analysis steps, as ``(name, parameters)``.</span>
+<span class="sd">    processed_stack : AFMImageStack or None</span>
+<span class="sd">        Result of the last processing run, reused by ``arun`` while the steps</span>
+<span class="sd">        are unchanged.</span>
+<span class="sd">    processed_steps_snapshot : list of tuple</span>
+<span class="sd">        The processing steps ``processed_stack`` was made with.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    FileNotFoundError</span>
-<span class="sd">        If `input_file` does not exist.</span>
+<span class="sd">        If ``input_file`` does not exist.</span>
 <span class="sd">    LoadError</span>
-<span class="sd">        If the AFM stack cannot be loaded from the given file.</span>
+<span class="sd">        If it cannot be loaded.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; wizard = Wizard(</span>
+<span class="sd">    ...     "sample.h5-jpk", "height_trace", None, None, None</span>
+<span class="sd">    ... )  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; wizard.run()  # doctest: +SKIP</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1107,34 +1171,7 @@
         <span class="n">io</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IO</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize the Wizard for interactive processing and analysis of a AFM stack.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        input_file : str</span>
-<span class="sd">            Path to AFM input file.</span>
-<span class="sd">        channel : str</span>
-<span class="sd">            Data channel to load.</span>
-<span class="sd">        output_folder : Optional[str]</span>
-<span class="sd">            Directory for output files. If `None` no directory is set immediately;</span>
-<span class="sd">            a default of the current working directory will be used when export</span>
-<span class="sd">            functions are called.</span>
-<span class="sd">        output_name : Optional[str]</span>
-<span class="sd">            Base output filename.</span>
-<span class="sd">        scale_bar_nm : Optional[int]</span>
-<span class="sd">            Default scale bar length for GIFs.</span>
-<span class="sd">        io : object or None, optional</span>
-<span class="sd">            I/O abstraction with `input` and `print`-like methods. If None, standard</span>
-<span class="sd">            input/output will be used. Mainly intended for testing or scripted runs.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        FileNotFoundError</span>
-<span class="sd">            If `input_file` does not exist.</span>
-<span class="sd">        LoadError</span>
-<span class="sd">            If AFM file cannot be loaded into an AFMImageStack.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Load the stack. The parameters are described in the class docstring."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_file</span> <span class="o">=</span> <span class="n">input_file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span>
@@ -1150,7 +1187,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">afm_stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="n">LoadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="c1"># wizard state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1164,14 +1201,16 @@
 <div class="viewcode-block" id="Wizard.print_help">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.print_help">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">print_help</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Print available wizard commands."""</span>
+<span class="w">        </span><span class="sd">"""Print the wizard commands."""</span>
         <span class="n">help_text</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">"Commands:</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  add &lt;filter_name&gt;   - Add processing step</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"  clear               - Add a step that removes the current mask</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  remove &lt;index&gt;      - Remove processing step</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  move &lt;old&gt; &lt;new&gt;    - Reorder processing steps</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  list                - List processing steps</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  save &lt;path&gt;         - Save processing to YAML file</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"  load &lt;path&gt;         - Load processing steps from a YAML file</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  run                 - Execute processing now (returns to prompt)</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  aadd &lt;spec|name&gt;    - Add analysis step inline or interactive (aadd name)</span><span class="se">\n</span><span class="s2">"</span>  <span class="c1"># noqa</span>
             <span class="s2">"  aremove &lt;index&gt;     - Remove analysis step</span><span class="se">\n</span><span class="s2">"</span>
@@ -1181,7 +1220,7 @@
             <span class="s2">"  aload &lt;path&gt;        - Load analysis file YAML/JSON</span><span class="se">\n</span><span class="s2">"</span>
             <span class="s2">"  arun                - Execute analysis now (runs processing first if needed)</span><span class="se">\n</span><span class="s2">"</span>  <span class="c1"># noqa</span>
             <span class="s2">"  help                - Show this message</span><span class="se">\n</span><span class="s2">"</span>
-            <span class="s2">"  quit                - Exit without running</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"  quit (or exit)      - Exit without running</span><span class="se">\n</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span></div>
 
@@ -1189,7 +1228,7 @@
 <div class="viewcode-block" id="Wizard.list_steps">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.list_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Pretty-print current processing steps."""</span>
+<span class="w">        </span><span class="sd">"""Print the processing steps, numbered from 1."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_steps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"  [no processing steps]"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1205,7 +1244,7 @@
 <div class="viewcode-block" id="Wizard.list_analysis">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.list_analysis">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Pretty-print current analysis steps."""</span>
+<span class="w">        </span><span class="sd">"""Print the analysis steps, numbered from 1."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_steps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"  [no analysis steps]"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1225,12 +1264,13 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.prompt_for_processing_params">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prompt_for_processing_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Prompt user for a processing step's parameters (simple fallback).</span>
+<span class="sd">        Ask for a few common parameters of a processing step.</span>
 
-<span class="sd">        This method provides a small set of built-in prompts for commonly-used</span>
-<span class="sd">        processing filters. It is a fallback — the module-level</span>
-<span class="sd">        `ask_for_processing_params` (which introspects/loads processing callables)</span>
-<span class="sd">        may provide a richer interactive experience and is used in `handle_add`.</span>
+<span class="sd">        Used by ``add`` when the step's parameters cannot be read from its</span>
+<span class="sd">        function. Only these are asked for: ``sigma`` (``gaussian_filter``),</span>
+<span class="sd">        ``order`` (``polynomial_flatten``), ``factor`` (``mask_mean_offset``) and</span>
+<span class="sd">        ``threshold`` (``mask_threshold``, ``mask_below_threshold``). Pressing</span>
+<span class="sd">        Enter uses the default shown; an invalid value is asked for again.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1239,8 +1279,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        Dict[str, Any]</span>
-<span class="sd">            Mapping of parameter names to values.</span>
+<span class="sd">        dict</span>
+<span class="sd">            Parameter names and values; empty for other steps.</span>
 <span class="sd">        """</span>
         <span class="n">params_to_ask</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">step_name</span> <span class="o">==</span> <span class="s2">"gaussian_filter"</span><span class="p">:</span>
@@ -1280,7 +1320,15 @@
 <div class="viewcode-block" id="Wizard.handle_add">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_add">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Add a processing step interactively or from the command line."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``add &lt;step&gt;``: add a processing step, asking for each parameter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: add &lt;processing_step&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1304,7 +1352,15 @@
 <div class="viewcode-block" id="Wizard.handle_clear">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_clear">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Insert a clear-mask step into the processing pipeline."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``clear``: add a step that removes the current mask.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"clear"</span><span class="p">,</span> <span class="p">{}))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Added clear-mask step."</span><span class="p">)</span></div>
 
@@ -1312,7 +1368,15 @@
 <div class="viewcode-block" id="Wizard.handle_remove">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_remove">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Remove a processing step by index."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``remove &lt;n&gt;``: remove processing step ``n`` (from 1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_steps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"No processing steps to remove."</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1330,7 +1394,15 @@
 <div class="viewcode-block" id="Wizard.handle_move">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_move">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Reorder processing steps by moving one from old_index to new_index."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``move &lt;from&gt; &lt;to&gt;``: move a processing step to a new position (from 1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: move &lt;old_index&gt; &lt;new_index&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1353,11 +1425,19 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_save">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Save current processing steps to a YAML file.</span>
+<span class="sd">        ``save &lt;file&gt;``: write the processing steps to a YAML file.</span>
 
-<span class="sd">        Values are converted to plain YAML types first (tuples to lists, NumPy</span>
-<span class="sd">        numbers to Python numbers, paths to strings), so `load` can read the</span>
-<span class="sd">        file back with ``yaml.safe_load``.</span>
+<span class="sd">        Parameters that are None, or that do not apply (see</span>
+<span class="sd">        :func:`playnano.utils.param_utils.prune_kwargs`), are left out. Values are</span>
+<span class="sd">        converted to plain YAML types (tuples to lists, NumPy numbers to Python</span>
+<span class="sd">        numbers, paths to text), so ``load`` and ``--processing-file`` can read the</span>
+<span class="sd">        file. Missing folders are created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: save &lt;path/to/output.yaml&gt;"</span><span class="p">)</span>
@@ -1398,7 +1478,18 @@
 <div class="viewcode-block" id="Wizard.handle_load">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_load">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Load processing steps from a YAML file exported by `save`."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``load &lt;file&gt;``: replace the processing steps with those in a YAML file.</span>
+
+<span class="sd">        Reads a ``filters:`` list as written by ``save``; entries without a</span>
+<span class="sd">        ``name`` are skipped.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: load &lt;path/to/processing.yaml&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1444,21 +1535,17 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.run_processing_and_cache">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_processing_and_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Run the current processing steps and cache the processed AFM stack.</span>
-
-<span class="sd">        The method calls into `process_stack` with the accumulated `process_steps`</span>
-<span class="sd">        and stores the returned AFMImageStack in `self.processed_stack` for</span>
-<span class="sd">        subsequent in-memory analysis.</span>
+<span class="sd">        Load the file again, process it with the current steps, and keep the result.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        AFMImageStack</span>
-<span class="sd">            The processed AFM stack object.</span>
+<span class="sd">            The processed stack, also stored in :attr:`processed_stack`.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        LoadError</span>
-<span class="sd">            If loading/processing fails.</span>
+<span class="sd">            If loading or processing fails.</span>
 <span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">processed</span> <span class="o">=</span> <span class="n">process_stack</span><span class="p">(</span>
@@ -1488,17 +1575,17 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute the currently queued processing steps and optionally export outputs.</span>
+<span class="sd">        ``run``: process the stack, then offer to export it.</span>
 
-<span class="sd">        Behavior</span>
-<span class="sd">        --------</span>
-<span class="sd">        - Runs processing and caches the result.</span>
-<span class="sd">        - Prompts the user whether to export (tif/npz/h5) and/or create a GIF.</span>
+<span class="sd">        Asks in turn whether to export data files (and in which formats), a GIF and</span>
+<span class="sd">        a video, and for each image export the colour scale limits, timestamps and</span>
+<span class="sd">        scale bar. The processed stack is kept for ``arun``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        parts : List[str]</span>
-<span class="sd">            Tokenized user command (not currently used).</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_steps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"No steps to run. Use `add &lt;filter_name&gt;` first."</span><span class="p">)</span>
@@ -1620,7 +1707,15 @@
 <div class="viewcode-block" id="Wizard.handle_alist">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_alist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_alist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""List current analysis steps."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``alist``: print the analysis steps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Analysis steps:"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_analysis</span><span class="p">()</span></div>
 
@@ -1628,7 +1723,20 @@
 <div class="viewcode-block" id="Wizard.handle_aadd">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_aadd">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_aadd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Add an analysis step (inline or interactive)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``aadd``: add an analysis step.</span>
+
+<span class="sd">        ``aadd &lt;module&gt;`` asks for each parameter;</span>
+<span class="sd">        ``aadd &lt;module&gt;:key=value,...`` gives them directly, read as by</span>
+<span class="sd">        :func:`playnano.cli.utils.parse_analysis_string` (several steps can be</span>
+<span class="sd">        given, separated by ``;``).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span>
                 <span class="s2">"Usage: aadd &lt;step[:param=val,...]&gt; or `aadd &lt;step&gt;` for interactive."</span>
@@ -1679,7 +1787,15 @@
 <div class="viewcode-block" id="Wizard.handle_aremove">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_aremove">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_aremove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Remove an analysis step by index."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``aremove &lt;n&gt;``: remove analysis step ``n`` (from 1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_steps</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"No analysis steps to remove."</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1697,7 +1813,15 @@
 <div class="viewcode-block" id="Wizard.handle_amove">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_amove">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_amove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Reorder analysis steps."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``amove &lt;from&gt; &lt;to&gt;``: move an analysis step to a new position (from 1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: amove &lt;old&gt; &lt;new&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1713,7 +1837,19 @@
 <div class="viewcode-block" id="Wizard.handle_aload">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_aload">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_aload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Load analysis steps from a YAML/JSON file, restoring Python types."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``aload &lt;file&gt;``: replace the analysis steps with those in a YAML or JSON file.</span>
+
+<span class="sd">        Accepts ``{"analysis": [...]}`` or a plain list of steps. Text values that</span>
+<span class="sd">        are Python literals, such as ``"[1, 2]"``, are converted. Entries without a</span>
+<span class="sd">        ``name`` are skipped.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: aload &lt;path&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1774,7 +1910,18 @@
 <div class="viewcode-block" id="Wizard.handle_asave">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_asave">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_asave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Save current analysis steps to a YAML file."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ``asave &lt;file&gt;``: write the analysis steps to a YAML file.</span>
+
+<span class="sd">        Parameters that are None, or that do not apply, are left out, and values</span>
+<span class="sd">        are converted to plain YAML types. Missing folders are created.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"Usage: asave &lt;path/to/output.yaml&gt;"</span><span class="p">)</span>
             <span class="k">return</span>
@@ -1948,24 +2095,19 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.handle_arun">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_arun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute the analysis pipeline, running processing if needed and export results.</span>
+<span class="sd">        ``arun``: run the analysis and save the results.</span>
 
-<span class="sd">        The function supports two modes:</span>
-
-<span class="sd">        * If the wizard has processing steps configured (self.process_steps), it will</span>
-<span class="sd">          ensure the processed stack is available and up-to-date and then run analysis</span>
-<span class="sd">          in-memory on that processed stack.</span>
-<span class="sd">        * If there are no processing steps, analysis runs directly on the loaded AFM</span>
-<span class="sd">          stack.</span>
-
-<span class="sd">        Results are exported as JSON and HDF5 into `self.output_folder` (or</span>
-<span class="sd">        ``./output``). The JSON is created with `make_json_safe` and both JSON/HDF5 are</span>
-<span class="sd">        written atomically.</span>
+<span class="sd">        If there are processing steps, the stack is processed first, unless it was</span>
+<span class="sd">        already processed with the same steps; otherwise the analysis runs on the</span>
+<span class="sd">        stack as loaded. Results are written to ``&lt;name&gt;.json`` and ``&lt;name&gt;.h5`` in</span>
+<span class="sd">        the output folder, each through a temporary file so a failed write leaves</span>
+<span class="sd">        no partial file.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        parts : List[str]</span>
-<span class="sd">            Tokenized CLI command (unused).</span>
+<span class="sd">        parts : list of str</span>
+<span class="sd">            The command line typed at the prompt, split on spaces; ``parts[0]`` is</span>
+<span class="sd">            the command.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_steps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s2">"No analysis steps. Use aadd first."</span><span class="p">)</span>
@@ -2004,7 +2146,14 @@
 <div class="viewcode-block" id="Wizard.run">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.Wizard.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Start the interactive REPL loop."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Read and carry out commands until ``quit``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        SystemExit</span>
+<span class="sd">            With status 0, on ``quit``, ``exit``, Ctrl+C or end of input.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded AFM stack: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">say</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"Channel: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="si">}</span><span class="s2">, frames=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">n_frames</span><span class="si">}</span><span class="s2">, shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">afm_stack</span><span class="o">.</span><span class="n">image_shape</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># noqa</span>
@@ -2086,11 +2235,9 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.print_env_info">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">print_env_info</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Print the current playNano environment metadata.</span>
+<span class="sd">    Print the software environment as JSON (``playnano env-info``).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">    See :func:`playnano.utils.system_info.gather_environment_info`.</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
@@ -2104,19 +2251,38 @@
 <div class="viewcode-block" id="IO">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.IO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IO</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Simple I/O adapter used by Wizard for testability and swapping UI later."""</span>
+<span class="w">    </span><span class="sd">"""Terminal input and output for :class:`Wizard`; tests replace it."""</span>
 
 <div class="viewcode-block" id="IO.ask">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.IO.ask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Prompt for a line of input from the user."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Show a prompt and return the line typed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prompt : str</span>
+<span class="sd">            Text shown before the input.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            The line typed, without the newline.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="IO.say">
 <a class="viewcode-back" href="../../../api/playnano.cli.actions.html#playnano.cli.actions.IO.say">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">say</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Write a message to stdout."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Print a message.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        msg : str</span>
+<span class="sd">            The message.</span>
+<span class="sd">        """</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 </div>
 
@@ -2152,7 +2318,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

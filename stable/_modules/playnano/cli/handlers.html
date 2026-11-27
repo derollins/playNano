@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.handlers - playnano v0.5.3 documentation</title>
+        <title>playnano.cli.handlers - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,13 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.cli.handlers</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Handlers for the playNano CLI commands."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Functions that run each ``playnano`` subcommand from its parsed arguments.</span>
+
+<span class="sd">Each handler passes the options to the matching function in</span>
+<span class="sd">:mod:`playnano.cli.actions`. If that raises an error, the handler logs it</span>
+<span class="sd">(with the traceback at ``--log-level DEBUG``) and exits with status 1.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -545,29 +552,33 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.handlers.html#playnano.cli.handlers.handle_play">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_play</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Handle the 'play' subcommand: feed arguments into the run_pipeline_mode function.</span>
+<span class="sd">    Run ``playnano play``: open a stack in the GUI.</span>
+
+<span class="sd">    Calls :func:`playnano.cli.actions.play_pipeline_mode`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    args : argparse.Namespace</span>
-<span class="sd">        Must contain:</span>
-<span class="sd">        - input_file (str): path to AFM data</span>
-<span class="sd">        - channel (str)</span>
-<span class="sd">        - processing_str (str or None)</span>
-<span class="sd">        - processing_file (str or None)</span>
-<span class="sd">        - output_folder (str or None)</span>
-<span class="sd">        - output_name (str or None)</span>
-<span class="sd">        - scale_bar_nm (int or None), 0 turns off scale bar</span>
-<span class="sd">        - zmin (float or str), minimum Z-value for normalization</span>
-<span class="sd">        ('auto` for 1st percentile)</span>
-<span class="sd">        - zmax (float or str), maximum Z-value for normalization</span>
-<span class="sd">        ('auto` for 99th percentile)</span>
-<span class="sd">        - cmap (str), name of colormap to use for visualisation (default=afm_brown)</span>
+<span class="sd">        Parsed options: ``input_file``, ``channel``, ``processing``,</span>
+<span class="sd">        ``processing_file``, ``output_folder``, ``output_name``,</span>
+<span class="sd">        ``scale_bar_nm``, ``zmin``, ``zmax``, ``cmap`` and ``fps``.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If ``input_file`` contains option flags such as ``--channel``, which</span>
+<span class="sd">    happens when a quoted Windows path ends in a backslash, the error explains</span>
+<span class="sd">    how to fix the path. Any error is logged and the command exits with</span>
+<span class="sd">    status 1.</span>
 <span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_play</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">_exit_with_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_play</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check the input path, then call ``play_pipeline_mode`` (see ``handle_play``)."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">raw_input</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
@@ -577,10 +588,10 @@
         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(^|\s)--[A-Za-z]"</span><span class="p">,</span> <span class="n">raw_input</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Invalid input path: '</span><span class="si">{</span><span class="n">raw_input</span><span class="si">}</span><span class="s2">'</span><span class="se">\n</span><span class="s2">"</span>
-                <span class="s2">"⚠️  It looks like your input path includes CLI flags (e.g., '--channel').</span><span class="se">\n</span><span class="s2">"</span>  <span class="c1"># noqa: E501</span>
+                <span class="s2">"It looks like your input path includes CLI flags (e.g., '--channel').</span><span class="se">\n</span><span class="s2">"</span>  <span class="c1"># noqa: E501</span>
                 <span class="s2">"This usually happens when a quoted Windows path ends with a backslash, "</span>  <span class="c1"># noqa: E501</span>
                 <span class="s2">"which escapes the closing quote.</span><span class="se">\n\n</span><span class="s2">"</span>
-                <span class="s2">"💡 FIX: Either:</span><span class="se">\n</span><span class="s2">"</span>
+                <span class="s2">"FIX: Either:</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="s1">'  - Add another backslash: "C:</span><span class="se">\\</span><span class="s1">path</span><span class="se">\\</span><span class="s1">to</span><span class="se">\\</span><span class="s1">folder</span><span class="se">\\\\</span><span class="s1">"</span><span class="se">\n</span><span class="s1">'</span>
                 <span class="s1">'  - Remove the trailing backslash: "C:</span><span class="se">\\</span><span class="s1">path</span><span class="se">\\</span><span class="s1">to</span><span class="se">\\</span><span class="s1">folder"</span><span class="se">\n</span><span class="s1">'</span>
                 <span class="s1">'  - Use forward slashes: "C:/path/to/folder"</span><span class="se">\n</span><span class="s1">'</span>
@@ -590,54 +601,37 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">)</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">play_pipeline_mode</span><span class="p">(</span>
-            <span class="n">input_file</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
-            <span class="n">channel</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
-            <span class="n">processing_str</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">processing</span><span class="p">,</span>
-            <span class="n">processing_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">processing_file</span><span class="p">,</span>
-            <span class="n">output_folder</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_folder</span><span class="p">,</span>
-            <span class="n">output_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_name</span><span class="p">,</span>
-            <span class="n">scale_bar_nm</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">scale_bar_nm</span><span class="p">,</span>
-            <span class="n">zmin</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">zmin</span><span class="p">,</span>
-            <span class="n">zmax</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">zmax</span><span class="p">,</span>
-            <span class="n">cmap</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cmap</span><span class="p">,</span>
-            <span class="n">fps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fps</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">_exit_with_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
-
+    <span class="n">play_pipeline_mode</span><span class="p">(</span>
+        <span class="n">input_file</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+        <span class="n">channel</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+        <span class="n">processing_str</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">processing</span><span class="p">,</span>
+        <span class="n">processing_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">processing_file</span><span class="p">,</span>
+        <span class="n">output_folder</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_folder</span><span class="p">,</span>
+        <span class="n">output_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output_name</span><span class="p">,</span>
+        <span class="n">scale_bar_nm</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">scale_bar_nm</span><span class="p">,</span>
+        <span class="n">zmin</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">zmin</span><span class="p">,</span>
+        <span class="n">zmax</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">zmax</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">cmap</span><span class="p">,</span>
+        <span class="n">fps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">fps</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="handle_process">
 <a class="viewcode-back" href="../../../api/playnano.cli.handlers.html#playnano.cli.handlers.handle_process">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_process</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Handle the 'process' subcommand: feed arguments into the run_pipeline_mode function.</span>
+<span class="sd">    Run ``playnano process``: process a stack and export the results.</span>
+
+<span class="sd">    Calls :func:`playnano.cli.actions.process_pipeline_mode`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    args : argparse.Namespace</span>
-<span class="sd">        Must contain:</span>
-<span class="sd">        - input_file (str): path to AFM data</span>
-<span class="sd">        - channel (str)</span>
-<span class="sd">        - processing_str (str or None)</span>
-<span class="sd">        - processing_file (str or None)</span>
-<span class="sd">        - export (str or None), comma-separated formats like "tif,npz,h5"</span>
-<span class="sd">        - make_gif (bool), whether to create a GIF</span>
-<span class="sd">        - output_folder (str or None)</span>
-<span class="sd">        - output_name (str or None)</span>
-<span class="sd">        - scale_bar_nm (int or None), 0 turns off scale bar</span>
-<span class="sd">        - zmin (float or str), minimum Z-value for normalization</span>
-<span class="sd">        ('auto` for 1st percentile)</span>
-<span class="sd">        - zmax (float or str), maximum Z-value for normalization</span>
-<span class="sd">        ('auto` for 99th percentile)</span>
-<span class="sd">        - cmap (str), name of colormap to use for animated visualisation export</span>
-<span class="sd">        (default=afm_brown)</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        Parsed options: ``input_file``, ``channel``, ``processing``,</span>
+<span class="sd">        ``processing_file``, ``export``, ``make_gif``, ``make_video``,</span>
+<span class="sd">        ``make_sequence``, ``output_folder``, ``output_name``,</span>
+<span class="sd">        ``scale_bar_nm``, ``zmin``, ``zmax``, ``draw_ts``, ``cmap`` and</span>
+<span class="sd">        ``fps``.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">process_pipeline_mode</span><span class="p">(</span>
@@ -667,33 +661,16 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.handlers.html#playnano.cli.handlers.handle_wizard">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_wizard</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Interactive wizard for building both processing and analysis pipelines.</span>
+<span class="sd">    Run ``playnano wizard``: build and run pipelines interactively.</span>
 
-<span class="sd">    Usage:</span>
-<span class="sd">      playnano processing &lt;input_file&gt; [--channel ...] \</span>
-<span class="sd">                                 [--output-folder ...] \</span>
-<span class="sd">                                 [--output-name ...]</span>
-
-<span class="sd">    After launch, commands include:</span>
-<span class="sd">      add/remove/move/list/save/load/run        for processing steps</span>
-<span class="sd">      aadd/aremove/amove/alist/asave/aload/arun  for analysis steps</span>
-<span class="sd">      help                                  show available commands</span>
-<span class="sd">      quit                                  exit without running</span>
+<span class="sd">    Starts a :class:`playnano.cli.actions.Wizard`; type ``help`` at its prompt</span>
+<span class="sd">    for the commands.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    args : argparse.Namespace</span>
-<span class="sd">        Must contain:</span>
-<span class="sd">        - input_file (str): path to AFM data</span>
-<span class="sd">        - channel (str)</span>
-<span class="sd">        - output_folder (str or None)</span>
-<span class="sd">        - output_name (str or None)</span>
-<span class="sd">        - scale_bar_nm (int or None), 0 disables scale bar</span>
-<span class="sd">        - cmap (str), name of colormap to use for visualisation (default=afm_brown)</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        Parsed options: ``input_file``, ``channel``, ``output_folder``,</span>
+<span class="sd">        ``output_name``, ``scale_bar_nm`` and ``cmap``.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">Wizard</span><span class="p">(</span>
@@ -712,7 +689,17 @@
 <div class="viewcode-block" id="handle_analyze">
 <a class="viewcode-back" href="../../../api/playnano.cli.handlers.html#playnano.cli.handlers.handle_analyze">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_analyze</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Handle the 'analyze' subcommand: run only analysis &amp; export results."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run ``playnano analyze``: analyse a stack and save the results.</span>
+
+<span class="sd">    Calls :func:`playnano.cli.actions.analyze_pipeline_mode`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    args : argparse.Namespace</span>
+<span class="sd">        Parsed options: ``input_file``, ``channel``, ``analysis_steps``,</span>
+<span class="sd">        ``analysis_file``, ``output_folder`` and ``output_name``.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">analyze_pipeline_mode</span><span class="p">(</span>
             <span class="n">input_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">,</span>
@@ -757,7 +744,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

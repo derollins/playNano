@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.video_export - playnano v0.5.3 documentation</title>
+        <title>playnano.io.video_export - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,22 +508,12 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.video_export</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Video export utilities for AFM image stacks.</span>
+<span class="sd">Export AFM image stacks as annotated videos (MP4, AVI, MOV or MKV).</span>
 
-<span class="sd">This module provides functions for generating  MP4, AVI, MOV, or MKV video files from</span>
-<span class="sd">AFM image stacks, with optional timestamps and scale bars. Frames can be normalised</span>
-<span class="sd">automatically or scaled using a fixed z-range.</span>
-
-<span class="sd">The rendered frame pipeline is identical to :mod:`~playnano.io.gif_export`:</span>
-<span class="sd">frames are colourised with a matplotlib colormap and annotated via</span>
-<span class="sd">:mod:`~playnano.io.render_utils` before being written to a container format using</span>
-<span class="sd">:mod:`cv2`.</span>
-
-<span class="sd">Dependencies</span>
-<span class="sd">------------</span>
-<span class="sd">- matplotlib</span>
-<span class="sd">- numpy</span>
-<span class="sd">- OpenCV (cv2)</span>
+<span class="sd">Frames are coloured and annotated by :mod:`playnano.io.render_utils`, which the</span>
+<span class="sd">GIF and image sequence exports share, and written with OpenCV</span>
+<span class="sd">(``opencv-python-headless``). MP4, MOV and MKV files use the ``mp4v`` codec and</span>
+<span class="sd">AVI files use ``XVID``.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -572,57 +563,51 @@
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Create a video file from an AFM image stack with optional overlays.</span>
+<span class="sd">    Write a video from an image stack, with optional time and scale annotations.</span>
 
-<span class="sd">    Frames are normalised, colourised using a matplotlib colormap, and annotated</span>
-<span class="sd">    with a scale bar and timestamps before being compiled into an MP4 or AVI file.</span>
+<span class="sd">    Use :func:`export_video` to export an :class:`~playnano.afm_stack.AFMImageStack`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    image_stack : np.ndarray</span>
-<span class="sd">        3D array of shape (N, H, W) representing the AFM image stack.</span>
-<span class="sd">    pixel_sizes_nm : list</span>
-<span class="sd">        Per-frame pixel size in nanometres. Must have the same length as</span>
-<span class="sd">        ``image_stack``.</span>
-<span class="sd">    timestamps : list[float] or tuple[float], optional</span>
-<span class="sd">        Timestamps in seconds for each frame. Frame indices are used as</span>
-<span class="sd">        a fallback when ``None`` or invalid.</span>
-<span class="sd">    scale_bar_length_nm : int</span>
-<span class="sd">        Length of the scale bar in nanometres. Default is 100.</span>
-<span class="sd">    output_path : str or Path</span>
-<span class="sd">        Destination path including filename and extension (``".mp4"`` or</span>
-<span class="sd">        ``".avi"``). Default is ``'output.mp4'``.</span>
-<span class="sd">    fps : float</span>
-<span class="sd">        Playback frame rate in frames per second. Default is 5.0.</span>
-<span class="sd">    cmap_name : str</span>
-<span class="sd">        Name of the matplotlib colormap. Default is ``'afmhot'``.</span>
-<span class="sd">    zmin : float or str or None, optional</span>
-<span class="sd">        Minimum z-value mapped to the low end of the colormap. The string</span>
-<span class="sd">        literal ``"auto"`` sets this to the 1st percentile of the stack.</span>
-<span class="sd">    zmax : float or str or None, optional</span>
-<span class="sd">        Maximum z-value mapped to the high end of the colormap. The string</span>
-<span class="sd">        literal ``"auto"`` sets this to the 99th percentile of the stack.</span>
-<span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
-<span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw a scale bar on each frame. Default is ``True``.</span>
-<span class="sd">    font_scale : float</span>
-<span class="sd">        Base font scale for annotations at the reference height.</span>
+<span class="sd">    image_stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
+<span class="sd">    pixel_sizes_nm : list of float</span>
+<span class="sd">        Pixel size of each frame, in nm. If it is not a list with one value per</span>
+<span class="sd">        frame, no scale bar is drawn.</span>
+<span class="sd">    timestamps : list or tuple of float, optional</span>
+<span class="sd">        Time of each frame, in seconds. If it is not a list or tuple with one</span>
+<span class="sd">        value per frame, frame numbers are drawn instead.</span>
+<span class="sd">    scale_bar_length_nm : int, optional</span>
+<span class="sd">        Length of the scale bar, in nm; 0 hides it. Default is 100.</span>
+<span class="sd">    output_path : str or pathlib.Path, optional</span>
+<span class="sd">        The video file to write. Its extension sets the codec: ``.avi`` uses</span>
+<span class="sd">        ``XVID``, anything else ``mp4v``. Default is ``"output.mp4"``.</span>
+<span class="sd">    fps : float, optional</span>
+<span class="sd">        Frames per second. Default is 5.0.</span>
+<span class="sd">    cmap_name : str, optional</span>
+<span class="sd">        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.</span>
+<span class="sd">    zmin, zmax : float or str or None, optional</span>
+<span class="sd">        Colour scale limits, as for the ``export_*`` functions: both None scales</span>
+<span class="sd">        each frame separately; otherwise the limits apply to every frame, with</span>
+<span class="sd">        ``"auto"`` for the 1st or 99th percentile and None for the stack's</span>
+<span class="sd">        minimum or maximum. Default is None.</span>
+<span class="sd">    draw_ts : bool, optional</span>
+<span class="sd">        Draw each frame's time on the frame. Default is True.</span>
+<span class="sd">    draw_scale : bool, optional</span>
+<span class="sd">        Draw a scale bar. Default is True.</span>
+<span class="sd">    font_scale : float, optional</span>
+<span class="sd">        Size of the annotation text for a frame 512 pixels high. Default is 2.0.</span>
+
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``zmin`` equals ``zmax``.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        If ``zmin`` is greater than ``zmax``, or a limit is not a number,</span>
+<span class="sd">        ``"auto"`` or None.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - Frames are normalised globally when ``zmin``/``zmax`` are provided,</span>
-<span class="sd">      otherwise per-frame.</span>
-<span class="sd">    - RGB frames (uint8, shape H×W×3) are written via :mod:`cv2`.</span>
-<span class="sd">    - Requires ``opencv-python-headless``.</span>
+<span class="sd">    Most codecs need even frame sizes, so if a rendered frame has an odd height</span>
+<span class="sd">    or width, its last row or column is removed.</span>
 <span class="sd">    """</span>
     <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
     <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap_name</span><span class="p">)</span>
@@ -725,54 +710,61 @@
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Export an AFM image stack as an annotated MP4 or AVI video.</span>
+<span class="sd">    Export a stack as an annotated video.</span>
+
+<span class="sd">    The file is ``&lt;output_folder&gt;/&lt;output_name&gt;.&lt;fmt&gt;``.</span>
+<span class="sd">    ``_filtered`` is added to the name when processed data is exported, that</span>
+<span class="sd">    is when ``raw`` is False and the stack has processed layers other than</span>
+<span class="sd">    ``"raw"``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    afm_stack : AFMImageStack</span>
-<span class="sd">        AFM stack object containing raw and/or processed data.</span>
+<span class="sd">        The stack to export.</span>
 <span class="sd">    make_video : bool</span>
-<span class="sd">        Whether to generate the video. If ``False``, the function returns</span>
-<span class="sd">        immediately.</span>
+<span class="sd">        If False, do nothing.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Directory to save the video. Defaults to ``"output"`` if ``None``.</span>
+<span class="sd">        Folder for the output; created if missing. If None, ``./output``.</span>
 <span class="sd">    output_name : str or None</span>
-<span class="sd">        Base name for the output file (without extension). Derived from the</span>
-<span class="sd">        stack file name when ``None``.</span>
+<span class="sd">        Name for the output, without extension. Any folder part and known</span>
+<span class="sd">        extension are removed. If None or empty, the name of the file the stack</span>
+<span class="sd">        was loaded from is used.</span>
 <span class="sd">    scale_bar_nm : int or None</span>
-<span class="sd">        Scale bar length in nanometres. Defaults to 100 nm when ``None``.</span>
-<span class="sd">    fmt : {"mp4", "avi", "mov", "mkv"}</span>
-<span class="sd">        Container format. Default is ``"mp4"``.</span>
-<span class="sd">    fps : float</span>
-<span class="sd">        Playback frame rate. Default is 5.0.</span>
-<span class="sd">    raw : bool</span>
-<span class="sd">        If ``True``, export the unprocessed raw snapshot; otherwise export</span>
-<span class="sd">        the current (processed) data. Default is ``False``.</span>
-<span class="sd">    zmin : float or None, optional</span>
-<span class="sd">        Minimum z-value for colormap scaling. ``"auto"`` triggers the 1st</span>
-<span class="sd">        percentile. ``None`` uses per-frame minimum.</span>
-<span class="sd">    zmax : float or None, optional</span>
-<span class="sd">        Maximum z-value for colormap scaling. ``"auto"`` triggers the 99th</span>
-<span class="sd">        percentile. ``None`` uses per-frame maximum.</span>
-<span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
-<span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw a scale bar on each frame. Default is ``True``.</span>
-<span class="sd">    font_scale : float</span>
-<span class="sd">        Base font scale for annotations at the reference height.</span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        Length of the scale bar, in nm. 0 hides it; None uses 100.</span>
+<span class="sd">    fmt : {"mp4", "avi", "mov", "mkv"}, optional</span>
+<span class="sd">        Video format. Default is ``"mp4"``.</span>
+<span class="sd">    fps : float, optional</span>
+<span class="sd">        Frames per second. Default is 5.0.</span>
+<span class="sd">    raw : bool, optional</span>
+<span class="sd">        If True, export the unprocessed snapshot ``stack.processed["raw"]``,</span>
+<span class="sd">        with the frame times from before any frames were removed. Otherwise</span>
+<span class="sd">        export ``stack.data``. Default is False.</span>
+<span class="sd">    zmin : float or str or None, optional</span>
+<span class="sd">        Height mapped to the bottom of the colormap, in the units of the data</span>
+<span class="sd">        (usually nm), or ``"auto"`` for the 1st percentile of the stack.</span>
+<span class="sd">        Default is None.</span>
+<span class="sd">    zmax : float or str or None, optional</span>
+<span class="sd">        Height mapped to the top of the colormap, or ``"auto"`` for the 99th</span>
+<span class="sd">        percentile of the stack. Default is None.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - Processed data is preferred over raw when available; ``_filtered`` is</span>
-<span class="sd">      appended to the output stem in that case.</span>
-<span class="sd">    - Timestamps and pixel size are read from ``afm_stack.frame_metadata``.</span>
-<span class="sd">      When exporting raw data after an ``edit_stack`` step, the pre-edit</span>
-<span class="sd">      metadata stored in</span>
-<span class="sd">      ``afm_stack.state_backups['frame_metadata_before_edit']`` is used.</span>
-<span class="sd">    - Requires ``opencv-python-headless``: ``pip install opencv-python-headless``.</span>
+<span class="sd">        If ``zmin`` and ``zmax`` are both None, each frame is scaled separately</span>
+<span class="sd">        from its own minimum to its maximum. If either is set, both apply to</span>
+<span class="sd">        every frame, and a None limit becomes the minimum or maximum of the</span>
+<span class="sd">        whole stack. Values outside the range are clipped.</span>
+<span class="sd">    draw_ts : bool, optional</span>
+<span class="sd">        Draw each frame's time, in seconds, on the frame. Default is True.</span>
+<span class="sd">    draw_scale : bool, optional</span>
+<span class="sd">        Draw a scale bar. Default is True.</span>
+<span class="sd">    cmap_name : str, optional</span>
+<span class="sd">        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.</span>
+<span class="sd">    font_scale : float, optional</span>
+<span class="sd">        Size of the annotation text for a frame 512 pixels high; scaled with the</span>
+<span class="sd">        rendered frame height. Default is 2.0.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``fmt`` is not supported, or ``zmin`` is greater than ``zmax``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">make_video</span><span class="p">:</span>
         <span class="k">return</span>
@@ -847,7 +839,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

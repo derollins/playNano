@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.video_processing - playnano v0.5.3 documentation</title>
+        <title>playnano.processing.video_processing - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,19 +508,21 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.video_processing</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Video processing functions for AFM time-series (stacks of frames).</span>
+<span class="sd">Processing functions for whole AFM image stacks (time series of frames).</span>
 
-<span class="sd">This module provides functions that operate on 3D numpy arrays</span>
-<span class="sd">(time-series of 2D AFM frames). These include:</span>
+<span class="sd">These functions take a 3D :class:`numpy.ndarray` of shape</span>
+<span class="sd">(n_frames, height, width) and return the processed stack and a dictionary of</span>
+<span class="sd">metadata, which the :class:`~playnano.processing.pipeline.ProcessingPipeline`</span>
+<span class="sd">stores in the step's provenance. They cover:</span>
 
-<span class="sd">- Frame alignment to compensate for drift</span>
-<span class="sd">- Cropping and padding utilities</span>
-<span class="sd">- Temporal (time-domain) filters</span>
-<span class="sd">- Future extensions such as spatio-temporal denoising</span>
+<span class="sd">- frame alignment, to correct drift (:func:`align_frames`,</span>
+<span class="sd">  :func:`rolling_frame_align`);</span>
+<span class="sd">- cropping the NaN borders left by alignment (:func:`intersection_crop`,</span>
+<span class="sd">  :func:`crop_square`);</span>
+<span class="sd">- filling NaN pixels (:func:`replace_nan`).</span>
 
-<span class="sd">All functions follow a NumPy-style API: input stacks are 3D arrays</span>
-<span class="sd">with shape (n_frames, height, width). Outputs are processed</span>
-<span class="sd">stacks and a metadata dictionary.</span>
+<span class="sd">:func:`temporal_median_filter` and :func:`temporal_mean_filter` are planned</span>
+<span class="sd">and not implemented yet.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
@@ -552,96 +555,100 @@
     <span class="n">max_jump</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Align a stack of AFM frames to a reference frame using integer-pixel shifts.</span>
+<span class="sd">    Align every frame of a stack to one reference frame by whole-pixel shifts.</span>
 
-<span class="sd">    Alignment is performed using either FFT-based or full cross-correlation.</span>
-<span class="sd">    Jump smoothing prevents abrupt unrealistic displacements between consecutive</span>
-<span class="sd">    frames by limiting the change in shift relative to the previous frame.</span>
+<span class="sd">    The shift of each frame is the position of the peak of its cross-correlation</span>
+<span class="sd">    with the reference frame. Each frame's mean is subtracted before</span>
+<span class="sd">    correlating, so height offsets between frames do not affect the result.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : np.ndarray[float]</span>
-<span class="sd">        3D array of shape (n_frames, height, width) containing the input AFM image</span>
-<span class="sd">        stack.</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    reference_frame : int, optional</span>
-<span class="sd">        Index of the frame to use as the alignment reference (default 0). Must be</span>
-<span class="sd">        within [0, n_frames-1].</span>
+<span class="sd">        Index of the frame the others are aligned to. Default is 0.</span>
 <span class="sd">    method : {"fft_cross_correlation", "full_cross_correlation"}, optional</span>
-<span class="sd">        Alignment method (default "fft_cross_correlation"). FFT-based cross-correlation</span>
-<span class="sd">        is generally faster and uses less memory for large frames.</span>
+<span class="sd">        How the cross-correlation is computed. Both find the same shifts; the</span>
+<span class="sd">        FFT method is much faster and uses less memory on large frames.</span>
+<span class="sd">        Default is ``"fft_cross_correlation"``.</span>
 <span class="sd">    mode : {"pad", "crop", "crop_square"}, optional</span>
-<span class="sd">        How to handle borders after shifting:</span>
-<span class="sd">        - "pad": keep all frames with NaN padding (default)</span>
-<span class="sd">        - "crop": crop to intersection of all frames</span>
-<span class="sd">        - "crop_square": crop to largest centered square</span>
+<span class="sd">        What to do with the borders after shifting. Default is ``"pad"``.</span>
 
+<span class="sd">        - ``"pad"``: keep every pixel of every frame on a larger canvas,</span>
+<span class="sd">          filling the gaps with NaN.</span>
+<span class="sd">        - ``"crop"``: crop to the region covered by all frames</span>
+<span class="sd">          (:func:`intersection_crop`).</span>
+<span class="sd">        - ``"crop_square"``: crop to the largest centred square in that region</span>
+<span class="sd">          (:func:`crop_square`).</span>
 <span class="sd">    debug : bool, optional</span>
-<span class="sd">        If True, returns additional diagnostic outputs.</span>
+<span class="sd">        If True, also return a third value with diagnostic output. Default is</span>
+<span class="sd">        False.</span>
 <span class="sd">    max_shift : int, optional</span>
-<span class="sd">        Maximum allowed shift in pixels. Detected shifts are clipped to this range.</span>
+<span class="sd">        Largest shift to search for, in pixels along each axis. Default is None</span>
+<span class="sd">        (no limit).</span>
 <span class="sd">    pre_filter_sigma : float, optional</span>
-<span class="sd">        Standard deviation of Gaussian filter applied to frames before</span>
-<span class="sd">        cross-correlation.</span>
+<span class="sd">        If given, frames are smoothed with a Gaussian filter of this standard</span>
+<span class="sd">        deviation, in pixels, before correlating. The output frames are not</span>
+<span class="sd">        smoothed. Default is None.</span>
 <span class="sd">    max_jump : int, optional</span>
-<span class="sd">        Maximum allowed change in shift between consecutive frames. If exceeded, the</span>
-<span class="sd">        shift is replaced by a linear extrapolation from the previous two frames.</span>
+<span class="sd">        Largest change in shift, in pixels, allowed between consecutive frames.</span>
+<span class="sd">        For frame 1 the change from frame 0 is clipped to this value; from</span>
+<span class="sd">        frame 2 on, a shift that changes by more is replaced by a linear</span>
+<span class="sd">        extrapolation of the previous two shifts. Default is None (no limit).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    aligned_stack : np.ndarray[float]</span>
-<span class="sd">        Aligned 3D stack of frames. Shape may be larger than input to accommodate all</span>
-<span class="sd">        shifts.</span>
+<span class="sd">    aligned_stack : numpy.ndarray</span>
+<span class="sd">        The aligned stack, as float32. With ``mode="pad"`` it is larger than the</span>
+<span class="sd">        input so every frame fits; with the crop modes it is smaller.</span>
 <span class="sd">    metadata : dict</span>
-<span class="sd">        Dictionary containing alignment information:</span>
-<span class="sd">        - "reference_frame": int, index of the reference frame</span>
-<span class="sd">        - "method": str, the alignment method used</span>
-<span class="sd">        - "mode": str, border approach used</span>
-<span class="sd">        - "shifts": np.ndarray of shape (n_frames, 2), detected (dy, dx) shifts</span>
-<span class="sd">        - "original_shape": tuple of (height, width)</span>
-<span class="sd">        - "aligned_shape": tuple of (height, width) of the output canvas</span>
-<span class="sd">        - "border_mask": np.ndarray[bool], True where valid frame pixels exist</span>
-<span class="sd">        - "pre_filter_sigma": float or None</span>
-<span class="sd">        - "max_shift": int or None</span>
-<span class="sd">        - "max_jump": int or None</span>
+<span class="sd">        Details of the alignment:</span>
 
-<span class="sd">    debug_outputs : dict, optional</span>
-<span class="sd">        Returned only if ``debug=True``. Contains:</span>
-<span class="sd">        - "shifts": copy of the shifts array.</span>
+<span class="sd">        - ``"reference_frame"`` (int): the reference frame used.</span>
+<span class="sd">        - ``"method"`` (str): the ``method`` used.</span>
+<span class="sd">        - ``"mode"`` (str): the ``mode`` used.</span>
+<span class="sd">        - ``"shifts"`` (numpy.ndarray of int, shape (n_frames, 2)): the</span>
+<span class="sd">          (dy, dx) shift applied to each frame, in pixels.</span>
+<span class="sd">        - ``"original_shape"`` (tuple): (height, width) of the input frames.</span>
+<span class="sd">        - ``"aligned_shape"`` (tuple): (height, width) of the padded canvas,</span>
+<span class="sd">          before any cropping.</span>
+<span class="sd">        - ``"border_mask"`` (numpy.ndarray of bool): True where at least one</span>
+<span class="sd">          frame has data, with the same height and width as the output.</span>
+<span class="sd">        - ``"pre_filter_sigma"``, ``"max_shift"``, ``"max_jump"``: the values</span>
+<span class="sd">          used.</span>
+<span class="sd">        - ``"crop"`` (dict): only with ``mode="crop"`` or ``"crop_square"``;</span>
+<span class="sd">          the metadata from :func:`intersection_crop` or :func:`crop_square`.</span>
+<span class="sd">    debug_outputs : dict</span>
+<span class="sd">        Only returned if ``debug=True``: ``{"shifts": &lt;copy of the shifts&gt;}``.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``stack.ndim`` is not 3.</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``method`` is not one of {"fft_cross_correlation", "full_cross_correlation"}.</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``reference_frame`` is not in the range [0, n_frames-1].</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If a frame has no finite pixels.</span>
+<span class="sd">        If ``stack`` is not 3D, ``reference_frame`` is outside</span>
+<span class="sd">        ``0 .. n_frames - 1``, ``method`` or ``mode`` is not recognised, or a</span>
+<span class="sd">        frame has no finite pixels.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - NaN and infinite pixels are ignored when finding shifts (they are filled</span>
-<span class="sd">      with the frame mean for the correlation only) and are kept in the output.</span>
-<span class="sd">    - Using ``fft_cross_correlation`` reduces memory usage compared to full</span>
-<span class="sd">    cross-correlation because it leverages the FFT algorithm and avoids creating</span>
-<span class="sd">    large full correlation matrices.</span>
-<span class="sd">    - Padding with NaNs allows all frames to be placed without clipping, but may</span>
-<span class="sd">    increase memory usage for large shifts.</span>
-<span class="sd">    - The function does not interpolate subpixel shifts; all shifts are integer-valued.</span>
+<span class="sd">    Shifts are whole pixels; there is no subpixel interpolation. NaN and</span>
+<span class="sd">    infinite pixels are ignored when finding the shifts (they are filled with</span>
+<span class="sd">    the frame mean for the correlation only) and are kept in the output.</span>
+<span class="sd">    Version 0.2.0 subtracts each frame's mean for ``"full_cross_correlation"``</span>
+<span class="sd">    too; before, that method found no drift on typical AFM data.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; from playnano.processing.video_processing import align_frames</span>
-<span class="sd">    &gt;&gt;&gt; stack = np.random.rand(10, 200, 200)  # 10 frames of 200x200 pixels</span>
-<span class="sd">    &gt;&gt;&gt; aligned_stack, metadata = align_frames(stack, reference_frame=0)</span>
-<span class="sd">    &gt;&gt;&gt; aligned_stack.shape</span>
-<span class="sd">    (10, 210, 210)  # padded to accommodate shifts</span>
-<span class="sd">    &gt;&gt;&gt; metadata['shifts']</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; frame = rng.random((64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; moved = np.roll(frame, (2, -3), axis=(0, 1))  # 2 px down, 3 px left</span>
+<span class="sd">    &gt;&gt;&gt; aligned, meta = align_frames(np.stack([frame, moved]))</span>
+<span class="sd">    &gt;&gt;&gt; meta["shifts"]</span>
 <span class="sd">    array([[ 0,  0],</span>
-<span class="sd">        [ 1, -2],</span>
-<span class="sd">        ...])</span>
+<span class="sd">           [-2,  3]])</span>
+<span class="sd">    &gt;&gt;&gt; aligned.shape</span>
+<span class="sd">    (2, 66, 67)</span>
 <span class="sd">    """</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -784,110 +791,101 @@
     <span class="n">max_jump</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Align a stack of AFM frames using a rolling reference and integer pixel shifts.</span>
+<span class="sd">    Align each frame to the average of the frames aligned just before it.</span>
 
-<span class="sd">    This function computes frame-to-frame shifts relative to a rolling reference</span>
-<span class="sd">    (average of the last `window` aligned frames) using phase cross-correlation.</span>
-<span class="sd">    Each frame is then placed on a canvas large enough to accommodate all shifts.</span>
-<span class="sd">    Optional jump smoothing prevents sudden unrealistic displacements between</span>
-<span class="sd">    consecutive frames, and optional Gaussian pre-filtering can improve correlation</span>
-<span class="sd">    robustness for noisy data.</span>
+<span class="sd">    The first frame is the starting reference. Each later frame is aligned, by</span>
+<span class="sd">    phase cross-correlation and whole-pixel shifts, to the average of the last</span>
+<span class="sd">    ``window`` aligned frames, so slow changes in the sample are followed.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : np.ndarray[float]</span>
-<span class="sd">        3D array of shape (n_frames, height, width) containing the image frames.</span>
-
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    window : int, optional</span>
-<span class="sd">        Number of previous aligned frames to average when building the rolling</span>
-<span class="sd">        reference. Default is 5.</span>
-
+<span class="sd">        Number of most recently aligned frames averaged to make the reference.</span>
+<span class="sd">        Default is 5.</span>
 <span class="sd">    mode : {"pad", "crop", "crop_square"}, optional</span>
-<span class="sd">        How to handle borders after shifting:</span>
-<span class="sd">        - "pad": keep all frames with NaN padding (default)</span>
-<span class="sd">        - "crop": crop to intersection of all frames</span>
-<span class="sd">        - "crop_square": crop to largest centered square</span>
+<span class="sd">        What to do with the borders after shifting. Default is ``"pad"``.</span>
 
+<span class="sd">        - ``"pad"``: keep every pixel of every frame on a larger canvas,</span>
+<span class="sd">          filling the gaps with NaN.</span>
+<span class="sd">        - ``"crop"``: crop to the region covered by all frames</span>
+<span class="sd">          (:func:`intersection_crop`).</span>
+<span class="sd">        - ``"crop_square"``: crop to the largest centred square in that region</span>
+<span class="sd">          (:func:`crop_square`).</span>
 <span class="sd">    debug : bool, optional</span>
-<span class="sd">        If True, returns additional diagnostic outputs such as the rolling reference</span>
-<span class="sd">        frames. Default is False.</span>
-
+<span class="sd">        If True, also return a third value with diagnostic output. Default is</span>
+<span class="sd">        False.</span>
 <span class="sd">    max_shift : int, optional</span>
-<span class="sd">        Maximum allowed shift in pixels along either axis. Detected shifts are clipped.</span>
-<span class="sd">        Default is None (no clipping).</span>
-
+<span class="sd">        Largest shift allowed, in pixels along each axis; larger shifts are</span>
+<span class="sd">        clipped to it. Default is None (no limit).</span>
 <span class="sd">    pre_filter_sigma : float, optional</span>
-<span class="sd">        Standard deviation of Gaussian filter applied to both reference and moving</span>
-<span class="sd">        frames prior to cross-correlation. Helps reduce noise. Default is None.</span>
-
+<span class="sd">        If given, frames are smoothed with a Gaussian filter of this standard</span>
+<span class="sd">        deviation, in pixels, before correlating. The output frames are not</span>
+<span class="sd">        smoothed. Default is None.</span>
 <span class="sd">    max_jump : int, optional</span>
-<span class="sd">        Maximum allowed jump in pixels between consecutive frame shifts. If exceeded,</span>
-<span class="sd">        the shift is replaced by a linear extrapolation from the previous two shifts.</span>
-<span class="sd">        Default is None (no jump smoothing).</span>
+<span class="sd">        From frame 2 on, a shift that differs from the previous one by more than</span>
+<span class="sd">        this many pixels is replaced by a linear extrapolation of the previous</span>
+<span class="sd">        two shifts. Default is None (no limit).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    aligned_stack : np.ndarray[float]</span>
-<span class="sd">        3D array of shape (n_frames, canvas_height, canvas_width) containing the</span>
-<span class="sd">        aligned frames. NaN values indicate areas outside the original frames after</span>
-<span class="sd">        alignment.</span>
-
+<span class="sd">    aligned_stack : numpy.ndarray</span>
+<span class="sd">        The aligned stack, as float32. With ``mode="pad"`` it is larger than the</span>
+<span class="sd">        input so every frame fits; with the crop modes it is smaller.</span>
 <span class="sd">    metadata : dict</span>
-<span class="sd">        Dictionary containing alignment information:</span>
-<span class="sd">        - "window": int, rolling reference window used</span>
-<span class="sd">        - "method": str, alignment method used</span>
-<span class="sd">        - "mode": str, border approach used</span>
-<span class="sd">        - "shifts": ndarray of shape (n_frames, 2), detected integer shifts (dy, dx)</span>
-<span class="sd">        - "original_shape": tuple of (height, width)</span>
-<span class="sd">        - "aligned_shape": tuple of (canvas_height, canvas_width)</span>
-<span class="sd">        - "border_mask": ndarray of shape (canvas_height, canvas_width), True where</span>
-<span class="sd">          valid pixels exist</span>
-<span class="sd">        - "pre_filter_sigma": float or None</span>
-<span class="sd">        - "max_shift": int or None</span>
-<span class="sd">        - "max_jump": int or None</span>
+<span class="sd">        Details of the alignment:</span>
 
-<span class="sd">    debug_outputs : dict, optional</span>
-<span class="sd">          Returned only if `debug=True`. Contains:</span>
-<span class="sd">        - "shifts": copy of the detected shifts array</span>
-<span class="sd">        - "aligned_refs": deque of indices used for rolling reference</span>
+<span class="sd">        - ``"window"`` (int): the ``window`` used.</span>
+<span class="sd">        - ``"method"`` (str): always ``"phase_cross_correlation"``.</span>
+<span class="sd">        - ``"mode"`` (str): the ``mode`` used.</span>
+<span class="sd">        - ``"shifts"`` (numpy.ndarray of int, shape (n_frames, 2)): the</span>
+<span class="sd">          (dy, dx) shift applied to each frame, in pixels.</span>
+<span class="sd">        - ``"original_shape"`` (tuple): (height, width) of the input frames.</span>
+<span class="sd">        - ``"aligned_shape"`` (tuple): (height, width) of the padded canvas,</span>
+<span class="sd">          before any cropping.</span>
+<span class="sd">        - ``"border_mask"`` (numpy.ndarray of bool): True where at least one</span>
+<span class="sd">          frame has data, with the same height and width as the output.</span>
+<span class="sd">        - ``"pre_filter_sigma"``, ``"max_shift"``, ``"max_jump"``: the values</span>
+<span class="sd">          used.</span>
+<span class="sd">        - ``"crop"`` (dict): only with ``mode="crop"`` or ``"crop_square"``;</span>
+<span class="sd">          the metadata from :func:`intersection_crop` or :func:`crop_square`.</span>
+<span class="sd">    debug_outputs : dict</span>
+<span class="sd">        Only returned if ``debug=True``:</span>
+
+<span class="sd">        - ``"shifts"``: a copy of the shifts.</span>
+<span class="sd">        - ``"aligned_refs"``: list of the frames in the final reference window,</span>
+<span class="sd">          each as ``(frame_index, y0, y1, x0, x1, fy0, fy1, fx0, fx1)``: the</span>
+<span class="sd">          region of the working canvas and the matching region of the frame.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``stack.ndim`` is not 3.</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``window`` &lt; 1.</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If a frame has no finite pixels.</span>
+<span class="sd">        If ``stack`` is not 3D, ``window`` is less than 1, ``mode`` is not</span>
+<span class="sd">        recognised, or a frame has no finite pixels.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    - The rolling reference is computed using the last `window` aligned frames,</span>
-<span class="sd">      ignoring NaN pixels. NaN pixels in the moving frame are masked out of the</span>
-<span class="sd">      correlation and kept in the output.</span>
-<span class="sd">    - Shifts are integer-valued; no subpixel interpolation is performed.</span>
-<span class="sd">    - Padding ensures all frames fit without clipping, but increases memory usage.</span>
-<span class="sd">    - Internally, a deque ``aligned_refs`` tracks which patches of which frames</span>
-<span class="sd">      contribute to the rolling reference. Each entry stores:</span>
-<span class="sd">        (frame_index, y0c, y1c, x0c, x1c, fy0, fy1, fx0, fx1),</span>
-<span class="sd">      i.e. both the region of the canvas updated and the corresponding slice in</span>
-<span class="sd">      the original frame. This allows exact removal of old contributions from</span>
-<span class="sd">      ``rolling_sum`` and ``rolling_count`` when the window is exceeded, ensuring</span>
-<span class="sd">      consistency without recomputation.</span>
+<span class="sd">    Shifts are whole pixels; there is no subpixel interpolation. NaN and</span>
+<span class="sd">    infinite pixels are left out of the correlation and of the rolling</span>
+<span class="sd">    reference, and are kept in the output. Version 0.1.1 crops ``border_mask``</span>
+<span class="sd">    together with the frames in the crop modes.</span>
 
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    skimage.registration.phase_cross_correlation : The correlation used.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; from playnano.processing.video_processing import rolling_frame_align</span>
-<span class="sd">    &gt;&gt;&gt; stack = np.random.rand(10, 200, 200)  # 10 frames of 200x200 pixels</span>
-<span class="sd">    &gt;&gt;&gt; aligned_stack, metadata = rolling_frame_align(stack, window=3)</span>
-<span class="sd">    &gt;&gt;&gt; aligned_stack.shape</span>
-<span class="sd">    (10, 210, 210)</span>
-<span class="sd">    &gt;&gt;&gt; metadata['shifts']</span>
-<span class="sd">    array([[0, 0],</span>
-<span class="sd">           [1, -1],</span>
-<span class="sd">           ...])</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; frame = rng.random((64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; moved = np.roll(frame, (2, -3), axis=(0, 1))</span>
+<span class="sd">    &gt;&gt;&gt; aligned, meta = rolling_frame_align(np.stack([frame, moved]), window=3)</span>
+<span class="sd">    &gt;&gt;&gt; meta["shifts"]</span>
+<span class="sd">    array([[ 0,  0],</span>
+<span class="sd">           [-2,  3]])</span>
 <span class="sd">    """</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -1209,28 +1207,51 @@
     <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Crop aligned stack to the largest common intersection region (finite across frames).</span>
+<span class="sd">    Crop an aligned stack to the region where every frame has data.</span>
 
-<span class="sd">    Option to add padding to expand the crop beyond the intersection, filling with NaN</span>
-<span class="sd">    when beyond the data.</span>
+<span class="sd">    The crop is the smallest rectangle containing every pixel that is finite in</span>
+<span class="sd">    all frames. Use it after alignment with ``mode="pad"`` to remove the NaN</span>
+<span class="sd">    borders.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Input aligned stack with NaN padding.</span>
-<span class="sd">    pad : int or tuple, optional (default=0)</span>
-<span class="sd">        Extra pixels to add around the intersection bounds.</span>
-<span class="sd">        - int: uniform pad</span>
-<span class="sd">        - (v, h): vertical and horizontal pad</span>
-<span class="sd">        - (top, bottom, left, right): per-side pad</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width), usually the output</span>
+<span class="sd">        of an alignment with NaN borders.</span>
+<span class="sd">    pad : int or tuple of int, optional</span>
+<span class="sd">        Extra pixels to add around the crop. Default is 0.</span>
+
+<span class="sd">        - int: the same on every side.</span>
+<span class="sd">        - ``(v, h)``: ``v`` at the top and bottom, ``h`` at the left and right.</span>
+<span class="sd">        - ``(top, bottom, left, right)``: each side separately.</span>
+
+<span class="sd">        Where the padded crop goes beyond the stack, the new pixels are NaN.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    cropped : ndarray</span>
-<span class="sd">        Cropped (and possibly padded) stack.</span>
+<span class="sd">    cropped : numpy.ndarray</span>
+<span class="sd">        The cropped (and padded) stack.</span>
 <span class="sd">    meta : dict</span>
-<span class="sd">        Metadata including original shape, intersection bounds, requested bounds,</span>
-<span class="sd">        actual padding applied, and new shape.</span>
+<span class="sd">        Details of the crop. Bounds are ``(y0, y1, x0, x1)`` in the input's</span>
+<span class="sd">        pixel coordinates, with ``y1`` and ``x1`` exclusive.</span>
+
+<span class="sd">        - ``"operation"``: ``"crop_intersection"``.</span>
+<span class="sd">        - ``"original_shape"``, ``"new_shape"``: (height, width) before and</span>
+<span class="sd">          after.</span>
+<span class="sd">        - ``"intersection_shape"``, ``"intersection_bounds"``: the region</span>
+<span class="sd">          where all frames are finite.</span>
+<span class="sd">        - ``"requested_bounds"``: the intersection plus ``pad``.</span>
+<span class="sd">        - ``"applied_pad"``: (top, bottom, left, right) pixels of NaN added</span>
+<span class="sd">          beyond the edges of the input.</span>
+<span class="sd">        - ``"pad_param"``: ``pad`` as (top, bottom, left, right).</span>
+
+<span class="sd">        If no pixel is finite in all frames, a copy of ``stack`` is returned</span>
+<span class="sd">        unchanged, the bounds are None and ``meta["note"]`` says so.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``pad`` is not an int or a tuple of 2 or 4 ints.</span>
 <span class="sd">    """</span>
     <span class="n">valid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">stack</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1285,30 +1306,46 @@
     <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pad</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Crop aligned stack to the largest centered square region.</span>
+<span class="sd">    Crop an aligned stack to the largest centred square where every frame has data.</span>
 
-<span class="sd">    This is based on the finite-pixel intersection across frames, with optional</span>
-<span class="sd">    outward padding (np.nan).</span>
+<span class="sd">    The square is centred in the region found by :func:`intersection_crop`, and</span>
+<span class="sd">    its side is the shorter side of that region.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Input aligned stack with possible NaN padding.</span>
-<span class="sd">    pad : int or tuple, optional (default=0)</span>
-<span class="sd">        Extra pixels to add around the square bounds.</span>
-<span class="sd">        Accepts:</span>
-<span class="sd">          - int: uniform pad</span>
-<span class="sd">          - (v, h): vertical and horizontal pad</span>
-<span class="sd">          - (top, bottom, left, right): per-side pad</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width), usually the output</span>
+<span class="sd">        of an alignment with NaN borders.</span>
+<span class="sd">    pad : int or tuple of int, optional</span>
+<span class="sd">        Extra pixels to add around the crop. Default is 0.</span>
+
+<span class="sd">        - int: the same on every side.</span>
+<span class="sd">        - ``(v, h)``: ``v`` at the top and bottom, ``h`` at the left and right.</span>
+<span class="sd">        - ``(top, bottom, left, right)``: each side separately.</span>
+
+<span class="sd">        Where the padded crop goes beyond the stack, the new pixels are NaN.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    cropped : ndarray</span>
-<span class="sd">        Cropped (and possibly padded) square stack.</span>
+<span class="sd">    cropped : numpy.ndarray</span>
+<span class="sd">        The cropped (and padded) stack.</span>
 <span class="sd">    meta : dict</span>
-<span class="sd">        Metadata including original shape, intersection shape, square size, bounds,</span>
-<span class="sd">        padding details, and offset compatible with the original function</span>
-<span class="sd">        (offset within the intersection crop).</span>
+<span class="sd">        Details of the crop, with the same keys as :func:`intersection_crop`</span>
+<span class="sd">        (``"operation"`` is ``"crop_square"``), and also:</span>
+
+<span class="sd">        - ``"square_size"``: side of the square, in pixels.</span>
+<span class="sd">        - ``"square_bounds"``: ``(y0, y1, x0, x1)`` of the square before</span>
+<span class="sd">          padding.</span>
+<span class="sd">        - ``"offset"``: (row, column) of the square's corner within the</span>
+<span class="sd">          intersection region.</span>
+
+<span class="sd">        If no pixel is finite in all frames, a copy of ``stack`` is returned</span>
+<span class="sd">        unchanged, the bounds are None and ``meta["note"]`` says so.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``pad`` is not an int or a tuple of 2 or 4 ints.</span>
 <span class="sd">    """</span>
     <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
     <span class="c1"># Compute finite-pixel intersection mask (across frames)</span>
@@ -1391,44 +1428,40 @@
     <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Replace NaN values in a 2D frame or 3D AFM image stack using various strategies.</span>
+<span class="sd">    Replace NaN pixels in a stack.</span>
 
-<span class="sd">    Primarily used in video pipelines after alignment, but also applicable to single</span>
-<span class="sd">    frames.</span>
+<span class="sd">    Often used after alignment with ``mode="pad"``, before steps that do not</span>
+<span class="sd">    accept NaN.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : np.ndarray</span>
-<span class="sd">        Input 3D array of shape (n_frames, height, width) or 2D frame (height, width)</span>
-<span class="sd">        that may contain NaN values.</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    mode : {"zero", "mean", "median", "global_mean", "constant"}, optional</span>
-<span class="sd">        Replacement strategy. Default is "zero".</span>
-<span class="sd">        - "zero" : Replace NaNs with 0.</span>
-<span class="sd">        - "mean" : Replace NaNs with the mean of each frame.</span>
-<span class="sd">        - "median" : Replace NaNs with the median of each frame.</span>
-<span class="sd">        - "global_mean" : Replace NaNs with the mean of the entire stack.</span>
-<span class="sd">        - "constant" : Replace NaNs with a user-specified constant `value`.</span>
+<span class="sd">        What to replace NaN with. Default is ``"zero"``.</span>
+
+<span class="sd">        - ``"zero"``: 0.</span>
+<span class="sd">        - ``"mean"``, ``"median"``: the mean or median of the finite pixels of</span>
+<span class="sd">          the same frame.</span>
+<span class="sd">        - ``"global_mean"``: the mean of the finite pixels of the whole stack.</span>
+<span class="sd">        - ``"constant"``: ``value``.</span>
 <span class="sd">    value : float, optional</span>
-<span class="sd">        Constant value to use when `mode="constant"`. Must be provided in that case.</span>
+<span class="sd">        Value to use with ``mode="constant"``, where it is required.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    filled : np.ndarray</span>
-<span class="sd">        Stack of the same shape as `stack` with NaNs replaced according to `mode`.</span>
+<span class="sd">    filled : numpy.ndarray</span>
+<span class="sd">        A copy of ``stack`` with NaN replaced, with the same shape and dtype.</span>
 <span class="sd">    meta : dict</span>
-<span class="sd">        Metadata about the NaN replacement operation (e.g., count, mode, constant used).</span>
-
+<span class="sd">        ``{"nans_filled": &lt;number of NaN pixels&gt;, "mode": mode,</span>
+<span class="sd">        "value_used": value}``; ``"value_used"`` is None unless</span>
+<span class="sd">        ``mode="constant"``.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `mode` is unknown or if `mode="constant"` and `value` is not provided.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - Frame-wise operations like "mean" and "median" compute statistics per frame</span>
-<span class="sd">      independently.</span>
-<span class="sd">    - Preserves the dtype of the input stack.</span>
+<span class="sd">        If ``mode`` is not recognised, or ``mode="constant"`` and ``value`` is</span>
+<span class="sd">        None.</span>
 <span class="sd">    """</span>
     <span class="n">filled</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">nan_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -1477,19 +1510,22 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.video_processing.html#playnano.processing.video_processing.temporal_median_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">temporal_median_filter</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Apply median filter across the time dimension.</span>
+<span class="sd">    Not implemented yet: median filter along the time axis.</span>
+
+<span class="sd">    Planned for a future release; calling it raises ``NotImplementedError``. It</span>
+<span class="sd">    is not registered as a processing step.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Input stack.</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    window : int, optional</span>
-<span class="sd">        Window size (number of frames). Default is 3.</span>
+<span class="sd">        Number of frames in the filter window. Default is 3.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    filtered : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Stack after temporal median filtering.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        Always.</span>
 <span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
@@ -1499,19 +1535,22 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.video_processing.html#playnano.processing.video_processing.temporal_mean_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">temporal_mean_filter</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Apply mean filter across the time dimension.</span>
+<span class="sd">    Not implemented yet: mean filter along the time axis.</span>
+
+<span class="sd">    Planned for a future release; calling it raises ``NotImplementedError``. It</span>
+<span class="sd">    is not registered as a processing step.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stack : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Input stack.</span>
+<span class="sd">    stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
 <span class="sd">    window : int, optional</span>
-<span class="sd">        Window size (number of frames). Default is 3.</span>
+<span class="sd">        Number of frames in the filter window. Default is 3.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    filtered : ndarray of shape (n_frames, height, width)</span>
-<span class="sd">        Stack after temporal mean filtering.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        Always.</span>
 <span class="sd">    """</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
@@ -1526,11 +1565,16 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.video_processing.html#playnano.processing.video_processing.register_video_processing">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_video_processing</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Return a dictionary of registered video processing filters.</span>
+<span class="sd">    Return the built-in video processing functions.</span>
 
-<span class="sd">    Keys are names of the operations, values are the functions themselves.</span>
-<span class="sd">    These functions should take a 3D stack (n_frames, H, W) and return either</span>
-<span class="sd">    an ndarray (filtered stack) or a tuple (stack, metadata).</span>
+<span class="sd">    Each takes a 3D stack and returns either the processed stack or a tuple of</span>
+<span class="sd">    (stack, metadata).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Maps each step name (str) to its function, for example</span>
+<span class="sd">        ``"align_frames"`` to :func:`align_frames`.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">"align_frames"</span><span class="p">:</span> <span class="n">align_frames</span><span class="p">,</span>
@@ -1572,7 +1616,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

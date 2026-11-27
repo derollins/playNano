@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.formats.read_asd - playnano v0.5.3 documentation</title>
+        <title>playnano.io.formats.read_asd - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,25 +508,23 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.formats.read_asd</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module to decode and load .asd high-speed AFM data files as an AFMImageStack.</span>
+<span class="sd">Load ``.asd`` high-speed AFM files as an AFMImageStack.</span>
 
-<span class="sd">Files containing multiple image frames are read together. Height data (channel</span>
-<span class="sd">'TP') is converted to nm from the guessed source unit.</span>
+<span class="sd">Files are read with AFMReader. Topography (channel ``"TP"``) is converted to nm</span>
+<span class="sd">from a unit guessed from the range of the data; other channels are left as</span>
+<span class="sd">read.</span>
 
-<span class="sd">Timing (per-frame): asd files record a uniform frame time in the header, so</span>
-<span class="sd">``timestamp`` (seconds from frame 0) and ``frame_duration_s`` are the same for</span>
-<span class="sd">every frame. Absolute time (``start_epoch_ms``) is derived from the header</span>
-<span class="sd">date, which is the END of acquisition (the file's write time), backdated by</span>
-<span class="sd">``num_frames * frame_duration_s`` to place frame 0 at the true start.</span>
+<span class="sd">Timing: ``.asd`` headers record one frame time for the whole file, so</span>
+<span class="sd">``timestamp`` steps evenly and ``frame_duration_s`` is the same for every</span>
+<span class="sd">frame. The header date is the end of the recording (when the file was</span>
+<span class="sd">written), so ``start_epoch_ms`` is that date minus</span>
+<span class="sd">``n_frames * frame_duration_s``.</span>
 
-<span class="sd">Frame direction (``scan_direction``) is left as None, asd files don't encode</span>
-<span class="sd">slow-axis direction. Anecdotally, the asd ``scan_direction`` is usually topDown</span>
-<span class="sd">(or Ygo).</span>
-
-<span class="sd">The asd ``scan_direction`` integer in the header encodes an acquisition mode</span>
-<span class="sd">plus channel-1 fast-axis direction, although I've not found formal documentation</span>
-<span class="sd">of this. The raw value, file version and channel signature are preserved in</span>
-<span class="sd">``stack.acquisition`` for later decoding.</span>
+<span class="sd">Scan direction: the header does not record the slow-axis direction, so</span>
+<span class="sd">``scan_direction`` is None. The header's ``scan_direction`` integer seems to</span>
+<span class="sd">encode the acquisition mode and the fast-axis direction of channel 1, but it is</span>
+<span class="sd">not documented. Its raw value, the file version and the channel names are kept</span>
+<span class="sd">in ``stack.acquisition`` so they can be decoded later.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -623,32 +622,29 @@
 <a class="viewcode-back" href="../../../../api/playnano.io.formats.read_asd.html#playnano.io.formats.read_asd.load_asd_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_asd_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an .asd HS-AFM file into an AFMImageStack, with height data in nm.</span>
+<span class="sd">    Load an ``.asd`` file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    file_path : Path | str</span>
-<span class="sd">        Path to the .asd file.</span>
+<span class="sd">    file_path : str or pathlib.Path</span>
+<span class="sd">        The ``.asd`` file.</span>
 <span class="sd">    channel : str</span>
-<span class="sd">        Channel to extract ('TP' topography, 'ER' error, or 'PH' phase).</span>
+<span class="sd">        Channel to load: ``"TP"`` (topography), ``"ER"`` (error) or ``"PH"``</span>
+<span class="sd">        (phase).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AFMImageStack</span>
-<span class="sd">        Loaded stack.</span>
+<span class="sd">        The stack, shape (n_frames, height, width). Topography is in nm.</span>
 
-<span class="sd">        Data is held in ``data`` as a 3D array (N, H, W). The stack's</span>
-<span class="sd">        ``pixel_size_nm`` is the constant pixel size in nanometres, and</span>
-<span class="sd">        ``channel`` is the channel name.</span>
+<span class="sd">        Each ``frame_metadata`` entry holds ``timestamp`` (s from the first</span>
+<span class="sd">        frame), ``frame_pixel_size_nm``, ``line_rate`` (lines per second),</span>
+<span class="sd">        ``frame_duration_s`` and ``start_epoch_ms``; ``scan_direction`` is None.</span>
 
-<span class="sd">        Per-frame ``frame_metadata`` populates ``timestamp``,</span>
-<span class="sd">        ``frame_pixel_size_nm``, ``line_rate``, ``frame_duration_s`` and</span>
-<span class="sd">        ``start_epoch_ms``; ``scan_direction`` stays None.</span>
-
-<span class="sd">        Stack-level ``acquisition`` records asd-specific provenance:</span>
-<span class="sd">        ``asd_file_version``, ``asd_scan_direction_raw`` (undecoded int),</span>
-<span class="sd">        ``asd_channels`` (tuple). ``bidirectional`` is not set, asd files</span>
-<span class="sd">        don't encode slow-axis alternation.</span>
+<span class="sd">        ``stack.acquisition`` holds ``asd_file_version``,</span>
+<span class="sd">        ``asd_scan_direction_raw`` (the undecoded header value) and</span>
+<span class="sd">        ``asd_channels`` (the two channel slots of the header). ``bidirectional``</span>
+<span class="sd">        is not set.</span>
 <span class="sd">    """</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 
@@ -737,7 +733,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

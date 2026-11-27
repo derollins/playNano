@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.gui.main - playnano v0.5.3 documentation</title>
+        <title>playnano.gui.main - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.gui.main</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Main entry point for the playNano GUI application."""</span>
+<span></span><span class="sd">"""Start the playNano GUI (``playnano play``)."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -541,9 +542,9 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    QIcon</span>
-<span class="sd">        The application icon. It is null (``QIcon.isNull()``) if no icon</span>
-<span class="sd">        files could be found, in which case a warning is logged.</span>
+<span class="sd">    PySide6.QtGui.QIcon</span>
+<span class="sd">        The icon. It is empty (``QIcon.isNull()``) if no icon files were found,</span>
+<span class="sd">        in which case a warning is logged.</span>
 <span class="sd">    """</span>
     <span class="n">icon</span> <span class="o">=</span> <span class="n">QIcon</span><span class="p">()</span>
     <span class="n">icons_dir</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s2">"playnano.resources.icons"</span><span class="p">)</span>
@@ -589,43 +590,43 @@
     <span class="n">fps</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Launch the playNano GUI with a given AFM stack and visualization/export settings.</span>
+<span class="sd">    Open the playNano window for a stack and run it until it is closed.</span>
+
+<span class="sd">    Called by ``playnano play`` (see</span>
+<span class="sd">    :func:`playnano.cli.actions.play_pipeline_mode`). It creates the Qt</span>
+<span class="sd">    application, applies the dark stylesheet and shows a</span>
+<span class="sd">    :class:`~playnano.gui.window.MainWindow`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    afm_stack : AFMImageStack</span>
-<span class="sd">        The AFM image stack to display and process.</span>
-<span class="sd">    output_dir : str or None, optional</span>
-<span class="sd">        Directory in which to save exported files (default: None, which uses</span>
-<span class="sd">        internal defaults).</span>
+<span class="sd">        The stack to show.</span>
+<span class="sd">    output_dir : str, optional</span>
+<span class="sd">        Folder for exports. If None, ``./output``. Default is None.</span>
 <span class="sd">    output_name : str, optional</span>
-<span class="sd">        Base filename for any exports (default: "" - this triggers the default</span>
-<span class="sd">        behaviour when utils.io_utils.sanitize_output_name is called).</span>
-<span class="sd">    steps_with_kwargs : list of (str, dict) or None, optional</span>
-<span class="sd">        A list of (filter_name, kwargs) tuples for the default processing pipeline.</span>
-<span class="sd">        If None, the application's built-in defaults are used.</span>
+<span class="sd">        Start of the exported file names. If empty, the name of the file the</span>
+<span class="sd">        stack was loaded from. Default is ``""``.</span>
+<span class="sd">    steps_with_kwargs : list of tuple, optional</span>
+<span class="sd">        Processing steps, as ``(name, parameters)``, run when F is pressed. If</span>
+<span class="sd">        None or empty, F runs a built-in default pipeline. Default is None.</span>
 <span class="sd">    scale_bar_nm : int, optional</span>
-<span class="sd">        Physical length of the scale bar in nanometers (default: 100).</span>
-<span class="sd">    zmin : float, "auto", or None, optional</span>
-<span class="sd">        Minimum height value for the initial colormap range. If "auto", uses the</span>
-<span class="sd">        1st percentile of the data; if None, uses the data minimum; if a float,</span>
-<span class="sd">        uses that value (default: "auto").</span>
-<span class="sd">    zmax : float, "auto", or None, optional</span>
-<span class="sd">        Maximum height value for the initial colormap range. If "auto", uses the</span>
-<span class="sd">        99th percentile of the data; if None, uses the data maximum; if a float,</span>
-<span class="sd">        uses that value (default: "auto").</span>
+<span class="sd">        Scale bar length, in nm; 0 opens the window with the scale bar off.</span>
+<span class="sd">        Default is 100.</span>
+<span class="sd">    zmin, zmax : float or str, optional</span>
+<span class="sd">        Initial colour scale limits: a number, ``"auto"`` (1st and 99th</span>
+<span class="sd">        percentiles) or None (data minimum or maximum). Default is ``"auto"``.</span>
 <span class="sd">    cmap : str, optional</span>
-<span class="sd">        Name of the colormap to use for visualisation on launch (default=DEFAULT_CMAP).</span>
+<span class="sd">        Colormap the window opens with. Names not in the window's list are</span>
+<span class="sd">        replaced by ``"afm_brown"``, with a warning. Default is ``"afm_brown"``.</span>
 <span class="sd">    fps : float, optional</span>
-<span class="sd">        Initial frame rate for the GIF in frames per second (default=5.0).</span>
+<span class="sd">        Initial playback rate, in frames per second; also used for animated</span>
+<span class="sd">        exports. Default is 5.0.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This function will start a Qt event loop and will not return to the caller.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    SystemExit</span>
+<span class="sd">        Always, when the window is closed, with Qt's exit status. The function</span>
+<span class="sd">        never returns, so it cannot be used from a notebook.</span>
 <span class="sd">    """</span>
     <span class="n">_set_windows_app_id</span><span class="p">()</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
@@ -681,7 +682,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

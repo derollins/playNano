@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.utils.frames - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.utils.frames - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,11 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.utils.frames</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Frame-based post-processing helpers.</span>
-
-<span class="sd">E.g. summarize per-frame statistics or produce histograms.</span>
-<span class="sd">"""</span>
+<span></span><span class="sd">"""Per-frame summaries of detected features, as a table or histogram."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -525,24 +522,28 @@
     <span class="n">features_per_frame</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">dict</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Build a DataFrame with one row per frame.</span>
-
-<span class="sd">    Summarises number of features, total area, mean intensity, etc.</span>
+<span class="sd">    Summarise the features detected in each frame, one row per frame.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    features_per_frame : list of lists of dict</span>
-<span class="sd">        As returned by `FeatureDetectionModule.run()["features_per_frame"]`.</span>
+<span class="sd">    features_per_frame : list of list of dict</span>
+<span class="sd">        The ``"features_per_frame"`` output of a feature detection module,</span>
+<span class="sd">        such as ``feature_detection``. Each feature dict must have ``"area"``</span>
+<span class="sd">        and ``"mean"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pd.DataFrame</span>
-<span class="sd">        Columns:</span>
-<span class="sd">          - frame_index (int)</span>
-<span class="sd">          - n_features  (int)</span>
-<span class="sd">          - total_area  (int)</span>
-<span class="sd">          - mean_area   (float)</span>
-<span class="sd">          - mean_intensity (float)</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        One row per frame, with the columns:</span>
+
+<span class="sd">        - ``frame_index`` (int): from 0.</span>
+<span class="sd">        - ``n_features`` (int): number of features.</span>
+<span class="sd">        - ``total_area`` and ``mean_area`` (float): feature area, in pixels.</span>
+<span class="sd">        - ``mean_intensity`` (float): the average of the features' mean</span>
+<span class="sd">          heights, usually in nm.</span>
+
+<span class="sd">        ``mean_area`` and ``mean_intensity`` are 0.0 for a frame with no</span>
+<span class="sd">        features.</span>
 <span class="sd">    """</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feats</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">features_per_frame</span><span class="p">):</span>
@@ -573,22 +574,25 @@
     <span class="n">bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Plot a histogram of a per-frame summary metric.</span>
+<span class="sd">    Plot a histogram of one column of a per-frame summary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    df : pandas.DataFrame</span>
-<span class="sd">        As returned by `frame_summary_to_dataframe`.</span>
+<span class="sd">        A table from :func:`frame_summary_to_dataframe`.</span>
 <span class="sd">    column : str</span>
-<span class="sd">        Which column to histogram (e.g. 'n_features').</span>
-<span class="sd">    ax : matplotlib Axes, optional</span>
-<span class="sd">    save_to : Path, optional</span>
-<span class="sd">    bins : int</span>
-<span class="sd">        Number of histogram bins.</span>
+<span class="sd">        The column to plot, for example ``"n_features"``.</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to draw on. If None, a new figure is created. Default is None.</span>
+<span class="sd">    save_to : str or pathlib.Path, optional</span>
+<span class="sd">        If given, save the figure to this file at 150 dpi. Default is None.</span>
+<span class="sd">    bins : int, optional</span>
+<span class="sd">        Number of histogram bins. Default is 20.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    ax : matplotlib Axes</span>
+<span class="sd">    matplotlib.axes.Axes</span>
+<span class="sd">        The axes drawn on.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -634,7 +638,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

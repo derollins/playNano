@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.base - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.base - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.base</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module holding the AnalysisModule base class."""</span>
+<span></span><span class="sd">"""The base class that every analysis module subclasses."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
@@ -520,24 +521,34 @@
 <a class="viewcode-back" href="../../../api/playnano.analysis.base.html#playnano.analysis.base.AnalysisModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AnalysisModule</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Abstract base class for analysis steps.</span>
+<span class="sd">    Base class for analysis modules.</span>
 
-<span class="sd">    Subclasses must implement:</span>
+<span class="sd">    An analysis module measures something in a stack (for example, detecting</span>
+<span class="sd">    features or tracking particles) and returns its results as a dict.</span>
+<span class="sd">    :class:`~playnano.analysis.pipeline.AnalysisPipeline` runs modules in order.</span>
+<span class="sd">    Built-in modules are in :mod:`playnano.analysis.modules`; plugins are</span>
+<span class="sd">    registered under the ``playnano.analysis`` entry point group.</span>
 
-<span class="sd">    - a ``name`` property returning a unique string identifier</span>
-<span class="sd">    - a ``run(stack, previous_results=None, **params) -&gt; dict`` method</span>
+<span class="sd">    A subclass must define:</span>
 
-<span class="sd">    Inherits from :class:`abc.ABC`.</span>
+<span class="sd">    - :attr:`name`: the name used to add the module to a pipeline.</span>
+<span class="sd">    - :meth:`run`: the analysis.</span>
 
+<span class="sd">    and can set these class attributes:</span>
+
+<span class="sd">    - ``version`` (str): recorded in the provenance of each step.</span>
+<span class="sd">    - ``requires`` (list of str): names of modules, at least one of which must</span>
+<span class="sd">      run earlier in the pipeline; the pipeline raises ``RuntimeError``</span>
+<span class="sd">      otherwise.</span>
 <span class="sd">    """</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Unique name for this analysis module, e.g. "particle_detect".</span>
+<span class="sd">        Name used to add the module to a pipeline, for example ``"feature_detection"``.</span>
 
-<span class="sd">        Used by pipeline to identify and refer to the module.</span>
+<span class="sd">        Must be unique among the installed modules.</span>
 <span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Subclasses must implement 'name' property"</span><span class="p">)</span>
 
@@ -551,34 +562,27 @@
         <span class="o">**</span><span class="n">params</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnalysisOutputs</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Perform the analysis on the given AFMImageStack.</span>
+<span class="sd">        Run the analysis on a stack.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The AFMImageStack instance, containing `.data` and metadata.</span>
-
-<span class="sd">        previous_results : dict[str, Any] or None, optional</span>
-<span class="sd">            Outputs from earlier modules in the pipeline, if any.</span>
-
-<span class="sd">        **params : dict</span>
-<span class="sd">            Module-specific parameters, e.g., threshold, min_size, etc.</span>
+<span class="sd">            The stack to analyse.</span>
+<span class="sd">        previous_results : dict, optional</span>
+<span class="sd">            Outputs of the modules run earlier in the pipeline: each module name</span>
+<span class="sd">            mapped to the dict its latest run returned. Default is None.</span>
+<span class="sd">        **params</span>
+<span class="sd">            Parameters of this module, as given to</span>
+<span class="sd">            :meth:`~playnano.analysis.pipeline.AnalysisPipeline.add`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        AnalysisOutputs</span>
-<span class="sd">            Dictionary mapping output names (strings) to results. Example::</span>
+<span class="sd">        dict</span>
+<span class="sd">            Outputs, keyed by str. The values can be anything, for example::</span>
 
-<span class="sd">                {</span>
-<span class="sd">                    "coords": numpy.ndarray of shape (N, 3),</span>
-<span class="sd">                    "masks": numpy.ndarray of shape (n_frames, H, W)</span>
-<span class="sd">                }</span>
+<span class="sd">                {"features_per_frame": [...], "summary": {"total_features": 23}}</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Subclasses must implement this method. The returned dictionary can</span>
-<span class="sd">        contain any data the analysis module produces, but must be keyed by</span>
-<span class="sd">        unique output names.</span>
+<span class="sd">            Later modules receive this dict through ``previous_results``.</span>
 <span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Subclasses must implement 'run' method"</span><span class="p">)</span></div>
 </div>
@@ -615,7 +619,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

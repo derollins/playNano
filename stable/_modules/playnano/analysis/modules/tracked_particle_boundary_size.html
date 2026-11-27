@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.tracked_particle_boundary_size - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.tracked_particle_boundary_size - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -508,18 +509,11 @@
           <h1>Source code for playnano.analysis.modules.tracked_particle_boundary_size</h1><div class="highlight"><pre>
 <span></span><span class="c1"># mypy: disable-error-code=type-arg</span>
 <span class="sd">"""</span>
-<span class="sd">Particle boundary size analysis module for the playNano analysis pipeline.</span>
+<span class="sd">Analysis module that measures the size of each tracked particle over time.</span>
 
-<span class="sd">This module computes a per-particle boundary size metric over time by consuming</span>
-<span class="sd">the output of ``particle_region_extraction``.</span>
-
-<span class="sd">For each tracked particle and frame, the maximum dimension of the (tight)</span>
-<span class="sd">bounding box is recorded.  Optionally, a threshold may be applied to classify</span>
-<span class="sd">each time point into a discrete state (e.g. compact vs extended).</span>
-
-<span class="sd">The module is designed to integrate with the playNano ``AnalysisPipeline`` and</span>
-<span class="sd">records results in a provenance-aware, serializable format suitable for</span>
-<span class="sd">downstream analysis and plotting.</span>
+<span class="sd">The size is the longer side of each region's bounding box, as found by</span>
+<span class="sd">``particle_region_extraction``. A threshold can split the time points into two</span>
+<span class="sd">states, for example compact and extended.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
@@ -533,41 +527,19 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.tracked_particle_boundary_size.html#playnano.analysis.modules.tracked_particle_boundary_size.BoundarySizeModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BoundarySizeModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Measure particle boundary size over time from pre-extracted particle regions.</span>
+<span class="sd">    Measure each tracked particle's size, frame by frame.</span>
 
-<span class="sd">    This module consumes output from ``ParticleRegionExtractionModule``</span>
-<span class="sd">    (registered as ``"particle_region_extraction"`` in the pipeline).  It</span>
-<span class="sd">    expects that module to have been run with ``include_bbox=True``.</span>
-
-<span class="sd">    The boundary size metric is derived from the tight bounding box:</span>
-
-<span class="sd">    ``max_dim = max(bbox_height, bbox_width)``</span>
-
-<span class="sd">    Optionally, a threshold can be applied to derive a discrete state variable</span>
-<span class="sd">    (e.g. compact vs extended).</span>
-
-<span class="sd">    Parameters accepted in :meth:`run`</span>
-<span class="sd">    ------------------------------------</span>
-<span class="sd">    extraction_module : str, default ``"particle_region_extraction"``</span>
-<span class="sd">        Name of the upstream extraction module in the pipeline.</span>
-<span class="sd">    threshold : float or None</span>
-<span class="sd">        If provided, each frame is classified as ``state = int(max_dim &gt; threshold)``.</span>
-<span class="sd">    measure : str, default ``"bbox_max_dim"``</span>
-<span class="sd">        Metric name (currently only ``"bbox_max_dim"`` is supported).</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - If a region entry is ``None`` (missing detection) or its bounding box is</span>
-<span class="sd">      ``None``, ``max_dim`` is recorded as ``np.nan``.</span>
-<span class="sd">    - If the upstream extraction module was run without ``include_bbox=True``,</span>
-<span class="sd">      a ``RuntimeError`` is raised.</span>
+<span class="sd">    Pipeline name: ``"tracked_particle_boundary_size"``. It needs the output of</span>
+<span class="sd">    ``particle_region_extraction``, run with ``include_bbox=True`` (the</span>
+<span class="sd">    default). The size, ``max_dim``, is the longer side of the region's tight</span>
+<span class="sd">    bounding box, in pixels. See :meth:`run` for the parameters and outputs.</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Module name for registration in the analysis pipeline."""</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"tracked_particle_boundary_size"``."""</span>
         <span class="k">return</span> <span class="s2">"tracked_particle_boundary_size"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"particle_region_extraction"</span><span class="p">]</span>
@@ -584,50 +556,53 @@
         <span class="n">measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"bbox_max_dim"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute the boundary size analysis.</span>
+<span class="sd">        Measure the size of each tracked particle in each frame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            Input image stack (not used directly; present for pipeline API</span>
-<span class="sd">            compatibility).</span>
-<span class="sd">        previous_results : dict, optional</span>
-<span class="sd">            Results from earlier pipeline modules.  Must contain output from</span>
-<span class="sd">            ``extraction_module`` with ``include_bbox=True``.</span>
-<span class="sd">        extraction_module : str, default ``"particle_region_extraction"``</span>
-<span class="sd">            Key identifying the region extraction module output in</span>
-<span class="sd">            ``previous_results``.</span>
-<span class="sd">        threshold : float or None, optional</span>
-<span class="sd">            Threshold applied to ``max_dim`` to compute a binary state</span>
-<span class="sd">            variable.  If ``None``, no state classification is performed.</span>
-<span class="sd">        measure : str, default ``"bbox_max_dim"``</span>
-<span class="sd">            Name of the boundary size metric.  Currently only</span>
-<span class="sd">            ``"bbox_max_dim"`` is supported.</span>
+<span class="sd">            The stack; not used directly.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold the output of</span>
+<span class="sd">            ``extraction_module``.</span>
+<span class="sd">        extraction_module : str, optional</span>
+<span class="sd">            Name of the region extraction step. Default is</span>
+<span class="sd">            ``"particle_region_extraction"``.</span>
+<span class="sd">        threshold : float, optional</span>
+<span class="sd">            If given, each frame is also given a ``state``: 1 if ``max_dim`` is</span>
+<span class="sd">            greater than ``threshold`` (in pixels), otherwise 0. Default is None.</span>
+<span class="sd">        measure : str, optional</span>
+<span class="sd">            The size measure. Only ``"bbox_max_dim"`` is available. Default is</span>
+<span class="sd">            ``"bbox_max_dim"``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Keys:</span>
+<span class="sd">            ``"measure"``, ``"threshold"``</span>
+<span class="sd">                The values used.</span>
+<span class="sd">            ``"per_track"``</span>
+<span class="sd">                One dict per track, with ``track_id``, ``frames``, ``timestamps``</span>
+<span class="sd">                (s), ``max_dim`` (pixels) and, with a threshold, ``state``.</span>
+<span class="sd">                Frames where the particle was not found have ``max_dim`` NaN and</span>
+<span class="sd">                ``state`` NaN.</span>
+<span class="sd">            ``"flat_table"``</span>
+<span class="sd">                The same values with one dict per track and frame, with</span>
+<span class="sd">                ``track_id``, ``label``, ``frame``, ``timestamp``, ``max_dim`` and,</span>
+<span class="sd">                with a threshold, ``state``; ready for :class:`pandas.DataFrame`.</span>
+<span class="sd">            ``"plot_hints"``</span>
+<span class="sd">                Names of plotting functions in ``playnano_plugins``, a package that</span>
+<span class="sd">                is not part of playNano.</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                ``n_tracks``, ``n_rows``, ``n_missing_region_measurements`` and</span>
+<span class="sd">                ``state_included``.</span>
 
-<span class="sd">            ``measure`` : str</span>
-<span class="sd">                Name of the boundary size metric used.</span>
-<span class="sd">            ``threshold`` : float or None</span>
-<span class="sd">                Threshold used for state classification, or ``None``.</span>
-<span class="sd">            ``per_track`` : list of dict</span>
-<span class="sd">                Per-track time series.  Each dict has:</span>
-
-<span class="sd">                - ``"track_id"`` : int</span>
-<span class="sd">                - ``"frames"`` : list of int</span>
-<span class="sd">                - ``"timestamps"`` : list of float</span>
-<span class="sd">                - ``"max_dim"`` : list of float (``np.nan`` where absent)</span>
-<span class="sd">                - ``"state"`` : list of int/float  *(only if threshold given)*</span>
-
-<span class="sd">            ``flat_table`` : list of dict</span>
-<span class="sd">                Row-per-frame representation suitable for ``pandas.DataFrame``.</span>
-<span class="sd">            ``plot_hints`` : dict</span>
-<span class="sd">                Suggested plotting helper function names.</span>
-<span class="sd">            ``summary`` : dict</span>
-<span class="sd">                Bookkeeping counters.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If ``previous_results`` is None, lacks ``extraction_module``, or the</span>
+<span class="sd">            extraction ran with ``include_bbox=False``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``measure`` is not ``"bbox_max_dim"``.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
@@ -773,7 +748,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

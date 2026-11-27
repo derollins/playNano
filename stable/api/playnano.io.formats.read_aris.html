@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.formats.read_aris module - playnano v0.5.3 documentation</title>
+        <title>playnano.io.formats.read_aris module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,53 +515,67 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.formats.read_aris">
 <span id="playnano-io-formats-read-aris-module"></span><h1>playnano.io.formats.read_aris module<a class="headerlink" href="#module-playnano.io.formats.read_aris" title="Link to this heading">¶</a></h1>
-<p>Module to decode and load .aris high-speed AFM data files into an AFMImageStack object.</p>
-<p>The Asylum Research ARIS files contain multiple frames that may differ in pixel
-resolution. The global pixel size (from the first frame) is stored in
-<cite>pixel_size_nm</cite>, while per-frame overrides are stored in each entry of
-<cite>frame_metadata</cite> under the key <cite>frame_pixel_size_nm</cite>.</p>
+<p>Load Asylum Research <code class="docutils literal notranslate"><span class="pre">.aris</span></code> high-speed AFM files as an AFMImageStack.</p>
+<p>ARIS files are HDF5 files. Frames can differ in scan size, so each frame’s
+pixel size is stored in its <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry as
+<code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>; the stack’s <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> is that of the first
+frame.</p>
+<p>Channels with a length unit (heights, and amplitude, which ARIS files store
+in metres) are converted to nm, like the other readers. Other channels, such
+as phase in degrees, are returned in the units stored in the file.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_aris.load_aris">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_aris.</span></span><span class="sig-name descname"><span class="pre">load_aris</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_aris.html#load_aris"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_aris.load_aris" title="Link to this definition">¶</a></dt>
-<dd><p>Load image stack from a Asylum Research .aris file, scaled to nanometers.</p>
-<p>The images are loaded, reshaped into frames, and have timestamps generated.</p>
+<dd><p>Load an Asylum Research <code class="docutils literal notranslate"><span class="pre">.aris</span></code> file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the .aris file.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to extract.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The <code class="docutils literal notranslate"><span class="pre">.aris</span></code> file.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;HeightTrace&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;HeightRetrace&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;AmplitudeRetrace&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;PhaseRetrace&quot;</span></code>; the names depend on the
+file.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded AFM image stack with metadata and per-frame info.</p>
+<dd class="field-even"><p>The stack. Channels with a length unit are in nm; others (such as
+phase) are in the units stored in the file. If the file gives no unit
+for the channel, it is guessed from the data range and a warning is
+logged. Each <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry holds
+<code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (s from the first frame), <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">line_rate</span></code> (the global scan rate, in lines per second) and
+<code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> (if the file records its start time).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the channel is not in the file, or the number of frame times does
+    not match the number of frames.</p>
+</dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>Pixel size may vary between frames in ARIS files. The global
-<cite>pixel_size_nm</cite> attribute corresponds to the first frame, while
-per-frame values are stored in <cite>frame_metadata</cite>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_aris.load_frames_and_scaling">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_aris.</span></span><span class="sig-name descname"><span class="pre">load_frames_and_scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_aris.html#load_frames_and_scaling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_aris.load_frames_and_scaling" title="Link to this definition">¶</a></dt>
-<dd><p>Load all frames for the given channel and compute per-frame pixel sizes.</p>
+<dd><p>Read every frame of one channel and work out each frame’s pixel size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.h5py.org/en/stable/high/group.html#h5py.Group" title="(in h5py v3.16)"><em>h5py.Group</em></a>) – HDF5 group with frame/channel image data.</p></li>
-<li><p><strong>info</strong> (<a class="reference external" href="https://docs.h5py.org/en/stable/high/group.html#h5py.Group" title="(in h5py v3.16)"><em>h5py.Group</em></a>) – HDF5 group containing metadata and per-frame overrides.</p></li>
-<li><p><strong>selected_ch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel name to extract.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.h5py.org/en/stable/high/group.html#h5py.Group" title="(in h5py v3.16)"><em>h5py.Group</em></a>) – The <code class="docutils literal notranslate"><span class="pre">/DataSet/Resolution</span> <span class="pre">0</span></code> group, holding one group per frame.</p></li>
+<li><p><strong>info</strong> (<a class="reference external" href="https://docs.h5py.org/en/stable/high/group.html#h5py.Group" title="(in h5py v3.16)"><em>h5py.Group</em></a>) – The <code class="docutils literal notranslate"><span class="pre">/DataSetInfo</span></code> group, holding the scan parameters and any changes
+made to them during the recording.</p></li>
+<li><p><strong>selected_ch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to read.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>3D stack array and per-frame pixel-size values (nm).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(ndarray, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>)</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>image_stack</strong> (<em>numpy.ndarray</em>) – Frames in time order, shape (n_frames, height, width), in the units
+stored in the file.</p></li>
+<li><p><strong>pixel_sizes_nm</strong> (<em>list of float</em>) – Pixel size of each frame, in nm. Frames without their own scan size use
+the global one.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -636,7 +651,7 @@ per-frame values are stored in <cite>frame_metadata</cite>.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

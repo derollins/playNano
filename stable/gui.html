@@ -8,7 +8,7 @@
         <link rel="prefetch" href="_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>GUI: Interactive Playback - playnano v0.5.3 documentation</title>
+        <title>GUI: Interactive Playback - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -554,7 +555,7 @@ bundles (NPZ, OME-TIFF, HDF5).</p></li>
 </div>
 <section id="arguments-common-options">
 <h3>Arguments &amp; common options<a class="headerlink" href="#arguments-common-options" title="Link to this heading">¶</a></h3>
-<ul class="simple">
+<ul>
 <li><p><strong>input_file</strong> (<em>str</em>, required)
 Path to an AFM file (e.g. <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code>) or a folder of frame files.</p></li>
 <li><p><strong>–channel</strong> (<em>str</em>, default: <code class="docutils literal notranslate"><span class="pre">height_trace</span></code>)
@@ -563,7 +564,11 @@ Which channel to display.</p></li>
 Inline processing pipeline, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;remove_plane;gaussian_filter:sigma=2.0&quot;</span></code>.
 Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">--processing-file</span></code>.</p></li>
 <li><p><strong>–processing-file</strong> (<em>YAML/JSON</em>)
-Path to a processing YAML with the filters to apply on load.</p></li>
+Path to a processing YAML file with the steps to run.</p>
+<p>With either option, the steps are not run when the window opens: they run when you
+click the <strong>Apply Filters (F)</strong> button or press the <strong>F</strong> key. Without either option,
+the button and key run a built-in default pipeline.</p>
+</li>
 <li><p><strong>–output-folder</strong> (<em>str</em>) / <strong>–output-name</strong> (<em>str</em>)
 Base folder/name for exports created from the GUI.</p></li>
 <li><p><strong>–scale-bar-nm</strong> (<em>int</em>, default=100)
@@ -612,9 +617,9 @@ Playback controls and filter buttons are located below the viewer.</p></li>
 <li><p>If the loaded stack contains a saved <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot (e.g. when loading a bundle),
 the GUI treats that snapshot as the unprocessed data and <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> as the
 processed/flattened frames. Otherwise <code class="docutils literal notranslate"><span class="pre">stack.data</span></code> is considered the raw frames.</p></li>
-<li><p>Applying filters via <strong>Apply Filters (F)</strong> runs the processing pipeline and updates
-the processed view. After applying filters, the GUI switches to the processed view by
-default, and export options for processed data become available.</p></li>
+<li><p>Applying filters (the <strong>Apply Filters (F)</strong> button or the <strong>F</strong> key) runs the processing
+pipeline and updates the processed view. After applying filters, the GUI switches to the
+processed view by default, and export options for processed data become available.</p></li>
 </ul>
 </section>
 </section>
@@ -779,7 +784,7 @@ without frame timestamps, the timestamp annotation shows frame numbers instead.<
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="_static/documentation_options.js?v=1a12988a"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

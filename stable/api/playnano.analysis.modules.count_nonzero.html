@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.count_nonzero module - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.count_nonzero module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,59 +515,53 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.count_nonzero">
 <span id="playnano-analysis-modules-count-nonzero-module"></span><h1>playnano.analysis.modules.count_nonzero module<a class="headerlink" href="#module-playnano.analysis.modules.count_nonzero" title="Link to this heading">¶</a></h1>
-<p>Analysis module for counting non-zero data points in an array.</p>
+<p>Analysis module that counts the non-zero pixels in each frame.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.count_nonzero.CountNonzeroModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.count_nonzero.</span></span><span class="sig-name descname"><span class="pre">CountNonzeroModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/count_nonzero.html#CountNonzeroModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.count_nonzero.CountNonzeroModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Count non-zero pixels in each frame of an AFMImageStack.</p>
-<p>This simple analysis module computes the number of non-zero pixels
-per frame and returns the result as a 1D array.</p>
-<section id="version">
-<h2>Version<a class="headerlink" href="#version" title="Link to this heading">¶</a></h2>
-<p>0.1.0</p>
+<p>Count the non-zero pixels in each frame.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;count_nonzero&quot;</span></code>. It has no parameters. NaN pixels count
+as non-zero.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">module</span> <span class="o">=</span> <span class="n">CountNonzeroModule</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s1">'counts'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(n_frames,)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">t</span> <span class="p">:</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">t</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># a 6 x 6 pixel particle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">pixel_size_nm</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">channel</span><span class="o">=</span><span class="s2">"height_trace"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">file_path</span><span class="o">=</span><span class="s2">"demo.h5-jpk"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">frame_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.count_nonzero</span><span class="w"> </span><span class="kn">import</span> <span class="n">CountNonzeroModule</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CountNonzeroModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+<span class="go">{'counts': array([36, 36, 36])}</span>
 </pre></div>
 </div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.count_nonzero.CountNonzeroModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.count_nonzero.CountNonzeroModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the analysis module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string identifier for this module.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
-</dd>
-</dl>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;count_nonzero&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.count_nonzero.CountNonzeroModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/count_nonzero.html#CountNonzeroModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.count_nonzero.CountNonzeroModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Count non-zero pixels per frame in the AFMImageStack.</p>
+<dd><p>Count the non-zero pixels in each frame of <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Stack of AFM frames with <cite>.data</cite> of shape (n_frames, H, W).</p></li>
-<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Ignored by this module. Included for API compatibility.</p></li>
-<li><p><strong>**params</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Additional parameters (unused).</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to analyse.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Not used. Default is None.</p></li>
+<li><p><strong>**params</strong> – Not used; ignored.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Dictionary with key:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>”counts”: np.ndarray of shape (n_frames,), number of non-zero
-pixels per frame.</p></li>
-</ul>
-</div></blockquote>
-</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">{&quot;counts&quot;:</span> <span class="pre">numpy.ndarray}</span></code>, the number of non-zero pixels in each
+frame, shape (n_frames,).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
@@ -579,7 +574,6 @@ pixels per frame.</p></li>
 <span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.1.0'</span></em><a class="headerlink" href="#playnano.analysis.modules.count_nonzero.CountNonzeroModule.version" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
 </dd></dl>
 
 </section>
@@ -657,7 +651,7 @@ pixels per frame.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.utils.particles module - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.utils.particles module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,19 +515,16 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.utils.particles">
 <span id="playnano-analysis-utils-particles-module"></span><h1>playnano.analysis.utils.particles module<a class="headerlink" href="#module-playnano.analysis.utils.particles" title="Link to this heading">¶</a></h1>
-<p>Particle-based postprocessing helpers.</p>
-<p>These functions take the raw outputs of feature detection and
-particle tracking modules and turn them into tabular data,
-plots, and CSV/HDF5 exports.</p>
+<p>Turn tracks or clusters of detected features into a table, plot or CSV file.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.particles.export_particle_csv">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">export_particle_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/particles.html#export_particle_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.particles.export_particle_csv" title="Link to this definition">¶</a></dt>
-<dd><p>Write the flattened track DataFrame to CSV.</p>
+<dd><p>Write a table from <a class="reference internal" href="#playnano.analysis.utils.particles.flatten_particle_features" title="playnano.analysis.utils.particles.flatten_particle_features"><code class="xref py py-func docutils literal notranslate"><span class="pre">flatten_particle_features()</span></code></a> to a CSV file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>)</p></li>
-<li><p><strong>out_path</strong> (<em>Path</em>) – Path to write the .csv file (will create parent dirs).</p></li>
+<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>) – The table to write; the index is not written.</p></li>
+<li><p><strong>out_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The CSV file. Missing folders are created. Must be a Path, not a str.</p></li>
 </ul>
 </dd>
 </dl>
@@ -535,45 +533,47 @@ plots, and CSV/HDF5 exports.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.particles.flatten_particle_features">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">flatten_particle_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grouping_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.15)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.15)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cluster_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'frames'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'point_indices'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/particles.html#flatten_particle_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.particles.flatten_particle_features" title="Link to this definition">¶</a></dt>
-<dd><p>Build a DataFrame linking each grouping analysis results to detected features.</p>
-<p>Each object (e.g. cluster or track) is linked to its corresponding detected
-feature metadata using (frame index, point index) pairs to locate features in
-the output of a feature detection step and merges metadata into one flattened
-table.</p>
+<dd><p>Make a table with one row per feature in each track or cluster.</p>
+<p>Each object (a track or cluster) lists the frame and index of each of its
+features. These are looked up in the detection output to get each
+feature’s measurements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grouping_output</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Dictionary from a grouping module (e.g. clustering or tracking).
-Must contain a list of group objects under the <cite>object_key</cite>, where each
-object has lists of <cite>frames</cite> and <cite>point_indices</cite>.</p></li>
-<li><p><strong>detection_output</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Dictionary from a detection module (e.g. feature_detection), which must
-contain the key ‘features_per_frame’: a list of feature dicts per frame.</p></li>
-<li><p><strong>object_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key in <cite>grouping_output</cite> pointing to the list of group objects.
-Default is “clusters”.</p></li>
-<li><p><strong>object_id_field</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Column name to use in the output DataFrame to identify the group,
-e.g., “cluster_id” or “track_id”. Default is “cluster_id”.</p></li>
-<li><p><strong>frame_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key in each group object listing the frames spanned by the object; missing
-detections may be represented by None indices.
-Default is “frames”.</p></li>
-<li><p><strong>index_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key in each group object listing the per-frame point indices (used
-to match detections in <cite>features_per_frame</cite>). Default is “point_indices”.</p></li>
+<li><p><strong>grouping_output</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Output of a tracking or clustering module, for example
+<a class="reference internal" href="playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule" title="playnano.analysis.modules.particle_tracking.ParticleTrackingModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleTrackingModule</span></code></a>.
+Each object must have an <code class="docutils literal notranslate"><span class="pre">&quot;id&quot;</span></code> and the lists named by <code class="docutils literal notranslate"><span class="pre">frame_key</span></code>
+and <code class="docutils literal notranslate"><span class="pre">index_key</span></code>.</p></li>
+<li><p><strong>detection_output</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Output of a detection module, with <code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code>: a list,
+for each frame, of feature dicts with at least <code class="docutils literal notranslate"><span class="pre">&quot;centroid&quot;</span></code>.</p></li>
+<li><p><strong>object_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of the list of objects in <code class="docutils literal notranslate"><span class="pre">grouping_output</span></code>. If None, <code class="docutils literal notranslate"><span class="pre">&quot;tracks&quot;</span></code>
+is used if present (and the ID column is called <code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>),
+otherwise <code class="docutils literal notranslate"><span class="pre">&quot;clusters&quot;</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;cluster_id&quot;</span></code>), overriding
+<code class="docutils literal notranslate"><span class="pre">object_id_field</span></code>. Default is None.</p></li>
+<li><p><strong>object_id_field</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the ID column. Used only if <code class="docutils literal notranslate"><span class="pre">object_key</span></code> is given. Default
+is <code class="docutils literal notranslate"><span class="pre">&quot;cluster_id&quot;</span></code>.</p></li>
+<li><p><strong>frame_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of each object’s list of frame indices. Default is <code class="docutils literal notranslate"><span class="pre">&quot;frames&quot;</span></code>.</p></li>
+<li><p><strong>index_key</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Key of each object’s list of feature indices within those frames.
+Entries that are None (frames where a track has no feature) are
+skipped. Default is <code class="docutils literal notranslate"><span class="pre">&quot;point_indices&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Flattened DataFrame linking features to group membership.
-Includes feature metadata and:
-- object_id_field (e.g. “cluster_id”)
-- frame
-- timestamp
-- label
-- centroid_x, centroid_y
-- area
-- mean
-- min
-- max</p>
+<dd class="field-even"><p>One row per feature, with the columns <code class="docutils literal notranslate"><span class="pre">object_id_field</span></code>, <code class="docutils literal notranslate"><span class="pre">frame</span></code>,
+<code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (s), <code class="docutils literal notranslate"><span class="pre">label</span></code>, <code class="docutils literal notranslate"><span class="pre">centroid_x</span></code> and <code class="docutils literal notranslate"><span class="pre">centroid_y</span></code>
+(pixels), <code class="docutils literal notranslate"><span class="pre">area</span></code> (pixels), and <code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code> and <code class="docutils literal notranslate"><span class="pre">max</span></code> (height,
+usually in nm). Missing measurements are NaN. Frame or feature indices
+out of range are skipped.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)">pandas.DataFrame</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">object_key</span></code> is None and <code class="docutils literal notranslate"><span class="pre">grouping_output</span></code> has neither
+    <code class="docutils literal notranslate"><span class="pre">&quot;tracks&quot;</span></code> nor <code class="docutils literal notranslate"><span class="pre">&quot;clusters&quot;</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – If an object lacks the <code class="docutils literal notranslate"><span class="pre">frame_key</span></code> or <code class="docutils literal notranslate"><span class="pre">index_key</span></code> list.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -581,22 +581,25 @@ Includes feature metadata and:
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.particles.plot_particle_labels_3d">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.particles.</span></span><span class="sig-name descname"><span class="pre">plot_particle_labels_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'track_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><span class="pre">Axes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tab10'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><span class="pre">Axes</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/particles.html#plot_particle_labels_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.particles.plot_particle_labels_3d" title="Link to this definition">¶</a></dt>
-<dd><p>Plot particle ids in 3D (x, y, time), colored by object ID.</p>
+<dd><p>Plot each feature’s position against time in 3D, coloured by track or cluster.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>) – Must contain [‘centroid_x’,’centroid_y’,’timestamp’, object_id_field]</p></li>
-<li><p><strong>object_id_field</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Column to use for color grouping (e.g. “track_id”, “cluster_id”)</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – A 3D Axes to draw into, or None to create a new one.</p></li>
-<li><p><strong>save_to</strong> (<em>Path</em><em>, </em><em>optional</em>) – If given, save the figure to file.</p></li>
-<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Colormap name for particle group colors.</p></li>
+<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>) – A table from <a class="reference internal" href="#playnano.analysis.utils.particles.flatten_particle_features" title="playnano.analysis.utils.particles.flatten_particle_features"><code class="xref py py-func docutils literal notranslate"><span class="pre">flatten_particle_features()</span></code></a>, with the columns
+<code class="docutils literal notranslate"><span class="pre">centroid_x</span></code>, <code class="docutils literal notranslate"><span class="pre">centroid_y</span></code>, <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> and <code class="docutils literal notranslate"><span class="pre">object_id_field</span></code>.</p></li>
+<li><p><strong>object_id_field</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Column that identifies each track or cluster. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;track_id&quot;</span></code>.</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.11.2)"><em>mpl_toolkits.mplot3d.axes3d.Axes3D</em></a><em>, </em><em>optional</em>) – 3D axes to draw on. If None, a new figure is created. Default is None.</p></li>
+<li><p><strong>save_to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a><em>, </em><em>optional</em>) – If given, save the figure to this file at 150 dpi. Default is None.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the matplotlib colormap for the objects. Default is
+<code class="docutils literal notranslate"><span class="pre">&quot;tab10&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ax</strong> – The 3D axes used.</p>
+<dd class="field-even"><p>The axes drawn on, with x and y in pixels and time in seconds.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Axes</p>
+<dd class="field-odd"><p><a class="reference external" href="https://matplotlib.org/stable/api/toolkits/mplot3d/axes3d.html#mpl_toolkits.mplot3d.axes3d.Axes3D" title="(in Matplotlib v3.11.2)">mpl_toolkits.mplot3d.axes3d.Axes3D</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -673,7 +676,7 @@ Includes feature metadata and:
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

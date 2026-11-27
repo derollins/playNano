@@ -36,7 +36,7 @@ Quick links
 
   - :doc:`custom_analysis_modules` - creating and registering custom analysis modules
 
-- :doc:`whats_new/v0.5.3` - highlights of the latest release
+- :doc:`whats_new/v0.5.4` - highlights of the latest release
 - :doc:`changelog` - release notes and history
 
 Quickstart (example)

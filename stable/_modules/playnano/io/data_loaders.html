@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.data_loaders - playnano v0.5.3 documentation</title>
+        <title>playnano.io.data_loaders - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,27 +508,23 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.data_loaders</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Data loaders for AFM image stacks exported by **playNano**.</span>
+<span class="sd">Load stacks saved by playNano as NPZ, HDF5 or OME-TIFF files.</span>
 
-<span class="sd">This module provides readers for serialized AFMImageStack bundles created</span>
-<span class="sd">by the export routines (``.npz``, ``.h5``, and OME-TIFF). Each loader</span>
-<span class="sd">reconstructs a :class:`~playnano.afm_stack.AFMImageStack` with correct</span>
-<span class="sd">data, pixel size, channel name, and per-frame metadata (timestamps,</span>
-<span class="sd">frame_pixel_size_nm etc.)</span>
-<span class="sd">All loaders restore provenance and any stored processing or mask data.</span>
+<span class="sd">- :func:`load_npz_bundle` and :func:`load_h5_bundle` restore everything</span>
+<span class="sd">  :mod:`playnano.io.export_data` saved: data, processed layers, masks, frame</span>
+<span class="sd">  metadata, provenance and the saved metadata from before frame removal.</span>
+<span class="sd">- :func:`load_ome_tiff_stack` restores the data, pixel size, frame times,</span>
+<span class="sd">  channel name and provenance. OME-TIFF files do not hold processed layers or</span>
+<span class="sd">  masks.</span>
 
-<span class="sd">Functions</span>
-<span class="sd">---------</span>
-<span class="sd">load_npz_bundle</span>
-<span class="sd">    Load a `.npz` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
-<span class="sd">load_h5_bundle</span>
-<span class="sd">    Load a `.h5` bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
-<span class="sd">load_ome_tiff_stack</span>
-<span class="sd">    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
+<span class="sd">Usually these are called through :func:`playnano.io.loader.load_afm_stack` or</span>
+<span class="sd">:meth:`playnano.afm_stack.AFMImageStack.load_data`, which choose the loader from</span>
+<span class="sd">the file extension.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
@@ -538,46 +535,130 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1">#: The only pickle globals an object array of text needs: NumPy's array</span>
+<span class="c1">#: constructor (``numpy.core`` in NumPy 1, ``numpy._core`` in NumPy 2), the</span>
+<span class="c1">#: array class and the dtype class.</span>
+<span class="n">_SAFE_NUMPY_GLOBALS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">(</span><span class="s2">"numpy"</span><span class="p">,</span> <span class="s2">"ndarray"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"numpy"</span><span class="p">,</span> <span class="s2">"dtype"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"numpy.core.multiarray"</span><span class="p">,</span> <span class="s2">"_reconstruct"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"numpy._core.multiarray"</span><span class="p">,</span> <span class="s2">"_reconstruct"</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_TextArrayUnpickler</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">Unpickler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Unpickler that can rebuild NumPy arrays of text and nothing else."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_SAFE_NUMPY_GLOBALS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">pickle</span><span class="o">.</span><span class="n">UnpicklingError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"refused global </span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"ndarray"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"dtype"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">numpy._core.multiarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">_reconstruct</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># NumPy 1</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.core.multiarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">_reconstruct</span>
+        <span class="k">return</span> <span class="n">_reconstruct</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_legacy_text_array</span><span class="p">(</span><span class="n">npz</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read an object array written by playNano before 0.5.4, without running code.</span>
+
+<span class="sd">    ``save_npz_bundle`` used to store the channel name and JSON text as object</span>
+<span class="sd">    arrays, which NumPy pickles. They are unpickled here with</span>
+<span class="sd">    :class:`_TextArrayUnpickler`, which can only rebuild NumPy arrays, and the</span>
+<span class="sd">    result must hold only ``str`` or ``bytes``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the array holds anything other than text, or cannot be read.</span>
+<span class="sd">    """</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.npy"</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">npz</span><span class="o">.</span><span class="n">zip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">member</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">read_magic</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">read_array_header_1_0</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">read_array_header_2_0</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unsupported .npy version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">_TextArrayUnpickler</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">UnpicklingError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">EOFError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: array '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' is not plain text and was not loaded, "</span>
+            <span class="sa">f</span><span class="s2">"because it could run code (</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). Only open .npz files you trust."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">arr</span><span class="o">.</span><span class="n">flat</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: array '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' is not plain text and was not loaded."</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Read '</span><span class="si">%s</span><span class="s2">' saved by playNano before 0.5.4."</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arr</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_npz_without_pickle</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read every array of an ``.npz`` file without running pickled code.</span>
+
+<span class="sd">    Plain arrays are read with ``allow_pickle=False``; object arrays go</span>
+<span class="sd">    through :func:`_read_legacy_text_array`.</span>
+<span class="sd">    """</span>
+    <span class="n">arrays</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">npz</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">npz</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">arrays</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">npz</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"allow_pickle"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                    <span class="k">raise</span>
+                <span class="n">arrays</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_read_legacy_text_array</span><span class="p">(</span><span class="n">npz</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arrays</span>
+
 
 <div class="viewcode-block" id="load_npz_bundle">
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_npz_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_npz_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an :class:`~playnano.afm_stack.AFMImageStack` from a `.npz` bundle.</span>
+<span class="sd">    Load a stack from an NPZ bundle.</span>
 
-<span class="sd">    The `.npz` file must contain the following keys:</span>
-
-<span class="sd">    - ``data`` : ``float32`` array of shape ``(n_frames, H, W)``</span>
-<span class="sd">    - ``pixel_size_nm`` : scalar ``float``</span>
-<span class="sd">    - ``channel`` : ``str`` scalar</span>
-<span class="sd">    - ``frame_metadata_json`` : JSON-encoded list of dicts</span>
-<span class="sd">    - ``provenance_json`` : JSON-encoded dict</span>
-<span class="sd">    - ``processed__&lt;step&gt;`` : optional processed frame arrays</span>
-<span class="sd">    - ``masks__&lt;mask&gt;`` : optional boolean mask arrays</span>
-<span class="sd">    - ``state_backups_json`` : optional JSON-encoded dict of saved states</span>
-
-<span class="sd">    This is the structure produced by :func:`playnano.io.export_data.save_npz_bundle`.</span>
+<span class="sd">    Reads files written by :func:`~playnano.io.export_data.save_npz_bundle`.</span>
+<span class="sd">    The file is read without running any code it contains: bundles from</span>
+<span class="sd">    playNano 0.5.4 and later hold only plain arrays, and the text fields of</span>
+<span class="sd">    older bundles (stored as pickled object arrays) are read with a restricted</span>
+<span class="sd">    unpickler that only rebuilds arrays of text.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    path : pathlib.Path</span>
-<span class="sd">        Path to the `.npz` file.</span>
-<span class="sd">    channel : str, default="height_trace"</span>
-<span class="sd">        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`</span>
-<span class="sd">        but ignored when reading the bundle.</span>
+<span class="sd">    path : str or pathlib.Path</span>
+<span class="sd">        The ``.npz`` file.</span>
+<span class="sd">    channel : str, optional</span>
+<span class="sd">        Ignored; the channel saved in the bundle is used. Accepted so all</span>
+<span class="sd">        loaders can be called the same way by</span>
+<span class="sd">        :func:`~playnano.io.loader.load_afm_stack`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playnano.afm_stack.AFMImageStack</span>
-<span class="sd">        Reconstructed AFM image stack with attributes populated:</span>
-<span class="sd">        ``.processed``, ``.masks``, and ``.provenance``.</span>
+<span class="sd">    AFMImageStack</span>
+<span class="sd">        The stack, with ``processed``, ``masks``, ``frame_metadata``,</span>
+<span class="sd">        ``state_backups`` and ``provenance`` restored.</span>
+<span class="sd">        ``stack.provenance["bundle"]`` records the file it was read from</span>
+<span class="sd">        (``bundle_file``) and its type (``bundle_type``).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If ``data``, ``pixel_size_nm`` or ``channel`` is missing.</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If required keys are missing or JSON blobs cannot be decoded.</span>
+<span class="sd">        If ``frame_metadata_json`` or ``provenance_json`` is missing, a JSON</span>
+<span class="sd">        entry cannot be decoded, or the file contains pickled objects other</span>
+<span class="sd">        than text (which could run code).</span>
 <span class="sd">    """</span>
-    <span class="n">arrs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">arrs</span> <span class="o">=</span> <span class="n">_read_npz_without_pickle</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
     <span class="c1"># Core data</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
@@ -629,7 +710,7 @@
     <span class="n">stack</span><span class="o">.</span><span class="n">provenance</span> <span class="o">=</span> <span class="n">saved_prov</span>
 
     <span class="c1"># Processed and mask layers</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">arrs</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">arrs</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"processed__"</span><span class="p">):</span>
             <span class="n">step</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"__"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">stack</span><span class="o">.</span><span class="n">processed</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -645,44 +726,35 @@
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_h5_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_h5_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an :class:`~playnano.afm_stack.AFMImageStack` from an HDF5 bundle.</span>
+<span class="sd">    Load a stack from an HDF5 bundle.</span>
 
-<span class="sd">    Expected HDF5 structure</span>
-<span class="sd">    -----------------------</span>
-<span class="sd">    Datasets</span>
-<span class="sd">        - ``/data`` : ``float32`` array of shape ``(n_frames, H, W)``</span>
-<span class="sd">        - ``/processed/&lt;step&gt;`` : optional processed datasets</span>
-<span class="sd">        - ``/masks/&lt;mask&gt;`` : optional boolean mask datasets</span>
-<span class="sd">        - ``/frame_metadata_json`` : UTF-8 encoded JSON (list of dicts)</span>
-<span class="sd">        - ``/provenance_json`` : UTF-8 encoded JSON (dict)</span>
-<span class="sd">        - ``/state_backups_json`` : optional UTF-8 JSON (dict)</span>
-<span class="sd">    Attributes</span>
-<span class="sd">        - ``pixel_size_nm`` : scalar float</span>
-<span class="sd">        - ``channel`` : string</span>
-
-<span class="sd">    Files with the structure are produced by</span>
-<span class="sd">    :func:`playnano.io.export_data.save_h5_bundle`.</span>
+<span class="sd">    Reads files written by :func:`~playnano.io.export_data.save_h5_bundle`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    path : pathlib.Path</span>
-<span class="sd">        Path to the `.h5` file.</span>
-<span class="sd">    channel : str, default="height_trace"</span>
-<span class="sd">        Provided for API compatibility with :func:`~playnano.io.loader.load_afm_stack`</span>
-<span class="sd">        but ignored when reading the bundle.</span>
+<span class="sd">    path : str or pathlib.Path</span>
+<span class="sd">        The ``.h5`` file.</span>
+<span class="sd">    channel : str, optional</span>
+<span class="sd">        Ignored; the channel saved in the bundle is used. Accepted so all</span>
+<span class="sd">        loaders can be called the same way by</span>
+<span class="sd">        :func:`~playnano.io.loader.load_afm_stack`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playnano.afm_stack.AFMImageStack</span>
-<span class="sd">        Fully reconstructed AFM image stack with provenance, processed steps,</span>
-<span class="sd">        and masks restored.</span>
+<span class="sd">    AFMImageStack</span>
+<span class="sd">        The stack, with ``processed``, ``masks``, ``frame_metadata``,</span>
+<span class="sd">        ``state_backups`` (if saved) and ``provenance`` restored.</span>
+<span class="sd">        ``stack.provenance["bundle"]`` records the file it was read from</span>
+<span class="sd">        (``bundle_file``) and its type (``bundle_type``).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If the ``/data`` dataset or the ``pixel_size_nm`` or ``channel``</span>
+<span class="sd">        attribute is missing.</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If required datasets are missing or JSON decoding fails.</span>
-<span class="sd">        If required datasets (``frame_metadata_json`` or ``provenance_json``)</span>
-<span class="sd">        are missing or contain invalid JSON.</span>
+<span class="sd">        If ``/frame_metadata_json`` or ``/provenance_json`` is missing, or a</span>
+<span class="sd">        JSON dataset cannot be decoded.</span>
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][()]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -741,36 +813,39 @@
 <a class="viewcode-back" href="../../../api/playnano.io.data_loaders.html#playnano.io.data_loaders.load_ome_tiff_stack">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_ome_tiff_stack</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Load an OME-TIFF bundle into an :class:`~playnano.afm_stack.AFMImageStack`.</span>
+<span class="sd">    Load a stack from an OME-TIFF file.</span>
 
-<span class="sd">    Attempts to parse OME-XML and custom metadata tags to reconstruct</span>
-<span class="sd">    pixel size, timestamps, and provenance. Falls back gracefully if</span>
-<span class="sd">    certain metadata are unavailable.</span>
+<span class="sd">    Made for files saved by :func:`~playnano.io.export_data.save_ome_tiff_stack`,</span>
+<span class="sd">    but other OME-TIFF stacks with axes (T, C, Z, Y, X) or (T, Y, X) also load;</span>
+<span class="sd">    only the first channel and Z plane are read.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    path : pathlib.Path</span>
-<span class="sd">        Path to the `.ome.tif` file created by</span>
-<span class="sd">        :func:`~playnano.io.export_data.save_ome_tiff_stack`.</span>
+<span class="sd">    path : str or pathlib.Path</span>
+<span class="sd">        The ``.ome.tif`` file.</span>
 <span class="sd">    channel : str, optional</span>
-<span class="sd">        Fallback channel name if none is found in OME metadata.</span>
+<span class="sd">        Channel name to use if the file does not name one. Default is</span>
+<span class="sd">        ``"height_trace"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    playnano.afm_stack.AFMImageStack</span>
-<span class="sd">        Reconstructed AFMImageStack with:</span>
+<span class="sd">    AFMImageStack</span>
+<span class="sd">        The stack, as float32. Values are taken from the OME metadata where</span>
+<span class="sd">        present, with these fallbacks:</span>
 
-<span class="sd">        - ``data`` : 3D ``float32`` array ``(T, H, W)``</span>
-<span class="sd">        - ``pixel_size_nm`` : float, derived from OME physical size</span>
-<span class="sd">        - ``channel`` : str, from OME Channel or fallback</span>
-<span class="sd">        - ``frame_metadata`` : list of dicts containing timestamps</span>
-<span class="sd">        - ``provenance`` : dict reconstructed from custom or embedded tags</span>
+<span class="sd">        - pixel size from ``PhysicalSizeX`` (µm, converted to nm), else 1.0 nm;</span>
+<span class="sd">        - frame times from each plane's ``DeltaT``, else the frame index;</span>
+<span class="sd">        - provenance from TIFF tag 65000, else from a ``UserDataProvenance``</span>
+<span class="sd">          entry in the image description, else empty.</span>
+
+<span class="sd">        ``frame_metadata`` holds only ``timestamp`` and ``frame_pixel_size_nm``.</span>
+<span class="sd">        ``stack.provenance["bundle"]`` records the file it was read from</span>
+<span class="sd">        (``bundle_file``) and its type (``bundle_type``).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the image array shape is unsupported or essential metadata</span>
-<span class="sd">        cannot be parsed.</span>
+<span class="sd">        If the image does not have 3 or 5 dimensions.</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
 
@@ -893,7 +968,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

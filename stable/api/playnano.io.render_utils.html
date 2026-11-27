@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.render_utils module - playnano v0.5.3 documentation</title>
+        <title>playnano.io.render_utils module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,56 +515,52 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.render_utils">
 <span id="playnano-io-render-utils-module"></span><h1>playnano.io.render_utils module<a class="headerlink" href="#module-playnano.io.render_utils" title="Link to this heading">¶</a></h1>
-<p>Shared frame-rendering utilities for all rendered AFM exports.</p>
-<p>This module provides the single source of truth for how frames are
-normalised, colourised, resized, and annotated across GIF, video,
-and image-sequence exports. Changing appearance here affects all
-three export formats consistently.</p>
-<section id="constants">
-<h2>Constants<a class="headerlink" href="#constants" title="Link to this heading">¶</a></h2>
-<dl class="simple">
-<dt>MIN_FRAME_HEIGHT<span class="classifier">int</span></dt><dd><p>Frames shorter than this are upscaled; taller frames are unchanged.</p>
-</dd>
-<dt>REFERENCE_HEIGHT<span class="classifier">int</span></dt><dd><p>The height at which <code class="docutils literal notranslate"><span class="pre">font_scale=1.0</span></code> produces the default annotation
-size. Derived font scale is proportional to the actual frame height.</p>
-</dd>
-<dt>ANNOTATION_COLOR<span class="classifier">tuple</span></dt><dd><p>Default RGB colour for all annotations.</p>
-</dd>
-<dt>DEFAULT_FONT_SCALE<span class="classifier">float</span></dt><dd><p>Base font scale passed to draw_scale_and_timestamp at REFERENCE_HEIGHT.</p>
-</dd>
-</dl>
-</section>
+<p>Frame rendering shared by the GIF, video and image sequence exports.</p>
+<p><a class="reference internal" href="#playnano.io.render_utils.render_frame" title="playnano.io.render_utils.render_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">render_frame()</span></code></a> scales, colours, resizes and annotates one frame, so all
+three exports look the same. Module constants control the appearance:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MIN_FRAME_HEIGHT</span></code> (512): shorter frames are enlarged to this height;
+taller frames are not resized.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">REFERENCE_HEIGHT</span></code> (512): the frame height at which <code class="docutils literal notranslate"><span class="pre">font_scale</span></code> is used
+as given; annotation size scales with the rendered frame height.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ANNOTATION_COLOR</span></code> ((255, 255, 255)): RGB colour of the annotations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DEFAULT_FONT_SCALE</span></code> (2.0): default <code class="docutils literal notranslate"><span class="pre">font_scale</span></code> of the exports.</p></li>
+</ul>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.render_utils.render_frame">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.render_utils.</span></span><span class="sig-name descname"><span class="pre">render_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_length_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/render_utils.html#render_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.render_utils.render_frame" title="Link to this definition">¶</a></dt>
-<dd><p>Normalise, colourise, resize, and annotate a single AFM frame.</p>
-<p>This is the shared rendering pipeline used by all rendered exports
-(GIF, video, image sequence). All appearance decisions are made here.</p>
+<dd><p>Scale, colour, resize and annotate one frame for an animated export.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>frame</strong> (<em>np.ndarray</em>) – 2D float array (H, W) representing a single AFM frame.</p></li>
+<li><p><strong>frame</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – 2D image.</p></li>
 <li><p><strong>cmap</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.11.2)"><em>matplotlib.colors.Colormap</em></a>) – Colormap to apply.</p></li>
-<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Timestamp in seconds for the annotation overlay.</p></li>
-<li><p><strong>pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Pixel size in nanometres, used to compute the scale bar length.</p></li>
-<li><p><strong>scale_bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Desired scale bar length in nanometres.</p></li>
-<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Base font scale. The actual font size is derived proportionally
-from the frame height relative to <code class="docutils literal notranslate"><span class="pre">REFERENCE_HEIGHT</span></code>, so
-annotations appear the same visual size regardless of resolution.</p></li>
-<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to draw the timestamp overlay.</p></li>
-<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to draw the scale bar overlay.</p></li>
-<li><p><strong>zmin_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em>) – Pre-computed global minimum for normalisation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
-per-frame normalisation is used.</p></li>
-<li><p><strong>zmax_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em>) – Pre-computed global maximum for normalisation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
-per-frame normalisation is used.</p></li>
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Time to draw, in seconds.</p></li>
+<li><p><strong>pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Pixel size of the frame, in nm, used for the scale bar.</p></li>
+<li><p><strong>scale_bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Length of the scale bar, in nm; 0 hides it.</p></li>
+<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Size of the annotation text for a frame <code class="docutils literal notranslate"><span class="pre">REFERENCE_HEIGHT</span></code> pixels
+high; scaled with the rendered frame height.</p></li>
+<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Draw the timestamp.</p></li>
+<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Draw the scale bar.</p></li>
+<li><p><strong>zmin_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Heights mapped to the bottom and top of the colormap; values outside
+are clipped and NaN is drawn in the bottom colour. If they are equal,
+the whole frame is drawn in the bottom colour. If either is None, the
+frame is scaled from its own minimum to its maximum, with NaN counted
+as 0. Default is None.</p></li>
+<li><p><strong>zmax_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Heights mapped to the bottom and top of the colormap; values outside
+are clipped and NaN is drawn in the bottom colour. If they are equal,
+the whole frame is drawn in the bottom colour. If either is None, the
+frame is scaled from its own minimum to its maximum, with NaN counted
+as 0. Default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Annotated RGB frame as a uint8 array of shape (H, W, 3).
-Height is at least <code class="docutils literal notranslate"><span class="pre">MIN_FRAME_HEIGHT</span></code>.</p>
+<dd class="field-even"><p>RGB image, uint8, of shape (height, width, 3). Frames shorter than
+<code class="docutils literal notranslate"><span class="pre">MIN_FRAME_HEIGHT</span></code> are enlarged to that height (keeping the aspect
+ratio) with cubic interpolation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -571,22 +568,21 @@ Height is at least <code class="docutils literal notranslate"><span class="pre">
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.render_utils.resolve_stack_data">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.render_utils.</span></span><span class="sig-name descname"><span class="pre">resolve_stack_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/render_utils.html#resolve_stack_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.render_utils.resolve_stack_data" title="Link to this definition">¶</a></dt>
-<dd><p>Select the correct data source and metadata for a rendered export.</p>
-<p>Centralises the raw-vs-processed selection logic shared by all
-<code class="docutils literal notranslate"><span class="pre">export_*</span></code> functions.</p>
+<dd><p>Choose the data and frame metadata for an animated export.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to export.</p></li>
-<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, use the unprocessed raw snapshot when available.</p></li>
+<li><p><strong>raw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If True and the stack has a <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code> snapshot, use it, with the frame
+metadata from before any frames were removed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>stack_data</strong> (<em>np.ndarray</em>) – The frame data array to render.</p></li>
-<li><p><strong>meta_src</strong> (<em>list[dict]</em>) – Per-frame metadata (timestamps, pixel sizes).</p></li>
-<li><p><strong>is_filtered</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> when processed (filtered) data is being exported.
-Callers should append <code class="docutils literal notranslate"><span class="pre">&quot;_filtered&quot;</span></code> to the output name.</p></li>
+<li><p><strong>stack_data</strong> (<em>numpy.ndarray</em>) – The frames to render: the raw snapshot, or <code class="docutils literal notranslate"><span class="pre">afm_stack.data</span></code>.</p></li>
+<li><p><strong>meta_src</strong> (<em>list of dict</em>) – The matching per-frame metadata.</p></li>
+<li><p><strong>is_filtered</strong> (<em>bool</em>) – True if processed data was chosen, so <code class="docutils literal notranslate"><span class="pre">_filtered</span></code> should be added to
+the output name.</p></li>
 </ul>
 </p>
 </dd>
@@ -651,7 +647,6 @@ Callers should append <code class="docutils literal notranslate"><span class="pr
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">playnano.io.render_utils module</a><ul>
-<li><a class="reference internal" href="#constants">Constants</a></li>
 <li><a class="reference internal" href="#playnano.io.render_utils.render_frame"><code class="docutils literal notranslate"><span class="pre">render_frame()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.io.render_utils.resolve_stack_data"><code class="docutils literal notranslate"><span class="pre">resolve_stack_data()</span></code></a></li>
 </ul>
@@ -665,7 +660,7 @@ Callers should append <code class="docutils literal notranslate"><span class="pr
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

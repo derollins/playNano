@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.utils - playnano v0.5.3 documentation</title>
+        <title>playnano.cli.utils - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,12 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.cli.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Utility functions for the playNano CLI."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Helpers for the command line.</span>
+
+<span class="sd">Checking step names, reading processing and analysis steps from text or</span>
+<span class="sd">files, and asking for parameters interactively.</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
@@ -570,7 +576,22 @@
 <div class="viewcode-block" id="is_valid_step">
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.is_valid_step">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_step</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return True if `name` is a built-in filter, mask, plugin or the 'clear' step."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check whether a name is a processing step.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Step name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True for ``"clear"``, built-in filters, masks, video filters and stack</span>
+<span class="sd">        edits, and plugins registered under ``playnano.filters`` or</span>
+<span class="sd">        ``playnano.video_processing``. Masked filters are not steps of their</span>
+<span class="sd">        own: they are used automatically when a mask is set.</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">name</span> <span class="o">==</span> <span class="s2">"clear"</span>
         <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span>
@@ -586,12 +607,21 @@
 <div class="viewcode-block" id="is_valid_analysis_step">
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.is_valid_analysis_step">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_analysis_step</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return True if `name` is a built-in analysis, plugin or the 'clear' step."""</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">name</span> <span class="o">==</span> <span class="s2">"clear"</span>
-        <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span>
-        <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_ANALYSIS_PLUGIN_ENTRYPOINTS</span>
-    <span class="p">)</span></div>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check whether a name is an analysis module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Module name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True for built-in modules and plugins registered under</span>
+<span class="sd">        ``playnano.analysis``.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">BUILTIN_ANALYSIS_MODULES</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_ANALYSIS_PLUGIN_ENTRYPOINTS</span></div>
 
 
 
@@ -754,41 +784,36 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.parse_processing_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_processing_string</span><span class="p">(</span><span class="n">processing_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Parse a semicolon-delimited string of processing steps into a structured list.</span>
+<span class="sd">    Read processing steps from text, as given to ``--processing``.</span>
 
-<span class="sd">    Each step in the string can optionally include parameters, separated by commas.</span>
-<span class="sd">    Parameters are specified as key=value pairs.</span>
+<span class="sd">    Steps are separated by ``;``. A step can be followed by ``:`` and</span>
+<span class="sd">    parameters as ``key=value``, separated by ``,``. Separators inside brackets</span>
+<span class="sd">    or quotes do not count, so ``indices_to_drop=[0,1]`` stays whole. Values are</span>
+<span class="sd">    read with :func:`parse_param_value`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    processing_str : str</span>
-<span class="sd">        Semicolon-delimited string specifying processing steps.</span>
-<span class="sd">        Each step may have optional parameters (separated by commas) after a colon,</span>
-<span class="sd">        e.g., "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"</span>
+<span class="sd">        For example ``"remove_plane; gaussian_filter:sigma=2.0"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of tuple</span>
-<span class="sd">        List of tuples, each containing:</span>
-<span class="sd">        - step_name (str): the name of the processing step</span>
-<span class="sd">        - kwargs (dict of str → object): dictionary of parameters for the step</span>
+<span class="sd">        ``(step_name, parameters)`` for each step, in order.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a step name is not a processing step (see :func:`is_valid_step`), or</span>
+<span class="sd">        a parameter is not ``key=value``.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; parse_processing_string("remove_plane")</span>
-<span class="sd">    [('remove_plane', {})]</span>
-
-<span class="sd">    &gt;&gt;&gt; parse_processing_string("gaussian_filter:sigma=2.0,truncate=4.0")</span>
-<span class="sd">    [('gaussian_filter', {'sigma': 2.0, 'truncate': 4.0})]</span>
-
-<span class="sd">    &gt;&gt;&gt; parse_processing_string(</span>
-<span class="sd">    ...     "remove_plane; gaussian_filter:sigma=2.0; mask_threshold:threshold=2"</span>
-<span class="sd">    ... )</span>
-<span class="sd">    [</span>
-<span class="sd">        ('remove_plane', {}),</span>
-<span class="sd">        ('gaussian_filter', {'sigma': 2.0}),</span>
-<span class="sd">        ('mask_threshold', {'threshold': 2})</span>
-<span class="sd">    ]</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.cli.utils import parse_processing_string</span>
+<span class="sd">    &gt;&gt;&gt; parse_processing_string("remove_plane; gaussian_filter:sigma=2.0")</span>
+<span class="sd">    [('remove_plane', {}), ('gaussian_filter', {'sigma': 2.0})]</span>
+<span class="sd">    &gt;&gt;&gt; parse_processing_string("drop_frames:indices_to_drop=[0,1]")</span>
+<span class="sd">    [('drop_frames', {'indices_to_drop': [0, 1]})]</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_parse_step_string</span><span class="p">(</span>
         <span class="n">processing_str</span><span class="p">,</span> <span class="n">is_valid_step</span><span class="p">,</span> <span class="s2">"Unknown processing step"</span><span class="p">,</span> <span class="s2">"step"</span>
@@ -800,19 +825,39 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.parse_processing_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_processing_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Parse a YAML (or JSON) processing file into a list of (step_name, kwargs) tuples.</span>
+<span class="sd">    Read processing steps from a YAML or JSON file, as given to ``--processing-file``.</span>
 
-<span class="sd">    Expected YAML schema:</span>
-<span class="sd">      filters:</span>
-<span class="sd">        - name: remove_plane</span>
-<span class="sd">        - name: gaussian_filter</span>
-<span class="sd">          sigma: 2.0</span>
-<span class="sd">        - name: mask_threshold</span>
-<span class="sd">          threshold: 2</span>
-<span class="sd">        - name: polynomial_flatten</span>
-<span class="sd">          order: 2</span>
+<span class="sd">    The file has a ``filters`` list; each entry has a ``name`` and its</span>
+<span class="sd">    parameters::</span>
 
-<span class="sd">    Returns a list in the order listed under `filters`.</span>
+<span class="sd">        filters:</span>
+<span class="sd">          - name: remove_plane</span>
+<span class="sd">          - name: gaussian_filter</span>
+<span class="sd">            sigma: 2.0</span>
+<span class="sd">          - name: polynomial_flatten</span>
+<span class="sd">            order: 2</span>
+
+<span class="sd">    Values keep the types YAML gives them. YAML reads some values differently</span>
+<span class="sd">    from ``--processing``: write ``1.0e3`` rather than ``1e3``, which YAML</span>
+<span class="sd">    reads as text.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str or pathlib.Path</span>
+<span class="sd">        The file. It is read as YAML, then as JSON if that fails.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tuple</span>
+<span class="sd">        ``(step_name, parameters)`` for each step, in order.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the file does not exist.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the file cannot be read, has no ``filters`` list, or an entry has no</span>
+<span class="sd">        ``name`` or names an unknown step.</span>
 <span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -869,19 +914,32 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.parse_analysis_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_analysis_string</span><span class="p">(</span><span class="n">analysis_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Parse ; delimited analysis strings into a list (analysis_step_name, kwargs) tuples.</span>
+<span class="sd">    Read analysis steps from text, as given to ``--analysis-steps``.</span>
 
-<span class="sd">    Each segment in `analysis_str` is of the form:</span>
-<span class="sd">        analysis_module_name</span>
-<span class="sd">        analysis_module_name:param=value</span>
-<span class="sd">        analysis_module_name:param1=value1,param2=value2</span>
+<span class="sd">    Written in the same way as for :func:`parse_processing_string`.</span>
 
-<span class="sd">    Example:</span>
-<span class="sd">      "log_blob_detection:min_sigma=1.0,max_sigma=5.0;x_means_clustering:time_weight=0.2"</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    analysis_str : str</span>
+<span class="sd">        For example</span>
+<span class="sd">        ``"feature_detection:mask_fn=mask_threshold,threshold=1;particle_tracking"``.</span>
 
-<span class="sd">    Returns a list in the order encountered, e.g.:</span>
-<span class="sd">      [("log_blob_detection", {"min_sigma":1.0,"max_sigma":5.0}),</span>
-<span class="sd">       ("x_means_clustering", {"time_weight": 0.2})]</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tuple</span>
+<span class="sd">        ``(module_name, parameters)`` for each step, in order.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a name is not an analysis module (see</span>
+<span class="sd">        :func:`is_valid_analysis_step`), or a parameter is not ``key=value``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.cli.utils import parse_analysis_string</span>
+<span class="sd">    &gt;&gt;&gt; parse_analysis_string("feature_detection:threshold=1;particle_tracking")</span>
+<span class="sd">    [('feature_detection', {'threshold': 1}), ('particle_tracking', {})]</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_parse_step_string</span><span class="p">(</span>
         <span class="n">analysis_str</span><span class="p">,</span> <span class="n">is_valid_analysis_step</span><span class="p">,</span> <span class="s2">"Unknown analysis step"</span><span class="p">,</span> <span class="s2">"analysis step"</span>
@@ -893,62 +951,39 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.parse_analysis_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_analysis_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Parse a YAML or JSON analysis file into a list of (name, parameters) tuples.</span>
+<span class="sd">    Read analysis steps from a YAML or JSON file, as given to ``--analysis-file``.</span>
 
-<span class="sd">    This reads a saved analysis pipeline definition, validates its structure,</span>
-<span class="sd">    and normalizes any complex types (e.g., tuples) into YAML/JSON-safe forms.</span>
+<span class="sd">    The file has an ``analysis`` list, or is just the list; each entry has a</span>
+<span class="sd">    ``name`` and its parameters::</span>
+
+<span class="sd">        analysis:</span>
+<span class="sd">          - name: feature_detection</span>
+<span class="sd">            mask_fn: mask_threshold</span>
+<span class="sd">            threshold: 1.0</span>
+<span class="sd">            min_size: 10</span>
+<span class="sd">          - name: particle_tracking</span>
+<span class="sd">            max_distance: 5.0</span>
+
+<span class="sd">    Values keep the types YAML or JSON gives them (in YAML, write ``1.0e3``</span>
+<span class="sd">    rather than ``1e3``, which is read as text).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    path : str</span>
-<span class="sd">        Path to the YAML or JSON file containing the analysis definition.</span>
+<span class="sd">    path : str or pathlib.Path</span>
+<span class="sd">        The file: read as JSON if it ends in ``.json``, otherwise as YAML.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of tuple</span>
-<span class="sd">        A list where each element is ``(analysis_step_name, kwargs_dict)``.</span>
-<span class="sd">        The ``kwargs_dict`` contains parameters for that analysis step.</span>
+<span class="sd">        ``(module_name, parameters)`` for each step, in order.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    FileNotFoundError</span>
 <span class="sd">        If the file does not exist.</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If the file cannot be parsed as YAML or JSON, or if the</span>
-<span class="sd">        top-level key ``analysis`` is missing.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    Example YAML format::</span>
-
-<span class="sd">        analysis:</span>
-<span class="sd">          - name: count_nonzero</span>
-<span class="sd">          - name: feature_detection</span>
-<span class="sd">            mask_fn: mask_threshold</span>
-<span class="sd">            min_size: 10</span>
-<span class="sd">            remove_edge: true</span>
-<span class="sd">          - name: particle_tracking</span>
-<span class="sd">            coord_columns: [centroid_x, centroid_y]</span>
-<span class="sd">            coord_key: features_per_frame</span>
-<span class="sd">            detection_module: feature_detection</span>
-<span class="sd">            max_distance: 5.0</span>
-
-<span class="sd">    This would be parsed as::</span>
-
-<span class="sd">        [</span>
-<span class="sd">            ("count_nonzero", {}),</span>
-<span class="sd">            ("feature_detection", {</span>
-<span class="sd">                "mask_fn": "mask_threshold",</span>
-<span class="sd">                "min_size": 10,</span>
-<span class="sd">                "remove_edge": True</span>
-<span class="sd">            }),</span>
-<span class="sd">            ("particle_tracking", {</span>
-<span class="sd">                "coord_columns": ["centroid_x", "centroid_y"],</span>
-<span class="sd">                "coord_key": "features_per_frame",</span>
-<span class="sd">                "detection_module": "feature_detection",</span>
-<span class="sd">                "max_distance": 5.0</span>
-<span class="sd">            })</span>
-<span class="sd">        ]</span>
+<span class="sd">        If the file cannot be read, has neither an ``analysis`` list nor a</span>
+<span class="sd">        list of steps, or an entry has no ``name`` or names an unknown module.</span>
 <span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">text</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span>
@@ -1116,7 +1151,30 @@
 <div class="viewcode-block" id="ask_for_analysis_params">
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.ask_for_analysis_params">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_for_analysis_params</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Introspect a module's `run()` or parameter spec and ask for values."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Ask in the terminal for each parameter of an analysis module.</span>
+
+<span class="sd">    Uses the module's ``parameters()`` list if it has one, otherwise the</span>
+<span class="sd">    arguments of its ``run`` method. Parameters whose condition (see</span>
+<span class="sd">    :func:`playnano.utils.param_utils.param_conditions`) is not met are not</span>
+<span class="sd">    asked. Pressing Enter uses the default; typed values are converted to the</span>
+<span class="sd">    parameter's type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    module_name : str</span>
+<span class="sd">        Built-in analysis module or ``playnano.analysis`` plugin.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Parameter names and values.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If no module has that name.</span>
+<span class="sd">    """</span>
     <span class="bp">cls</span> <span class="o">=</span> <span class="n">_get_analysis_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">"parameters"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
@@ -1286,7 +1344,21 @@
 <div class="viewcode-block" id="get_processing_step_type">
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.get_processing_step_type">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_processing_step_type</span><span class="p">(</span><span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return the type of a processing step."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Name the kind of a processing step, for messages.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_name : str</span>
+<span class="sd">        Step name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        ``"filter"``, ``"mask generator"``, ``"mask filter"``,</span>
+<span class="sd">        ``"plugin filter"``, ``"video plugin"``, ``"video filter"``,</span>
+<span class="sd">        ``"stack edit"`` or ``"unknown"``.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">FILTER_MAP</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">"filter"</span>
     <span class="k">if</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">MASK_MAP</span><span class="p">:</span>
@@ -1309,9 +1381,28 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.utils.html#playnano.cli.utils.ask_for_processing_params">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_for_processing_params</span><span class="p">(</span><span class="n">step_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Introspect a processing callable's parameters and ask interactively.</span>
+<span class="sd">    Ask in the terminal for each parameter of a processing step.</span>
 
-<span class="sd">    Skips the first positional arguments (data, mask).</span>
+<span class="sd">    The parameters are read from the step's function. Data arguments (such as</span>
+<span class="sd">    ``data``, ``frame``, ``mask`` and ``stack``) are skipped, as are</span>
+<span class="sd">    parameters whose condition is not met. Pressing Enter uses the default</span>
+<span class="sd">    (None if there is none); typed values are converted to the parameter's</span>
+<span class="sd">    type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_name : str</span>
+<span class="sd">        Processing step name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Parameter names and values.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If no processing step has that name.</span>
 <span class="sd">    """</span>
     <span class="n">func</span> <span class="o">=</span> <span class="n">_get_processing_callable</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>  <span class="c1"># your existing resolver</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
@@ -1461,7 +1552,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

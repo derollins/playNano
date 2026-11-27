@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.gui.main module - playnano v0.5.3 documentation</title>
+        <title>playnano.gui.main module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,7 +515,7 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.gui.main">
 <span id="playnano-gui-main-module"></span><h1>playnano.gui.main module<a class="headerlink" href="#module-playnano.gui.main" title="Link to this heading">¶</a></h1>
-<p>Main entry point for the playNano GUI application.</p>
+<p>Start the playNano GUI (<code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code>).</p>
 <dl class="py data">
 <dt class="sig sig-object py" id="playnano.gui.main.ICON_SIZES">
 <span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">ICON_SIZES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(16,</span> <span class="pre">32,</span> <span class="pre">48,</span> <span class="pre">64,</span> <span class="pre">128,</span> <span class="pre">256,</span> <span class="pre">512)</span></em><a class="headerlink" href="#playnano.gui.main.ICON_SIZES" title="Link to this definition">¶</a></dt>
@@ -531,34 +532,37 @@ simplified, pixel-aligned versions of the logo; larger sizes use the full mark.<
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.gui.main.gui_entry">
 <span class="sig-prename descclassname"><span class="pre">playnano.gui.main.</span></span><span class="sig-name descname"><span class="pre">gui_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">afm_stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_with_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_bar_nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'afm_brown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/gui/main.html#gui_entry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.gui.main.gui_entry" title="Link to this definition">¶</a></dt>
-<dd><p>Launch the playNano GUI with a given AFM stack and visualization/export settings.</p>
+<dd><p>Open the playNano window for a stack and run it until it is closed.</p>
+<p>Called by <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">play</span></code> (see
+<a class="reference internal" href="playnano.cli.actions.html#playnano.cli.actions.play_pipeline_mode" title="playnano.cli.actions.play_pipeline_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">playnano.cli.actions.play_pipeline_mode()</span></code></a>). It creates the Qt
+application, applies the dark stylesheet and shows a
+<a class="reference internal" href="playnano.gui.window.html#playnano.gui.window.MainWindow" title="playnano.gui.window.MainWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">MainWindow</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The AFM image stack to display and process.</p></li>
-<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Directory in which to save exported files (default: None, which uses
-internal defaults).</p></li>
-<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Base filename for any exports (default: “” - this triggers the default
-behaviour when utils.io_utils.sanitize_output_name is called).</p></li>
-<li><p><strong>steps_with_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>) or </em><em>None</em><em>, </em><em>optional</em>) – A list of (filter_name, kwargs) tuples for the default processing pipeline.
-If None, the application’s built-in defaults are used.</p></li>
-<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Physical length of the scale bar in nanometers (default: 100).</p></li>
-<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em>, or </em><em>None</em><em>, </em><em>optional</em>) – Minimum height value for the initial colormap range. If “auto”, uses the
-1st percentile of the data; if None, uses the data minimum; if a float,
-uses that value (default: “auto”).</p></li>
-<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em>, or </em><em>None</em><em>, </em><em>optional</em>) – Maximum height value for the initial colormap range. If “auto”, uses the
-99th percentile of the data; if None, uses the data maximum; if a float,
-uses that value (default: “auto”).</p></li>
-<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the colormap to use for visualisation on launch (default=DEFAULT_CMAP).</p></li>
-<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Initial frame rate for the GIF in frames per second (default=5.0).</p></li>
+<li><p><strong>afm_stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to show.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Folder for exports. If None, <code class="docutils literal notranslate"><span class="pre">./output</span></code>. Default is None.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Start of the exported file names. If empty, the name of the file the
+stack was loaded from. Default is <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p></li>
+<li><p><strong>steps_with_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – Processing steps, as <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">parameters)</span></code>, run when F is pressed. If
+None or empty, F runs a built-in default pipeline. Default is None.</p></li>
+<li><p><strong>scale_bar_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Scale bar length, in nm; 0 opens the window with the scale bar off.
+Default is 100.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (1st and 99th
+percentiles) or None (data minimum or maximum). Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Initial colour scale limits: a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (1st and 99th
+percentiles) or None (data minimum or maximum). Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Colormap the window opens with. Names not in the window’s list are
+replaced by <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>, with a warning. Default is <code class="docutils literal notranslate"><span class="pre">&quot;afm_brown&quot;</span></code>.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Initial playback rate, in frames per second; also used for animated
+exports. Default is 5.0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#SystemExit" title="(in Python v3.15)"><strong>SystemExit</strong></a> – Always, when the window is closed, with Qt’s exit status. The function
+    never returns, so it cannot be used from a notebook.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>This function will start a Qt event loop and will not return to the caller.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -569,11 +573,11 @@ uses that value (default: “auto”).</p></li>
 sizes (title bar, taskbar) instead of downscaling a large image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The application icon. It is null (<code class="docutils literal notranslate"><span class="pre">QIcon.isNull()</span></code>) if no icon
-files could be found, in which case a warning is logged.</p>
+<dd class="field-odd"><p>The icon. It is empty (<code class="docutils literal notranslate"><span class="pre">QIcon.isNull()</span></code>) if no icon files were found,
+in which case a warning is logged.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>QIcon</p>
+<dd class="field-even"><p><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QIcon.html#PySide6.QtGui.QIcon" title="(in PySide v6.12.0)">PySide6.QtGui.QIcon</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -651,7 +655,7 @@ files could be found, in which case a warning is logged.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

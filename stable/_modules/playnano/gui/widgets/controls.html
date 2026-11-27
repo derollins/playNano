@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.gui.widgets.controls - playnano v0.5.3 documentation</title>
+        <title>playnano.gui.widgets.controls - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,18 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.gui.widgets.controls</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""</span>
-<span class="sd">Defines ViewerWidget, a Qt widget for viewing AFM height map stacks.</span>
-
-<span class="sd">The data is viewed as a resizable image with optional timestamp,</span>
-<span class="sd">scale-bar and “RAW” label overlays. Playback controls allow video</span>
-<span class="sd">playback of a image stack.</span>
-
-<span class="sd">Classes</span>
-<span class="sd">-------</span>
-<span class="sd">ViewerWidget</span>
-<span class="sd">    QWidget subclass that renders one frame of AFM data and draws annotations.</span>
-<span class="sd">"""</span>
+<span></span><span class="sd">"""The playback controls of the playNano window."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">PySide6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">PySide6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QDoubleSpinBox</span><span class="p">,</span> <span class="n">QPushButton</span><span class="p">,</span> <span class="n">QSlider</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span> <span class="n">QWidget</span>
@@ -526,24 +516,27 @@
 <div class="viewcode-block" id="PlaybackControls">
 <a class="viewcode-back" href="../../../../api/playnano.gui.widgets.controls.html#playnano.gui.widgets.controls.PlaybackControls">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlaybackControls</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Widget containing playback controls; play button, slider, and FPS control."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Play button, frame slider and playback rate box.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    initial_fps : float, optional</span>
+<span class="sd">        Starting playback rate, in frames per second (0.1 to 60). Default is</span>
+<span class="sd">        5.0.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    play_btn : PySide6.QtWidgets.QPushButton</span>
+<span class="sd">        Play/pause button.</span>
+<span class="sd">    slider : PySide6.QtWidgets.QSlider</span>
+<span class="sd">        Frame slider.</span>
+<span class="sd">    fps_box : PySide6.QtWidgets.QDoubleSpinBox</span>
+<span class="sd">        Playback rate.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_fps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize the ViewerWidget.</span>
-
-<span class="sd">        - Sets up placeholder pixmaps.</span>
-<span class="sd">        - Initializes annotation toggles (timestamp, scale bar, RAW label).</span>
-<span class="sd">        - Chooses a default fallback font.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Build the controls. The parameters are described in the class docstring."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">play_btn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"▶️ Play"</span><span class="p">)</span>
@@ -587,7 +580,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

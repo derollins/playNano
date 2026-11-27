@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.log_blob_detection module - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.log_blob_detection module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,105 +515,88 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.modules.log_blob_detection">
 <span id="playnano-analysis-modules-log-blob-detection-module"></span><h1>playnano.analysis.modules.log_blob_detection module<a class="headerlink" href="#module-playnano.analysis.modules.log_blob_detection" title="Link to this heading">¶</a></h1>
-<p>Module for LoG blob detection.</p>
-<p>Detect “blobs” in each frame of an AFM image stack using the Laplacian-of-Gaussian
-method. Provides automatic multi-scale blob detection and optional radius estimation.</p>
+<p>Analysis module that detects round features with a Laplacian of Gaussian filter.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">playnano.analysis.modules.log_blob_detection.</span></span><span class="sig-name descname"><span class="pre">LoGBlobDetectionModule</span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/log_blob_detection.html#LoGBlobDetectionModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="playnano.analysis.base.html#playnano.analysis.base.AnalysisModule" title="playnano.analysis.base.AnalysisModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisModule</span></code></a></p>
-<p>Detect blobs in AFM image stacks using the Laplacian-of-Gaussian (LoG) method.</p>
-<p>This module applies multi-scale blob detection to each frame in an AFM image stack
-using the Laplacian-of-Gaussian algorithm from <cite>skimage.feature.blob_log</cite>. It
-supports automatic scale selection and optional estimation of blob radii.</p>
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">run(stack,</span> <span class="pre">previous_results=None,</span> <span class="pre">\*,</span> <span class="pre">min_sigma=1.0,</span> <span class="pre">max_sigma=5.0,</span> <span class="pre">num_sigma=10,</span></span></dt>
-<dd><p>threshold=0.1, overlap=0.5, include_radius=True)
-Detects blobs in each frame of the AFM image stack and returns per-frame
-features and a summary.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version">
-<span class="sig-name descname"><span class="pre">Version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">-------</span></span></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0">
-<span class="sig-prename descclassname"><span class="pre">0.1.</span></span><span class="sig-name descname"><span class="pre">0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<p>Detect round features in each frame with a Laplacian of Gaussian (LoG) filter.</p>
+<p>Pipeline name: <code class="docutils literal notranslate"><span class="pre">&quot;log_blob_detection&quot;</span></code>. Each frame is searched at several
+scales with <a class="reference external" href="https://scikit-image.org/docs/stable/api/skimage.feature.html#skimage.feature.blob_log" title="(in skimage v0.26.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">skimage.feature.blob_log()</span></code></a>, which gives each feature’s
+position and size. Unlike
+<a class="reference internal" href="playnano.analysis.modules.feature_detection.html#playnano.analysis.modules.feature_detection.FeatureDetectionModule" title="playnano.analysis.modules.feature_detection.FeatureDetectionModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureDetectionModule</span></code></a>,
+no mask is needed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The output has no <code class="docutils literal notranslate"><span class="pre">centroid</span></code> or <code class="docutils literal notranslate"><span class="pre">labeled_masks</span></code>, so it cannot yet be
+used by <code class="docutils literal notranslate"><span class="pre">particle_tracking</span></code> or the clustering modules, although they list
+<code class="docutils literal notranslate"><span class="pre">log_blob_detection</span></code> as an input.</p>
+</div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">module</span> <span class="o">=</span> <span class="n">LoGBlobDetectionModule</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">min_sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">max_sigma</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">num_sigma</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="s1">'summary'</span><span class="p">][</span><span class="s1">'total_blobs'</span><span class="p">]</span>
-<span class="go">42</span>
+<p>A Gaussian bump centred at row 32, column 20:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.afm_stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFMImageStack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.modules.log_blob_detection</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">LoGBlobDetectionModule</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yy</span><span class="p">,</span> <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="mi">64</span><span class="p">,</span> <span class="p">:</span><span class="mi">64</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bump</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">yy</span> <span class="o">-</span> <span class="mi">32</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">xx</span> <span class="o">-</span> <span class="mi">20</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mf">3.0</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">AFMImageStack</span><span class="p">(</span><span class="n">bump</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s2">"height_trace"</span><span class="p">,</span> <span class="s2">"demo.h5-jpk"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">LoGBlobDetectionModule</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">max_sigma</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"features_per_frame"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blob</span><span class="p">[</span><span class="s2">"y"</span><span class="p">],</span> <span class="n">blob</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span>
+<span class="go">(32.0, 20.0)</span>
 </pre></div>
 </div>
 <dl class="py property">
 <dt class="sig sig-object py" id="playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></em><a class="headerlink" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the analysis module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string identifier for this module: “log_blob_detection”.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
-</dd>
-</dl>
+<dd><p>Name of this module in a pipeline, <code class="docutils literal notranslate"><span class="pre">&quot;log_blob_detection&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/analysis/modules/log_blob_detection.html#LoGBlobDetectionModule.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run" title="Link to this definition">¶</a></dt>
-<dd><p>Detect “blobs” in each frame via a Laplacian-of-Gaussian filter.</p>
+<dd><p>Detect blobs in each frame of <code class="docutils literal notranslate"><span class="pre">stack.data</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – Must have stack.data of shape (n_frames, H, W).</p></li>
-<li><p><strong>min_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Parameters passed to skimage.feature.blob_log.</p></li>
-<li><p><strong>max_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Parameters passed to skimage.feature.blob_log.</p></li>
-<li><p><strong>num_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Parameter passed to skimage.feature.blob_log.</p></li>
-<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Absolute intensity threshold for LoG response.</p></li>
-<li><p><strong>overlap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – If two detected blobs overlap more than this fraction,
-only the larger is kept.</p></li>
-<li><p><strong>include_radius</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If True, append the estimated blob radius in each feature-dict.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><em>AFMImageStack</em></a>) – The stack to analyse.</p></li>
+<li><p><strong>previous_results</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Not used. Default is None.</p></li>
+<li><p><strong>min_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Smallest Gaussian width searched, in pixels. Default is 1.0.</p></li>
+<li><p><strong>max_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Largest Gaussian width searched, in pixels. Default is 5.0.</p></li>
+<li><p><strong>num_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of widths searched between <code class="docutils literal notranslate"><span class="pre">min_sigma</span></code> and <code class="docutils literal notranslate"><span class="pre">max_sigma</span></code>.
+Default is 10.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Smallest LoG response kept, in the units of the data (usually nm).
+Lower values detect fainter blobs. Default is 0.1.</p></li>
+<li><p><strong>overlap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – If two blobs overlap by more than this fraction of their area, the
+smaller is removed. Between 0 and 1. Default is 0.5.</p></li>
+<li><p><strong>include_radius</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Add each blob’s radius (<code class="docutils literal notranslate"><span class="pre">sigma</span> <span class="pre">*</span> <span class="pre">sqrt(2)</span></code>, in pixels). Default is
+True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>Dictionary with keys:</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>features_per_frame<span class="classifier">list of list of dict</span></dt><dd><p>Per-frame list of detected blobs. Each dict contains:
-- frame_timestamp : float
-- y, x : float
-- sigma : float
-- radius : float, optional (if include_radius=True)</p>
+<dd class="field-even"><p><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code></dt><dd><p>For each frame, a list of dicts, one per blob, with
+<code class="docutils literal notranslate"><span class="pre">frame_timestamp</span></code> (s), <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code> (pixels), <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
+(pixels) and, if <code class="docutils literal notranslate"><span class="pre">include_radius</span></code>, <code class="docutils literal notranslate"><span class="pre">radius</span></code> (pixels).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;summary&quot;</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">total_frames</span></code>, <code class="docutils literal notranslate"><span class="pre">total_blobs</span></code> and <code class="docutils literal notranslate"><span class="pre">avg_blobs_per_frame</span></code>.</p>
 </dd>
 </dl>
-</li>
-<li><dl class="simple">
-<dt>summary<span class="classifier">dict</span></dt><dd><p>Aggregate metrics:
-- total_frames : int
-- total_blobs : int
-- avg_blobs_per_frame : float</p>
-</dd>
-</dl>
-</li>
-</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, Any]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://scikit-image.org/docs/stable/api/skimage.feature.html#skimage.feature.blob_log" title="(in skimage v0.26.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skimage.feature.blob_log</span></code></a></dt><dd><p>The detection function used.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
@@ -681,8 +665,6 @@ only the larger is kept.</p></li>
             <ul>
 <li><a class="reference internal" href="#">playnano.analysis.modules.log_blob_detection module</a><ul>
 <li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule</span></code></a><ul>
-<li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.Version"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.Version()</span></code></a></li>
-<li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.0.1.0"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.0.1.0()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.name"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.name</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.run"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.run()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.analysis.modules.log_blob_detection.LoGBlobDetectionModule.version"><code class="docutils literal notranslate"><span class="pre">LoGBlobDetectionModule.version</span></code></a></li>
@@ -699,7 +681,7 @@ only the larger is kept.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

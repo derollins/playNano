@@ -1,0 +1,90 @@
+# What's New in *playNano* 0.5.4
+
+**Release date:** 2026-11-27
+
+This is a bug-fix release, and upgrading is recommended for all users. It fixes
+two loaders that gave wrong results (`.aris` heights and `.jpk` folder
+orientation), stops `.npz` bundles from running code when opened, and makes
+several command-line errors clearer. The whole API reference has been reviewed
+against the code.
+
+## Before You Upgrade
+
+- **Re-run analyses of `.aris` files.** Heights were loaded in metres instead of
+  nm, so they were 1e9 times too small. Thresholds, colour scales, scale
+  annotations and analysis heights from `.aris` data all change.
+- **Check orientation-dependent results from `.jpk` folders.** Frames were loaded
+  upside down. Images, exports, tracks and drift direction change; pass
+  `flip_image=False` to get the old orientation.
+- **Upgrade if you open `.npz` files from other people.** A crafted file could run
+  code when opened. Bundles you saved yourself were never a risk, and they still
+  open.
+
+## Security
+
+- **Safe `.npz` Bundles:** `.npz` bundles were read with pickling allowed, so a
+  crafted file could run code when opened with `playnano play`, `process`,
+  `analyze` or `load_afm_stack`. Bundles are now written without pickled data and
+  read with pickling turned off. Bundles saved by earlier versions still open:
+  their text fields are read with a restricted reader that can only rebuild text
+  arrays, and a file containing anything else is refused.
+
+## Fixed
+
+### File loading
+
+- **`.aris` Heights in nm:** Height and amplitude channels are converted from the
+  file's length unit to nm, as in the other readers. Other channels, such as
+  phase in degrees, are unchanged.
+- **`.jpk` Folder Orientation:** Frames were flipped twice, cancelling
+  AFMReader's flip. They are now flipped once and match AFMReader and the
+  `.h5-jpk` reader.
+- **Wrong Channel Names:** Asking for a channel a file does not have now lists the
+  channels it has. `playnano process` and the wizard show this message instead of
+  only "Failed to load", and `playnano play` shows it once instead of twice.
+
+### Command line
+
+- **`play` Z-Limits:** An invalid `--zmin` or `--zmax` now warns and opens the
+  window with `auto` limits, which can be changed in the window.
+- **Paths with Flags:** A quoted Windows path ending in `\` swallows the options
+  after it. `playnano play` now explains how to fix the path, with exit status 1
+  and no traceback.
+- **Analysis Steps:** `clear` is rejected as an analysis step straight away. It is
+  a processing step, and was accepted and then failed when the analysis ran.
+- **Wizard Help:** `help` now lists the `load` and `clear` commands.
+- **Clearer Errors:** An unknown processing step lists the available steps by
+  type, and an unknown `--cmap` lists the available colormaps.
+
+### GUI
+
+- **Quieter Logs:** The GUI no longer logs a warning on every repaint while the
+  scale bar is off, or an error each frame when the pixel size is missing.
+- **Logging in Scripts:** Importing the GUI no longer sets up Python's logging, so
+  a script's own `logging.basicConfig` takes effect again.
+
+### Analysis export
+
+- **JSON Export:** Analysis results holding NumPy bools or text arrays no longer
+  stop the JSON export.
+
+### Documentation
+
+- **Reviewed API Reference:** Every docstring in the API reference has been
+  checked against the code. Wrong parameters, defaults, units and errors were
+  corrected, and made-up example output was replaced with examples that run as
+  doctests. The whole documentation now builds without warnings, and pull
+  requests fail if a warning appears.
+- **Command-Line and GUI Pages:** The API pages for `playnano.cli` and
+  `playnano.gui` were published empty. They now render.
+- **GUI Processing:** The GUI page now says that `--processing` steps run when
+  **Apply Filters (F)** is pressed, not when the window opens.
+
+## Changed
+
+- Tests use a real `.aris` file: two frames of a DNA origami recording
+  (G. Heath, Zenodo 10670413, CC BY 4.0).
+- The documentation links types to the NumPy, SciPy, h5py, scikit-image and
+  scikit-learn documentation.
+
+For the full list of changes, see the **Changelog**.

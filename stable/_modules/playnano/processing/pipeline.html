@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.processing.pipeline - playnano v0.5.3 documentation</title>
+        <title>playnano.processing.pipeline - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,14 +507,13 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.processing.pipeline</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module containing the ProcessingPipeline class for AFMImageStack processing.</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">The ProcessingPipeline class, which runs processing steps on an AFMImageStack.</span>
 
-<span class="sd">This module provides ProcessingPipeline, which runs a sequence of</span>
-<span class="sd">mask/filter/method/plugin steps on an AFMImageStack. Each step's output is stored</span>
-<span class="sd">in `stack.processed` (for filters) or `stack.masks` (for masks), and detailed</span>
-<span class="sd">provenance (timestamps, parameters, step type, version info, keys) is recorded in</span>
-<span class="sd">`stack.provenance["processing"]`. Environment metadata at pipeline start is recorded in</span>
-<span class="sd">`stack.provenance["environment"]`.</span>
+<span class="sd">A pipeline runs masks, 2D filters, video processing and stack edits in order.</span>
+<span class="sd">It stores each step's output in ``stack.processed`` (or ``stack.masks`` for</span>
+<span class="sd">masks) and records what was done in ``stack.provenance["processing"]``, and the</span>
+<span class="sd">software environment in ``stack.provenance["environment"]``.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -566,34 +566,56 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProcessingPipeline</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Orchestrates a sequence of masking and filtering steps on an AFMImageStack.</span>
+<span class="sd">    Run a sequence of processing steps on an AFMImageStack and record provenance.</span>
 
-<span class="sd">    This pipeline records outputs and detailed provenance for each step. Each step is</span>
-<span class="sd">    specified by a name and keyword arguments:</span>
+<span class="sd">    Steps are added with :meth:`add_filter`, :meth:`add_mask` and</span>
+<span class="sd">    :meth:`clear_mask`, and run in order by :meth:`run`. Each step is a name and</span>
+<span class="sd">    keyword arguments; the name decides what kind of step it is:</span>
 
-<span class="sd">    - ``"clear"``: resets any active mask.</span>
-<span class="sd">    - Mask steps: compute boolean masks stored in ``stack.masks[...]``.</span>
-<span class="sd">    - Filter/method/plugin steps: apply to the current data (and mask if present),</span>
-<span class="sd">      storing results in ``stack.processed[...]``.</span>
+<span class="sd">    - ``"clear"``: removes the current mask.</span>
+<span class="sd">    - A mask (see :mod:`~playnano.processing.mask_generators`): makes a boolean</span>
+<span class="sd">      mask, stored in ``stack.masks``. Masks made one after another are combined</span>
+<span class="sd">      with logical OR until the next ``clear``.</span>
+<span class="sd">    - A 2D filter (see :mod:`~playnano.processing.filters`): applied to every</span>
+<span class="sd">      frame. While a mask is active, the masked version from</span>
+<span class="sd">      :mod:`~playnano.processing.masked_filters` is used if there is one.</span>
+<span class="sd">    - A video processing step (see</span>
+<span class="sd">      :mod:`~playnano.processing.video_processing`): applied to the whole stack.</span>
+<span class="sd">    - A stack edit (see :mod:`~playnano.processing.stack_edit`): removes frames</span>
+<span class="sd">      and the matching frame metadata. It also clears the current mask.</span>
+<span class="sd">    - A method of :class:`~playnano.afm_stack.AFMImageStack`, or a filter or</span>
+<span class="sd">      video processing plugin registered under the ``playnano.filters`` or</span>
+<span class="sd">      ``playnano.video_processing`` entry point group.</span>
 
-<span class="sd">    Provenance for each step, including index, name, parameters, timestamp, step type,</span>
-<span class="sd">    version, keys, and summaries, is appended to</span>
-<span class="sd">    ``stack.provenance["processing"]["steps"]``. Additionally, a mapping from step</span>
-<span class="sd">    name to a list of snapshot keys is stored in</span>
-<span class="sd">    ``stack.provenance["processing"]["keys_by_name"]``. The final processed array</span>
-<span class="sd">    overwrites ``stack.data``, and environment metadata is captured once in</span>
-<span class="sd">    ``stack.provenance["environment"]``.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stack : AFMImageStack</span>
+<span class="sd">        The stack to process. It is changed in place by :meth:`run`.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    playnano.afm_stack.AFMImageStack.apply : Run a list of steps in one call.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.processing.pipeline import ProcessingPipeline</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack.load_data("tests/resources/sample_0.h5-jpk")</span>
+<span class="sd">    &gt;&gt;&gt; pipeline = ProcessingPipeline(stack)</span>
+<span class="sd">    &gt;&gt;&gt; (pipeline.add_filter("remove_plane")</span>
+<span class="sd">    ...          .add_mask("mask_threshold", threshold=1.0)</span>
+<span class="sd">    ...          .add_filter("polynomial_flatten", order=2)</span>
+<span class="sd">    ...          .clear_mask())  # doctest: +ELLIPSIS</span>
+<span class="sd">    &lt;playnano.processing.pipeline.ProcessingPipeline object at ...&gt;</span>
+<span class="sd">    &gt;&gt;&gt; result = pipeline.run()</span>
+<span class="sd">    &gt;&gt;&gt; sorted(stack.processed)</span>
+<span class="sd">    ['raw', 'step_1_remove_plane', 'step_3_polynomial_flatten']</span>
+<span class="sd">    &gt;&gt;&gt; sorted(stack.masks)</span>
+<span class="sd">    ['step_2_mask_threshold']</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">AFMImageStack</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize the processing pipeline with an AFMImageStack instance.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The AFMImageStack instance to process.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Store the stack to process; see the class description."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">stack</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -601,25 +623,26 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline.add_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Add a masking step to the pipeline.</span>
+<span class="sd">        Add a mask step.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        mask_name : str</span>
-<span class="sd">            The name of the registered mask function to apply.</span>
-
+<span class="sd">            Name of the mask, for example ``"mask_threshold"``.</span>
 <span class="sd">        **kwargs</span>
-<span class="sd">            Additional parameters passed to the mask function.</span>
+<span class="sd">            Arguments for the mask function, for example ``threshold=1.0``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ProcessingPipeline</span>
-<span class="sd">            The pipeline instance (for method chaining).</span>
+<span class="sd">            This pipeline, so calls can be chained.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        If a mask is currently active (i.e. not cleared), this new mask will be</span>
-<span class="sd">        logically combined (ORed) with the existing one.</span>
+<span class="sd">        If a mask is already active, the new mask is combined with it by logical</span>
+<span class="sd">        OR. The step is identified by its name when the pipeline runs, so this does</span>
+<span class="sd">        the same as :meth:`add_filter`; the two names only make pipelines easier to</span>
+<span class="sd">        read.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mask_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -629,26 +652,26 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline.add_filter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Add a filter step to the pipeline.</span>
+<span class="sd">        Add a processing step: a 2D filter, video processing step, stack edit or plugin.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filter_name : str</span>
-<span class="sd">            The name of the registered filter function to apply.</span>
-
+<span class="sd">            Name of the step, for example ``"remove_plane"`` or ``"align_frames"``.</span>
 <span class="sd">        **kwargs</span>
-<span class="sd">            Additional keyword arguments for the filter function.</span>
+<span class="sd">            Arguments for the step, for example ``order=2``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ProcessingPipeline</span>
-<span class="sd">            The pipeline instance (for method chaining).</span>
+<span class="sd">            This pipeline, so calls can be chained.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        If a mask is currently active, the pipeline will attempt to use a</span>
-<span class="sd">        masked version of the filter (from `MASK_FILTERS_MAP`) if available.</span>
-<span class="sd">        Otherwise, the unmasked filter is applied to the whole dataset.</span>
+<span class="sd">        If a mask is active when a 2D filter runs, the masked version of the filter</span>
+<span class="sd">        is used if there is one; otherwise the filter is applied to the whole frame.</span>
+<span class="sd">        The step is identified by its name when the pipeline runs, so this does the</span>
+<span class="sd">        same as :meth:`add_mask`.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">filter_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -658,17 +681,15 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline.clear_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingPipeline</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Add a step to clear the current mask.</span>
+<span class="sd">        Add a step that removes the current mask.</span>
+
+<span class="sd">        Filters after this step are applied to whole frames until a new mask is</span>
+<span class="sd">        added.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ProcessingPipeline</span>
-<span class="sd">            The pipeline instance (for method chaining).</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Calling this resets the masking state, so subsequent filters will be</span>
-<span class="sd">        applied to the entire dataset unless a new mask is added.</span>
+<span class="sd">            This pipeline, so calls can be chained.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"clear"</span><span class="p">,</span> <span class="p">{}))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -678,106 +699,44 @@
 <a class="viewcode-back" href="../../../api/playnano.processing.pipeline.html#playnano.processing.pipeline.ProcessingPipeline.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute configured steps on the AFMImageStack, storing outputs and provenance.</span>
+<span class="sd">        Run the steps in order on the stack.</span>
 
-<span class="sd">        The pipeline iterates through all added mask, filter, and plugin steps in</span>
-<span class="sd">        order, applying each to the current data. Masks are combined if multiple are</span>
-<span class="sd">        applied before a filter. Each step's output is stored in `stack.processed`</span>
-<span class="sd">        (filters) or `stack.masks` (masks), and a detailed provenance record is saved</span>
-<span class="sd">        in `stack.provenance["processing"]`.</span>
+<span class="sd">        Before the first step, the current data is saved as</span>
+<span class="sd">        ``stack.processed["raw"]`` if there is no such entry yet. After the last step</span>
+<span class="sd">        the result replaces ``stack.data``.</span>
 
-<span class="sd">        Behavior</span>
-<span class="sd">        --------</span>
+<span class="sd">        Each step's output is stored under a key ``"step_&lt;n&gt;_&lt;name&gt;"``, where ``n``</span>
+<span class="sd">        counts from 1:</span>
 
-<span class="sd">        1. Record or update environment metadata via ``gather_environment_info()`` into</span>
-<span class="sd">        ``stack.provenance["environment"]``.</span>
+<span class="sd">        - 2D filters and video processing steps: in ``stack.processed``.</span>
+<span class="sd">        - Stack edits: in ``stack.processed``, always named ``"step_&lt;n&gt;_drop_frames"``.</span>
+<span class="sd">        - Masks: in ``stack.masks``. A mask combined with an earlier one is named</span>
+<span class="sd">          after both, for example ``"step_3_mask_threshold_mask_below_threshold"``.</span>
 
-<span class="sd">        2. Reset previous processing provenance under</span>
-<span class="sd">        ``stack.provenance["processing"]``, ensuring that keys ``"steps"`` (a list)</span>
-<span class="sd">        and ``"keys_by_name"`` (a dictionary) exist and are cleared.</span>
+<span class="sd">        The provenance of each run replaces that of any earlier run:</span>
 
-<span class="sd">        3. If not already present, snapshot the original data as ``"raw"`` in</span>
-<span class="sd">        ``stack.processed``.</span>
-
-<span class="sd">        4. Iterate over ``self.steps`` in order (1-based index) with</span>
-<span class="sd">        ``_run_single_step(...)``:</span>
-
-<span class="sd">        - Resolve the step type via ``stack._resolve_step(step_name)``, which returns</span>
-<span class="sd">          a tuple of the form (``step_type``, ``fn``).</span>
-<span class="sd">        - Record a timestamp (from ``utc_now_iso()``), index, name, parameters,</span>
-<span class="sd">          step type, function version (from ``fn.__version__`` or plugin lookup), and</span>
-<span class="sd">          module name.</span>
-
-<span class="sd">        - If ``step_type`` is ``"clear"``:</span>
-<span class="sd">            - Reset the current mask to ``None``.</span>
-<span class="sd">            - Record ``"mask_cleared": True`` in the provenance entry.</span>
-
-<span class="sd">        - If ``step_type`` is ``"mask"``:</span>
-<span class="sd">            - Call ``stack._execute_mask_step(fn, arr, **kwargs)`` to compute a boolean</span>
-<span class="sd">              mask array.</span>
-<span class="sd">            - If there is no existing mask, store it under a new key</span>
-<span class="sd">              ``step_&lt;idx&gt;_&lt;mask_name&gt;`` in ``stack.masks``.</span>
-<span class="sd">            - Otherwise, overlay it with the previous mask (logical OR) under a derived</span>
-<span class="sd">              key.</span>
-<span class="sd">            - Update the current mask and record ``"mask_key"`` and ``"mask_summary"``</span>
-<span class="sd">              in provenance.</span>
-
-<span class="sd">        - Elif ``step_type`` is ``filter``/``method``/``plugin``):</span>
-<span class="sd">            - Call ``stack._execute_filter_step(fn, arr, mask, step_name, **kwargs)``</span>
-<span class="sd">              to obtain the new array.</span>
-<span class="sd">            - Store the result under</span>
-<span class="sd">              ``stack.processed["step_&lt;idx&gt;_&lt;safe_name&gt;"]`` and update ``arr``.</span>
-<span class="sd">            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.</span>
-
-<span class="sd">        - Elif ``step_type`` is ``video_filter``/``video_plugin``):</span>
-<span class="sd">            - Call ``stack._execute_video_processing_step(fn, arr, **kwargs)``</span>
-<span class="sd">              to obtain the new array.</span>
-<span class="sd">            - Store the result under</span>
-<span class="sd">              ``stack.processed["step_&lt;idx&gt;_&lt;safe_name&gt;"]`` and update ``arr``.</span>
-<span class="sd">            - Record ``"processed_key"`` and ``"output_summary"`` in provenance.</span>
-
-<span class="sd">        - Elif ``step_type`` is ``stack_edit``:</span>
-<span class="sd">            - If the step name is ``drop_frames``, call it directly to get the new</span>
-<span class="sd">              array.</span>
-<span class="sd">            - Otherwise, call the stack edit function to get indices to drop, then</span>
-<span class="sd">              delegate to the ``drop_frames`` function to perform the edit. This</span>
-<span class="sd">              ensures that all stack edits are recorded in a consistent way in</span>
-<span class="sd">              provenance.</span>
-<span class="sd">            - Store the result under ``stack.processed["step_&lt;idx&gt;_drop_frames"]``</span>
-<span class="sd">              and update ``arr``.</span>
-
-<span class="sd">        - Else raise an warning for unrecognized step type.</span>
-
-<span class="sd">        5. After all steps, overwrite ``stack.data`` with ``arr``.</span>
-
-<span class="sd">        6. Build ``stack.provenance["processing"]["keys_by_name"]``, mapping each step</span>
-<span class="sd">        name to the list of stored keys (``processed_key`` or ``mask_key``) in order.</span>
-
-<span class="sd">        7. Return the final processed array.</span>
+<span class="sd">        - ``stack.provenance["processing"]["steps"]``: one record per step, with its</span>
+<span class="sd">          index, name, parameters, timestamp, step type, version, function module,</span>
+<span class="sd">          the key of its output (``processed_key`` or ``mask_key``) and a summary of</span>
+<span class="sd">          the output's shape and dtype. Video processing steps also store their</span>
+<span class="sd">          metadata.</span>
+<span class="sd">        - ``stack.provenance["processing"]["keys_by_name"]``: step name to the keys</span>
+<span class="sd">          of its outputs, in order.</span>
+<span class="sd">        - ``stack.provenance["environment"]``: Python, platform and package</span>
+<span class="sd">          versions.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            The final processed data array, now also stored in `stack.data`.</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The processed stack, also stored in ``stack.data``.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        RuntimeError</span>
-<span class="sd">            If a step cannot be resolved or executed due to misconfiguration.</span>
-
 <span class="sd">        ValueError</span>
-<span class="sd">            If overlaying a mask fails due to missing previous mask key (propagated).</span>
-
+<span class="sd">            If a step name is not recognised.</span>
 <span class="sd">        Exception</span>
-<span class="sd">            Any exception raised by a step function is logged and re-raised.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        - The method ensures a raw copy of the original stack exists under</span>
-<span class="sd">          `stack.processed["raw"]`.</span>
-<span class="sd">        - Mask steps may be overlaid with previous masks using logical OR.</span>
-<span class="sd">        - Non-drop_frames stack_edit steps automatically delegate to drop_frames</span>
-<span class="sd">          to maintain provenance consistency.</span>
+<span class="sd">            Any error raised by a step is logged and raised again; steps already</span>
+<span class="sd">            run keep their outputs.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_environment_and_provenance</span><span class="p">()</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshot_raw_data</span><span class="p">()</span>
@@ -1354,7 +1313,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

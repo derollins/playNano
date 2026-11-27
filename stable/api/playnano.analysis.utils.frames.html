@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.utils.frames module - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.utils.frames module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,32 +515,32 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.analysis.utils.frames">
 <span id="playnano-analysis-utils-frames-module"></span><h1>playnano.analysis.utils.frames module<a class="headerlink" href="#module-playnano.analysis.utils.frames" title="Link to this heading">¶</a></h1>
-<p>Frame-based post-processing helpers.</p>
-<p>E.g. summarize per-frame statistics or produce histograms.</p>
+<p>Per-frame summaries of detected features, as a table or histogram.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.frames.frame_summary_to_dataframe">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.frames.</span></span><span class="sig-name descname"><span class="pre">frame_summary_to_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features_per_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.15)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.15)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/frames.html#frame_summary_to_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.frames.frame_summary_to_dataframe" title="Link to this definition">¶</a></dt>
-<dd><p>Build a DataFrame with one row per frame.</p>
-<p>Summarises number of features, total area, mean intensity, etc.</p>
+<dd><p>Summarise the features detected in each frame, one row per frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>features_per_frame</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><em>lists</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – As returned by <cite>FeatureDetectionModule.run()[“features_per_frame”]</cite>.</p>
+<dd class="field-odd"><p><strong>features_per_frame</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – The <code class="docutils literal notranslate"><span class="pre">&quot;features_per_frame&quot;</span></code> output of a feature detection module,
+such as <code class="docutils literal notranslate"><span class="pre">feature_detection</span></code>. Each feature dict must have <code class="docutils literal notranslate"><span class="pre">&quot;area&quot;</span></code>
+and <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>Columns:</dt><dd><ul class="simple">
-<li><p>frame_index (int)</p></li>
-<li><p>n_features  (int)</p></li>
-<li><p>total_area  (int)</p></li>
-<li><p>mean_area   (float)</p></li>
-<li><p>mean_intensity (float)</p></li>
+<dd class="field-even"><p><p>One row per frame, with the columns:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_index</span></code> (int): from 0.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_features</span></code> (int): number of features.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_area</span></code> and <code class="docutils literal notranslate"><span class="pre">mean_area</span></code> (float): feature area, in pixels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mean_intensity</span></code> (float): the average of the features’ mean
+heights, usually in nm.</p></li>
 </ul>
-</dd>
-</dl>
+<p><code class="docutils literal notranslate"><span class="pre">mean_area</span></code> and <code class="docutils literal notranslate"><span class="pre">mean_intensity</span></code> are 0.0 for a frame with no
+features.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)">pandas.DataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -547,22 +548,22 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.analysis.utils.frames.plot_frame_histogram">
 <span class="sig-prename descclassname"><span class="pre">playnano.analysis.utils.frames.</span></span><span class="sig-name descname"><span class="pre">plot_frame_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><span class="pre">Axes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><span class="pre">Axes</span></a></span></span><a class="reference internal" href="../_modules/playnano/analysis/utils/frames.html#plot_frame_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.analysis.utils.frames.plot_frame_histogram" title="Link to this definition">¶</a></dt>
-<dd><p>Plot a histogram of a per-frame summary metric.</p>
+<dd><p>Plot a histogram of one column of a per-frame summary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>) – As returned by <cite>frame_summary_to_dataframe</cite>.</p></li>
-<li><p><strong>column</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Which column to histogram (e.g. ‘n_features’).</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>)</p></li>
-<li><p><strong>save_to</strong> (<em>Path</em><em>, </em><em>optional</em>)</p></li>
-<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of histogram bins.</p></li>
+<li><p><strong>df</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a>) – A table from <a class="reference internal" href="#playnano.analysis.utils.frames.frame_summary_to_dataframe" title="playnano.analysis.utils.frames.frame_summary_to_dataframe"><code class="xref py py-func docutils literal notranslate"><span class="pre">frame_summary_to_dataframe()</span></code></a>.</p></li>
+<li><p><strong>column</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The column to plot, for example <code class="docutils literal notranslate"><span class="pre">&quot;n_features&quot;</span></code>.</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – Axes to draw on. If None, a new figure is created. Default is None.</p></li>
+<li><p><strong>save_to</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a><em>, </em><em>optional</em>) – If given, save the figure to this file at 150 dpi. Default is None.</p></li>
+<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of histogram bins. Default is 20.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ax</strong></p>
+<dd class="field-even"><p>The axes drawn on.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>matplotlib Axes</p>
+<dd class="field-odd"><p><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)">matplotlib.axes.Axes</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -638,7 +639,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

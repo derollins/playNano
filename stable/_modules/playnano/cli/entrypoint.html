@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.entrypoint - playnano v0.5.3 documentation</title>
+        <title>playnano.cli.entrypoint - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.cli.entrypoint</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Entry point for the playNano CLI."""</span>
+<span></span><span class="sd">"""The ``playnano`` command: argument parsing and dispatch to the subcommands."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -530,12 +531,13 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.entrypoint.html#playnano.cli.entrypoint.setup_logging">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">setup_logging</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Configure the logging format and level.</span>
+<span class="sd">    Set the log format and level for the command line.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    level : int, optional</span>
-<span class="sd">        Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.</span>
+<span class="sd">        Logging level, for example ``logging.DEBUG``. Default is</span>
+<span class="sd">        ``logging.INFO``.</span>
 <span class="sd">    """</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
         <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
@@ -548,7 +550,19 @@
 <div class="viewcode-block" id="make_fps_type">
 <a class="viewcode-back" href="../../../api/playnano.cli.entrypoint.html#playnano.cli.entrypoint.make_fps_type">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_fps_type</span><span class="p">(</span><span class="n">fallback</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Return an argparse type function with a configurable fallback FPS."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Make an argparse ``type`` that reads a frame rate, with a fallback.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fallback : float</span>
+<span class="sd">        Frame rate used, with a logged warning, when the value is not a number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        Function that converts the option's text to a float.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">fps_type</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""If a non-numerical value is provided for fps, return default value."""</span>
@@ -568,31 +582,25 @@
 <a class="viewcode-back" href="../../../api/playnano.cli.entrypoint.html#playnano.cli.entrypoint.main">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Parse command-line arguments and dispatch to the appropriate CLI subcommand.</span>
+<span class="sd">    Run the ``playnano`` command.</span>
 
-<span class="sd">    This function sets up the top-level argparse parser, configures logging,</span>
-<span class="sd">    and then calls the appropriate handler function (`handle_play`, `handle_process`,</span>
-<span class="sd">    `handle_analyze`, or `handle_processing_wizard`) based on the chosen subcommand.</span>
+<span class="sd">    Parses the command line, sets the log level (``--log-level``) and runs the</span>
+<span class="sd">    subcommand:</span>
 
-<span class="sd">    - Set up argument parsing for 'play', 'process' and 'wizard' subcommands,</span>
-<span class="sd">    each with their own options.</span>
-<span class="sd">    - Configure logging level based on user input.</span>
-<span class="sd">    - Show help and exit with code 2 if no subcommand is provided.</span>
-<span class="sd">    - Call the handler function associated with the chosen subcommand.</span>
+<span class="sd">    - ``play``: view a stack in the GUI (:func:`~playnano.cli.handlers.handle_play`);</span>
+<span class="sd">    - ``process``: process a stack and export it</span>
+<span class="sd">      (:func:`~playnano.cli.handlers.handle_process`);</span>
+<span class="sd">    - ``analyze``: analyse a stack and save the results</span>
+<span class="sd">      (:func:`~playnano.cli.handlers.handle_analyze`);</span>
+<span class="sd">    - ``wizard``: build and run processing and analysis interactively</span>
+<span class="sd">      (:func:`~playnano.cli.handlers.handle_wizard`);</span>
+<span class="sd">    - ``env-info``: print the software environment.</span>
 
-<span class="sd">    Usage:</span>
-<span class="sd">      playnano play    &lt;input_file&gt; [--processing …] [--output-folder …]</span>
-<span class="sd">        [--output-name …] [--scale-bar-nm …] [--channel …]</span>
-<span class="sd">      playnano process &lt;input_file&gt; [--processing …] [--export …] [--make-gif]</span>
-<span class="sd">        [--output-folder …] [--output-name …] [--scale-bar-nm …] [--channel …]</span>
-<span class="sd">      playnano analyze &lt;input_file&gt; [--analysis-steps … | --analysis-file …]</span>
-<span class="sd">        [--output-folder …] [--output-name …] [--channel …]</span>
-<span class="sd">      playnano wizard  &lt;input_file&gt; [--channel …] [--scale-bar-nm …]</span>
-<span class="sd">        [--output-folder …] [--output-name …]</span>
+<span class="sd">    Run ``playnano &lt;subcommand&gt; --help`` for each subcommand's options.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">    Exit status is 0 on success; 1 if the command fails (the subcommands log</span>
+<span class="sd">    the error and exit with 1); 2 for a usage error, including no</span>
+<span class="sd">    subcommand, or an unexpected error.</span>
 <span class="sd">    """</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">"playNano: Load, filter, export, or play HS-AFM image stacks."</span>
@@ -925,7 +933,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.particle_tracking - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.particle_tracking - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,39 +508,17 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.analysis.modules.particle_tracking</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Module for linking particle features across frames to build trajectories.</span>
+<span class="sd">Analysis module that links detected features from frame to frame into tracks.</span>
 
-<span class="sd">This module defines the ParticleTrackingModule, which links features</span>
-<span class="sd">detected in sequential frames of an AFM image stack using nearest-neighbor</span>
-<span class="sd">matching based on feature coordinates.</span>
-
-<span class="sd">Features are matched across frames if they lie within a specified maximum</span>
-<span class="sd">distance. Tracks are formed by chaining these matches over time.</span>
-
-<span class="sd">Each resulting track includes:</span>
-<span class="sd">    - A unique track ID</span>
-<span class="sd">    - A list of frames spanned by the track (first→last detection)</span>
-<span class="sd">    - A list of point indices aligned with frames; missing detections are None</span>
-<span class="sd">    - A list of coordinates describing the particle's positions</span>
-
-<span class="sd">Optionally, per-track masks are extracted from the labeled feature masks.</span>
-
-<span class="sd">See Also</span>
-<span class="sd">--------</span>
-<span class="sd">playnano.analysis.modules.feature_detection : Mask based particle detection method.</span>
-<span class="sd">playnano.analysis.modules.log_blob_detection : LoG-based particle detection method.</span>
+<span class="sd">Each feature is linked to the nearest feature of an existing track that is</span>
+<span class="sd">close enough; features that are not linked start new tracks. Tracks can</span>
+<span class="sd">continue across frames where the particle was not detected.</span>
 
 <span class="sd">.. versionadded:: 0.2.0</span>
 
-<span class="sd">Author</span>
-<span class="sd">------</span>
-<span class="sd">Daniel E. Rollins (d.e.rollins@leeds.ac.uk) / GitHub: derollins</span>
-
-<span class="sd">AI Transparency Note</span>
-<span class="sd">--------------------</span>
-<span class="sd">AI-based tools were used for limited typing/formatting assistance</span>
-<span class="sd">and for debugging, refactoring, and documentation suggestions. All code paths,</span>
-<span class="sd">algorithms, and final behaviour were reviewed and validated by the author.</span>
+<span class="sd">See Also</span>
+<span class="sd">--------</span>
+<span class="sd">playnano.analysis.modules.feature_detection : Detects the features to track.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -554,32 +533,56 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.particle_tracking.html#playnano.analysis.modules.particle_tracking.ParticleTrackingModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParticleTrackingModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Link detected features frame-to-frame to produce particle trajectories.</span>
+<span class="sd">    Link features detected in successive frames into tracks.</span>
 
-<span class="sd">    This module links features detected by a prior feature detection module</span>
-<span class="sd">    using nearest-neighbor coordinate matching across adjacent frames. A new</span>
-<span class="sd">    track is created for each unmatched feature.</span>
+<span class="sd">    Pipeline name: ``"particle_tracking"``. It needs the output of</span>
+<span class="sd">    ``feature_detection`` from an earlier step.</span>
 
-<span class="sd">    Version</span>
-<span class="sd">    -------</span>
-<span class="sd">    0.2.0</span>
+<span class="sd">    In each frame, tracks are extended in the order they started: each takes</span>
+<span class="sd">    the nearest feature not yet taken that is closer than ``max_distance`` to</span>
+<span class="sd">    its last position. This is quick but not globally optimal: when particles</span>
+<span class="sd">    come close, an older track can take a feature a newer one fits better.</span>
+<span class="sd">    Features left over start new tracks.</span>
 
-<span class="sd">    Version 0.2.0 allows tracks to continue across missing detections</span>
-<span class="sd">    and supports scaling the distance threshold with time since last detection.</span>
+<span class="sd">    Version 0.2.0 added ``max_missing`` and ``distance_scale``. See :meth:`run`</span>
+<span class="sd">    for the parameters and outputs.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((3, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(3):</span>
+<span class="sd">    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0  # a 6 x 6 pixel particle</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.feature_detection import (</span>
+<span class="sd">    ...     FeatureDetectionModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.modules.particle_tracking import (</span>
+<span class="sd">    ...     ParticleTrackingModule,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; detected = FeatureDetectionModule().run(</span>
+<span class="sd">    ...     stack, mask_fn="mask_threshold", threshold=1.0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = ParticleTrackingModule().run(</span>
+<span class="sd">    ...     stack, {"feature_detection": detected}, max_distance=5</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; track = result["tracks"][0]</span>
+<span class="sd">    &gt;&gt;&gt; track["frames"], track["coords"]</span>
+<span class="sd">    ([0, 1, 2], [(12.5, 12.5), (13.5, 12.5), (14.5, 12.5)])</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.2.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Name of the analysis module.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            Unique identifier: "particle_tracking".</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"particle_tracking"``."""</span>
         <span class="k">return</span> <span class="s2">"particle_tracking"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"feature_detection"</span><span class="p">,</span> <span class="s2">"log_blob_detection"</span><span class="p">]</span>
@@ -786,69 +789,73 @@
         <span class="o">**</span><span class="n">params</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Track particles across frames using nearest-neighbor association.</span>
+<span class="sd">        Link the features detected in each frame into tracks.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            The input AFM image stack.</span>
-
-<span class="sd">        previous_results : dict[str, Any], optional</span>
-<span class="sd">            Must contain results from a detection module, including:</span>
-
-<span class="sd">            - coord_key (e.g., "features_per_frame"): list of dicts with per-frame</span>
-<span class="sd">              features</span>
-<span class="sd">            - "labeled_masks": per-frame mask of label regions</span>
-
+<span class="sd">            The stack; not used directly.</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold a detection output with the</span>
+<span class="sd">            ``coord_key`` list and ``"labeled_masks"``.</span>
 <span class="sd">        detection_module : str, optional</span>
-<span class="sd">            Which module to read features from (default: "feature_detection").</span>
-
+<span class="sd">            Name of the detection step to use. If it has not run,</span>
+<span class="sd">            ``log_blob_detection`` is tried, then ``feature_detection``. Default is</span>
+<span class="sd">            ``"feature_detection"``.</span>
 <span class="sd">        coord_key : str, optional</span>
-<span class="sd">            Key in previous_results[detection_module] containing per-frame feature</span>
-<span class="sd">            dicts (default: "features_per_frame").</span>
-
-<span class="sd">        coord_columns : Sequence[str], optional</span>
-<span class="sd">            Keys to extract coordinates from each feature; falls back to "centroid" if</span>
-<span class="sd">            needed. Default is ("centroid_x", "centroid_y").</span>
-
+<span class="sd">            Key of the per-frame feature lists in the detection output. Default is</span>
+<span class="sd">            ``"features_per_frame"``.</span>
+<span class="sd">        coord_columns : list or tuple of str, optional</span>
+<span class="sd">            Keys of each feature's two coordinates. If a feature lacks them, its</span>
+<span class="sd">            ``centroid`` is used instead. ``feature_detection`` has no</span>
+<span class="sd">            ``centroid_x`` or ``centroid_y``, so with the default, coordinates are</span>
+<span class="sd">            ``centroid``: (row, col), in pixels. Default is</span>
+<span class="sd">            ``("centroid_x", "centroid_y")``.</span>
 <span class="sd">        max_distance : float, optional</span>
-<span class="sd">            Maximum allowed movement per frame in coordinate units (default: 5.0).</span>
-
+<span class="sd">            Distance a particle can move between frames and still be linked, in</span>
+<span class="sd">            the same units as the coordinates (pixels for ``feature_detection``).</span>
+<span class="sd">            Only moves strictly shorter than this are linked. Default is 5.0.</span>
 <span class="sd">        max_missing : int, optional</span>
-<span class="sd">            Maximum allowed consecutive missing detections before terminating a track.</span>
-<span class="sd">            Default is 0 (no missing allowed).</span>
-
-<span class="sd">        distance_scale : str, optional</span>
-<span class="sd">            How to scale max_distance with time since last detection in frames:</span>
-<span class="sd">            "constant" (default), "linear" (scale linearly with time), or "sqrt" (scale</span>
-<span class="sd">            with square root of time).</span>
+<span class="sd">            Number of frames in a row a track can go without a feature before it</span>
+<span class="sd">            ends. Default is 0: a track ends at its first missed frame.</span>
+<span class="sd">        distance_scale : {"constant", "linear", "sqrt"}, optional</span>
+<span class="sd">            How ``max_distance`` grows after missed frames, with ``dt`` the number</span>
+<span class="sd">            of frames since the track's last feature: ``"constant"`` keeps it,</span>
+<span class="sd">            ``"linear"`` multiplies it by ``dt`` and ``"sqrt"`` by ``sqrt(dt)``.</span>
+<span class="sd">            Default is ``"constant"``.</span>
+<span class="sd">        **params</span>
+<span class="sd">            Not used; ignored.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Dictionary with keys:</span>
+<span class="sd">            ``"tracks"``</span>
+<span class="sd">                One dict per track, with:</span>
 
-<span class="sd">            - tracks : list of dict</span>
-<span class="sd">                Per-track dictionaries containing:</span>
+<span class="sd">                - ``id`` (int): from 0, in the order tracks started.</span>
+<span class="sd">                - ``frames`` (list of int): every frame from the track's first</span>
+<span class="sd">                  feature to its last.</span>
+<span class="sd">                - ``point_indices`` (list of int or None): the index of the</span>
+<span class="sd">                  track's feature in each frame's list in the detection output,</span>
+<span class="sd">                  or None for a missed frame.</span>
+<span class="sd">                - ``coords`` (list of tuple or None): the feature's coordinates in</span>
+<span class="sd">                  each frame, or None for a missed frame.</span>
+<span class="sd">            ``"track_masks"``</span>
+<span class="sd">                Maps each track ID to a boolean mask of its last feature, if the</span>
+<span class="sd">                feature has a ``label``.</span>
+<span class="sd">            ``"n_tracks"``</span>
+<span class="sd">                The number of tracks.</span>
 
-<span class="sd">                - id : int</span>
-<span class="sd">                  Track ID</span>
-
-<span class="sd">                - frames : list[int]</span>
-<span class="sd">                  Frame indices spanned by track</span>
-
-<span class="sd">                - point_indices : list[Optional[int]]</span>
-<span class="sd">                  Indices into features_per_frame</span>
-
-<span class="sd">                - coords : list[Optional[tuple[float, float]]]</span>
-<span class="sd">                  Coordinates (coord0, coord1) aligned with frames; None indicates</span>
-<span class="sd">                  missing detection.</span>
-
-<span class="sd">            - track_masks : dict[int, np.ndarray]</span>
-<span class="sd">              Last mask per track</span>
-
-<span class="sd">            - n_tracks : int</span>
-<span class="sd">              Total number of tracks</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If there is no detection output, or it lacks ``coord_key`` or</span>
+<span class="sd">            ``"labeled_masks"``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``max_distance`` or ``max_missing`` is negative, or</span>
+<span class="sd">            ``distance_scale`` is not recognised.</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If a feature has neither ``coord_columns`` nor ``centroid``.</span>
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1008,7 +1015,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

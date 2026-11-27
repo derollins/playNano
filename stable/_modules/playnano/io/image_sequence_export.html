@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.image_sequence_export - playnano v0.5.3 documentation</title>
+        <title>playnano.io.image_sequence_export - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,19 +508,10 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.io.image_sequence_export</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Image-sequence export utilities for AFM image stacks.</span>
+<span class="sd">Export AFM image stacks as a folder of annotated PNG or JPEG images, one per frame.</span>
 
-<span class="sd">This module provides functions for saving each frame of an AFM image stack as</span>
-<span class="sd">an individual PNG or JPEG file inside a dedicated output folder. Frames can be</span>
-<span class="sd">normalised automatically or scaled with a fixed z-range, and are annotated with</span>
-<span class="sd">optional timestamps and scale bars using the shared rendering pipeline in</span>
-<span class="sd">:mod:`~playnano.io.render_utils`</span>
-
-<span class="sd">Dependencies</span>
-<span class="sd">------------</span>
-<span class="sd">- matplotlib</span>
-<span class="sd">- numpy</span>
-<span class="sd">- Pillow (PIL)</span>
+<span class="sd">Frames are coloured and annotated by :mod:`playnano.io.render_utils`, which the</span>
+<span class="sd">GIF and video exports share, and written with Pillow.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -567,65 +559,57 @@
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Save every frame of an AFM image stack as an individual image file.</span>
+<span class="sd">    Write each frame of an image stack as an image file, with optional annotations.</span>
 
-<span class="sd">    Frames are normalised, colourised with a matplotlib colormap, and annotated</span>
-<span class="sd">    with a scale bar and timestamp before being written to *output_folder* as</span>
-<span class="sd">    ``&lt;base_name&gt;_NNNN.&lt;fmt&gt;``.</span>
+<span class="sd">    Files are named ``&lt;base_name&gt;_&lt;n&gt;.&lt;ext&gt;``, where ``n`` is the frame index from</span>
+<span class="sd">    0, padded with zeros to at least 4 digits so they sort in order. Use</span>
+<span class="sd">    :func:`export_image_sequence` to export an</span>
+<span class="sd">    :class:`~playnano.afm_stack.AFMImageStack`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    image_stack : np.ndarray</span>
-<span class="sd">        3D array of shape (N, H, W) representing the AFM image stack.</span>
-<span class="sd">    pixel_sizes_nm : list</span>
-<span class="sd">        Per-frame pixel size in nanometres. Must have the same length as</span>
-<span class="sd">        ``image_stack``.</span>
-<span class="sd">    timestamps : list[float] or tuple[float], optional</span>
-<span class="sd">        Timestamps in seconds for each frame. Frame indices are used as a</span>
-<span class="sd">        fallback when ``None`` or invalid.</span>
-<span class="sd">    scale_bar_length_nm : int</span>
-<span class="sd">        Length of the scale bar in nanometres. Default is 100.</span>
-<span class="sd">    output_folder : str or Path</span>
-<span class="sd">        Directory in which the frame images will be saved. Created</span>
-<span class="sd">        automatically if it does not exist.</span>
-<span class="sd">    base_name : str</span>
-<span class="sd">        Stem used for each file: ``&lt;base_name&gt;_0000.png``, etc.</span>
-<span class="sd">        Default is ``"frame"``.</span>
-<span class="sd">    fmt : {"png", "jpg", "jpeg"}</span>
-<span class="sd">        Image file format. Default is ``"png"``.</span>
-<span class="sd">    cmap_name : str</span>
-<span class="sd">        Name of the matplotlib colormap. Default is ``'afmhot'``.</span>
-<span class="sd">    zmin : float or str or None, optional</span>
-<span class="sd">        Minimum z-value mapped to the low end of the colormap. ``"auto"``</span>
-<span class="sd">        uses the 1st percentile of the full stack.</span>
-<span class="sd">    zmax : float or str or None, optional</span>
-<span class="sd">        Maximum z-value mapped to the high end of the colormap. ``"auto"``</span>
-<span class="sd">        uses the 99th percentile of the full stack.</span>
-<span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
-<span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw a scale bar on each frame. Default is ``True``.</span>
-<span class="sd">    font_scale : float</span>
-<span class="sd">        Base font scale for annotations at the reference height.</span>
+<span class="sd">    image_stack : numpy.ndarray</span>
+<span class="sd">        3D image stack of shape (n_frames, height, width).</span>
+<span class="sd">    pixel_sizes_nm : list of float</span>
+<span class="sd">        Pixel size of each frame, in nm. If it is not a list with one value per</span>
+<span class="sd">        frame, no scale bar is drawn.</span>
+<span class="sd">    timestamps : list or tuple of float, optional</span>
+<span class="sd">        Time of each frame, in seconds. If it is not a list or tuple with one</span>
+<span class="sd">        value per frame, frame numbers are drawn instead.</span>
+<span class="sd">    scale_bar_length_nm : int, optional</span>
+<span class="sd">        Length of the scale bar, in nm; 0 hides it. Default is 100.</span>
+<span class="sd">    output_folder : str or pathlib.Path, optional</span>
+<span class="sd">        Folder for the images; created if missing. Default is</span>
+<span class="sd">        ``"output_frames"``.</span>
+<span class="sd">    base_name : str, optional</span>
+<span class="sd">        Start of each file name. Default is ``"frame"``.</span>
+<span class="sd">    fmt : {"png", "jpg", "jpeg"}, optional</span>
+<span class="sd">        Image format. PNG is lossless; JPEG files are saved at quality 90 with</span>
+<span class="sd">        the extension ``.jpg``. Default is ``"png"``.</span>
+<span class="sd">    cmap_name : str, optional</span>
+<span class="sd">        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.</span>
+<span class="sd">    zmin, zmax : float or str or None, optional</span>
+<span class="sd">        Colour scale limits, as for the ``export_*`` functions: both None scales</span>
+<span class="sd">        each frame separately; otherwise the limits apply to every frame, with</span>
+<span class="sd">        ``"auto"`` for the 1st or 99th percentile and None for the stack's</span>
+<span class="sd">        minimum or maximum. Default is None.</span>
+<span class="sd">    draw_ts : bool, optional</span>
+<span class="sd">        Draw each frame's time on the frame. Default is True.</span>
+<span class="sd">    draw_scale : bool, optional</span>
+<span class="sd">        Draw a scale bar. Default is True.</span>
+<span class="sd">    font_scale : float, optional</span>
+<span class="sd">        Size of the annotation text for a frame 512 pixels high. Default is 2.0.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Path</span>
-<span class="sd">        The resolved output folder where images were written.</span>
+<span class="sd">    pathlib.Path</span>
+<span class="sd">        The folder the images were written to.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``fmt`` is not a supported image format, or if ``zmin == zmax``.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - Frames are normalised globally when ``zmin``/``zmax`` are provided,</span>
-<span class="sd">      otherwise per-frame normalisation is applied.</span>
-<span class="sd">    - PNG files are lossless; JPEG files are saved at quality</span>
-<span class="sd">      :data:`_JPEG_QUALITY` (default 90).</span>
-<span class="sd">    - Zero-padded four-digit frame indices are used so files sort correctly</span>
-<span class="sd">      up to 9 999 frames; for larger stacks the padding grows automatically.</span>
+<span class="sd">        If ``fmt`` is not supported, ``zmin`` is greater than ``zmax``, or a</span>
+<span class="sd">        limit is not a number, ``"auto"`` or None.</span>
 <span class="sd">    """</span>
     <span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fmt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VALID_IMAGE_FORMATS</span><span class="p">:</span>
@@ -729,54 +713,60 @@
     <span class="n">font_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FONT_SCALE</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Export an AFM image stack as a folder of annotated PNG or JPEG images.</span>
+<span class="sd">    Export a stack as a folder of annotated PNG or JPEG images, one per frame.</span>
 
-<span class="sd">    Each frame is saved as a separate file named</span>
-<span class="sd">    ``&lt;stem&gt;_NNNN.&lt;fmt&gt;`` inside a subfolder ``&lt;output_folder&gt;/&lt;stem&gt;/``.</span>
+<span class="sd">    The images are written to ``&lt;output_folder&gt;/&lt;output_name&gt;/`` as</span>
+<span class="sd">    ``&lt;output_name&gt;_0000.png``, ``&lt;output_name&gt;_0001.png`` and so on.</span>
+<span class="sd">    ``_filtered`` is added to the name when processed data is exported, that</span>
+<span class="sd">    is when ``raw`` is False and the stack has processed layers other than</span>
+<span class="sd">    ``"raw"``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    afm_stack : AFMImageStack</span>
-<span class="sd">        AFM stack object containing raw and/or processed data.</span>
+<span class="sd">        The stack to export.</span>
 <span class="sd">    make_sequence : bool</span>
-<span class="sd">        Whether to generate the image sequence. Returns immediately when</span>
-<span class="sd">        ``False``.</span>
+<span class="sd">        If False, do nothing.</span>
 <span class="sd">    output_folder : str or None</span>
-<span class="sd">        Root directory for output. Defaults to ``"output"`` when ``None``.</span>
-<span class="sd">        A subfolder named after the stack stem is created inside it.</span>
+<span class="sd">        Folder for the output; created if missing. If None, ``./output``.</span>
 <span class="sd">    output_name : str or None</span>
-<span class="sd">        Base name for the subfolder and frame files. Derived from the stack</span>
-<span class="sd">        file name when ``None``.</span>
+<span class="sd">        Name for the output, without extension. Any folder part and known</span>
+<span class="sd">        extension are removed. If None or empty, the name of the file the stack</span>
+<span class="sd">        was loaded from is used.</span>
 <span class="sd">    scale_bar_nm : int or None</span>
-<span class="sd">        Scale bar length in nanometres. Defaults to 100 nm when ``None``.</span>
-<span class="sd">    fmt : {"png", "jpg", "jpeg"}</span>
-<span class="sd">        Image file format. Default is ``"png"``.</span>
-<span class="sd">    raw : bool</span>
-<span class="sd">        If ``True``, export the unprocessed raw snapshot. Default is</span>
-<span class="sd">        ``False``.</span>
-<span class="sd">    zmin : float or None, optional</span>
-<span class="sd">        Minimum z-value for colormap scaling. ``"auto"`` triggers the 1st</span>
-<span class="sd">        percentile. ``None`` uses per-frame minimum.</span>
-<span class="sd">    zmax : float or None, optional</span>
-<span class="sd">        Maximum z-value for colormap scaling. ``"auto"`` triggers the 99th</span>
-<span class="sd">        percentile. ``None`` uses per-frame maximum.</span>
-<span class="sd">    draw_ts : bool</span>
-<span class="sd">        Whether to draw timestamps on each frame. Default is ``True``.</span>
-<span class="sd">    draw_scale : bool</span>
-<span class="sd">        Whether to draw a scale bar on each frame. Default is ``True``.</span>
+<span class="sd">        Length of the scale bar, in nm. 0 hides it; None uses 100.</span>
+<span class="sd">    fmt : {"png", "jpg", "jpeg"}, optional</span>
+<span class="sd">        Image format. Default is ``"png"``.</span>
+<span class="sd">    raw : bool, optional</span>
+<span class="sd">        If True, export the unprocessed snapshot ``stack.processed["raw"]``,</span>
+<span class="sd">        with the frame times from before any frames were removed. Otherwise</span>
+<span class="sd">        export ``stack.data``. Default is False.</span>
+<span class="sd">    zmin : float or str or None, optional</span>
+<span class="sd">        Height mapped to the bottom of the colormap, in the units of the data</span>
+<span class="sd">        (usually nm), or ``"auto"`` for the 1st percentile of the stack.</span>
+<span class="sd">        Default is None.</span>
+<span class="sd">    zmax : float or str or None, optional</span>
+<span class="sd">        Height mapped to the top of the colormap, or ``"auto"`` for the 99th</span>
+<span class="sd">        percentile of the stack. Default is None.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    None</span>
+<span class="sd">        If ``zmin`` and ``zmax`` are both None, each frame is scaled separately</span>
+<span class="sd">        from its own minimum to its maximum. If either is set, both apply to</span>
+<span class="sd">        every frame, and a None limit becomes the minimum or maximum of the</span>
+<span class="sd">        whole stack. Values outside the range are clipped.</span>
+<span class="sd">    draw_ts : bool, optional</span>
+<span class="sd">        Draw each frame's time, in seconds, on the frame. Default is True.</span>
+<span class="sd">    draw_scale : bool, optional</span>
+<span class="sd">        Draw a scale bar. Default is True.</span>
+<span class="sd">    cmap_name : str, optional</span>
+<span class="sd">        Name of a registered matplotlib colormap. Default is ``"afm_brown"``.</span>
+<span class="sd">    font_scale : float, optional</span>
+<span class="sd">        Size of the annotation text for a frame 512 pixels high; scaled with the</span>
+<span class="sd">        rendered frame height. Default is 2.0.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - Processed data is preferred over raw when available; ``_filtered`` is</span>
-<span class="sd">      appended to the output stem in that case.</span>
-<span class="sd">    - Timestamps and pixel size are read from ``afm_stack.frame_metadata``.</span>
-<span class="sd">      When exporting raw data after an ``edit_stack`` step, the pre-edit</span>
-<span class="sd">      metadata stored in</span>
-<span class="sd">      ``afm_stack.state_backups['frame_metadata_before_edit']`` is used.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``fmt`` is not supported, or ``zmin`` is greater than ``zmax``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">make_sequence</span><span class="p">:</span>
         <span class="k">return</span>
@@ -846,7 +836,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

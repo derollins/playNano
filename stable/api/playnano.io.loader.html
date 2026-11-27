@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.loader module - playnano v0.5.3 documentation</title>
+        <title>playnano.io.loader module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,40 +515,42 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.loader">
 <span id="playnano-io-loader-module"></span><h1>playnano.io.loader module<a class="headerlink" href="#module-playnano.io.loader" title="Link to this heading">¶</a></h1>
-<p>Common loader for various high speed AFM video formats <em>and</em> playNano export bundles.</p>
-<dl class="simple">
-<dt>Supported extensions:</dt><dd><ul class="simple">
-<li><p>.jpk        (folder)</p></li>
-<li><p>.spm        (folder)</p></li>
-<li><p>.h5-jpk     (single-file JPK)</p></li>
-<li><p>.asd        (single-file ASD)</p></li>
-<li><p>.ARIS       (single-file ARIS)</p></li>
-<li><p>.ome.tif / .tif  (OME-TIFF bundles)</p></li>
-<li><p>.npz        (playNano NPZ bundles)</p></li>
-<li><p>.h5         (playNano HDF5 bundles)</p></li>
+<p>Load AFM videos from instrument files and from playNano’s own exports.</p>
+<p><a class="reference internal" href="#playnano.io.loader.load_afm_stack" title="playnano.io.loader.load_afm_stack"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_afm_stack()</span></code></a> picks a reader from the file extension:</p>
+<ul class="simple">
+<li><p>Folders of frames: <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> (<a class="reference internal" href="playnano.io.formats.read_jpk_folder.html#module-playnano.io.formats.read_jpk_folder" title="playnano.io.formats.read_jpk_folder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">read_jpk_folder</span></code></a>) and
+<code class="docutils literal notranslate"><span class="pre">.spm</span></code> or numbered <code class="docutils literal notranslate"><span class="pre">.001</span></code>, <code class="docutils literal notranslate"><span class="pre">.002</span></code> … files
+(<a class="reference internal" href="playnano.io.formats.read_spm_folder.html#module-playnano.io.formats.read_spm_folder" title="playnano.io.formats.read_spm_folder"><code class="xref py py-mod docutils literal notranslate"><span class="pre">read_spm_folder</span></code></a>).</p></li>
+<li><p>Single files: <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> (<a class="reference internal" href="playnano.io.formats.read_h5jpk.html#module-playnano.io.formats.read_h5jpk" title="playnano.io.formats.read_h5jpk"><code class="xref py py-mod docutils literal notranslate"><span class="pre">read_h5jpk</span></code></a>), <code class="docutils literal notranslate"><span class="pre">.asd</span></code>
+(<a class="reference internal" href="playnano.io.formats.read_asd.html#module-playnano.io.formats.read_asd" title="playnano.io.formats.read_asd"><code class="xref py py-mod docutils literal notranslate"><span class="pre">read_asd</span></code></a>) and <code class="docutils literal notranslate"><span class="pre">.aris</span></code>
+(<a class="reference internal" href="playnano.io.formats.read_aris.html#module-playnano.io.formats.read_aris" title="playnano.io.formats.read_aris"><code class="xref py py-mod docutils literal notranslate"><span class="pre">read_aris</span></code></a>).</p></li>
+<li><p>playNano exports: <code class="docutils literal notranslate"><span class="pre">.npz</span></code>, <code class="docutils literal notranslate"><span class="pre">.h5</span></code>, and <code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">.ome.tiff</span></code>,
+<code class="docutils literal notranslate"><span class="pre">.tif</span></code> or <code class="docutils literal notranslate"><span class="pre">.tiff</span></code> (<a class="reference internal" href="playnano.io.data_loaders.html#module-playnano.io.data_loaders" title="playnano.io.data_loaders"><code class="xref py py-mod docutils literal notranslate"><span class="pre">data_loaders</span></code></a>).</p></li>
 </ul>
-</dd>
-</dl>
+<p>Extensions are matched without regard to case.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.loader.get_loader_for_file">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.loader.</span></span><span class="sig-name descname"><span class="pre">get_loader_for_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">callable</span></span></span><a class="reference internal" href="../_modules/playnano/io/loader.html#get_loader_for_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.loader.get_loader_for_file" title="Link to this definition">¶</a></dt>
-<dd><p>Determine the appropriate loader for a single multi-frame AFM file.</p>
+<dd><p>Choose the reader for a single file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<em>Path</em>) – Path to the file.</p></li>
-<li><p><strong>file_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Mapping from file extensions to file loader functions.</p></li>
-<li><p><strong>folder_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Mapping from extensions for folder loaders (for error handling).</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The file.</p></li>
+<li><p><strong>file_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Maps each extension (lower case, with the dot) to its reader. Combined
+extensions such as <code class="docutils literal notranslate"><span class="pre">.ome.tif</span></code> are checked first.</p></li>
+<li><p><strong>folder_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Extensions of folder formats, used to give a helpful error when a single
+frame of a folder format is passed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The file extension string and the loader function for the file.</p>
+<dd class="field-even"><p>The extension and its reader.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, callable)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a> of (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, callable)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the file type is unsupported or better handled as a folder.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the file has no extension, an unknown one, or one that belongs to a
+    folder format (for example a single <code class="docutils literal notranslate"><span class="pre">.jpk</span></code> frame).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -555,22 +558,24 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.loader.get_loader_for_folder">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.loader.</span></span><span class="sig-name descname"><span class="pre">get_loader_for_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/io/loader.html#get_loader_for_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.loader.get_loader_for_folder" title="Link to this definition">¶</a></dt>
-<dd><p>Determine the appropriate loader for a folder containing AFM data.</p>
+<dd><p>Choose the folder reader for a folder of frame files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>folder_path</strong> (<em>Path</em>) – Path to the folder.</p></li>
-<li><p><strong>folder_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Mapping from file extension to loader function.</p></li>
+<li><p><strong>folder_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The folder.</p></li>
+<li><p><strong>folder_loaders</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Maps each extension (lower case, with the dot) to its reader.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The chosen extension and loader function.</p>
+<dd class="field-even"><p>The extension and its reader. If the folder holds several known types,
+<code class="docutils literal notranslate"><span class="pre">.jpk</span></code> is chosen if present, otherwise the most common. Numbered
+extensions such as <code class="docutils literal notranslate"><span class="pre">.001</span></code> count as <code class="docutils literal notranslate"><span class="pre">.spm</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, callable)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a> of (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>, callable)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If no known file types are found.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the folder contains no file of a known type.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -578,29 +583,39 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.loader.load_afm_stack">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.loader.</span></span><span class="sig-name descname"><span class="pre">load_afm_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/loader.html#load_afm_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.loader.load_afm_stack" title="Link to this definition">¶</a></dt>
-<dd><p>Unified interface to load AFM stacks from various file formats.</p>
-<p>High speed AFM videos can be saved as either individual frames
-within a folder or as multiple frames within a single file.
-This loader splits these two approaches and loads both into
-the common AFMImageStack object for processing.</p>
-<p>As well as the file formats exported from AFM instruments, this
-function also read raw and processed exports from playnano (NPZ,
-OME_TIF and HDF5).</p>
-<p>All data values with length units (i.e. m) are converted to nm.</p>
+<dd><p>Load an AFM video from a file or a folder of frame files.</p>
+<p>The reader is chosen from the extension (see the module description).
+Instrument readers return heights in nm for length channels; see each
+reader for details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the AFM data file or folder of files.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Scan channel name.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The file, or the folder of frame files.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> files.
+Channel names depend on the format. Ignored for NPZ and HDF5 bundles.
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded image stack with metadata.</p>
+<dd class="field-even"><p>The loaded stack.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the path does not exist, or a folder contains no known file type.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the file type is not supported.</p></li>
+</ul>
+</dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.load_data" title="playnano.afm_stack.AFMImageStack.load_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">playnano.afm_stack.AFMImageStack.load_data</span></code></a></dt><dd><p>The usual way to call this.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>
@@ -675,7 +690,7 @@ OME_TIF and HDF5).</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

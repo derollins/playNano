@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.afm_stack - playnano v0.5.3 documentation</title>
+        <title>playnano.afm_stack - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -506,7 +507,13 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.afm_stack</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Defines AFMImageStack for managing AFM time-series data and processing steps."""</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">The :class:`AFMImageStack` class, which holds an AFM video and everything done to it.</span>
+
+<span class="sd">The module also builds the lookup tables of built-in steps that</span>
+<span class="sd">:meth:`AFMImageStack.apply` and the processing pipeline use: ``FILTER_MAP``,</span>
+<span class="sd">``MASK_MAP``, ``MASK_FILTERS_MAP``, ``VIDEO_FILTER_MAP`` and ``STACK_EDIT_MAP``.</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -543,51 +550,88 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AFMImageStack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Manage stacks of AFM images with metadata, analysis results, and provenance.</span>
+<span class="sd">    An AFM video: frames, pixel size, per-frame metadata, results and provenance.</span>
 
-<span class="sd">    Contains snapshots of each stage of processing (including the raw data after the</span>
-<span class="sd">    first processing step), any masks generated, analysis results, and the provenance</span>
-<span class="sd">    of each processing and analysis step.</span>
+<span class="sd">    Usually made by :meth:`load_data` or</span>
+<span class="sd">    :func:`playnano.io.loader.load_afm_stack`, and changed by</span>
+<span class="sd">    :class:`playnano.processing.pipeline.ProcessingPipeline` and</span>
+<span class="sd">    :class:`playnano.analysis.pipeline.AnalysisPipeline`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        Frames, shape (n_frames, height, width), heights in nm. Stored as given,</span>
+<span class="sd">        without copying.</span>
+<span class="sd">    pixel_size_nm : int or float</span>
+<span class="sd">        Pixel size in nm, used when a frame has no ``frame_pixel_size_nm``. Must</span>
+<span class="sd">        be a positive Python ``int`` or ``float``: NumPy numbers are rejected.</span>
+<span class="sd">    channel : str</span>
+<span class="sd">        Channel name, for example ``"height_trace"``.</span>
+<span class="sd">    file_path : str or pathlib.Path</span>
+<span class="sd">        File or folder the data came from. Stored as given; used for default</span>
+<span class="sd">        output names.</span>
+<span class="sd">    frame_metadata : list of dict, optional</span>
+<span class="sd">        One dict per frame, with keys from ``FRAME_METADATA_KEYS`` in</span>
+<span class="sd">        :mod:`playnano.utils.io_utils`; other keys give a warning. A shorter</span>
+<span class="sd">        list is padded with empty dicts. Timestamps are converted with</span>
+<span class="sd">        :func:`playnano.utils.time_utils.normalize_timestamps`, and a frame</span>
+<span class="sd">        without one gets ``"timestamp": None``. Default is None (no metadata).</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : np.ndarray</span>
-<span class="sd">        3D array of shape (n_frames, ``height``, ``width``) holding the raw or current</span>
-<span class="sd">        data.</span>
-
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        The current frames, shape (n_frames, height, width). Processing</span>
+<span class="sd">        replaces this array.</span>
 <span class="sd">    pixel_size_nm : float</span>
-<span class="sd">        Physical pixel size in nanometers of the first frame (fallback).</span>
-
+<span class="sd">        Pixel size in nm for frames without their own.</span>
 <span class="sd">    channel : str</span>
 <span class="sd">        Channel name.</span>
+<span class="sd">    file_path : str or pathlib.Path</span>
+<span class="sd">        File or folder the data came from.</span>
+<span class="sd">    frame_metadata : list of dict</span>
+<span class="sd">        One dict per frame. Every dict has ``"timestamp"`` (s, or None); files</span>
+<span class="sd">        loaded by playNano also have the other ``FRAME_METADATA_KEYS``.</span>
+<span class="sd">    processed : dict</span>
+<span class="sd">        Copies of the data, as arrays: ``"raw"`` before the first step, then</span>
+<span class="sd">        one per step, keyed ``"step_&lt;n&gt;_&lt;name&gt;"`` by the processing pipeline</span>
+<span class="sd">        or by step name by :meth:`apply`.</span>
+<span class="sd">    masks : dict</span>
+<span class="sd">        Boolean mask arrays from the processing pipeline, keyed</span>
+<span class="sd">        ``"step_&lt;n&gt;_&lt;name&gt;"``.</span>
+<span class="sd">    analysis : dict</span>
+<span class="sd">        Analysis results, keyed ``"step_&lt;n&gt;_&lt;module name&gt;"``.</span>
+<span class="sd">    provenance : dict</span>
+<span class="sd">        What was done and with what: ``"environment"`` (software versions),</span>
+<span class="sd">        ``"acquisition"`` (see :attr:`acquisition`), ``"processing"`` (steps and</span>
+<span class="sd">        their keys) and ``"analysis"`` (steps, results by name, frame times).</span>
+<span class="sd">    state_backups : dict</span>
+<span class="sd">        Data kept so changes can be undone: ``"frame_metadata_before_edit"``</span>
+<span class="sd">        holds the frame metadata from before frames were removed.</span>
 
-<span class="sd">    file_path : Path</span>
-<span class="sd">        Path to the source file or folder.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``data`` is not a NumPy array.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``data`` is not 3D, ``pixel_size_nm`` is not a positive int or</span>
+<span class="sd">        float, or ``frame_metadata`` has more entries than there are frames.</span>
 
-<span class="sd">    frame_metadata : list[dict[str, Any]]</span>
-<span class="sd">        Per-frame metadata dicts; each will include a normalized 'timestamp' key and</span>
-<span class="sd">        per frame 'frame_pixel_size_nm'.</span>
-
-<span class="sd">    processed : dict[str, np.ndarray]</span>
-<span class="sd">        Snapshots of processed data arrays from filters. Keys like</span>
-<span class="sd">        'step_1_remove_plane'.</span>
-
-<span class="sd">    masks : dict[str, np.ndarray]</span>
-<span class="sd">        Boolean mask arrays from mask steps. Keys like 'step_2_threshold'.</span>
-
-<span class="sd">    analysis : dict[str, Any]</span>
-<span class="sd">        Results of analysis modules, keyed by 'step_&lt;i&gt;_&lt;module_name&gt;'.</span>
-
-<span class="sd">    provenance : dict[str, Any]</span>
-<span class="sd">        Records environment info and provenance of processing and analysis pipelines::</span>
-
-<span class="sd">            {</span>
-<span class="sd">                "environment": {...},</span>
-<span class="sd">                "acquisition": {...},</span>
-<span class="sd">                "processing": {"steps": [...], "keys_by_name": {...}},</span>
-<span class="sd">                "analysis": {"frame_times": [...], "steps": [...],</span>
-<span class="sd">                "results_by_name": {...}},</span>
-<span class="sd">            }</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((3, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.0}, {"timestamp": 0.5}],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; stack.n_frames, stack.image_shape</span>
+<span class="sd">    (3, (64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; stack.get_frame_times()</span>
+<span class="sd">    [0.0, 0.5, 2.0]</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -598,39 +642,7 @@
         <span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">frame_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize AFMImageStack with data, spatial metadata, and per-frame metadata.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        data : np.ndarray</span>
-<span class="sd">            3D array of shape (n_frames, ``height``, ``width``) containing AFM image</span>
-<span class="sd">            stack.</span>
-
-<span class="sd">        pixel_size_nm : float</span>
-<span class="sd">            Pixel size in nanometers for the first frame; must be positive.</span>
-
-<span class="sd">        channel : str</span>
-<span class="sd">            Channel name (e.g., 'height_trace').</span>
-
-<span class="sd">        file_path : Path</span>
-<span class="sd">            Source file or folder path.</span>
-
-<span class="sd">        frame_metadata : list of dict, optional</span>
-<span class="sd">            List of per-frame metadata dicts. Will be padded or trimmed to length</span>
-<span class="sd">            n_frames. After initialization, each entry is normalized to include a</span>
-<span class="sd">            numeric 'timestamp' (fallback to frame index if missing). A pixel scaling</span>
-<span class="sd">            value for each frame `frame_pixel_size_nm` is also recorded when data is</span>
-<span class="sd">            loaded from a raw or processed file.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        TypeError</span>
-<span class="sd">            If data is not an np.ndarray.</span>
-
-<span class="sd">        ValueError</span>
-<span class="sd">            If data.ndim != 3 or pixel_size_nm &lt;= 0, or metadata length mismatch.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Create the stack. The parameters are described in the class docstring."""</span>
         <span class="c1"># Validate that data is a 3D NumPy array</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`data` must be a NumPy array; got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -776,16 +788,27 @@
         <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">STACK_EDIT_MAP</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">"stack_edit"</span><span class="p">,</span> <span class="n">STACK_EDIT_MAP</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
 
-        <span class="c1"># 9) No match</span>
+        <span class="c1"># 9) No match: list the step names, without private and dunder methods.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"none"</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"filters"</span><span class="p">:</span> <span class="n">FILTER_MAP</span><span class="p">,</span>
+            <span class="s2">"masks"</span><span class="p">:</span> <span class="n">MASK_MAP</span><span class="p">,</span>
+            <span class="s2">"video filters"</span><span class="p">:</span> <span class="n">VIDEO_FILTER_MAP</span><span class="p">,</span>
+            <span class="s2">"stack edits"</span><span class="p">:</span> <span class="n">STACK_EDIT_MAP</span><span class="p">,</span>
+            <span class="s2">"plugin filters"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">ep</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playnano.filters"</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="s2">"plugin video filters"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">ep</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">"playnano.video_processing"</span><span class="p">)</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Unrecognized step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">'. "</span>
-            <span class="sa">f</span><span class="s2">"Available masks: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MASK_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"built-in filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"video filters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">VIDEO_FILTER_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"methods: </span><span class="si">{</span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">))]</span><span class="si">}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.filters'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
-            <span class="sa">f</span><span class="s2">"video_plugins: </span><span class="si">{</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ep</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">entry_points</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s1">'playnano.video_processing'</span><span class="p">)]</span><span class="si">}</span><span class="s2">."</span>  <span class="c1"># noqa</span>
-            <span class="sa">f</span><span class="s2">"stack_edit: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">STACK_EDIT_MAP</span><span class="p">)</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"Unrecognized step '</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">'. Available steps: "</span>
+            <span class="o">+</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">names</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="o">+</span> <span class="s2">"; and clear (removes the current mask)."</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_execute_mask_step</span><span class="p">(</span>
@@ -1042,7 +1065,13 @@
 <div class="viewcode-block" id="AFMImageStack.restore_frame_metadata">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_frame_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restore_frame_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Restore frame metadata from the last state backup, if available."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Put back the frame metadata saved before frames were removed.</span>
+
+<span class="sd">        Takes it out of ``state_backups["frame_metadata_before_edit"]``. Does</span>
+<span class="sd">        nothing if there is none. :attr:`data` is not changed; see</span>
+<span class="sd">        :meth:`restore_raw`.</span>
+<span class="sd">        """</span>
         <span class="n">backup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_backups</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"frame_metadata_before_edit"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">backup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span> <span class="o">=</span> <span class="n">backup</span>
@@ -1058,19 +1087,31 @@
         <span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"height_trace"</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Load AFM data from a file or folder into AFMImageStack, normalizing timestamps.</span>
+<span class="sd">        Load a stack from an AFM file, a folder of frames, or a saved playNano file.</span>
+
+<span class="sd">        Calls :func:`playnano.io.loader.load_afm_stack`, which picks the reader</span>
+<span class="sd">        from the file extension.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path : str or Path</span>
-<span class="sd">            Path to AFM data file or folder.</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            File or folder to load.</span>
 <span class="sd">        channel : str, optional</span>
-<span class="sd">            Channel name to load; default "height_trace".</span>
+<span class="sd">            Channel to read. Ignored for files saved by playNano, which keep their</span>
+<span class="sd">            own channel. Default is ``"height_trace"``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        AFMImageStack</span>
-<span class="sd">            Fully reconstructed AFMImageStack with processed snapshots and provenance.</span>
+<span class="sd">            The stack. Files saved by playNano also restore ``processed``,</span>
+<span class="sd">            ``masks`` and ``provenance``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If the path does not exist, or a folder holds no known file type.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the file type is not supported.</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.io.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_afm_stack</span>
 
@@ -1083,71 +1124,45 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Number of frames in the stack.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        int</span>
-<span class="sd">            Number of frames (size along axis 0).</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Number of frames."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Get the number of pixel rows (frame height).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        int</span>
-<span class="sd">            Number of rows per frame.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Height of each frame, in pixels (rows)."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Get the frame number of pixel columns.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        int</span>
-<span class="sd">            Number of columns per frame.</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Width of each frame, in pixels (columns)."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">image_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Spatial dimensions of a single frame.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple of (``height``, ``width``)</span>
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Shape of each frame, ``(height, width)``, in pixels."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
 <div class="viewcode-block" id="AFMImageStack.get_frame">
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Retrieve the 2D image array for a specific frame index.</span>
+<span class="sd">        Return one frame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        index : int</span>
-<span class="sd">            Frame index to retrieve.</span>
+<span class="sd">            Frame index; negative values count from the end.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            2D array of shape (``height``, ``width``) for the frame.</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The frame, shape (height, width). It is a view of :attr:`data`, so</span>
+<span class="sd">            changing it changes the stack.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
-<span class="sd">            If index is out of bounds.</span>
+<span class="sd">            If ``index`` is out of range.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">]</span></div>
 
@@ -1156,22 +1171,23 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Retrieve metadata dict for a specific frame index.</span>
+<span class="sd">        Return one frame's metadata.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        index : int</span>
-<span class="sd">            Frame index.</span>
+<span class="sd">            Frame index, from 0 to ``n_frames - 1``. Negative values are not</span>
+<span class="sd">            accepted.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict[str, Any]</span>
-<span class="sd">            Metadata dict for that frame (includes normalized 'timestamp').</span>
+<span class="sd">        dict</span>
+<span class="sd">            The frame's metadata dict itself, not a copy.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
-<span class="sd">            If index is out of range.</span>
+<span class="sd">            If ``index`` is out of range.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
@@ -1183,12 +1199,12 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frames">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return a list of all individual 2D frame arrays.</span>
+<span class="sd">        Return all frames as a list.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        list of np.ndarray</span>
-<span class="sd">            List of length n_frames, each a 2D array.</span>
+<span class="sd">        list of numpy.ndarray</span>
+<span class="sd">            One 2D array per frame; each is a view of :attr:`data`.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frames</span><span class="p">)]</span></div>
 
@@ -1197,16 +1213,12 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.frames_with_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">frames_with_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Yield tuples of (index, frame_array, metadata) for all frames.</span>
+<span class="sd">        Iterate over the frames with their index and metadata.</span>
 
 <span class="sd">        Yields</span>
 <span class="sd">        ------</span>
-<span class="sd">        tuple[int, np.ndarray, dict[str, Any]]</span>
-<span class="sd">            Frame index, 2D image array, and metadata dict.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        If any frame array is None, it is skipped with a warning log.</span>
+<span class="sd">        tuple of (int, numpy.ndarray, dict)</span>
+<span class="sd">            Frame index, frame (a view of :attr:`data`) and metadata dict.</span>
 <span class="sd">        """</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
             <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1219,23 +1231,27 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">AFMImageStack</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Index or slice the stack.</span>
+<span class="sd">        Return a frame (``stack[i]``) or a new stack of some frames (``stack[a:b]``).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        idx : int or slice</span>
-<span class="sd">            - If int: return 2D array for that frame.</span>
-<span class="sd">            - If slice: return new AFMImageStack with subset of frames.</span>
+<span class="sd">            A Python ``int`` gives that frame; NumPy integers are not accepted. A</span>
+<span class="sd">            slice gives a new stack with those frames and their metadata, the same</span>
+<span class="sd">            pixel size, channel and file path, and no processed data, masks,</span>
+<span class="sd">            results or provenance. Its data is a view of this stack's data.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.ndarray or AFMImageStack</span>
-<span class="sd">            2D array for int index, or new AFMImageStack for slice.</span>
+<span class="sd">        numpy.ndarray or AFMImageStack</span>
+<span class="sd">            The frame, or the new stack.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        TypeError</span>
-<span class="sd">            If idx is neither int nor slice.</span>
+<span class="sd">            If ``idx`` is neither an ``int`` nor a slice.</span>
+<span class="sd">        IndexError</span>
+<span class="sd">            If an ``int`` index is out of range.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -1265,25 +1281,16 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.export_processing_log">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">export_processing_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Export processing provenance and environment metadata to a JSON file.</span>
+<span class="sd">        Save the environment and processing provenance as a JSON file.</span>
 
-<span class="sd">        Writes</span>
-<span class="sd">        ------</span>
-
-<span class="sd">        Example JSON structure::</span>
-
-<span class="sd">            {</span>
-<span class="sd">            "environment": { ... },</span>
-<span class="sd">            "processing": {</span>
-<span class="sd">                "steps": [ ... ],</span>
-<span class="sd">                "keys_by_name": { ... }</span>
-<span class="sd">            }</span>
-<span class="sd">            }</span>
+<span class="sd">        The file holds ``{"environment": ..., "processing": {"steps": ...,</span>
+<span class="sd">        "keys_by_name": ...}}`` from :attr:`provenance`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path : str</span>
-<span class="sd">            File path to write the JSON log. Creates parent dirs as needed.</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            File to write. Its folder is created if missing; an existing file is</span>
+<span class="sd">            overwritten.</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyEncoder</span>
 
@@ -1303,34 +1310,23 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.export_analysis_log">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">export_analysis_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Export analysis provenance and results to a JSON file.</span>
+<span class="sd">        Save the analysis results as a JSON file. Currently always raises an error.</span>
 
-<span class="sd">        Expects that stack.analysis (or stack.analysis_results) and</span>
-<span class="sd">        stack.provenance["analysis"] are populated by AnalysisPipeline.run().</span>
-
-<span class="sd">        Writes</span>
-<span class="sd">        ------</span>
-<span class="sd">        Example JSON structure::</span>
-
-<span class="sd">            {</span>
-<span class="sd">            "environment": { ... },</span>
-<span class="sd">            "analysis": { &lt;step_key&gt;: outputs, ... },</span>
-<span class="sd">            "provenance": {</span>
-<span class="sd">                "steps": [ ... ],</span>
-<span class="sd">                "results_by_name": { ... },</span>
-<span class="sd">                "frame_times": [...],</span>
-<span class="sd">            }</span>
-<span class="sd">            }</span>
+<span class="sd">        It looks for results in an ``analysis_results`` attribute, which nothing in</span>
+<span class="sd">        playNano sets, so it raises ``ValueError`` even after an analysis has run.</span>
+<span class="sd">        To save results, pass the record returned by</span>
+<span class="sd">        :meth:`playnano.analysis.pipeline.AnalysisPipeline.run` to</span>
+<span class="sd">        :func:`playnano.analysis.export.export_analysis_to_json`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path : str</span>
-<span class="sd">            File path to write the JSON log. Creates parent dirs as needed.</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            File to write. Its folder is created if missing.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If no analysis results found on this stack.</span>
+<span class="sd">            If the stack has no ``analysis_results`` attribute, or it is empty.</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.analysis.utils.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumpyEncoder</span>
 
@@ -1350,40 +1346,62 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Apply a sequence of processing steps to each frame in the AFM image stack.</span>
+<span class="sd">        Apply processing steps by name, without recording provenance.</span>
 
-<span class="sd">        Steps can be:</span>
+<span class="sd">        A quick way to process a stack interactively. For processing you can</span>
+<span class="sd">        repeat and report, use</span>
+<span class="sd">        :class:`playnano.processing.pipeline.ProcessingPipeline`.</span>
 
-<span class="sd">          - "clear"       : reset any existing mask</span>
-<span class="sd">          - mask names    : keys in MASK_MAP</span>
-<span class="sd">          - filter names  : keys in FILTER_MAP</span>
-<span class="sd">          - plugin names  : entry points in 'playnano.filters' or</span>
-<span class="sd">            'playnano.video_processing'</span>
-<span class="sd">          - method names  : bound methods on this class</span>
+<span class="sd">        Each name is looked up in this order:</span>
 
-<span class="sd">        ``**kwargs`` are forwarded to mask functions or filter functions as appropriate.</span>
-
-<span class="sd">        This is a stateless convenience: applies clear/mask/filter steps in order,</span>
-<span class="sd">        snapshots 'raw' and the data after each filter step in self.processed, but does</span>
-<span class="sd">        not assign unique keys per step or update provenance.</span>
+<span class="sd">        1. ``"clear"``: forget the current mask;</span>
+<span class="sd">        2. a mask generator (``MASK_MAP``), which sets the mask for later</span>
+<span class="sd">           filters;</span>
+<span class="sd">        3. a method of this class;</span>
+<span class="sd">        4. a plugin registered under ``playnano.filters`` or</span>
+<span class="sd">           ``playnano.video_processing``;</span>
+<span class="sd">        5. a built-in filter (``FILTER_MAP``); if a mask is set and the filter</span>
+<span class="sd">           has a masked version (``MASK_FILTERS_MAP``), that version is used;</span>
+<span class="sd">        6. a video filter (``VIDEO_FILTER_MAP``);</span>
+<span class="sd">        7. a stack edit (``STACK_EDIT_MAP``), which also clears the mask.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        steps : list of str</span>
-<span class="sd">            Sequence of step names (e.g. ["remove_plane", "mask_threshold",</span>
-<span class="sd">            "gaussian_filter"]).</span>
+<span class="sd">            Step names, applied in order, for example</span>
+<span class="sd">            ``["remove_plane", "mask_threshold", "row_median_align"]``.</span>
 <span class="sd">        **kwargs</span>
-<span class="sd">            Forwarded to each mask/filter function.</span>
+<span class="sd">            Passed to every step. A step that does not accept them is called</span>
+<span class="sd">            without any.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            Final processed 3D array (shape (n_frames, ``height``, ``width``)).</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The processed data, also stored in :attr:`data`.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a step name is not found.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        For tracked, reproducible processing,</span>
-<span class="sd">        use ProcessingPipeline.</span>
+<span class="sd">        :attr:`processed` gets ``"raw"`` (if not already there) and a copy of the</span>
+<span class="sd">        data after each step except ``"clear"`` and masks, keyed by step name, so a</span>
+<span class="sd">        repeated step replaces its earlier copy. Masks are not stored. If a filter</span>
+<span class="sd">        fails on a frame, that frame is left unchanged and a warning is logged; if</span>
+<span class="sd">        a video filter fails, the step is skipped.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">        &gt;&gt;&gt; yy, xx = np.mgrid[0:32, 0:32]</span>
+<span class="sd">        &gt;&gt;&gt; data = np.stack([0.1 * xx + 0.05 * yy] * 2).astype(float)</span>
+<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(data, 1.0, "height_trace", "demo.h5-jpk")</span>
+<span class="sd">        &gt;&gt;&gt; out = stack.apply(["remove_plane"])</span>
+<span class="sd">        &gt;&gt;&gt; sorted(stack.processed), bool(np.allclose(out, 0))</span>
+<span class="sd">        (['raw', 'remove_plane'], True)</span>
 <span class="sd">        """</span>
         <span class="c1"># 1) Snapshot raw data once</span>
         <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
@@ -1450,7 +1468,7 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.time_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">time_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Get timestamp for a given frame index, fallback to index if missing.</span>
+<span class="sd">        Return a frame's time in seconds, or its index if it has no time.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1460,25 +1478,27 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
-<span class="sd">            Timestamp in seconds; if metadata lacks 'timestamp', returns float(idx).</span>
+<span class="sd">            The frame's ``"timestamp"``, or ``float(idx)`` if it is missing or</span>
+<span class="sd">            None.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
-<span class="sd">            If idx is out of range.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        This fallback (index-as-time) assumes uniform frame intervals</span>
-<span class="sd">        and is useful for stacks without explicit time metadata.</span>
+<span class="sd">            If ``idx`` is out of range.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {}, {"timestamp": 2.0}]</span>
-<span class="sd">        &gt;&gt;&gt; stack.time_for_frame(1)</span>
-<span class="sd">        1.0</span>
-<span class="sd">        &gt;&gt;&gt; stack.time_for_frame(2)</span>
-<span class="sd">        2.0</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">        ...     np.zeros((3, 4, 4)),</span>
+<span class="sd">        ...     1.0,</span>
+<span class="sd">        ...     "height_trace",</span>
+<span class="sd">        ...     "demo.h5-jpk",</span>
+<span class="sd">        ...     frame_metadata=[{"timestamp": 0.0}, {}, {"timestamp": 0.4}],</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; stack.time_for_frame(1), stack.time_for_frame(2)</span>
+<span class="sd">        (1.0, 0.4)</span>
 <span class="sd">        """</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timestamp"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ts</span></div>
@@ -1488,10 +1508,7 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.scaling_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">scaling_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Get the frame_pixel_size_nm for a given frame index.</span>
-
-<span class="sd">        If the frame_metadata dictionaries or frame_pixel_size_nm values are missing</span>
-<span class="sd">        fallback to the pixel_size_nm attribute.</span>
+<span class="sd">        Return a frame's pixel size in nm.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1501,31 +1518,27 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
-<span class="sd">            Pixel to nanometer scaling factor.</span>
+<span class="sd">            The frame's ``"frame_pixel_size_nm"``, or :attr:`pixel_size_nm` if the</span>
+<span class="sd">            frame has no such key. A key set to None returns None.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
-<span class="sd">            If idx is out of range.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        The fallback to pixel_size_nm is valid for stacks with a constant size.</span>
+<span class="sd">            If ``idx`` is out of range.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack.pixel_size_nm = 1.0   # fallback value</span>
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [</span>
-<span class="sd">        ...     {"frame_pixel_size_nm": 1.0},</span>
-<span class="sd">        ...     {},</span>
-<span class="sd">        ...     {"frame_pixel_size_nm": 2.0},</span>
-<span class="sd">        ... ]</span>
-<span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(0)</span>
-<span class="sd">        1.0</span>
-<span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(1)</span>
-<span class="sd">        1.0          # falls back to stack.pixel_size_nm</span>
-<span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(2)</span>
-<span class="sd">        2.0</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">        ...     np.zeros((2, 4, 4)),</span>
+<span class="sd">        ...     1.0,</span>
+<span class="sd">        ...     "height_trace",</span>
+<span class="sd">        ...     "demo.h5-jpk",</span>
+<span class="sd">        ...     frame_metadata=[{"frame_pixel_size_nm": 2.0}, {}],</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; stack.scaling_for_frame(0), stack.scaling_for_frame(1)</span>
+<span class="sd">        (2.0, 1.0)</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frame_pixel_size_nm"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size_nm</span><span class="p">)</span></div>
 
@@ -1534,26 +1547,28 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.get_frame_times">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frame_times</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return a list of timestamps (in seconds) for each frame in the stack.</span>
+<span class="sd">        Return every frame's time in seconds.</span>
 
-<span class="sd">        This method uses `time_for_frame()` to retrieve the timestamp for</span>
-<span class="sd">        each frame, which allows central control over fallback behavior.</span>
+<span class="sd">        Uses :meth:`time_for_frame`, so a frame without a time gets its index.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        list[float]</span>
-<span class="sd">            List of timestamps per frame. If unavailable, the frame index is</span>
-<span class="sd">            used as a fallback.</span>
+<span class="sd">        list of float</span>
+<span class="sd">            One time per frame.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {"timestamp": 1.0}]</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">        &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">        ...     np.zeros((3, 4, 4)),</span>
+<span class="sd">        ...     1.0,</span>
+<span class="sd">        ...     "height_trace",</span>
+<span class="sd">        ...     "demo.h5-jpk",</span>
+<span class="sd">        ...     frame_metadata=[{"timestamp": 0.0}, {"timestamp": 0.5}],</span>
+<span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; stack.get_frame_times()</span>
-<span class="sd">        [0.0, 1.0]</span>
-
-<span class="sd">        &gt;&gt;&gt; stack.frame_metadata = [{"timestamp": 0.0}, {}]</span>
-<span class="sd">        &gt;&gt;&gt; stack.get_frame_times()</span>
-<span class="sd">        [0.0, 1.0]</span>
+<span class="sd">        [0.0, 0.5, 2.0]</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_for_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">))]</span></div>
 
@@ -1562,10 +1577,7 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.channel_for_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">channel_for_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Get the channel name for a given frame index.</span>
-
-<span class="sd">        Returns the value of the 'channel' key in the frame's metadata if present,</span>
-<span class="sd">        otherwise falls back to the global stack-level channel.</span>
+<span class="sd">        Return a frame's channel name.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1575,7 +1587,13 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            Channel name for the frame.</span>
+<span class="sd">            The frame's ``"channel"`` metadata if it has one, otherwise</span>
+<span class="sd">            :attr:`channel`.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IndexError</span>
+<span class="sd">            If ``idx`` is out of range.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_metadata</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span></div>
 
@@ -1583,13 +1601,11 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">acquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        File-level acquisition metadata.</span>
+<span class="sd">        Settings of the whole recording, from the file's header.</span>
 
-<span class="sd">        May include bidirectional, motion setting, absolute start time, etc. Populated</span>
-<span class="sd">        by the format reader; empty when unavailable.</span>
-
-<span class="sd">        Survives frame edits, these are properties of the acquisition, not the frame</span>
-<span class="sd">        set.</span>
+<span class="sd">        For example whether the scan was bidirectional, or the file version,</span>
+<span class="sd">        depending on the format; empty if the reader found none. Stored in</span>
+<span class="sd">        ``provenance["acquisition"]``, and kept when frames are removed.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">provenance</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"acquisition"</span><span class="p">,</span> <span class="p">{})</span>
 
@@ -1597,17 +1613,21 @@
 <a class="viewcode-back" href="../../api/playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.restore_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">restore_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Restore self.data from the 'raw' snapshot in self.processed.</span>
+<span class="sd">        Restore the original data by loading from the 'raw' snapshot in self.processed.</span>
+
+<span class="sd">        Copies ``processed["raw"]`` into :attr:`data` and calls</span>
+<span class="sd">        :meth:`restore_frame_metadata`. :attr:`processed`, :attr:`masks` and</span>
+<span class="sd">        :attr:`provenance` are not changed.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            The restored raw data.</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The restored data.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        KeyError</span>
-<span class="sd">            If 'raw' data is not available in self.processed.</span>
+<span class="sd">            If there is no ``processed["raw"]``.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="s2">"raw"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"No raw data snapshot available to restore."</span><span class="p">)</span>
@@ -1654,7 +1674,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

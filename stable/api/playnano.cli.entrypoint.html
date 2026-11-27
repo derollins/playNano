@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.cli.entrypoint module - playnano v0.5.3 documentation</title>
+        <title>playnano.cli.entrypoint module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,54 +515,54 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.cli.entrypoint">
 <span id="playnano-cli-entrypoint-module"></span><h1>playnano.cli.entrypoint module<a class="headerlink" href="#module-playnano.cli.entrypoint" title="Link to this heading">¶</a></h1>
-<p>Entry point for the playNano CLI.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">playnano</span></code> command: argument parsing and dispatch to the subcommands.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.cli.entrypoint.main">
 <span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.main" title="Link to this definition">¶</a></dt>
-<dd><p>Parse command-line arguments and dispatch to the appropriate CLI subcommand.</p>
-<p>This function sets up the top-level argparse parser, configures logging,
-and then calls the appropriate handler function (<cite>handle_play</cite>, <cite>handle_process</cite>,
-<cite>handle_analyze</cite>, or <cite>handle_processing_wizard</cite>) based on the chosen subcommand.</p>
+<dd><p>Run the <code class="docutils literal notranslate"><span class="pre">playnano</span></code> command.</p>
+<p>Parses the command line, sets the log level (<code class="docutils literal notranslate"><span class="pre">--log-level</span></code>) and runs the
+subcommand:</p>
 <ul class="simple">
-<li><p>Set up argument parsing for ‘play’, ‘process’ and ‘wizard’ subcommands,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">play</span></code>: view a stack in the GUI (<a class="reference internal" href="playnano.cli.handlers.html#playnano.cli.handlers.handle_play" title="playnano.cli.handlers.handle_play"><code class="xref py py-func docutils literal notranslate"><span class="pre">handle_play()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">process</span></code>: process a stack and export it
+(<a class="reference internal" href="playnano.cli.handlers.html#playnano.cli.handlers.handle_process" title="playnano.cli.handlers.handle_process"><code class="xref py py-func docutils literal notranslate"><span class="pre">handle_process()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">analyze</span></code>: analyse a stack and save the results
+(<a class="reference internal" href="playnano.cli.handlers.html#playnano.cli.handlers.handle_analyze" title="playnano.cli.handlers.handle_analyze"><code class="xref py py-func docutils literal notranslate"><span class="pre">handle_analyze()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wizard</span></code>: build and run processing and analysis interactively
+(<a class="reference internal" href="playnano.cli.handlers.html#playnano.cli.handlers.handle_wizard" title="playnano.cli.handlers.handle_wizard"><code class="xref py py-func docutils literal notranslate"><span class="pre">handle_wizard()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">env-info</span></code>: print the software environment.</p></li>
 </ul>
-<p>each with their own options.
-- Configure logging level based on user input.
-- Show help and exit with code 2 if no subcommand is provided.
-- Call the handler function associated with the chosen subcommand.</p>
-<dl class="simple">
-<dt>Usage:</dt><dd><dl class="simple">
-<dt>playnano play    &lt;input_file&gt; [–processing …] [–output-folder …]</dt><dd><p>[–output-name …] [–scale-bar-nm …] [–channel …]</p>
-</dd>
-<dt>playnano process &lt;input_file&gt; [–processing …] [–export …] [–make-gif]</dt><dd><p>[–output-folder …] [–output-name …] [–scale-bar-nm …] [–channel …]</p>
-</dd>
-<dt>playnano analyze &lt;input_file&gt; [–analysis-steps … | –analysis-file …]</dt><dd><p>[–output-folder …] [–output-name …] [–channel …]</p>
-</dd>
-<dt>playnano wizard  &lt;input_file&gt; [–channel …] [–scale-bar-nm …]</dt><dd><p>[–output-folder …] [–output-name …]</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<p>Run <code class="docutils literal notranslate"><span class="pre">playnano</span> <span class="pre">&lt;subcommand&gt;</span> <span class="pre">--help</span></code> for each subcommand’s options.</p>
+<p>Exit status is 0 on success; 1 if the command fails (the subcommands log
+the error and exit with 1); 2 for a usage error, including no
+subcommand, or an unexpected error.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.cli.entrypoint.make_fps_type">
 <span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">make_fps_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fallback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#make_fps_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.make_fps_type" title="Link to this definition">¶</a></dt>
-<dd><p>Return an argparse type function with a configurable fallback FPS.</p>
+<dd><p>Make an argparse <code class="docutils literal notranslate"><span class="pre">type</span></code> that reads a frame rate, with a fallback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fallback</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Frame rate used, with a logged warning, when the value is not a number.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function that converts the option’s text to a float.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.cli.entrypoint.setup_logging">
 <span class="sig-prename descclassname"><span class="pre">playnano.cli.entrypoint.</span></span><span class="sig-name descname"><span class="pre">setup_logging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/playnano/cli/entrypoint.html#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.cli.entrypoint.setup_logging" title="Link to this definition">¶</a></dt>
-<dd><p>Configure the logging format and level.</p>
+<dd><p>Set the log format and level for the command line.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Logging level (e.g., logging.INFO, logging.DEBUG). Default is logging.INFO.</p>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Logging level, for example <code class="docutils literal notranslate"><span class="pre">logging.DEBUG</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">logging.INFO</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -638,7 +639,7 @@ and then calls the appropriate handler function (<cite>handle_play</cite>, <cite
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

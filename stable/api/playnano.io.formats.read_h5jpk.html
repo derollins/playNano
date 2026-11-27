@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.io.formats.read_h5jpk module - playnano v0.5.3 documentation</title>
+        <title>playnano.io.formats.read_h5jpk module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,44 +515,69 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.io.formats.read_h5jpk">
 <span id="playnano-io-formats-read-h5jpk-module"></span><h1>playnano.io.formats.read_h5jpk module<a class="headerlink" href="#module-playnano.io.formats.read_h5jpk" title="Link to this heading">¶</a></h1>
-<p>Module to decode and load .h5-jpk high speed AFM data files into Python NumPy arrays.</p>
-<p>Files containing multiple image frames are read together.
-Converts the height data into nm from another metric unit (e.g. m).</p>
+<p>Load JPK <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> high-speed AFM files as an AFMImageStack.</p>
+<p>All frames are read from one HDF5 file. Channels with a length unit (for example
+m) are converted to nm; see <a class="reference internal" href="#playnano.io.formats.read_h5jpk.apply_z_unit_conversion" title="playnano.io.formats.read_h5jpk.apply_z_unit_conversion"><code class="xref py py-func docutils literal notranslate"><span class="pre">apply_z_unit_conversion()</span></code></a>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_h5jpk.apply_z_unit_conversion">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_h5jpk.</span></span><span class="sig-name descname"><span class="pre">apply_z_unit_conversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'height_trace'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_h5jpk.html#apply_z_unit_conversion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_h5jpk.apply_z_unit_conversion" title="Link to this definition">¶</a></dt>
-<dd><p>Apply z unit conversion to nanometers if needed, or guess if unknown.</p>
+<dd><p>Convert a channel’s values to nm if it has a length unit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Channel values, already z-scaled.</p></li>
+<li><p><strong>channel_group</strong> (<a class="reference external" href="https://docs.h5py.org/en/stable/high/group.html#h5py.Group" title="(in h5py v3.16)"><em>h5py.Group</em></a>) – The channel’s group, whose attributes give the unit.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Channel name, used only in log messages. Default is <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The values in nm if the unit is a length; unchanged if it is <code class="docutils literal notranslate"><span class="pre">&quot;V&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;v&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;deg&quot;</span></code>. If the unit is missing or not recognised, it is
+guessed from the range of the data, falling back to nm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.io.formats.read_h5jpk.load_h5jpk">
 <span class="sig-prename descclassname"><span class="pre">playnano.io.formats.read_h5jpk.</span></span><span class="sig-name descname"><span class="pre">load_h5jpk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack"><span class="pre">AFMImageStack</span></a></span></span><a class="reference internal" href="../_modules/playnano/io/formats/read_h5jpk.html#load_h5jpk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.io.formats.read_h5jpk.load_h5jpk" title="Link to this definition">¶</a></dt>
-<dd><p>Load image stack from a JPK .h5-jpk file, scaled to nanometers.</p>
-<p>Frames are read from the channel’s frame axis, z-scaled, converted to nm, and
-given real per-frame timestamps from the file’s start/end-time datasets (with an
-interlace-aware scan-rate fallback). Interlace (bidirectional) and motion are read
-from the measurement attributes.</p>
+<dd><p>Load a JPK <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> file.</p>
+<p>Each frame is reshaped from the channel’s data, z-scaled and converted to nm
+(see <a class="reference internal" href="#playnano.io.formats.read_h5jpk.apply_z_unit_conversion" title="playnano.io.formats.read_h5jpk.apply_z_unit_conversion"><code class="xref py py-func docutils literal notranslate"><span class="pre">apply_z_unit_conversion()</span></code></a>). Frame times come from the file’s
+start and end time records; if they are missing, they are worked out from the
+scan rate, allowing for interlaced (bidirectional) scanning.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the .h5-jpk file.</p></li>
-<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to extract.</p></li>
-<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Flip each image vertically if True.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a>) – The <code class="docutils literal notranslate"><span class="pre">.h5-jpk</span></code> file.</p></li>
+<li><p><strong>channel</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Channel to load, for example <code class="docutils literal notranslate"><span class="pre">&quot;height_trace&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;measuredheight_trace&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;amplitude_retrace&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;phase_trace&quot;</span></code>: the channel name in lower case, <code class="docutils literal notranslate"><span class="pre">_</span></code>, then
+<code class="docutils literal notranslate"><span class="pre">trace</span></code> or <code class="docutils literal notranslate"><span class="pre">retrace</span></code>.</p></li>
+<li><p><strong>flip_image</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Flip each frame vertically. Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Loaded AFM image stack with metadata and per-frame info.</p>
+<dd class="field-even"><p>The stack. Each <code class="docutils literal notranslate"><span class="pre">frame_metadata</span></code> entry holds <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> (s from
+the first frame), <code class="docutils literal notranslate"><span class="pre">frame_pixel_size_nm</span></code>, <code class="docutils literal notranslate"><span class="pre">line_rate</span></code>,
+<code class="docutils literal notranslate"><span class="pre">frame_duration_s</span></code>, <code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> and <code class="docutils literal notranslate"><span class="pre">scan_direction</span></code>.
+<code class="docutils literal notranslate"><span class="pre">stack.acquisition[&quot;bidirectional&quot;]</span></code> records whether the scan was
+interlaced.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack" title="playnano.afm_stack.AFMImageStack">AFMImageStack</a></p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the channel is not in the file.</p>
+</dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>In .h5-jpk files the pixel size, interlace mode and motion are defined at the
-measurement level and are constant across all frames, so those metadata values are
-identical for every frame. Timestamps and frame durations are per-frame.</p>
-<p>This differs from .jpk and .spm folder-based data, where pixel size may vary
-between frames and is stored per-frame.</p>
+<p>Pixel size, interlacing and scan direction are set per measurement, so they
+are the same for every frame. Only the first measurement in the file is read;
+a warning is logged if there are more.</p>
 </dd></dl>
 
 </section>
@@ -625,7 +651,7 @@ between frames and is stored per-frame.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

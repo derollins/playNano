@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.analysis.modules.particle_region_extraction - playnano v0.5.3 documentation</title>
+        <title>playnano.analysis.modules.particle_region_extraction - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -508,27 +509,20 @@
           <h1>Source code for playnano.analysis.modules.particle_region_extraction</h1><div class="highlight"><pre>
 <span></span><span class="c1"># mypy: disable-error-code=type-arg</span>
 <span class="sd">"""</span>
-<span class="sd">Particle region extraction module for the playNano analysis pipeline.</span>
+<span class="sd">Analysis module that cuts out each tracked particle's region, frame by frame.</span>
 
-<span class="sd">This module extracts per-particle image regions over time using labeled masks</span>
-<span class="sd">from a detection module (e.g. ``feature_detection``) and particle associations</span>
-<span class="sd">from a tracking module (e.g. ``particle_tracking``).</span>
+<span class="sd">For each track from ``particle_tracking`` and each frame it spans, the module</span>
+<span class="sd">finds the particle's labelled region in the ``feature_detection`` output and</span>
+<span class="sd">records:</span>
 
-<span class="sd">For each tracked particle and each frame, the module locates the labeled region</span>
-<span class="sd">and extracts:</span>
+<span class="sd">- its tight bounding box,</span>
+<span class="sd">- a bounding box enlarged by padding, made square or set to a fixed size,</span>
+<span class="sd">- a crop of the frame to that box (optional),</span>
+<span class="sd">- a crop of the particle's mask to that box (optional).</span>
 
-<span class="sd">- the tight bounding-box coordinates of the region,</span>
-<span class="sd">- an optionally padded / squared / fixed-size bounding box,</span>
-<span class="sd">- a crop of the raw image stack frame (optional),</span>
-<span class="sd">- a crop of the binary object mask (optional).</span>
-
-<span class="sd">This module is a data-organisation step: it assembles per-track, per-frame</span>
-<span class="sd">region data into a consistent structure for downstream analysis and export.</span>
-<span class="sd">Per-frame statistics (mean, max, etc.) are already produced by the detection</span>
-<span class="sd">module; time-series statistics belong in a dedicated downstream module.</span>
-
-<span class="sd">All outputs are ``None`` / ``np.nan`` for frames where the particle is absent</span>
-<span class="sd">(dense tracks with missing detections) or where indices are out of range.</span>
+<span class="sd">It only organises data: per-frame measurements come from the detection step,</span>
+<span class="sd">and later modules such as ``tracked_particle_boundary_size`` and</span>
+<span class="sd">``particle_region_media_export`` use its output.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -658,50 +652,48 @@
 <a class="viewcode-back" href="../../../../api/playnano.analysis.modules.particle_region_extraction.html#playnano.analysis.modules.particle_region_extraction.ParticleRegionExtractionModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParticleRegionExtractionModule</span><span class="p">(</span><span class="n">AnalysisModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Extract per-particle image regions over time from tracked, labeled detections.</span>
+<span class="sd">    Cut out each tracked particle's region in every frame of its track.</span>
 
-<span class="sd">    For each tracked particle and frame the module resolves the labeled region</span>
-<span class="sd">    from the detection output, computes a bounding box, and optionally crops</span>
-<span class="sd">    the raw image frame and/or binary mask.</span>
+<span class="sd">    Pipeline name: ``"particle_region_extraction"``. It needs the outputs of</span>
+<span class="sd">    ``particle_tracking`` and of a detection step that gives labelled regions</span>
+<span class="sd">    (``feature_detection``). See :meth:`run` for the parameters and outputs.</span>
 
-<span class="sd">    This is a data-organisation step.  Per-frame statistics are available from</span>
-<span class="sd">    the detection module output; time-series analysis belongs in a downstream</span>
-<span class="sd">    module.</span>
+<span class="sd">    Bounding boxes are ``(min_row, min_col, max_row, max_col)`` in pixels, with</span>
+<span class="sd">    the maxima exclusive, so ``frame[min_row:max_row, min_col:max_col]`` is the</span>
+<span class="sd">    crop. Image crops are taken from ``stack.data``, so from processed data if the</span>
+<span class="sd">    stack was processed.</span>
 
-<span class="sd">    The module requires:</span>
-<span class="sd">    - output from a particle tracking module (e.g. ``particle_tracking``)</span>
-<span class="sd">    - output from a labeled detection module providing:</span>
-<span class="sd">        * ``features_per_frame`` — list of per-frame feature dicts with a</span>
-<span class="sd">          region label under ``label_key``.</span>
-<span class="sd">        * ``labeled_masks`` — list of 2-D integer-labeled NumPy arrays.</span>
-
-<span class="sd">    Parameters accepted in :meth:`run`</span>
-<span class="sd">    ------------------------------------</span>
-<span class="sd">    padding : int, default 0</span>
-<span class="sd">        Pixels to add around the tight bounding box (clipped to image bounds).</span>
-<span class="sd">    fixed_box_size : int or None, default None</span>
-<span class="sd">        Enforce a fixed-size crop centred on the detection, in pixels.</span>
-<span class="sd">    square : bool, default False</span>
-<span class="sd">        Force the bounding box to be square (ignored when ``fixed_box_size``</span>
-<span class="sd">        is set).</span>
-<span class="sd">    fixed_size_mode : {"global", "per_track"}, default ``"global"``</span>
-<span class="sd">        ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``</span>
-<span class="sd">        computes the size per track as the largest detection plus</span>
-<span class="sd">        ``2 * padding``.</span>
-<span class="sd">    include_image : bool, default True</span>
-<span class="sd">        Include ``"image_crop"`` (raw frame crop) in each region dict.</span>
-<span class="sd">    include_mask : bool, default True</span>
-<span class="sd">        Include ``"mask_crop"`` (binary foreground crop) in each region dict.</span>
-<span class="sd">    include_bbox : bool, default True</span>
-<span class="sd">        Include ``"bbox_tight"`` and ``"bbox_padded"`` in each region dict</span>
-<span class="sd">        and in the flat table.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.afm_stack import AFMImageStack</span>
+<span class="sd">    &gt;&gt;&gt; from playnano.analysis.pipeline import AnalysisPipeline</span>
+<span class="sd">    &gt;&gt;&gt; data = np.zeros((3, 64, 64))</span>
+<span class="sd">    &gt;&gt;&gt; for t in range(3):</span>
+<span class="sd">    ...     data[t, 10 + t : 16 + t, 10:16] = 3.0</span>
+<span class="sd">    &gt;&gt;&gt; stack = AFMImageStack(</span>
+<span class="sd">    ...     data,</span>
+<span class="sd">    ...     pixel_size_nm=2.0,</span>
+<span class="sd">    ...     channel="height_trace",</span>
+<span class="sd">    ...     file_path="demo.h5-jpk",</span>
+<span class="sd">    ...     frame_metadata=[{"timestamp": 0.5 * t} for t in range(3)],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; pipeline = AnalysisPipeline()</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("feature_detection", mask_fn="mask_threshold", threshold=1.0)</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("particle_tracking", max_distance=5)</span>
+<span class="sd">    &gt;&gt;&gt; pipeline.add("particle_region_extraction", padding=2)</span>
+<span class="sd">    &gt;&gt;&gt; record = pipeline.run(stack)</span>
+<span class="sd">    &gt;&gt;&gt; output = record["analysis"]["step_3_particle_region_extraction"]</span>
+<span class="sd">    &gt;&gt;&gt; region = output["per_track"][0]["regions"][1]</span>
+<span class="sd">    &gt;&gt;&gt; region["bbox_tight"], region["bbox_padded"], region["image_crop"].shape</span>
+<span class="sd">    ((11, 10, 17, 16), (9, 8, 19, 18), (10, 10))</span>
 <span class="sd">    """</span>
 
     <span class="n">version</span> <span class="o">=</span> <span class="s2">"0.1.0"</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Module name for registration in the analysis pipeline."""</span>
+<span class="w">        </span><span class="sd">"""Name of this module in a pipeline, ``"particle_region_extraction"``."""</span>
         <span class="k">return</span> <span class="s2">"particle_region_extraction"</span>
 
     <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"particle_tracking"</span><span class="p">]</span>
@@ -879,61 +871,82 @@
         <span class="n">label_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"label"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Execute the region extraction.</span>
+<span class="sd">        Find, box and crop each tracked particle's region in each frame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        stack : AFMImageStack</span>
-<span class="sd">            Input image stack.  Must support ``stack[frame_idx]`` integer</span>
-<span class="sd">            indexing when ``include_image=True``.</span>
-<span class="sd">        previous_results : dict, optional</span>
-<span class="sd">            Outputs from earlier pipeline modules.</span>
-<span class="sd">        tracking_module : str, default ``"particle_tracking"``</span>
-<span class="sd">            Key of the tracking module in ``previous_results``.</span>
-<span class="sd">        detection_module : str, default ``"feature_detection"``</span>
-<span class="sd">            Key of the labeled detection module in ``previous_results``.</span>
-<span class="sd">        padding : int, default 0</span>
-<span class="sd">            Pixels to add around the tight bounding box on each side.</span>
-<span class="sd">        fixed_box_size : int or None, default None</span>
-<span class="sd">            Enforce a fixed crop size in pixels, centred on the detection.</span>
-<span class="sd">        square : bool, default False</span>
-<span class="sd">            Force the bounding box to be square (ignored when</span>
-<span class="sd">            ``fixed_box_size`` is set).</span>
-<span class="sd">        fixed_size_mode : {"global", "per_track"}, default ``"global"``</span>
-<span class="sd">            ``"global"`` uses ``fixed_box_size`` directly; ``"per_track"``</span>
-<span class="sd">            computes the size per track as the largest detection plus</span>
-<span class="sd">            ``2 * padding``.</span>
-<span class="sd">        include_image : bool, default True</span>
-<span class="sd">            Include ``"image_crop"`` in each region dict.</span>
-<span class="sd">        include_mask : bool, default True</span>
-<span class="sd">            Include ``"mask_crop"`` in each region dict.</span>
-<span class="sd">        include_bbox : bool, default True</span>
-<span class="sd">            Include ``"bbox_tight"`` / ``"bbox_padded"`` in each region dict</span>
-<span class="sd">            and in ``flat_table``.</span>
-<span class="sd">        label_key : str, default ``"label"``</span>
-<span class="sd">            Key used to look up the region label in each feature dict.</span>
+<span class="sd">            The stack: crops are taken from ``stack.data`` and times from its frame</span>
+<span class="sd">            metadata (the frame index if a frame has no time).</span>
+<span class="sd">        previous_results : dict</span>
+<span class="sd">            Outputs of earlier steps. Must hold the outputs of ``tracking_module``</span>
+<span class="sd">            and ``detection_module``.</span>
+<span class="sd">        tracking_module : str, optional</span>
+<span class="sd">            Name of the tracking step. Default is ``"particle_tracking"``.</span>
+<span class="sd">        detection_module : str, optional</span>
+<span class="sd">            Name of the detection step. Its output must have ``"labeled_masks"`` and</span>
+<span class="sd">            ``"features_per_frame"``. Default is ``"feature_detection"``.</span>
+<span class="sd">        padding : int, optional</span>
+<span class="sd">            Pixels added on each side of the tight box, limited by the frame edges.</span>
+<span class="sd">            Default is 0.</span>
+<span class="sd">        fixed_box_size : int, optional</span>
+<span class="sd">            Make every box this many pixels square, centred on the padded box and</span>
+<span class="sd">            shifted to stay inside the frame. Overrides ``square``. Default is None.</span>
+<span class="sd">        square : bool, optional</span>
+<span class="sd">            Make the padded box square, with sides equal to its longer side. Not</span>
+<span class="sd">            used if a fixed size is set. Default is False.</span>
+<span class="sd">        fixed_size_mode : {"global", "per_track"}, optional</span>
+<span class="sd">            ``"global"`` uses ``fixed_box_size`` for every track. ``"per_track"``</span>
+<span class="sd">            gives each track its own size: its largest tight box side plus</span>
+<span class="sd">            ``2 * padding``. ``"per_track"`` only takes effect if ``fixed_box_size``</span>
+<span class="sd">            is also set (to any value, which is then not used). Default is</span>
+<span class="sd">            ``"global"``.</span>
+<span class="sd">        include_image : bool, optional</span>
+<span class="sd">            Add ``"image_crop"`` to each region. Default is True.</span>
+<span class="sd">        include_mask : bool, optional</span>
+<span class="sd">            Add ``"mask_crop"`` to each region. Default is True.</span>
+<span class="sd">        include_bbox : bool, optional</span>
+<span class="sd">            Add the boxes to each region and to ``flat_table``. Default is True.</span>
+<span class="sd">        label_key : str, optional</span>
+<span class="sd">            Key of each feature's label in ``labeled_masks``. Default is</span>
+<span class="sd">            ``"label"``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            ``per_track`` : list of dict</span>
-<span class="sd">                One entry per track with ``"track_id"``, ``"frames"``,</span>
-<span class="sd">                ``"timestamps"``, ``"fixed_box_size"``, and ``"regions"``.</span>
-<span class="sd">                Each region entry is ``None`` (missing detection) or a dict</span>
-<span class="sd">                containing:</span>
+<span class="sd">            ``"per_track"``</span>
+<span class="sd">                One dict per track, with ``track_id``, ``frames``, ``timestamps``</span>
+<span class="sd">                (s), ``fixed_box_size`` (the size used for this track, or None) and</span>
+<span class="sd">                ``regions``: for each frame, None if the particle was not detected,</span>
+<span class="sd">                otherwise a dict with:</span>
 
-<span class="sd">                - ``"frame"``, ``"timestamp"``, ``"label"``</span>
-<span class="sd">                - ``"bbox_tight"``, ``"bbox_padded"`` *(if include_bbox)*</span>
-<span class="sd">                - ``"image_crop"`` *(if include_image)*</span>
-<span class="sd">                - ``"mask_crop"`` *(if include_mask)*</span>
+<span class="sd">                - ``frame``, ``timestamp`` and ``label``;</span>
+<span class="sd">                - ``bbox_tight``: the box around the largest connected piece of the</span>
+<span class="sd">                  label, or None if the label is not in the mask;</span>
+<span class="sd">                - ``bbox_padded``: the box after ``padding``, ``square`` and</span>
+<span class="sd">                  ``fixed_box_size``;</span>
+<span class="sd">                - ``image_crop``: the frame cropped to ``bbox_padded`` (array);</span>
+<span class="sd">                - ``mask_crop``: boolean mask of the particle in that crop.</span>
+<span class="sd">            ``"flat_table"``</span>
+<span class="sd">                One dict per track and frame, with ``track_id``, ``frame``,</span>
+<span class="sd">                ``timestamp``, ``label`` and, if ``include_bbox``, the box corners as</span>
+<span class="sd">                ``bbox_tight_minr``, ``bbox_tight_minc``, ``bbox_tight_maxr``,</span>
+<span class="sd">                ``bbox_tight_maxc`` and the same for ``bbox_padded``. Missing values</span>
+<span class="sd">                are NaN. Crops are not included. Ready for :class:`pandas.DataFrame`.</span>
+<span class="sd">            ``"summary"``</span>
+<span class="sd">                Counts (``n_tracks``, ``n_rows``, ``n_skipped_index_errors``,</span>
+<span class="sd">                ``n_missing_region_measurements``) and the settings used.</span>
 
-<span class="sd">            ``flat_table`` : list of dict</span>
-<span class="sd">                Row-per-frame table suitable for ``pandas.DataFrame``.</span>
-<span class="sd">                Array crops are excluded; bbox columns are included when</span>
-<span class="sd">                ``include_bbox=True``.</span>
+<span class="sd">            Frames or feature indices out of range give a warning and a None region.</span>
 
-<span class="sd">            ``summary`` : dict</span>
-<span class="sd">                Bookkeeping counters and configuration echo.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If ``previous_results`` is None or lacks the tracking or detection</span>
+<span class="sd">            output (or their ``"tracks"``, ``"labeled_masks"`` or</span>
+<span class="sd">            ``"features_per_frame"``), or a tracked feature has no ``label_key``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``fixed_size_mode`` is not recognised.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">previous_results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requires previous results to run."</span><span class="p">)</span>
@@ -1276,7 +1289,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=46bd48cc"></script>

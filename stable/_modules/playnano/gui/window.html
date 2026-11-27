@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.gui.window - playnano v0.5.3 documentation</title>
+        <title>playnano.gui.window - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -163,7 +163,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -473,6 +473,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -507,13 +508,9 @@
         <article role="main" id="furo-main-content">
           <h1>Source code for playnano.gui.window</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Main GUI window for browsing and exporting HS-AFM image stacks.</span>
+<span class="sd">The playNano main window: playback, processing, colour scale and export.</span>
 
-<span class="sd">Provides:</span>
-<span class="sd">- Frame playback controls (play/pause, slider, FPS).</span>
-<span class="sd">- Raw vs. processed toggling and filter application.</span>
-<span class="sd">- Z-scale histogram with draggable range lines.</span>
-<span class="sd">- Export tabs for GIF, NPZ, OME-TIFF, HDF5.</span>
+<span class="sd">See the GUI page of the user guide for how to use it.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -553,14 +550,65 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_steps_with_kwargs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_zscale_range</span><span class="p">,</span> <span class="n">prepare_output_directory</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="MainWindow">
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MainWindow</span><span class="p">(</span><span class="n">QMainWindow</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Main window for the playNano GUI application."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Window for playing, processing and exporting an AFM stack.</span>
+
+<span class="sd">    Usually opened with :func:`playnano.gui.main.gui_entry`. The window has:</span>
+
+<span class="sd">    - the frame view, with optional time, scale bar and a "RAW" label when the</span>
+<span class="sd">      unprocessed data is shown;</span>
+<span class="sd">    - play/pause, a frame slider and the playback rate;</span>
+<span class="sd">    - **Apply Filters (F)**, which runs the processing steps (or, if none were</span>
+<span class="sd">      given, a built-in default pipeline:</span>
+<span class="sd">      ``playnano.utils.constants.default_steps_with_kwargs``), and</span>
+<span class="sd">      **Toggle Raw/Processed (R)**;</span>
+<span class="sd">    - a histogram of heights with draggable colour scale limits, number boxes</span>
+<span class="sd">      and **Auto** (1st and 99th percentiles);</span>
+<span class="sd">    - a colormap list;</span>
+<span class="sd">    - an Export tab: animated exports (GIF, MP4, AVI, PNG folder; **G** writes</span>
+<span class="sd">      only the GIF) and data exports (NPZ, OME-TIFF, HDF5; **E**), of the raw</span>
+<span class="sd">      or processed data. All formats are ticked at the start.</span>
+
+<span class="sd">    If the stack already has ``processed["raw"]`` (for example a saved</span>
+<span class="sd">    processed bundle), the window opens on the processed data and R shows the</span>
+<span class="sd">    raw data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    afm_stack : AFMImageStack</span>
+<span class="sd">        The stack to show. Applying filters changes it.</span>
+<span class="sd">    processing_steps : list of tuple, optional</span>
+<span class="sd">        Processing steps, as ``(name, parameters)``, run by Apply Filters. If</span>
+<span class="sd">        None or empty, the default pipeline is used. Default is None.</span>
+<span class="sd">    output_dir : str, optional</span>
+<span class="sd">        Folder for exports. If None, ``./output``. Default is None.</span>
+<span class="sd">    output_name : str, optional</span>
+<span class="sd">        Start of the exported file names. If empty, the name of the file the</span>
+<span class="sd">        stack was loaded from. Default is ``""``.</span>
+<span class="sd">    scale_bar_nm : int, optional</span>
+<span class="sd">        Scale bar length, in nm; 0 opens the window with the scale bar off (it</span>
+<span class="sd">        is 100 nm if switched on). Default is 100.</span>
+<span class="sd">    zmin, zmax : float or str, optional</span>
+<span class="sd">        Initial colour scale limits: a number, ``"auto"`` or None. Default is</span>
+<span class="sd">        ``"auto"``.</span>
+<span class="sd">    cmap : str, optional</span>
+<span class="sd">        Initial colormap. Names not in the window's list are replaced by</span>
+<span class="sd">        ``"afm_brown"``, with a warning. Default is ``"afm_brown"``.</span>
+<span class="sd">    fps : float, optional</span>
+<span class="sd">        Initial playback rate, also used for animated exports. Default is 5.0.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``zmin`` or ``zmax`` is not a number, ``"auto"`` or None, or</span>
+<span class="sd">        ``zmin`` is greater than ``zmax``.</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -574,40 +622,7 @@
         <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
         <span class="n">fps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Initialize the main application window.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        afm_stack : AFMImageStack</span>
-<span class="sd">            The loaded AFM image stack to display and process.</span>
-<span class="sd">        processing_steps : list of (str, dict), optional</span>
-<span class="sd">            A list of (filter_name, kwargs) tuples defining the default</span>
-<span class="sd">            processing pipeline steps.  If None, defaults will be used.</span>
-<span class="sd">        output_dir : str, optional</span>
-<span class="sd">            Base directory in which to write exported files.</span>
-<span class="sd">        output_name : str, default="playNano_export"</span>
-<span class="sd">            Base filename to use for exports.</span>
-<span class="sd">        scale_bar_nm : int, default=100</span>
-<span class="sd">            Physical length (nm) of the scale bar to draw on images. 0 starts the</span>
-<span class="sd">            GUI with the scale bar switched off.</span>
-<span class="sd">        zmin, zmax : 'auto' or float, default="auto"</span>
-<span class="sd">            Display range endpoints; if "auto", they will be computed</span>
-<span class="sd">            from the data.</span>
-<span class="sd">        cmap : str, default=DEFAULT_CMAP</span>
-<span class="sd">            Name of the colormap to use for visualisation on launch.</span>
-<span class="sd">        fps : float, default=5.0</span>
-<span class="sd">            Initial frame rate for the GIF in frames per second.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If zmin/zmax cannot be parsed (not 'auto' or float).</span>
-
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Build the window. The parameters are described in the class docstring."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"playNano Player"</span><span class="p">)</span>
 
@@ -656,7 +671,17 @@
             <span class="s2">"turbo"</span><span class="p">,</span>
         <span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_name</span> <span class="o">=</span> <span class="n">cmap</span> <span class="k">if</span> <span class="n">cmap</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_cmaps</span> <span class="k">else</span> <span class="n">DEFAULT_CMAP</span>
+        <span class="k">if</span> <span class="n">cmap</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_cmaps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_name</span> <span class="o">=</span> <span class="n">cmap</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"Colormap '</span><span class="si">%s</span><span class="s2">' is not available in the GUI; using '</span><span class="si">%s</span><span class="s2">'. "</span>
+                <span class="s2">"Available: </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span>
+                <span class="n">cmap</span><span class="p">,</span>
+                <span class="n">DEFAULT_CMAP</span><span class="p">,</span>
+                <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_available_cmaps</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_name</span> <span class="o">=</span> <span class="n">DEFAULT_CMAP</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">annotation_font</span> <span class="o">=</span> <span class="n">QFont</span><span class="p">(</span><span class="n">steps_family</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
 
@@ -1031,21 +1056,19 @@
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow.apply_filters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Apply the selected processing pipeline to the AFM stack.</span>
+<span class="sd">        Run the processing steps on the stack and show the result (F).</span>
 
-<span class="sd">        Builds a ProcessingPipeline from `self.processing_steps` (or defaults),</span>
-<span class="sd">        runs it, updates the flattened data (`self._flat`), recomputes display</span>
-<span class="sd">        ranges, and refreshes the viewer.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
+<span class="sd">        Uses the steps given to the window, or the default pipeline</span>
+<span class="sd">        (``playnano.utils.constants.default_steps_with_kwargs``) if there are</span>
+<span class="sd">        none. The steps run on :attr:`AFMImageStack.data</span>
+<span class="sd">        &lt;playnano.afm_stack.AFMImageStack.data&gt;` as it is, so pressing F again</span>
+<span class="sd">        processes the already processed data again. The colour scale is worked out</span>
+<span class="sd">        again for the processed data, and processed exports are enabled.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        RuntimeError</span>
-<span class="sd">            If the processing pipeline fails.</span>
-
+<span class="sd">        Exception</span>
+<span class="sd">            Any error from the processing pipeline.</span>
 <span class="sd">        """</span>
         <span class="c1"># choose which steps</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processing_steps</span> <span class="ow">or</span> <span class="n">default_steps_with_kwargs</span>
@@ -1102,16 +1125,7 @@
 <div class="viewcode-block" id="MainWindow.toggle_play">
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow.toggle_play">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">toggle_play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Start or stop automatic frame advancement.</span>
-
-<span class="sd">        If playing, stops the QTimer; if paused, starts it at the current FPS.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        """</span>
+<span class="w">        </span><span class="sd">"""Start or pause playback (Space), at the rate in the FPS box."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="o">.</span><span class="n">isActive</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">controls</span><span class="o">.</span><span class="n">play_btn</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"▶️ Play"</span><span class="p">)</span>
@@ -1140,21 +1154,18 @@
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow.show_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">show_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Render a specific frame in the viewer.</span>
+<span class="sd">        Show one frame, with its time and scale bar.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        idx : int</span>
-<span class="sd">            Index of the frame to display (raw or processed, depending on state).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
+<span class="sd">            Frame index. The raw or processed frame is shown, depending on the</span>
+<span class="sd">            current view.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        IndexError</span>
-<span class="sd">            If `idx` is out of bounds.</span>
+<span class="sd">            If ``idx`` is out of range.</span>
 <span class="sd">        """</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[show_frame] Showing index </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="n">idx</span>
@@ -1234,29 +1245,16 @@
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow.keyPressEvent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">keyPressEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Handle key press events for shortcuts.</span>
+<span class="sd">        Handle the keyboard shortcuts.</span>
+
+<span class="sd">        Space plays or pauses, F applies the processing, R switches between raw</span>
+<span class="sd">        and processed data, G exports a GIF and E exports the ticked data formats.</span>
+<span class="sd">        Other keys are passed to Qt.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        ev : QKeyEvent</span>
-<span class="sd">            The key event to handle.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        None</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Key mapping:</span>
-<span class="sd">        Space → toggle play/pause</span>
-<span class="sd">        F → apply filters</span>
-<span class="sd">        R → toggle raw/processed view</span>
-<span class="sd">        G → export GIF</span>
-<span class="sd">        E → export data in checked formats</span>
+<span class="sd">        ev : PySide6.QtGui.QKeyEvent</span>
+<span class="sd">            The key press.</span>
 <span class="sd">        """</span>
         <span class="n">k</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Key_Space</span><span class="p">:</span>
@@ -1277,13 +1275,10 @@
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.MainWindow.toggle_processed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">toggle_processed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Flip between raw and processed (flattened) data views.</span>
+<span class="sd">        Switch between the raw and processed data (R).</span>
 
-<span class="sd">        If no processed data exists yet, does nothing.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        None</span>
+<span class="sd">        Does nothing until processing has been applied. The histogram, colour</span>
+<span class="sd">        scale limits and view are updated for the data shown.</span>
 <span class="sd">        """</span>
         <span class="c1"># If we've never applied filters, nothing to toggle</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1868,21 +1863,22 @@
 <a class="viewcode-back" href="../../../api/playnano.gui.window.html#playnano.gui.window.z_to_rgb">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">z_to_rgb</span><span class="p">(</span><span class="n">z_value</span><span class="p">,</span> <span class="n">zmin</span><span class="p">,</span> <span class="n">zmax</span><span class="p">,</span> <span class="n">cmap_name</span><span class="o">=</span><span class="n">DEFAULT_CMAP</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Map a single height value to an RGB triple via a matplotlib colormap.</span>
+<span class="sd">    Return the colour of one height value in a colormap.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    z_value : float</span>
-<span class="sd">        Height value to map.</span>
+<span class="sd">        Height.</span>
 <span class="sd">    zmin, zmax : float</span>
-<span class="sd">        Data range for normalization.  If zmax == zmin, returns black.</span>
-<span class="sd">    cmap_name : str, default=DEFAULT_CMAP</span>
-<span class="sd">        Name of the matplotlib colormap to use.</span>
+<span class="sd">        Colour scale limits; values outside are clipped.</span>
+<span class="sd">    cmap_name : str, optional</span>
+<span class="sd">        Registered colormap name. Default is ``"afm_brown"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    rgb : tuple of int</span>
-<span class="sd">        (R, G, B) values in [0, 255].</span>
+<span class="sd">    tuple of int</span>
+<span class="sd">        ``(R, G, B)``, each 0-255. Black if ``zmax`` is not greater than</span>
+<span class="sd">        ``zmin``.</span>
 <span class="sd">    """</span>
     <span class="n">span</span> <span class="o">=</span> <span class="n">zmax</span> <span class="o">-</span> <span class="n">zmin</span>
     <span class="k">if</span> <span class="n">span</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -1924,7 +1920,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../../../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>

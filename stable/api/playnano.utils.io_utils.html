@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.utils.io_utils module - playnano v0.5.3 documentation</title>
+        <title>playnano.utils.io_utils module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,7 +515,9 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.utils.io_utils">
 <span id="playnano-utils-io-utils-module"></span><h1>playnano.utils.io_utils module<a class="headerlink" href="#module-playnano.utils.io_utils" title="Link to this heading">¶</a></h1>
-<p>Utility functions for IO operations in playNano.</p>
+<p>Helpers for reading and writing data.</p>
+<p>Frame metadata, height units, scaling images to 8-bit, output names and
+folders, and converting results to types JSON can store.</p>
 <dl class="py data">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.OUTPUT_EXTENSIONS">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">OUTPUT_EXTENSIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('.ome.tiff',</span> <span class="pre">'.ome.tif',</span> <span class="pre">'.tiff',</span> <span class="pre">'.tif',</span> <span class="pre">'.h5',</span> <span class="pre">'.hdf5',</span> <span class="pre">'.npz',</span> <span class="pre">'.json',</span> <span class="pre">'.gif',</span> <span class="pre">'.mp4',</span> <span class="pre">'.avi',</span> <span class="pre">'.mov',</span> <span class="pre">'.mkv',</span> <span class="pre">'.png',</span> <span class="pre">'.jpg',</span> <span class="pre">'.jpeg',</span> <span class="pre">'.csv',</span> <span class="pre">'.yaml',</span> <span class="pre">'.yml')</span></em><a class="headerlink" href="#playnano.utils.io_utils.OUTPUT_EXTENSIONS" title="Link to this definition">¶</a></dt>
@@ -525,29 +528,26 @@ dot is kept, so names such as <code class="docutils literal notranslate"><span c
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.build_frame_metadata">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">build_frame_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_pixel_size_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_duration_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#build_frame_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.build_frame_metadata" title="Link to this definition">¶</a></dt>
-<dd><p>Build a canonical per-frame metadata dict shared by all playNano readers.</p>
-<p>Every value is cast to a native Python type so the dict is JSON-serialisable
-(frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise
-raise TypeError).</p>
-<p>Fields a format cannot provide are stored as <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
-<p>Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not
-here. <code class="docutils literal notranslate"><span class="pre">start_time</span></code> (human-readable ISO) is derived from the first frame’s
-<code class="docutils literal notranslate"><span class="pre">start_epoch_ms</span></code> at the stack level; don’t duplicate it per frame.</p>
+<dd><p>Make one frame’s metadata dict, as every playNano reader does.</p>
+<p>Values are converted to plain Python types so the dict can be saved as
+JSON. Settings of the whole recording, such as bidirectional scanning, go in
+<a class="reference internal" href="playnano.afm_stack.html#playnano.afm_stack.AFMImageStack.acquisition" title="playnano.afm_stack.AFMImageStack.acquisition"><code class="xref py py-attr docutils literal notranslate"><span class="pre">playnano.afm_stack.AFMImageStack.acquisition</span></code></a> instead.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Frame time in seconds relative to frame 0. Required.</p></li>
-<li><p><strong>frame_pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Physical size of one pixel in nanometres for this frame. Required.</p></li>
-<li><p><strong>frame_duration_s</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Frame acquisition duration in seconds; <code class="docutils literal notranslate"><span class="pre">None</span></code> if unknown.</p></li>
-<li><p><strong>start_epoch_ms</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Frame start as Unix epoch milliseconds (UTC); <code class="docutils literal notranslate"><span class="pre">None</span></code> for formats
-without absolute timing.</p></li>
-<li><p><strong>scan_direction</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Slow-axis frame direction (e.g. <code class="docutils literal notranslate"><span class="pre">'topDown'</span></code>/<code class="docutils literal notranslate"><span class="pre">'bottomUp'</span></code>). Per-frame
-because NanoScope spm sequences can alternate.</p></li>
-<li><p><strong>line_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Fast-scan line rate (lines per second); <code class="docutils literal notranslate"><span class="pre">None</span></code> if unknown.</p></li>
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Time of the frame in seconds, from the start of frame 0.</p></li>
+<li><p><strong>frame_pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Pixel size of this frame, in nm.</p></li>
+<li><p><strong>frame_duration_s</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Time taken to record the frame, in seconds. Default is None (unknown).</p></li>
+<li><p><strong>start_epoch_ms</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Start of the frame, in milliseconds since 1970 (UTC). Default is None
+(unknown).</p></li>
+<li><p><strong>scan_direction</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Slow-scan direction of this frame, for example <code class="docutils literal notranslate"><span class="pre">&quot;topDown&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;bottomUp&quot;</span></code> (NanoScope <code class="docutils literal notranslate"><span class="pre">.spm</span></code> sequences can alternate). Default is
+None (unknown).</p></li>
+<li><p><strong>line_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Lines scanned per second. Default is None (unknown).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Exactly the keys in <code class="docutils literal notranslate"><span class="pre">FRAME_METADATA_KEYS</span></code>.</p>
+<dd class="field-even"><p>The keys of <code class="docutils literal notranslate"><span class="pre">FRAME_METADATA_KEYS</span></code>, with None for unknown values.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
@@ -558,49 +558,66 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.compute_zscale_range">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">compute_zscale_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">99</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#compute_zscale_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.compute_zscale_range" title="Link to this definition">¶</a></dt>
-<dd><p>Compute robust Z-scale bounds (height or intensity range) for normalization.</p>
+<dd><p>Work out the lower and upper limits of a colour scale.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – 2D or 3D array of AFM image data.</p></li>
-<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em>, or </em><em>None</em>) – Lower bound: “auto” uses percentile, None uses data min, float uses value.</p></li>
-<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>&quot;auto&quot;</em>) – Upper bound: “auto” uses percentile, None uses data max, float uses value.</p></li>
-<li><p><strong>lower_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Percentile to use for lower bound when zmin == “auto”. Default is 1.</p></li>
-<li><p><strong>upper_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Percentile to use for upper bound when zmax == “auto”. Default is 99.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Heights, any shape. NaN and infinite values are ignored.</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Lower limit: a number is used as given, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the
+<code class="docutils literal notranslate"><span class="pre">lower_percentile</span></code> percentile of <code class="docutils literal notranslate"><span class="pre">data</span></code> and None its minimum.
+Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>&quot;auto&quot;</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Upper limit, in the same way, using <code class="docutils literal notranslate"><span class="pre">upper_percentile</span></code> or the
+maximum. Default is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+<li><p><strong>lower_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Percentile for <code class="docutils literal notranslate"><span class="pre">zmin=&quot;auto&quot;</span></code>. Default is 1.</p></li>
+<li><p><strong>upper_percentile</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Percentile for <code class="docutils literal notranslate"><span class="pre">zmax=&quot;auto&quot;</span></code>. Default is 99.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>zmin and zmax values suitable for normalization.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(zmin,</span> <span class="pre">zmax)</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If zmin &gt; zmax after processing or invalid input types.</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">zmin</span></code> or <code class="docutils literal notranslate"><span class="pre">zmax</span></code> is not a number, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> or None, or the
+    lower limit is greater than the upper. Also if <code class="docutils literal notranslate"><span class="pre">data</span></code> has no finite
+    values and a limit is None.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#IndexError" title="(in Python v3.15)"><strong>IndexError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> has no finite values and a limit is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_zscale_range</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">101.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">compute_zscale_range</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span>
+<span class="go">[1.0, 99.0]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">compute_zscale_range</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">zmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zmax</span><span class="o">=</span><span class="mi">50</span><span class="p">)]</span>
+<span class="go">[0.0, 50.0]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.convert_height_units_to_nm">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">convert_height_units_to_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#convert_height_units_to_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.convert_height_units_to_nm" title="Link to this definition">¶</a></dt>
-<dd><p>Convert AFM height data from the guessed unit to nanometers.</p>
+<dd><p>Convert height data to nm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – Input height data array, typically 2D or 3D.</p></li>
-<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Unit string as returned by <cite>guess_height_data_units</cite>. Must be one of:
-‘pm’, ‘nm’, ‘um’, ‘mm’, or ‘m’.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Height data.</p></li>
+<li><p><strong>unit</strong> (<em>{&quot;pm&quot;</em><em>, </em><em>&quot;nm&quot;</em><em>, </em><em>&quot;um&quot;</em><em>, </em><em>&quot;mm&quot;</em><em>, </em><em>&quot;m&quot;}</em>) – Unit of <code class="docutils literal notranslate"><span class="pre">data</span></code>, for example from <a class="reference internal" href="#playnano.utils.io_utils.guess_height_data_units" title="playnano.utils.io_utils.guess_height_data_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">guess_height_data_units()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The input data converted to nanometers.</p>
+<dd class="field-even"><p>A new array in nm.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the provided unit string is not recognized.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">unit</span></code> is not one of the units above.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -608,13 +625,14 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.decode_hdf5_attr">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">decode_hdf5_attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><span class="pre">bytes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#decode_hdf5_attr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.decode_hdf5_attr" title="Link to this definition">¶</a></dt>
-<dd><p>Decode an attribute that may be bytes or a string.</p>
+<dd><p>Return an HDF5 attribute as a string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><em>bytes</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The attribute to decode.</p>
+<dd class="field-odd"><p><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><em>bytes</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The attribute value. Bytes are decoded as UTF-8; anything else is
+passed to <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The decoded string.</p>
+<dd class="field-even"><p>The value as a string.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
@@ -642,39 +660,36 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.guess_height_data_units">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">guess_height_data_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#guess_height_data_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.guess_height_data_units" title="Link to this definition">¶</a></dt>
-<dd><p>Guess the most likely units of AFM height data from the data range.</p>
+<dd><p>Guess the unit of height data from the range of its values.</p>
+<p>The range (largest minus smallest finite value) gives:</p>
+<ul class="simple">
+<li><p>more than 1e4: <code class="docutils literal notranslate"><span class="pre">&quot;pm&quot;</span></code>;</p></li>
+<li><p>more than 1e-2, up to 1e4: <code class="docutils literal notranslate"><span class="pre">&quot;nm&quot;</span></code>;</p></li>
+<li><p>more than 1e-4, up to 1e-2: <code class="docutils literal notranslate"><span class="pre">&quot;um&quot;</span></code>;</p></li>
+<li><p>more than 1e-5, up to 1e-4: <code class="docutils literal notranslate"><span class="pre">&quot;mm&quot;</span></code>;</p></li>
+<li><p>up to 1e-5: <code class="docutils literal notranslate"><span class="pre">&quot;m&quot;</span></code>.</p></li>
+</ul>
+<p>A single extreme value can change the result.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>stack</strong> (<em>np.ndarray</em>) – AFM height data array, typically 2D or 3D. Non-finite values
-(NaN or infinity) are ignored when determining the range.</p>
+<dd class="field-odd"><p><strong>stack</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Height data, any shape. NaN and infinite values are ignored.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A string indicating the guessed unit of the height data, one of:
-‘pm’ (picometers), ‘nm’ (nanometers), ‘um’ (micrometers),
-‘mm’ (millimeters), or ‘m’ (meters).</p>
+<dd class="field-even"><p>The guessed unit.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+<dd class="field-odd"><p>{“pm”, “nm”, “um”, “mm”, “m”}</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the input array contains no finite values.</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<dl class="simple">
-<dt>The unit is estimated based on the numeric range of the data as follows:</dt><dd><ul class="simple">
-<li><p>Range &gt; 1e4           : ‘pm’</p></li>
-<li><p>1e-2 &lt; Range &lt;= 1e4   : ‘nm’</p></li>
-<li><p>1e-4 &lt; Range &lt;= 1e-2  : ‘um’</p></li>
-<li><p>1e-5 &lt; Range &lt;= 1e-4  : ‘mm’</p></li>
-<li><p>Range &lt;= 1e-5         : ‘m’</p></li>
-</ul>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If there are no finite values.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5e-9</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-8</span><span class="p">,</span> <span class="mf">2e-8</span><span class="p">]])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">guess_height_data_units</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5e-9</span><span class="p">,</span> <span class="mf">2e-8</span><span class="p">]))</span>
+<span class="go">'m'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_height_data_units</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]))</span>
 <span class="go">'nm'</span>
 </pre></div>
 </div>
@@ -683,22 +698,52 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.make_json_safe">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">make_json_safe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#make_json_safe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.make_json_safe" title="Link to this definition">¶</a></dt>
-<dd><p>Recursively convert NumPy types and non-JSON objects into serializable ones.</p>
+<dd><p>Convert NumPy values and functions in nested data to types JSON can store.</p>
+<ul class="simple">
+<li><p>NumPy arrays become lists, and NumPy integers and floats become <code class="docutils literal notranslate"><span class="pre">int</span></code>
+and <code class="docutils literal notranslate"><span class="pre">float</span></code>.</p></li>
+<li><p>Dicts, lists and tuples are converted item by item; tuples stay tuples
+(JSON writes them as lists). Dict keys that JSON cannot store become
+strings.</p></li>
+<li><p>Functions and classes are replaced by their name.</p></li>
+<li><p>Anything else is returned unchanged, including NumPy booleans and sets,
+which JSON cannot store.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a>) – The data to convert. Not changed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The converted data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)">object</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_json_safe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">make_json_safe</span><span class="p">({</span><span class="s2">"n"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="s2">"xy"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]),</span> <span class="s2">"f"</span><span class="p">:</span> <span class="nb">len</span><span class="p">})</span>
+<span class="go">{'n': 3, 'xy': [1.5, 2.0], 'f': 'len'}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.normalize_to_uint8">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">normalize_to_uint8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#normalize_to_uint8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.normalize_to_uint8" title="Link to this definition">¶</a></dt>
-<dd><p>Normalize a float image to the uint8 [0, 255] range, handling NaNs and Infs.</p>
+<dd><p>Scale an image to 0-255 as uint8, from its minimum to its maximum.</p>
+<p>NaN and infinite values are set to 0 first, so they count as 0. Values are
+rounded down. An image with one value gives all zeros.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>image</strong> (<em>np.ndarray</em>) – Input image as a NumPy array of floats. May contain NaNs or infinite values.</p>
+<dd class="field-odd"><p><strong>image</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Image, any shape.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Normalized image as a uint8 NumPy array with values in the range [0, 255].</p>
+<dd class="field-even"><p>Array of the same shape, dtype uint8.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -706,22 +751,23 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.prepare_output_directory">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">prepare_output_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'output'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">Path</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#prepare_output_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.prepare_output_directory" title="Link to this definition">¶</a></dt>
-<dd><p>Validate, resolve, and create the output directory if it doesn’t exist.</p>
+<dd><p>Check an output folder and create it if missing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em>) – User-provided output folder path. If None, use <cite>default</cite>.</p></li>
-<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Default folder name to use if <cite>folder</cite> not specified.</p></li>
+<li><p><strong>folder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a><em> or </em><em>None</em>) – The folder; relative paths are relative to the current folder. If None
+or empty, <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p></li>
+<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Folder used when <code class="docutils literal notranslate"><span class="pre">folder</span></code> is not given. Default is <code class="docutils literal notranslate"><span class="pre">&quot;output&quot;</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A Path object pointing to the created output directory.</p>
+<dd class="field-even"><p>The absolute path of the folder, which now exists.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Path</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)">pathlib.Path</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If any part of the folder path contains invalid characters.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If any part of the path contains any of <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">?</span> <span class="pre">&quot;</span> <span class="pre">&lt;</span> <span class="pre">&gt;</span> <span class="pre">|</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -729,23 +775,36 @@ because NanoScope spm sequences can alternate.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.io_utils.sanitize_output_name">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">sanitize_output_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/io_utils.html#sanitize_output_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.io_utils.sanitize_output_name" title="Link to this definition">¶</a></dt>
-<dd><p>Sanitize output file names by removing a file extension and stripping whitespace.</p>
-<p>Only known output extensions (see <code class="docutils literal notranslate"><span class="pre">OUTPUT_EXTENSIONS</span></code>) are removed, so dots
-elsewhere in the name are kept: <code class="docutils literal notranslate"><span class="pre">&quot;exp_1.5nM.gif&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">&quot;exp_1.5nM&quot;</span></code>.</p>
+<dd><p>Clean a user-supplied output name.</p>
+<p>Folders and surrounding spaces are removed, then one known extension
+(<code class="docutils literal notranslate"><span class="pre">OUTPUT_EXTENSIONS</span></code>, in any case), so other dots are kept:
+<code class="docutils literal notranslate"><span class="pre">&quot;exp_1.5nM.gif&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">&quot;exp_1.5nM&quot;</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The output file name provided by the user.</p></li>
-<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Default name to use if <cite>name</cite> is empty or None.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em>) – The name given by the user.</p></li>
+<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Returned if <code class="docutils literal notranslate"><span class="pre">name</span></code> is None or empty, or nothing is left after
+cleaning.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sanitized base file name without extension.</p>
+<dd class="field-even"><p>The cleaned name, without an extension.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the cleaned name contains a character in <code class="docutils literal notranslate"><span class="pre">INVALID_CHARS</span></code>.</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.io_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">sanitize_output_name</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sanitize_output_name</span><span class="p">(</span><span class="s2">" results/exp_1.5nM.GIF "</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">)</span>
+<span class="go">'exp_1.5nM'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sanitize_output_name</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">)</span>
+<span class="go">'default'</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -828,7 +887,7 @@ elsewhere in the name are kept: <code class="docutils literal notranslate"><span
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -8,7 +8,7 @@
         <link rel="prefetch" href="../_static/logo/playnano_logo_dark.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>playnano.utils.time_utils module - playnano v0.5.3 documentation</title>
+        <title>playnano.utils.time_utils module - playnano v0.5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">playnano v0.5.3 documentation</div></a>
+      <a href="../index.html"><div class="brand">playnano v0.5.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -474,6 +474,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.0.html">What’s New in <em>playNano</em> 0.5.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.2.html">What’s New in <em>playNano</em> 0.5.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.3.html">What’s New in <em>playNano</em> 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../whats_new/v0.5.4.html">What’s New in <em>playNano</em> 0.5.4</a></li>
 </ul>
 </li>
 </ul>
@@ -514,93 +515,80 @@
         <article role="main" id="furo-main-content">
           <section id="module-playnano.utils.time_utils">
 <span id="playnano-utils-time-utils-module"></span><h1>playnano.utils.time_utils module<a class="headerlink" href="#module-playnano.utils.time_utils" title="Link to this heading">¶</a></h1>
-<p>Timestamp and annotation utilities for playNano.</p>
-<p>This module provides functions for normalising per-frame timestamps,
-drawing scale bar and timestamp overlays onto AFM image frames, and
-generating UTC timestamps for provenance records.</p>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
-<dl class="simple">
-<dt>normalize_timestamps</dt><dd><p>Parse and normalise per-frame timestamp metadata to float seconds.</p>
-</dd>
-<dt>draw_scale_and_timestamp</dt><dd><p>Draw a scale bar and timestamp overlay onto an AFM image frame.</p>
-</dd>
-<dt>utc_now_iso</dt><dd><p>Return the current UTC time as an ISO 8601 string.</p>
-</dd>
-</dl>
-</section>
+<p>Helpers for frame times and for drawing the time and scale bar on frames.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.time_utils.draw_scale_and_timestamp">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.time_utils.</span></span><span class="sig-name descname"><span class="pre">draw_scale_and_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bar_length_nm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(255,</span> <span class="pre">255,</span> <span class="pre">255)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/playnano/utils/time_utils.html#draw_scale_and_timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.time_utils.draw_scale_and_timestamp" title="Link to this definition">¶</a></dt>
-<dd><p>Draw a scale bar and/or timestamp overlay onto an AFM image frame.</p>
-<p>Two separate scale factors are used to decouple physical accuracy from
-visual consistency. <code class="docutils literal notranslate"><span class="pre">resize_scale</span></code> ensures the scale bar length correctly
-represents the physical nanometre distance regardless of how the frame was
-resized. <code class="docutils literal notranslate"><span class="pre">annotation_scale</span></code> ensures margins, bar thickness, and text
-positions appear proportionally identical at any output resolution.</p>
+<dd><p>Draw the time and a scale bar on an RGB frame.</p>
+<p>The time is drawn at the top left as <code class="docutils literal notranslate"><span class="pre">&quot;1.23</span> <span class="pre">s&quot;</span></code>, the scale bar and its
+label (<code class="docutils literal notranslate"><span class="pre">&quot;100</span> <span class="pre">nm&quot;</span></code>) at the bottom left, in the bundled Steps-Mono font
+(or Pillow’s default font if it cannot be loaded).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>np.ndarray</em>) – RGB image array of shape (H, W, 3), dtype uint8.</p></li>
-<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Timestamp in seconds to display in the top-left corner.</p></li>
-<li><p><strong>pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Physical size of one pixel in the original (pre-resize) frame,
-in nanometres. Used to compute the scale bar length in pixels.</p></li>
-<li><p><strong>resize_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Factor by which the frame was upscaled from its original resolution
-(<code class="docutils literal notranslate"><span class="pre">output_height</span> <span class="pre">/</span> <span class="pre">original_height</span></code>). Used only for computing the
-physically accurate scale bar width.</p></li>
-<li><p><strong>annotation_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Factor relative to <code class="docutils literal notranslate"><span class="pre">REFERENCE_HEIGHT</span></code> used to scale all annotation
-geometry — margins, bar thickness, label gaps, and text position
-(<code class="docutils literal notranslate"><span class="pre">output_height</span> <span class="pre">/</span> <span class="pre">REFERENCE_HEIGHT</span></code>). Ensures annotations occupy
-the same visual proportion at any output resolution.</p></li>
-<li><p><strong>bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Desired scale bar length in nanometres. Default is 100.</p></li>
-<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Multiplier applied to the base font point size (15 pt). Default is 1.</p></li>
-<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to draw the timestamp in the top-left corner. Default is
-<code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to draw the scale bar and label in the bottom-left corner.
-Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a>) – RGB colour for all annotations. Default is white <code class="docutils literal notranslate"><span class="pre">(255,</span> <span class="pre">255,</span> <span class="pre">255)</span></code>.</p></li>
+<li><p><strong>image</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – RGB frame, shape (height, width, 3), dtype uint8. Not changed.</p></li>
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Time to show, in seconds.</p></li>
+<li><p><strong>pixel_size_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Pixel size of the frame before resizing, in nm.</p></li>
+<li><p><strong>resize_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – How much the frame was enlarged (new height / old height). Sets the
+scale bar’s length in pixels.</p></li>
+<li><p><strong>annotation_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Frame height divided by the 512-pixel reference height. Sets margins,
+bar thickness and text positions so they look the same at any size.</p></li>
+<li><p><strong>bar_length_nm</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Length of the scale bar, in nm. Default is 100.</p></li>
+<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Text height is <code class="docutils literal notranslate"><span class="pre">15</span> <span class="pre">*</span> <span class="pre">font_scale</span></code> pixels. Default is 1.</p></li>
+<li><p><strong>draw_ts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Draw the time. Default is True.</p></li>
+<li><p><strong>draw_scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Draw the scale bar, if <code class="docutils literal notranslate"><span class="pre">bar_length_nm</span></code> and <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span></code> are both
+positive. Default is True.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – RGB colour of the text and bar. Default is white, <code class="docutils literal notranslate"><span class="pre">(255,</span> <span class="pre">255,</span> <span class="pre">255)</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Annotated image as a uint8 array of shape (H, W, 3).</p>
+<dd class="field-even"><p>A new annotated frame, shape (height, width, 3), dtype uint8.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>Requires the Steps-Mono font bundled in <code class="docutils literal notranslate"><span class="pre">playnano.resources.fonts</span></code>.
-Falls back to the PIL default font if the file cannot be loaded.</p></li>
-<li><p>The scale bar is only drawn when <code class="docutils literal notranslate"><span class="pre">pixel_size_nm</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> and
-<code class="docutils literal notranslate"><span class="pre">bar_length_nm</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>.</p></li>
-</ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.time_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">draw_scale_and_timestamp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">draw_scale_and_timestamp</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">bar_length_nm</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">dtype</span>
+<span class="go">((100, 100, 3), dtype('uint8'))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="playnano.utils.time_utils.normalize_timestamps">
 <span class="sig-prename descclassname"><span class="pre">playnano.utils.time_utils.</span></span><span class="sig-name descname"><span class="pre">normalize_timestamps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/playnano/utils/time_utils.html#normalize_timestamps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#playnano.utils.time_utils.normalize_timestamps" title="Link to this definition">¶</a></dt>
-<dd><p>Normalize timestamp data to a float in seconds.</p>
-<p>Given a list of per-frame metadata dicts, parse each ‘timestamp’ entry
-(if present) into a float (seconds). Returns a new list of dicts
-with ‘timestamp’ replaced by float or None.</p>
+<dd><p>Convert each frame’s <code class="docutils literal notranslate"><span class="pre">&quot;timestamp&quot;</span></code> to seconds as a float, or None.</p>
 <ul class="simple">
-<li><p>ISO-format strings → parsed with dateutil.isoparse()</p></li>
-<li><p>datetime objects       → .timestamp()</p></li>
-<li><p>numeric (int/float)    → float()</p></li>
-<li><p>missing/unparsable     → None</p></li>
+<li><p>Python <code class="docutils literal notranslate"><span class="pre">int</span></code> and <code class="docutils literal notranslate"><span class="pre">float</span></code>: converted to <code class="docutils literal notranslate"><span class="pre">float</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code> counts
+as <code class="docutils literal notranslate"><span class="pre">int</span></code>).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code></a>: seconds since 1970 (Unix time).</p></li>
+<li><p>ISO 8601 strings: parsed, then seconds since 1970. Times without a time
+zone are read as local time.</p></li>
+<li><p>Anything else, including NumPy numbers such as <code class="docutils literal notranslate"><span class="pre">numpy.int64</span></code>, a
+missing key and strings that cannot be parsed: None.</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>metadata_list</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – List of metadata dictionaries, each possibly containing a ‘timestamp’.</p>
+<dd class="field-odd"><p><strong>metadata_list</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Per-frame metadata. Not changed.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of metadata dicts with ‘timestamp’ normalized to float seconds or None.</p>
+<dd class="field-even"><p>Shallow copies of the dicts, each with a <code class="docutils literal notranslate"><span class="pre">&quot;timestamp&quot;</span></code> key.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">playnano.utils.time_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_timestamps</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_timestamps</span><span class="p">([{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{},</span> <span class="p">{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"bad"</span><span class="p">}])</span>
+<span class="go">[{'timestamp': 1.0}, {'timestamp': None}, {'timestamp': None}]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -609,7 +597,7 @@ with ‘timestamp’ replaced by float or None.</p>
 <dd><p>Return the current UTC time as an ISO 8601 string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>UTC timestamp in ISO 8601 format, e.g. <code class="docutils literal notranslate"><span class="pre">'2024-01-15T10:30:00Z'</span></code>.</p>
+<dd class="field-odd"><p>For example <code class="docutils literal notranslate"><span class="pre">&quot;2024-01-15T10:30:00.123456Z&quot;</span></code>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
@@ -675,7 +663,6 @@ with ‘timestamp’ replaced by float or None.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">playnano.utils.time_utils module</a><ul>
-<li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#playnano.utils.time_utils.draw_scale_and_timestamp"><code class="docutils literal notranslate"><span class="pre">draw_scale_and_timestamp()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.utils.time_utils.normalize_timestamps"><code class="docutils literal notranslate"><span class="pre">normalize_timestamps()</span></code></a></li>
 <li><a class="reference internal" href="#playnano.utils.time_utils.utc_now_iso"><code class="docutils literal notranslate"><span class="pre">utc_now_iso()</span></code></a></li>
@@ -690,7 +677,7 @@ with ‘timestamp’ replaced by float or None.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d19b0847"></script>
+</div><script src="../_static/documentation_options.js?v=1a12988a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
