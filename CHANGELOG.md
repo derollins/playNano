@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-11-27
+
+This release fixes `.aris` heights (loaded in metres instead of nm) and `.jpk` folder orientation (frames were upside
+down), both of which change results, and stops `.npz` bundles from running code when opened. It also makes several
+command-line errors clearer, and the API reference has been reviewed against the code.
+
 ### Security
 
 - **Opening an `.npz` bundle could run code stored in the file.** `load_npz_bundle` loaded with
@@ -40,9 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API reference for `playnano.io`: docstrings now match the code and render without warnings. Corrected the default
   colormap of the GIF, video and image sequence exports (`afm_brown`, not `afmhot`), how `zmin` and `zmax` work (both
   None scales each frame separately; `zmin == zmax` gives a blank frame instead of raising), which data and metadata
-  each export format keeps (OME-TIFF keeps no processed layers or masks), the errors the loaders raise, and the
-  `.aris` reader, which returns heights in the file's units (metres), not nm. Documented the missing `cmap_name`,
-  `font_scale` and `fmt` parameters and the video formats (MP4, AVI, MOV, MKV).
+  each export format keeps (OME-TIFF keeps no processed layers or masks), and the errors the loaders raise. Documented
+  the missing `cmap_name`, `font_scale` and `fmt` parameters and the video formats (MP4, AVI, MOV, MKV).
 - API reference for the core of `playnano.analysis` (`AnalysisPipeline`, `AnalysisModule`, `export` and `utils`):
   docstrings now match the code and render without warnings. The `AnalysisPipeline` examples showed made-up output
   and a wrong path into `results_by_name`; the class now has an example that runs as a doctest. Documented the errors
@@ -822,7 +827,7 @@ This release introduces video processing, stack editing, multi-version documenta
 
 - N/A (initial public release).
 
-[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/derollins/playNano/compare/v0.5.4...HEAD
 [0.1.0]: https://github.com/derollins/playNano/releases/tag/v0.1.0
 [0.1.0.post1]: https://github.com/derollins/playNano/releases/tag/v0.1.0.post1
 [0.2.0]: https://github.com/derollins/playNano/releases/tag/v0.2.0
@@ -836,3 +841,4 @@ This release introduces video processing, stack editing, multi-version documenta
 [0.5.1]: https://github.com/derollins/playNano/releases/tag/v0.5.1
 [0.5.2]: https://github.com/derollins/playNano/releases/tag/v0.5.2
 [0.5.3]: https://github.com/derollins/playNano/releases/tag/v0.5.3
+[0.5.4]: https://github.com/derollins/playNano/releases/tag/v0.5.4
