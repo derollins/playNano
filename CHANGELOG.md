@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now written without pickled arrays (text is stored as plain NumPy strings) and read with `allow_pickle=False`.
   Bundles saved by earlier versions still open: their text fields are read with a restricted unpickler that can only
   rebuild arrays of text, and a file containing anything else is refused with an error. Upgrade if you open `.npz`
-  files from other people (#14).
+  files from other people.
 
 ### Fixed
 
@@ -24,13 +24,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so ARIS stacks were 1e9 times too small compared with the other readers, and thresholds, colour scales, scale
   annotations and analysis heights were wrong. Channels whose `DataUnits` is a length (height and amplitude) are now
   converted to nm; others, such as phase in degrees, are unchanged; a missing unit is guessed from the data range with
-  a warning. Results from `.aris` files must be regenerated (#32).
+  a warning. Results from `.aris` files must be regenerated (#118).
 - Asking for a channel an `.aris` file does not have now lists the channels it does have, as the other readers do.
 - **`.jpk` folders are now loaded the right way up (changes results).** `load_jpk_folder` flipped each frame
   after AFMReader had already flipped it, so the two flips cancelled and frames were upside down compared with
   AFMReader and with the `.h5-jpk` reader. Frames are now flipped once. Anything that depends on orientation
   (images, exports, tracks, drift direction, anything "up" or "down") changes for `.jpk` data; to get the old
-  orientation, pass `flip_image=False` (#33).
+  orientation, pass `flip_image=False` (#119).
 - API reference for `playnano.processing`: docstrings now match the code and render without warnings. Corrected
   `zero_mean` (documented a `mask` parameter it does not have), `mask_morphological` (masks by absolute height, so
   holes below `-threshold` are masked too), `mask_adaptive` (non-overlapping blocks), `ProcessingPipeline.run`
@@ -83,21 +83,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `playnano process` with a channel the file does not have now says why it failed and lists the available
   channels, instead of only "Failed to load" and a traceback; the wizard does the same, and `playnano play` reports
   the error once instead of twice. The `.h5-jpk` message now names the file and lists the channels plainly
-  (GitHub #50).
+  (#50).
 - The GUI no longer logs "Skipped scale bar" warnings on every repaint while the scale bar is switched off, and a
   missing pixel size no longer logs an error each frame.
 - `playnano play` with an invalid `--zmin` or `--zmax` (not a number or `auto`) now warns and opens the window with
-  `auto` limits, which can be changed in the window, instead of logging an error and then failing (#41).
+  `auto` limits, which can be changed in the window, instead of logging an error and then failing.
 - `playnano play` with option flags inside the input path (a quoted Windows path ending in `\`) now reports the fix
-  as a normal error with exit status 1, instead of a traceback and status 2 (#41).
+  as a normal error with exit status 1, instead of a traceback and status 2.
 - `clear` is no longer accepted as an analysis step: it is a processing step only, and was accepted and then failed
-  when the analysis ran (#41).
-- The wizard's `help` lists the `load` and `clear` commands, and that `exit` also quits (#41).
+  when the analysis ran.
+- The wizard's `help` lists the `load` and `clear` commands, and that `exit` also quits.
 - An unknown `--cmap` in the GUI is now reported with a warning listing the colormaps available, instead of being
   replaced silently.
 - The error for an unknown processing step lists the step names by type, without Python's internal methods.
 - `NumpyEncoder` writes NumPy bools, and `sanitize_analysis_for_logging` describes text and object arrays instead
-  of failing on them, so analysis plugins returning either no longer stop the JSON export (#34).
+  of failing on them, so analysis plugins returning either no longer stop the JSON export.
 - API reference for `playnano.gui`: docstrings now match the code and render without warnings. The `MainWindow`
   parameters now appear in the reference, and the window's controls, keys and default processing pipeline are
   described. With this, the whole documentation builds with `sphinx-build -n` without warnings (#30).
@@ -105,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Tests use a real ARIS file: 2 frames of a DNA origami recording (G. Heath, Zenodo 10670413, CC BY 4.0), 356 KB.
-  Its citation and changes are in `tests/resources/README.md` (#40).
+  Its citation and changes are in `tests/resources/README.md`.
 - The documentation links types to the NumPy, SciPy, h5py and scikit-image documentation, and `CONTRIBUTING.md` has
   rules for writing types in docstrings.
 - `CONTRIBUTING.md`: AI use is disclosed in the pull request, not in source files, and module docstrings no longer
