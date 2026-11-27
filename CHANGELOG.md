@@ -96,6 +96,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - An unknown `--cmap` in the GUI is now reported with a warning listing the colormaps available, instead of being
   replaced silently.
 - The error for an unknown processing step lists the step names by type, without Python's internal methods.
+- Importing the GUI (directly, or through `playnano.cli`) no longer configures Python's root logger. It set the level
+  to INFO for every library and stopped a script's own `logging.basicConfig` from taking effect. The `playnano`
+  command still sets up logging from `--log-level`.
 - `NumpyEncoder` writes NumPy bools, and `sanitize_analysis_for_logging` describes text and object arrays instead
   of failing on them, so analysis plugins returning either no longer stop the JSON export.
 - API reference for `playnano.gui`: docstrings now match the code and render without warnings. The `MainWindow`

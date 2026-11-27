@@ -41,7 +41,6 @@ from playnano.utils.colormaps import DEFAULT_CMAP
 from playnano.utils.constants import default_steps_with_kwargs
 from playnano.utils.io_utils import compute_zscale_range, prepare_output_directory
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
