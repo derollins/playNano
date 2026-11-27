@@ -277,16 +277,27 @@ class AFMImageStack:
         if step in STACK_EDIT_MAP:
             return "stack_edit", STACK_EDIT_MAP[step]
 
-        # 9) No match
+        # 9) No match: list the step names, without private and dunder methods.
+        def names(items):
+            return ", ".join(items) or "none"
+
+        groups = {
+            "filters": FILTER_MAP,
+            "masks": MASK_MAP,
+            "video filters": VIDEO_FILTER_MAP,
+            "stack edits": STACK_EDIT_MAP,
+            "plugin filters": [
+                ep.name for ep in metadata.entry_points(group="playnano.filters")
+            ],
+            "plugin video filters": [
+                ep.name
+                for ep in metadata.entry_points(group="playnano.video_processing")
+            ],
+        }
         raise ValueError(
-            f"Unrecognized step '{step}'. "
-            f"Available masks: {list(MASK_MAP)}; "
-            f"built-in filters: {list(FILTER_MAP)}; "
-            f"video filters: {list(VIDEO_FILTER_MAP)}; "
-            f"methods: {[m for m in dir(self) if callable(getattr(self, m))]}; "
-            f"plugins: {[ep.name for ep in metadata.entry_points(group='playnano.filters')]}."  # noqa
-            f"video_plugins: {[ep.name for ep in metadata.entry_points(group='playnano.video_processing')]}."  # noqa
-            f"stack_edit: {list(STACK_EDIT_MAP)}; "
+            f"Unrecognized step '{step}'. Available steps: "
+            + "; ".join(f"{label}: {names(items)}" for label, items in groups.items())
+            + "; and clear (removes the current mask)."
         )
 
     def _execute_mask_step(

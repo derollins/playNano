@@ -123,15 +123,17 @@ class ViewerWidget(QWidget):
                 painter.drawText(x, y, text)
 
             if self._original_pixmap and self._draw_scale_bar:
-                try:
-                    bar_px = (
-                        self._scale_bar_nm / self._pixel_size_nm
-                    )  # may raise ZeroDivisionError
-                except ZeroDivisionError:
-                    log.warning(
-                        "[ViewerWidget] Division by zero in scale bar calculation."
+                px = self._pixel_size_nm
+                # Checked before dividing, so a missing, zero, negative or NaN
+                # pixel size skips the bar ("not px > 0" is True for NaN).
+                if px is None or not px > 0 or not self._scale_bar_nm:
+                    # Called on every repaint, so log at debug level only.
+                    log.debug(
+                        "[ViewerWidget] No scale bar: pixel size or bar length "
+                        "is missing, zero or not a positive number."
                     )
                 else:
+                    bar_px = self._scale_bar_nm / self._pixel_size_nm
                     if self._scaled_pixmap:
                         scaled_width = self._scaled_pixmap.width()
                         scale = scaled_width / self._original_pixmap.width()
@@ -143,10 +145,6 @@ class ViewerWidget(QWidget):
                     y = self.height() - 20
                     painter.fillRect(x, y, bar_width, bar_height, Qt.white)
                     painter.drawText(x, y - 5, f"{self._scale_bar_nm} nm")
-            else:
-                log.warning(
-                    "[ViewerWidget] Skipped scale bar: pixel_size_nm is zero or None"
-                )
 
         except Exception as e:
             log.exception(f"[ViewerWidget] paintEvent crashed: {e}")

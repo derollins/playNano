@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
         ``"auto"``.
     cmap : str, optional
         Initial colormap. Names not in the window's list are replaced by
-        ``"afm_brown"``. Default is ``"afm_brown"``.
+        ``"afm_brown"``, with a warning. Default is ``"afm_brown"``.
     fps : float, optional
         Initial playback rate, also used for animated exports. Default is 5.0.
 
@@ -161,7 +161,17 @@ class MainWindow(QMainWindow):
             "turbo",
         ]
 
-        self._cmap_name = cmap if cmap in self._available_cmaps else DEFAULT_CMAP
+        if cmap in self._available_cmaps:
+            self._cmap_name = cmap
+        else:
+            logger.warning(
+                "Colormap '%s' is not available in the GUI; using '%s'. "
+                "Available: %s.",
+                cmap,
+                DEFAULT_CMAP,
+                ", ".join(self._available_cmaps),
+            )
+            self._cmap_name = DEFAULT_CMAP
 
         self.annotation_font = QFont(steps_family, 18)
 

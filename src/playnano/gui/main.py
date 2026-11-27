@@ -103,7 +103,7 @@ def gui_entry(
         percentiles) or None (data minimum or maximum). Default is ``"auto"``.
     cmap : str, optional
         Colormap the window opens with. Names not in the window's list are
-        replaced by ``"afm_brown"``. Default is ``"afm_brown"``.
+        replaced by ``"afm_brown"``, with a warning. Default is ``"afm_brown"``.
     fps : float, optional
         Initial playback rate, in frames per second; also used for animated
         exports. Default is 5.0.

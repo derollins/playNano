@@ -855,3 +855,46 @@ def test_analysis_json_has_no_truncation_markers():
     text = json.dumps(common.make_json_safe(record))
     assert "truncated" not in text
     assert "bbox_tight" in text
+
+
+def test_numpy_encoder_default_converts_numpy_bools():
+    """NumpyEncoder.default turns NumPy bools into Python bools."""
+    encoder = NumpyEncoder()
+    assert encoder.default(np.bool_(True)) is True
+    assert encoder.default(np.bool_(False)) is False
+
+
+def test_export_analysis_to_json_writes_numpy_bools(tmp_path):
+    """An analysis record holding NumPy bools exports as JSON true/false."""
+    from playnano.analysis.export import export_analysis_to_json
+
+    # Without NumpyEncoder, json cannot write NumPy bools at all.
+    with pytest.raises(TypeError):
+        json.dumps(np.bool_(True))
+
+    out = tmp_path / "record.json"
+    export_analysis_to_json(
+        str(out), {"flags": {"a": np.bool_(True), "b": np.bool_(False)}}
+    )
+    assert json.loads(out.read_text()) == {"flags": {"a": True, "b": False}}
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [np.array(["a", "b"]), np.array([b"x"]), np.array([{"k": 1}], dtype=object)],
+)
+def test_sanitize_summarises_non_numeric_arrays_without_summary(arr):
+    """Describe text and object arrays by shape and dtype, with no summary."""
+    out = common.sanitize_analysis_for_logging({"v": arr})["v"]
+    assert out["_array_shape"] == arr.shape
+    assert out["_array_dtype"] == str(arr.dtype)
+    assert out["_summary"] is None
+    json.dumps(out)  # JSON-safe
+
+
+def test_sanitize_still_summarises_numeric_and_bool_arrays():
+    """Numeric and bool arrays keep their min, max and mean."""
+    num = common.sanitize_analysis_for_logging(np.array([1.0, 3.0]))
+    assert num["_summary"] == {"min": 1.0, "max": 3.0, "mean": 2.0}
+    flags = common.sanitize_analysis_for_logging(np.array([True, False]))
+    assert flags["_summary"] == {"min": 0.0, "max": 1.0, "mean": 0.5}

@@ -80,6 +80,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   documents its parameters. Documented the exit statuses of `playnano`, the wizard commands, that `play` applies the
   processing steps only when F is pressed, that YAML processing and analysis files read `1e3` as text (write
   `1.0e3`), and which errors each command raises. Replaced examples that could not run.
+- `playnano process` with a channel the file does not have now says why it failed and lists the available
+  channels, instead of only "Failed to load" and a traceback; the wizard does the same, and `playnano play` reports
+  the error once instead of twice. The `.h5-jpk` message now names the file and lists the channels plainly
+  (GitHub #50).
+- The GUI no longer logs "Skipped scale bar" warnings on every repaint while the scale bar is switched off, and a
+  missing pixel size no longer logs an error each frame.
+- An unknown `--cmap` in the GUI is now reported with a warning listing the colormaps available, instead of being
+  replaced silently.
+- The error for an unknown processing step lists the step names by type, without Python's internal methods.
+- `NumpyEncoder` writes NumPy bools, and `sanitize_analysis_for_logging` describes text and object arrays instead
+  of failing on them, so analysis plugins returning either no longer stop the JSON export (#34).
 - API reference for `playnano.gui`: docstrings now match the code and render without warnings. The `MainWindow`
   parameters now appear in the reference, and the window's controls, keys and default processing pipeline are
   described. With this, the whole documentation builds with `sphinx-build -n` without warnings (#30).

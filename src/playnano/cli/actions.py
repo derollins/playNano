@@ -147,9 +147,13 @@ def process_pipeline_mode(
     # 2) Process stack with the steps
     try:
         afm_stack = process_stack(Path(input_file), channel, steps_with_kwargs)
+    except LoadError as e:
+        # The message already says why (for example, the channels available);
+        # a traceback would only hide it.
+        logger.error("%s", e)
+        sys.exit(1)
     except Exception as e:
-        # Catch any exception (including LoadError or
-        # unexpected exceptions from AFMImageStack)
+        # Unexpected errors from processing: keep the traceback.
         logger.exception("Failed to process AFM stack: %s", e)
         sys.exit(1)
 
@@ -490,7 +494,7 @@ def play_pipeline_mode(
     try:
         afm_stack = AFMImageStack.load_data(input_file, channel=channel)
     except Exception as e:
-        logger.error(f"Failed to load {input_file}. {e}")
+        # Not logged here: the caller reports the LoadError, which keeps the reason.
         raise LoadError(f"Failed to load {input_file}: {e}") from e
 
     if fps is None:
@@ -639,7 +643,7 @@ class Wizard:
         try:
             self.afm_stack = AFMImageStack.load_data(self.input_path, channel=channel)
         except Exception as e:
-            raise LoadError(f"Failed to load {input_file}") from e
+            raise LoadError(f"Failed to load {input_file}: {e}") from e
 
         # wizard state
         self.process_steps: List[Tuple[str, Dict[str, Any]]] = []

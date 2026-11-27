@@ -1586,3 +1586,35 @@ def test_readers_accept_both_afmreader_result_types(
     assert result.pixel_size_nm == expected.pixel_size_nm
     np.testing.assert_array_equal(result.data, expected.data)
     assert len(result.frame_metadata) == len(expected.frame_metadata)
+
+
+@pytest.mark.parametrize(
+    ("resource", "real_channel"),
+    [
+        ("sample_0.h5-jpk", "height_trace"),
+        ("jpk_folder_0", "height_trace"),
+        ("spm_folder_0", "Height Sensor"),
+        ("asd_sample_0.asd", "TP"),
+        ("aris_sample_0.aris", "HeightTrace"),
+    ],
+)
+def test_wrong_channel_error_lists_available_channels(
+    resource_path, resource, real_channel
+):
+    """Every reader names the channels a file has when asked for one it lacks."""
+    from playnano.io.loader import load_afm_stack
+
+    with pytest.raises(ValueError) as excinfo:
+        load_afm_stack(resource_path / resource, "not_a_channel")
+    message = str(excinfo.value)
+    assert "not_a_channel" in message
+    assert real_channel in message
+
+
+def test_process_load_error_keeps_the_reason(resource_path):
+    """process_stack's LoadError says why loading failed (GitHub #50)."""
+    from playnano.errors import LoadError
+    from playnano.processing.core import process_stack
+
+    with pytest.raises(LoadError, match="Available channels: .*height_trace"):
+        process_stack(resource_path / "sample_0.h5-jpk", "not_a_channel", [])

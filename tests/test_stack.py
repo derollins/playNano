@@ -1347,3 +1347,20 @@ def test_resolve_step_stack_edit(monkeypatch):
 
     assert step_type == "stack_edit"
     assert fn is fake_edit
+
+
+def test_unrecognized_step_error_lists_public_step_names():
+    """The error lists step names, not private or dunder methods."""
+    stack = AFMImageStack(
+        data=np.zeros((1, 4, 4)),
+        pixel_size_nm=1.0,
+        channel="height_trace",
+        file_path="x",
+        frame_metadata=[{"timestamp": 0.0}],
+    )
+    with pytest.raises(ValueError) as excinfo:
+        stack._resolve_step("not_a_step")
+    message = str(excinfo.value)
+    assert "remove_plane" in message and "mask_threshold" in message
+    assert "drop_frames" in message and "clear" in message
+    assert "__init__" not in message and "_execute" not in message

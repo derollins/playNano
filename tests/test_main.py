@@ -262,7 +262,11 @@ def test_handle_play_load_error(monkeypatch, tmp_path, caplog):
 
     with pytest.raises(SystemExit):
         handle_play(args)
-    assert "Failed to load" in caplog.text
+    # The reason is kept, and the error is reported once (not by both the
+    # action and the handler).
+    errors = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
+    assert len(errors) == 1
+    assert "Failed to load" in errors[0] and "load failed" in errors[0]
 
 
 def test_handle_process_bad_output_folder(monkeypatch, tmp_path, caplog):
