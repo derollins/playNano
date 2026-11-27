@@ -50,7 +50,7 @@ def process_stack(
     try:
         stack = AFMImageStack.load_data(input_path, channel=channel)
     except Exception as e:
-        raise LoadError(f"Failed to load {input_path}") from e
+        raise LoadError(f"Failed to load {input_path}: {e}") from e
 
     pipeline = ProcessingPipeline(stack)
     for name, kwargs in steps:
