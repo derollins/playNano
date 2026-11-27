@@ -1,4 +1,4 @@
-"""GUI widget for viewing AFM video data."""
+"""The frame view of the playNano window."""
 
 import logging
 from typing import Optional
@@ -12,10 +12,16 @@ log = logging.getLogger(__name__)
 
 
 class ViewerWidget(QWidget):
-    """Displays AFM height maps as a resizable image with optional overlays."""
+    """
+    Shows one RGB frame, scaled to fit, with optional time, scale bar and "RAW" label.
+
+    The frame keeps its aspect ratio and is enlarged or shrunk with Qt's smooth
+    (bilinear) scaling, for display only. Space around it is filled with a
+    background colour.
+    """
 
     def __init__(self):
-        """Initialize the view widget."""
+        """Create an empty view."""
         super().__init__()
         self._original_pixmap: Optional[QPixmap] = None
         self._scaled_pixmap: Optional[QPixmap] = None
@@ -30,16 +36,12 @@ class ViewerWidget(QWidget):
 
     def display_frame(self, arr: np.ndarray):
         """
-        Load and show a new RGB frame.
+        Show a new frame.
 
         Parameters
         ----------
-        arr : np.ndarray
-            3D uint8 array of shape (H, W, 3) containing the RGB image data.
-
-        Returns
-        -------
-        None
+        arr : numpy.ndarray
+            RGB image, shape (height, width, 3), dtype uint8.
         """
         log.debug("[ViewerWidget] display_frame called.")
         h, w, _ = arr.shape
@@ -70,38 +72,27 @@ class ViewerWidget(QWidget):
 
     def set_background_color(self, rgb: tuple[int, int, int]):
         """
-        Change the widget’s background fill color.
+        Set the colour that fills the space around the frame.
 
         Parameters
         ----------
         rgb : tuple of int
-            (R, G, B) values in the range [0…255].
-
-        Returns
-        -------
-        None
+            ``(R, G, B)``, each 0-255.
         """
         self._bg_rgb = rgb
         self.update()
 
     def paintEvent(self, event):
         """
-        Create custom paint handler: draws background, frame, and overlays.
+        Draw the background, the frame and the overlays (Qt calls this).
+
+        The time is drawn at the top left, "RAW" at the top right and the scale
+        bar, sized from the pixel size and the display scale, at the bottom left.
 
         Parameters
         ----------
-        event : QPaintEvent
-            The Qt paint event.
-
-        Notes
-        -----
-        - Fills the widget rectangle with the background color.
-        - Centers and draws the scaled pixmap, if any.
-        - Optionally overlays timestamp, “RAW” label, and scale bar.
-
-        Returns
-        -------
-        None
+        event : PySide6.QtGui.QPaintEvent
+            The paint event.
         """
         painter = QPainter(self)
         try:
@@ -132,15 +123,17 @@ class ViewerWidget(QWidget):
                 painter.drawText(x, y, text)
 
             if self._original_pixmap and self._draw_scale_bar:
-                try:
-                    bar_px = (
-                        self._scale_bar_nm / self._pixel_size_nm
-                    )  # may raise ZeroDivisionError
-                except ZeroDivisionError:
-                    log.warning(
-                        "[ViewerWidget] Division by zero in scale bar calculation."
+                px = self._pixel_size_nm
+                # Checked before dividing, so a missing, zero, negative or NaN
+                # pixel size skips the bar ("not px > 0" is True for NaN).
+                if px is None or not px > 0 or not self._scale_bar_nm:
+                    # Called on every repaint, so log at debug level only.
+                    log.debug(
+                        "[ViewerWidget] No scale bar: pixel size or bar length "
+                        "is missing, zero or not a positive number."
                     )
                 else:
+                    bar_px = self._scale_bar_nm / self._pixel_size_nm
                     if self._scaled_pixmap:
                         scaled_width = self._scaled_pixmap.width()
                         scale = scaled_width / self._original_pixmap.width()
@@ -152,10 +145,6 @@ class ViewerWidget(QWidget):
                     y = self.height() - 20
                     painter.fillRect(x, y, bar_width, bar_height, Qt.white)
                     painter.drawText(x, y - 5, f"{self._scale_bar_nm} nm")
-            else:
-                log.warning(
-                    "[ViewerWidget] Skipped scale bar: pixel_size_nm is zero or None"
-                )
 
         except Exception as e:
             log.exception(f"[ViewerWidget] paintEvent crashed: {e}")
@@ -172,26 +161,22 @@ class ViewerWidget(QWidget):
         scale_bar_nm: Optional[int],
     ):
         """
-        Update which overlays to draw on each frame.
+        Set the overlays drawn on the frame.
 
         Parameters
         ----------
         timestamp : float or None
-            The time (in seconds) to display, or None.
+            Time to show, in seconds; None shows none.
         draw_ts : bool
-            Whether to show the timestamp.
+            Show the time.
         draw_scale : bool
-            Whether to show a scale bar.
+            Show the scale bar.
         draw_raw_label : bool
-            Whether to draw a “RAW” label.
+            Show "RAW" at the top right.
         pixel_size_nm : float or None
-            Nanometers per pixel (needed to size the scale bar).
+            Pixel size of the frame, in nm, used to size the scale bar.
         scale_bar_nm : int or None
-            Physical length (nm) of the scale bar to draw.
-
-        Returns
-        -------
-        None
+            Scale bar length, in nm.
         """
         log.debug(
             f"[ViewerWidget] set_annotations: ts={timestamp}, scale={scale_bar_nm}, px={pixel_size_nm}, "  # noqa: E501
@@ -207,31 +192,25 @@ class ViewerWidget(QWidget):
 
     def resizeEvent(self, event: QResizeEvent):
         """
-        Handle widget resize: recompute scaled pixmap size.
+        Scale the frame to the new size (Qt calls this).
 
         Parameters
         ----------
-        event : QResizeEvent
-            The Qt resize event.
-
-        Returns
-        -------
-        None
+        event : PySide6.QtGui.QResizeEvent
+            The resize event.
         """
         super().resizeEvent(event)
         self._rescale()
 
     def set_annotation_font(self, font: QFont):
         """
-        Override the font used for drawing text overlays.
+        Set the font of the overlay text.
+
+        The font's family is used at 18 pt.
 
         Parameters
         ----------
-        font : QFont
-            A Qt font object.
-
-        Returns
-        -------
-        None
+        font : PySide6.QtGui.QFont
+            The font.
         """
         self.custom_font = font

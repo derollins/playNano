@@ -1,9 +1,9 @@
 """
-Utilities for loading, registering, and validating custom colormaps.
+playNano's colormaps, and helpers for checking colormap names.
 
-This module provides helper functions to register custom colormaps shipped
-with the playNano package, validate colormap names, and safely resolve
-user-provided colormap inputs with sensible fallbacks.
+Importing :mod:`playnano` registers the colormaps ``"afm_brown"`` (the
+default), ``"playnano_gold"`` and ``"classic_afm"``, each with a reversed
+``"_r"`` version, so they can be used by name anywhere in Matplotlib.
 """
 
 import logging
@@ -55,22 +55,13 @@ def _load_and_register_cmap(name: str, path: Path) -> None:
 
 def register_custom_colormaps() -> None:
     """
-    Load and register all custom playNano colormaps.
+    Register playNano's colormaps with Matplotlib.
 
-    Colormap definitions are stored as CSV files within the
-    ``playnano.resources.colormaps`` package. Each colormap is registered
-    globally with Matplotlib under its canonical name, along with a reversed
-    variant (``<name>_r``).
-
-    This function is safe to call multiple times; colormaps that are already
-    registered will not be re-registered.
-
-    Any failures encountered while loading individual colormaps are logged
-    as errors, but do not prevent remaining colormaps from being processed.
-
-    Returns
-    -------
-    None
+    Reads ``afm_brown``, ``playnano_gold`` and ``classic_afm`` from the
+    package's ``resources/colormaps`` folder and registers each, with its
+    reversed ``_r`` version. Colormaps already registered are skipped, so it is
+    safe to call again. A colormap that fails to load is logged as an error and
+    the others are still registered.
     """
     # Resolve the resource directory even when installed as a wheel or zip
     resource_path = resources.files("playnano.resources.colormaps")
@@ -90,22 +81,18 @@ def register_custom_colormaps() -> None:
 
 def is_valid_cmap(name: str) -> bool:
     """
-    Check whether a colormap name is available in Matplotlib.
-
-    This includes both:
-    - Built-in Matplotlib colormaps
-    - Custom playNano colormaps (if registered)
+    Check whether a name is a registered Matplotlib colormap.
 
     Parameters
     ----------
     name : str
-        Name of the colormap to check.
+        Colormap name. Matplotlib's own and playNano's colormaps are both
+        registered.
 
     Returns
     -------
     bool
-        True if the colormap exists and can be used by Matplotlib,
-        False otherwise.
+        True if ``name`` is a string naming a registered colormap.
     """
     if not isinstance(name, str):
         return False
@@ -115,33 +102,33 @@ def is_valid_cmap(name: str) -> bool:
 
 def resolve_cmap(cmap: str) -> str:
     """
-    Resolve a user-provided colormap name to a valid colormap.
+    Return a colormap name that can be used, falling back to the default.
 
-    If the requested colormap is not recognized, a warning is logged and
-    a default colormap is returned instead. This function never raises
-    an exception and always returns a usable colormap name.
+    For names given by users, for example on the command line: an unknown
+    name gives a logged warning and ``"afm_brown"`` (``DEFAULT_CMAP``) instead
+    of an error.
 
     Parameters
     ----------
     cmap : str
-        Name of the requested colormap.
+        Requested colormap name.
 
     Returns
     -------
     str
-        A valid colormap name. If `cmap` is invalid or unknown, this will be
-        `DEFAULT_CMAP`.
-
-    Notes
-    -----
-    This function is intended for user-facing inputs (e.g. CLI arguments,
-    configuration files, or API parameters) where robustness is preferred
-    over strict validation.
+        ``cmap`` if it is a registered colormap, otherwise ``"afm_brown"``.
 
     See Also
     --------
-    is_valid_cmap : Check whether a colormap name is supported.
-    DEFAULT_CMAP : Default colormap used as a fallback.
+    is_valid_cmap : Check a name without a fallback.
+
+    Examples
+    --------
+    >>> from playnano.utils.colormaps import resolve_cmap
+    >>> resolve_cmap("viridis")
+    'viridis'
+    >>> resolve_cmap("not_a_colormap")
+    'afm_brown'
     """
     if not is_valid_cmap(cmap):
         logger.warning(
@@ -155,14 +142,12 @@ def resolve_cmap(cmap: str) -> str:
 
 def get_available_cmaps() -> list[str]:
     """
-    Return a sorted list of available colormap names.
-
-    This includes all built-in Matplotlib colormaps as well as any custom
-    colormaps that have been registered.
+    Return the names of all registered colormaps, sorted.
 
     Returns
     -------
     list of str
-        Sorted list of colormap names.
+        Matplotlib's and playNano's colormaps, including reversed ``_r``
+        versions.
     """
     return sorted(plt.colormaps())

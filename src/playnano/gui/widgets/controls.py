@@ -1,39 +1,31 @@
-"""
-Defines ViewerWidget, a Qt widget for viewing AFM height map stacks.
-
-The data is viewed as a resizable image with optional timestamp,
-scale-bar and “RAW” label overlays. Playback controls allow video
-playback of a image stack.
-
-Classes
--------
-ViewerWidget
-    QWidget subclass that renders one frame of AFM data and draws annotations.
-"""
+"""The playback controls of the playNano window."""
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDoubleSpinBox, QPushButton, QSlider, QVBoxLayout, QWidget
 
 
 class PlaybackControls(QWidget):
-    """Widget containing playback controls; play button, slider, and FPS control."""
+    """
+    Play button, frame slider and playback rate box.
+
+    Parameters
+    ----------
+    initial_fps : float, optional
+        Starting playback rate, in frames per second (0.1 to 60). Default is
+        5.0.
+
+    Attributes
+    ----------
+    play_btn : PySide6.QtWidgets.QPushButton
+        Play/pause button.
+    slider : PySide6.QtWidgets.QSlider
+        Frame slider.
+    fps_box : PySide6.QtWidgets.QDoubleSpinBox
+        Playback rate.
+    """
 
     def __init__(self, initial_fps: float = 5.0):
-        """
-        Initialize the ViewerWidget.
-
-        - Sets up placeholder pixmaps.
-        - Initializes annotation toggles (timestamp, scale bar, RAW label).
-        - Chooses a default fallback font.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
+        """Build the controls. The parameters are described in the class docstring."""
         super().__init__()
         layout = QVBoxLayout(self)
         self.play_btn = QPushButton("▶️ Play")

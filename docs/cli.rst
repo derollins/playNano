@@ -31,8 +31,12 @@ Quick examples
 .. code-block:: bash
 
    playnano play data.h5-jpk
-   playnano process data.ARIS --processing "remove_plane" --make-gif
+   playnano process data.ARIS --channel HeightTrace --processing "remove_plane" --make-gif
    playnano analyze processed.h5 --analysis-file analysis.yaml
+
+The default channel, ``height_trace``, is a JPK channel name. For other formats, give the
+file's own name with ``--channel``, for example ``HeightTrace`` for ``.aris`` files; a wrong
+name gives an error listing the channels the file has.
 
 Global options
 --------------
@@ -52,7 +56,7 @@ Example output:
 
 .. code-block:: text
 
-   playnano 0.5.3
+   playnano 0.5.4
 
 (The version shown is the one you have installed.)
 
@@ -275,6 +279,8 @@ Notes about z-range
 
 - ``--zmin`` / ``--zmax`` accept a float or the string ``auto`` (default).
   When ``auto`` is used values are computed as the 1st and 99th percentiles of the stack.
+  In ``play``, a value that is neither is replaced by ``auto`` with a warning, since the
+  limits can be changed in the window.
 
 
 Find out more on the GUI docs page: :doc:`gui`

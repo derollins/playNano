@@ -23,9 +23,9 @@ class NumpyEncoder(json.JSONEncoder):
     """
     JSON encoder that also writes NumPy arrays, NumPy numbers and functions.
 
-    Arrays become (nested) lists, NumPy integers and floats become Python numbers,
-    and functions become the text ``"<function name>"``. Pass it as ``cls`` to
-    :func:`json.dump` or :func:`json.dumps`.
+    Arrays become (nested) lists, NumPy integers, floats and bools become Python
+    numbers and bools, and functions become the text ``"<function name>"``. Pass it
+    as ``cls`` to :func:`json.dump` or :func:`json.dumps`.
 
     Examples
     --------
@@ -46,13 +46,13 @@ class NumpyEncoder(json.JSONEncoder):
 
         Returns
         -------
-        list or int or float or str
+        list or int or float or bool or str
             The converted value.
 
         Raises
         ------
         TypeError
-            If ``obj`` is none of the types above (for example, a NumPy bool).
+            If ``obj`` is none of the types above (for example, a set).
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -60,6 +60,8 @@ class NumpyEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, (np.integer, np.int32, np.int64)):
             return int(obj)
+        if isinstance(obj, np.bool_):
+            return bool(obj)
         if callable(obj):
             return f"<function {obj.__name__}>"
         return super().default(obj)
@@ -320,7 +322,8 @@ def sanitize_analysis_for_logging(
     Dicts, lists, tuples and sets are converted recursively, with dict keys
     made JSON-safe. Arrays are replaced by a summary dict with the keys
     ``"_array_shape"``, ``"_array_dtype"`` and ``"_summary"`` (``min``, ``max``
-    and ``mean``, or None for an empty array). Functions become the text
+    and ``mean``, each None for an empty array; ``"_summary"`` itself is None
+    for arrays that are not numbers or bools, such as text). Functions become the text
     ``"<function name>"``, NumPy numbers become Python numbers and bytes are
     decoded as UTF-8.
 
@@ -377,14 +380,19 @@ def sanitize_analysis_for_logging(
         ]
 
     if isinstance(obj, np.ndarray):
+        numeric = np.issubdtype(obj.dtype, np.number) or obj.dtype == bool
         return {
             "_array_shape": obj.shape,
             "_array_dtype": str(obj.dtype),
-            "_summary": {
-                "min": float(np.min(obj)) if obj.size else None,
-                "max": float(np.max(obj)) if obj.size else None,
-                "mean": float(np.mean(obj)) if obj.size else None,
-            },
+            "_summary": (
+                {
+                    "min": float(np.min(obj)) if obj.size else None,
+                    "max": float(np.max(obj)) if obj.size else None,
+                    "mean": float(np.mean(obj)) if obj.size else None,
+                }
+                if numeric
+                else None
+            ),
         }
 
     if isinstance(obj, bytes):

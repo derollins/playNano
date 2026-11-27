@@ -1,4 +1,9 @@
-"""Utility functions for IO operations in playNano."""
+"""
+Helpers for reading and writing data.
+
+Frame metadata, height units, scaling images to 8-bit, output names and
+folders, and converting results to types JSON can store.
+"""
 
 import logging
 from pathlib import Path
@@ -61,39 +66,34 @@ def build_frame_metadata(
     line_rate: float | None = None,
 ) -> dict:
     """
-    Build a canonical per-frame metadata dict shared by all playNano readers.
+    Make one frame's metadata dict, as every playNano reader does.
 
-    Every value is cast to a native Python type so the dict is JSON-serialisable
-    (frame_metadata is saved via json.dumps on export; numpy bools/floats otherwise
-    raise TypeError).
-
-    Fields a format cannot provide are stored as ``None``.
-
-    Whole-video acquisition modes (e.g. bidirectional) belong on the stack, not
-    here. ``start_time`` (human-readable ISO) is derived from the first frame's
-    ``start_epoch_ms`` at the stack level; don't duplicate it per frame.
+    Values are converted to plain Python types so the dict can be saved as
+    JSON. Settings of the whole recording, such as bidirectional scanning, go in
+    :attr:`playnano.afm_stack.AFMImageStack.acquisition` instead.
 
     Parameters
     ----------
     timestamp : float
-        Frame time in seconds relative to frame 0. Required.
+        Time of the frame in seconds, from the start of frame 0.
     frame_pixel_size_nm : float
-        Physical size of one pixel in nanometres for this frame. Required.
+        Pixel size of this frame, in nm.
     frame_duration_s : float, optional
-        Frame acquisition duration in seconds; ``None`` if unknown.
+        Time taken to record the frame, in seconds. Default is None (unknown).
     start_epoch_ms : int, optional
-        Frame start as Unix epoch milliseconds (UTC); ``None`` for formats
-        without absolute timing.
+        Start of the frame, in milliseconds since 1970 (UTC). Default is None
+        (unknown).
     scan_direction : str, optional
-        Slow-axis frame direction (e.g. ``'topDown'``/``'bottomUp'``). Per-frame
-        because NanoScope spm sequences can alternate.
+        Slow-scan direction of this frame, for example ``"topDown"`` or
+        ``"bottomUp"`` (NanoScope ``.spm`` sequences can alternate). Default is
+        None (unknown).
     line_rate : float, optional
-        Fast-scan line rate (lines per second); ``None`` if unknown.
+        Lines scanned per second. Default is None (unknown).
 
     Returns
     -------
     dict
-        Exactly the keys in ``FRAME_METADATA_KEYS``.
+        The keys of ``FRAME_METADATA_KEYS``, with None for unknown values.
     """
     return {
         "timestamp": float(timestamp),
@@ -112,40 +112,40 @@ def build_frame_metadata(
 
 def guess_height_data_units(stack: np.ndarray) -> str:
     """
-    Guess the most likely units of AFM height data from the data range.
+    Guess the unit of height data from the range of its values.
+
+    The range (largest minus smallest finite value) gives:
+
+    - more than 1e4: ``"pm"``;
+    - more than 1e-2, up to 1e4: ``"nm"``;
+    - more than 1e-4, up to 1e-2: ``"um"``;
+    - more than 1e-5, up to 1e-4: ``"mm"``;
+    - up to 1e-5: ``"m"``.
+
+    A single extreme value can change the result.
 
     Parameters
     ----------
-    stack : np.ndarray
-        AFM height data array, typically 2D or 3D. Non-finite values
-        (NaN or infinity) are ignored when determining the range.
+    stack : numpy.ndarray
+        Height data, any shape. NaN and infinite values are ignored.
 
     Returns
     -------
-    str
-        A string indicating the guessed unit of the height data, one of:
-        'pm' (picometers), 'nm' (nanometers), 'um' (micrometers),
-        'mm' (millimeters), or 'm' (meters).
+    {"pm", "nm", "um", "mm", "m"}
+        The guessed unit.
 
     Raises
     ------
     ValueError
-        If the input array contains no finite values.
-
-    Notes
-    -----
-    The unit is estimated based on the numeric range of the data as follows:
-        - Range > 1e4           : 'pm'
-        - 1e-2 < Range <= 1e4   : 'nm'
-        - 1e-4 < Range <= 1e-2  : 'um'
-        - 1e-5 < Range <= 1e-4  : 'mm'
-        - Range <= 1e-5         : 'm'
+        If there are no finite values.
 
     Examples
     --------
     >>> import numpy as np
-    >>> data = np.array([[0, 5e-9], [1e-8, 2e-8]])
-    >>> guess_height_data_units(data)
+    >>> from playnano.utils.io_utils import guess_height_data_units
+    >>> guess_height_data_units(np.array([0.0, 5e-9, 2e-8]))
+    'm'
+    >>> guess_height_data_units(np.array([0.0, 3.0]))
     'nm'
     """
     finite = stack[np.isfinite(stack)]
@@ -167,25 +167,24 @@ def guess_height_data_units(stack: np.ndarray) -> str:
 
 def convert_height_units_to_nm(data: np.ndarray, unit: str) -> np.ndarray:
     """
-    Convert AFM height data from the guessed unit to nanometers.
+    Convert height data to nm.
 
     Parameters
     ----------
-    data : np.ndarray
-        Input height data array, typically 2D or 3D.
-    unit : str
-        Unit string as returned by `guess_height_data_units`. Must be one of:
-        'pm', 'nm', 'um', 'mm', or 'm'.
+    data : numpy.ndarray
+        Height data.
+    unit : {"pm", "nm", "um", "mm", "m"}
+        Unit of ``data``, for example from :func:`guess_height_data_units`.
 
     Returns
     -------
-    np.ndarray
-        The input data converted to nanometers.
+    numpy.ndarray
+        A new array in nm.
 
     Raises
     ------
     ValueError
-        If the provided unit string is not recognized.
+        If ``unit`` is not one of the units above.
     """
     unit_to_multiplier = {
         "pm": 1e-3,  # 1 pm = 1e-3 nm
@@ -208,17 +207,20 @@ def convert_height_units_to_nm(data: np.ndarray, unit: str) -> np.ndarray:
 
 def normalize_to_uint8(image: np.ndarray) -> np.ndarray:
     """
-    Normalize a float image to the uint8 [0, 255] range, handling NaNs and Infs.
+    Scale an image to 0-255 as uint8, from its minimum to its maximum.
+
+    NaN and infinite values are set to 0 first, so they count as 0. Values are
+    rounded down. An image with one value gives all zeros.
 
     Parameters
     ----------
-    image : np.ndarray
-        Input image as a NumPy array of floats. May contain NaNs or infinite values.
+    image : numpy.ndarray
+        Image, any shape.
 
     Returns
     -------
-    np.ndarray
-        Normalized image as a uint8 NumPy array with values in the range [0, 255].
+    numpy.ndarray
+        Array of the same shape, dtype uint8.
     """
     # Replace NaNs and Infs with 0
     image = np.nan_to_num(image, nan=0.0, posinf=0.0, neginf=0.0)
@@ -244,30 +246,47 @@ def compute_zscale_range(
     upper_percentile: int = 99,
 ) -> tuple[float, float]:
     """
-    Compute robust Z-scale bounds (height or intensity range) for normalization.
+    Work out the lower and upper limits of a colour scale.
 
     Parameters
     ----------
-    data : np.ndarray
-        2D or 3D array of AFM image data.
-    zmin : float, "auto", or None
-        Lower bound: "auto" uses percentile, None uses data min, float uses value.
-    zmax : float or "auto"
-        Upper bound: "auto" uses percentile, None uses data max, float uses value.
-    lower_percentile : int, optional
-        Percentile to use for lower bound when zmin == "auto". Default is 1.
-    upper_percentile : int, optional
-        Percentile to use for upper bound when zmax == "auto". Default is 99.
+    data : numpy.ndarray
+        Heights, any shape. NaN and infinite values are ignored.
+    zmin : float, "auto" or None, optional
+        Lower limit: a number is used as given, ``"auto"`` uses the
+        ``lower_percentile`` percentile of ``data`` and None its minimum.
+        Default is ``"auto"``.
+    zmax : float, "auto" or None, optional
+        Upper limit, in the same way, using ``upper_percentile`` or the
+        maximum. Default is ``"auto"``.
+    lower_percentile : float, optional
+        Percentile for ``zmin="auto"``. Default is 1.
+    upper_percentile : float, optional
+        Percentile for ``zmax="auto"``. Default is 99.
 
     Returns
     -------
-    (float, float)
-        zmin and zmax values suitable for normalization.
+    tuple of float
+        ``(zmin, zmax)``.
 
     Raises
     ------
     ValueError
-        If zmin > zmax after processing or invalid input types.
+        If ``zmin`` or ``zmax`` is not a number, ``"auto"`` or None, or the
+        lower limit is greater than the upper. Also if ``data`` has no finite
+        values and a limit is None.
+    IndexError
+        If ``data`` has no finite values and a limit is ``"auto"``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.utils.io_utils import compute_zscale_range
+    >>> data = np.arange(101.0)
+    >>> [float(z) for z in compute_zscale_range(data)]
+    [1.0, 99.0]
+    >>> [float(z) for z in compute_zscale_range(data, zmin=None, zmax=50)]
+    [0.0, 50.0]
     """
     flat = data.ravel()
     flat = flat[np.isfinite(flat)]
@@ -307,22 +326,37 @@ def compute_zscale_range(
 
 def sanitize_output_name(name: str, default: str) -> str:
     """
-    Sanitize output file names by removing a file extension and stripping whitespace.
+    Clean a user-supplied output name.
 
-    Only known output extensions (see ``OUTPUT_EXTENSIONS``) are removed, so dots
-    elsewhere in the name are kept: ``"exp_1.5nM.gif"`` becomes ``"exp_1.5nM"``.
+    Folders and surrounding spaces are removed, then one known extension
+    (``OUTPUT_EXTENSIONS``, in any case), so other dots are kept:
+    ``"exp_1.5nM.gif"`` becomes ``"exp_1.5nM"``.
 
     Parameters
     ----------
-    name : str
-        The output file name provided by the user.
+    name : str or None
+        The name given by the user.
     default : str
-        Default name to use if `name` is empty or None.
+        Returned if ``name`` is None or empty, or nothing is left after
+        cleaning.
 
     Returns
     -------
     str
-        Sanitized base file name without extension.
+        The cleaned name, without an extension.
+
+    Raises
+    ------
+    ValueError
+        If the cleaned name contains a character in ``INVALID_CHARS``.
+
+    Examples
+    --------
+    >>> from playnano.utils.io_utils import sanitize_output_name
+    >>> sanitize_output_name(" results/exp_1.5nM.GIF ", "default")
+    'exp_1.5nM'
+    >>> sanitize_output_name(None, "default")
+    'default'
     """
     if not name:
         return default
@@ -344,24 +378,25 @@ def sanitize_output_name(name: str, default: str) -> str:
 
 def prepare_output_directory(folder: str | None, default: str = "output") -> Path:
     """
-    Validate, resolve, and create the output directory if it doesn't exist.
+    Check an output folder and create it if missing.
 
     Parameters
     ----------
-    folder : str or None
-        User-provided output folder path. If None, use `default`.
+    folder : str, pathlib.Path or None
+        The folder; relative paths are relative to the current folder. If None
+        or empty, ``default``.
     default : str, optional
-        Default folder name to use if `folder` not specified.
+        Folder used when ``folder`` is not given. Default is ``"output"``.
 
     Returns
     -------
-    Path
-        A Path object pointing to the created output directory.
+    pathlib.Path
+        The absolute path of the folder, which now exists.
 
     Raises
     ------
     ValueError
-        If any part of the folder path contains invalid characters.
+        If any part of the path contains any of ``* ? " < > |``.
     """
     if folder is None:
         folder = default
@@ -431,7 +466,35 @@ def _json_safe_key(key):
 
 
 def make_json_safe(obj):
-    """Recursively convert NumPy types and non-JSON objects into serializable ones."""
+    """
+    Convert NumPy values and functions in nested data to types JSON can store.
+
+    - NumPy arrays become lists, and NumPy integers and floats become ``int``
+      and ``float``.
+    - Dicts, lists and tuples are converted item by item; tuples stay tuples
+      (JSON writes them as lists). Dict keys that JSON cannot store become
+      strings.
+    - Functions and classes are replaced by their name.
+    - Anything else is returned unchanged, including NumPy booleans and sets,
+      which JSON cannot store.
+
+    Parameters
+    ----------
+    obj : object
+        The data to convert. Not changed.
+
+    Returns
+    -------
+    object
+        The converted data.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from playnano.utils.io_utils import make_json_safe
+    >>> make_json_safe({"n": np.int64(3), "xy": np.array([1.5, 2.0]), "f": len})
+    {'n': 3, 'xy': [1.5, 2.0], 'f': 'len'}
+    """
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, (np.integer, np.int64, np.int32)):
@@ -455,17 +518,18 @@ def make_json_safe(obj):
 
 def decode_hdf5_attr(attr: bytes | str) -> str:
     """
-    Decode an attribute that may be bytes or a string.
+    Return an HDF5 attribute as a string.
 
     Parameters
     ----------
     attr : bytes or str
-        The attribute to decode.
+        The attribute value. Bytes are decoded as UTF-8; anything else is
+        passed to ``str``.
 
     Returns
     -------
     str
-        The decoded string.
+        The value as a string.
     """
     if isinstance(attr, bytes):
         return attr.decode("utf-8")

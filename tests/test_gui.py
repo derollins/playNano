@@ -1232,39 +1232,45 @@ def widget(qtbot):
     return w
 
 
-def test_paint_event_zero_division_warning(widget, qtbot, caplog):
-    """Test paintEvent logs when division by zero occurs in scale bar calculation."""
+def _paint(widget, qtbot):
+    """Show the widget and paint it once."""
+    widget.show()
+    widget.repaint()
+    qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)
+    qtbot.wait(50)
+
+
+def test_paint_event_scale_bar_off_logs_no_warning(widget, qtbot, caplog):
+    """With the scale bar switched off, repainting logs no warnings."""
+    widget._original_pixmap = QPixmap(50, 50)
+    widget._scaled_pixmap = QPixmap(50, 50)
+    widget._draw_scale_bar = False
+    widget._pixel_size_nm = 1.0
+    widget._scale_bar_nm = 10
+
+    with caplog.at_level("WARNING", logger="playnano.gui.widgets.viewer"):
+        for _ in range(3):
+            _paint(widget, qtbot)
+
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING]
+
+
+@pytest.mark.parametrize("pixel_size_nm", [0.0, None, float("nan"), -1.0])
+def test_paint_event_missing_pixel_size_skips_bar_quietly(
+    widget, qtbot, caplog, pixel_size_nm
+):
+    """A zero, missing, NaN or negative pixel size skips the bar quietly."""
     widget._original_pixmap = QPixmap(50, 50)
     widget._scaled_pixmap = QPixmap(50, 50)
     widget._draw_scale_bar = True
-    widget._pixel_size_nm = 0.0  # zero triggers division by zero if condition passes
+    widget._pixel_size_nm = pixel_size_nm
     widget._scale_bar_nm = 10
-    widget.show()  # Make sure widget is visible
 
-    # To force the division, temporarily override the method:
-    original_paintEvent = widget.paintEvent
+    with caplog.at_level("DEBUG", logger="playnano.gui.widgets.viewer"):
+        _paint(widget, qtbot)
 
-    def faulty_paintEvent(event):
-        # Copy relevant part but forcibly run division by zero
-        try:
-            _ = widget._scale_bar_nm / widget._pixel_size_nm
-        except ZeroDivisionError:
-            log.warning("[ViewerWidget] Division by zero in scale bar calculation.")
-        # call original for rest to not break rendering
-        original_paintEvent(event)
-
-    widget.paintEvent = faulty_paintEvent
-
-    with caplog.at_level("WARNING"):
-        widget.update()
-        qtbot.wait(100)
-
-    widget.paintEvent = original_paintEvent  # restore
-
-    assert any(
-        "[ViewerWidget] Division by zero in scale bar calculation." in rec.message
-        for rec in caplog.records
-    )
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING]
+    assert any("No scale bar" in r.message for r in caplog.records)
 
 
 def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
@@ -1290,39 +1296,6 @@ def test_paint_event_generic_exception_logs(widget, qtbot, caplog):
     )
 
 
-def test_paint_event_zero_division_branch(widget, qtbot, caplog):
-    """Test paintEvent logs a warning when __rtruediv__ raises ZeroDivisionError."""
-
-    class ZeroDiv:
-        """Dummy class that triggers a ZeroDivisionError when used in division."""
-
-        def __bool__(self):
-            return True
-
-        def __rtruediv__(self, other):
-            raise ZeroDivisionError
-
-    widget.resize(100, 100)
-    widget._original_pixmap = QPixmap(50, 50)
-    widget._scaled_pixmap = QPixmap(50, 50)
-    widget._draw_scale_bar = True
-    widget._pixel_size_nm = ZeroDiv()
-    widget._scale_bar_nm = 10
-
-    caplog.set_level("WARNING", logger="playnano.gui.widgets.viewer")
-
-    with caplog.at_level("WARNING", logger="playnano.gui.widgets.viewer"):
-        widget.show()
-        widget.repaint()
-        qtbot.waitUntil(lambda: widget.isVisible(), timeout=1000)
-        qtbot.wait(100)
-
-    assert any(
-        "Division by zero in scale bar calculation." in record.message
-        for record in caplog.records
-    )
-
-
 def test_scale_bar_zero_starts_hidden(qtbot):
     """scale_bar_nm=0 starts with the scale bar off, but it can be switched on."""
 
@@ -1342,3 +1315,39 @@ def test_scale_bar_zero_starts_hidden(qtbot):
     qtbot.addWidget(wnd_default)
     assert wnd_default.show_scale_bar_box.isChecked()
     assert wnd_default.scale_bar_nm == 100
+
+
+@pytest.mark.parametrize("cmap, warned", [("not_a_cmap", True), ("viridis", False)])
+def test_unknown_cmap_is_replaced_with_warning(qtbot, caplog, cmap, warned):
+    """Replace a colormap the window does not offer by the default, with a warning."""
+    mock_stack = MagicMock(width=64, height=64, data=np.random.rand(2, 8, 8))
+    mock_stack.processed = {}
+    mock_stack.pixel_size_nm = 1.0
+    mock_stack.frame_metadata = []
+    mock_stack.time_for_frame = MagicMock(return_value=0.1)
+    with caplog.at_level(logging.WARNING, logger="playnano.gui.window"):
+        wnd = MainWindow(mock_stack, cmap=cmap)
+    qtbot.addWidget(wnd)
+    try:
+        assert wnd._cmap_name == (DEFAULT_CMAP if warned else cmap)
+        assert ("not available in the GUI" in caplog.text) is warned
+    finally:
+        wnd._timer.stop()
+        wnd.close()
+        wnd.deleteLater()
+
+
+@pytest.mark.parametrize("module", ["playnano.gui.window", "playnano.cli.actions"])
+def test_importing_gui_leaves_root_logger_alone(module):
+    """Importing the GUI must not configure logging; that is the application's job."""
+    code = (
+        "import logging, sys\n"
+        f"import {module}\n"
+        "root = logging.getLogger()\n"
+        "sys.exit(0 if not root.handlers and root.level == logging.WARNING else 1)\n"
+    )
+    env = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    result = subprocess.run(
+        [sys.executable, "-c", code], env=env, capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr

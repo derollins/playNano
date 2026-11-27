@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from playnano.afm_stack import AFMImageStack
-from playnano.io.formats import read_asd, read_jpk_folder, read_spm_folder
+from playnano.io.formats import read_aris, read_asd, read_jpk_folder, read_spm_folder
 from playnano.io.formats._afmreader import unpack_afmreader_result
 from playnano.io.formats.read_aris import (
     _aris_global_pixel_to_nm_scaling_h5,
@@ -342,6 +342,22 @@ def test_get_loader_for_file_no_extension():
         get_loader_for_file(Path("noext"), {}, {})
 
 
+@pytest.mark.parametrize("flip_image", [True, False])
+def test_load_jpk_folder_flips_once(resource_path, flip_image):
+    """Frames match AFMReader's load_jpk with the same flip_image (one flip, #119)."""
+    from AFMReader.jpk import load_jpk
+
+    folder = resource_path / "jpk_folder_0"
+    stack = load_jpk_folder(folder, "height_trace", flip_image=flip_image)
+    for i, f in enumerate(sorted(folder.glob("*.jpk"))):
+        expected, _, _ = unpack_afmreader_result(
+            load_jpk(f, "height_trace", flip_image=flip_image)
+        )
+        np.testing.assert_array_equal(stack.data[i], expected)
+    # The test frames must not be symmetric, or the test would prove nothing.
+    assert not np.array_equal(stack.data[0], np.flipud(stack.data[0]))
+
+
 def test_open_file(resource_path):
     """Test if the file can be read."""
     with h5py.File(resource_path / "sample_0.h5-jpk", "r") as f:
@@ -597,7 +613,8 @@ def test_read_jpk_valid_files(
     assert result.data.dtype == np.dtype(image_dtype)
     assert isinstance(result.frame_metadata, list)
     assert all(isinstance(frame, metadata_dtype) for frame in result.frame_metadata)
-    assert result.data.sum() == stack_sum
+    # The sum does not depend on orientation, but the summation order does.
+    assert result.data.sum() == pytest.approx(stack_sum, rel=1e-12)
     assert len(result.frame_metadata) == result.data.shape[0]
 
 
@@ -1209,7 +1226,9 @@ def test_load_spm_folder_real_timing_single_frame(monkeypatch, tmp_path):
 # --- ARIS loader tests ---
 
 
-def create_aris_file_on_disk(path: Path, num_frames=3, override_second_frame=False):
+def create_aris_file_on_disk(
+    path: Path, num_frames=3, override_second_frame=False, data_units="nm"
+):
     """
     Create an in-memory ARIS-like HDF5 file for testing.
 
@@ -1222,6 +1241,9 @@ def create_aris_file_on_disk(path: Path, num_frames=3, override_second_frame=Fal
     override_second_frame : bool, optional
         If True, applies a per-frame pixel-scaling override to Frame 1
         to test per-frame scan parameter handling.
+    data_units : str, bytes or None, optional
+        ``DataUnits`` attribute of the channel; None leaves it out. Default is
+        ``"nm"``, so values load unchanged.
 
     Returns
     -------
@@ -1240,6 +1262,14 @@ def create_aris_file_on_disk(path: Path, num_frames=3, override_second_frame=Fal
         # --- DataSetInfo ---
         info = f.create_group("/DataSetInfo")
         info.attrs["ChannelNames"] = [b"height_trace"]
+        dims = info.create_group("Global/Channels/height_trace/ImageDims")
+        if data_units is not None:
+            # Bytes are written as a variable-length ASCII string, as ARIS files
+            # store the degree sign (the Latin-1 byte 0xB0) for phase.
+            dtype = (
+                h5py.string_dtype("ascii") if isinstance(data_units, bytes) else None
+            )
+            dims.attrs.create("DataUnits", data_units, dtype=dtype)
 
         # Global params
         gscan = info.create_group("Global/Parameters/Scan")
@@ -1376,7 +1406,7 @@ def test_load_aris_raises_missing_channel(tmp_path):
     file_path = tmp_path / "test.aris"
     create_aris_file_on_disk(file_path)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Available channels: height_trace"):
         load_aris(file_path, "nonexistent")
 
 
@@ -1392,6 +1422,81 @@ def test_load_aris_timestamp_mismatch(tmp_path):
 
     with pytest.raises(ValueError):
         load_aris(file_path, "height_trace")
+
+
+@pytest.mark.parametrize(
+    ("data_units", "factor"),
+    [("m", 1e9), ("nm", 1.0), ("um", 1e3), ("\u00b5m", 1e3), ("V", 1.0), ("deg", 1.0)],
+)
+def test_load_aris_converts_length_units_to_nm(tmp_path, data_units, factor):
+    """Channels with a length unit are converted to nm; others are unchanged (#118)."""
+    file_path = tmp_path / "units.aris"
+    create_aris_file_on_disk(file_path, data_units=data_units)
+    stack = load_aris(file_path, "height_trace")
+    expected = np.stack([np.full((4, 4), i, float) for i in range(3)]) * factor
+    np.testing.assert_allclose(stack.data, expected)
+
+
+def test_load_aris_latin1_degree_unit_left_unchanged(tmp_path, caplog):
+    """A Latin-1 degree sign (phase) is read as the unit, not guessed."""
+    file_path = tmp_path / "phase.aris"
+    create_aris_file_on_disk(file_path, data_units=b"\xb0")
+    with h5py.File(file_path, "r") as f:
+        unit = read_aris._get_channel_unit(f["/DataSetInfo"], "height_trace")
+    assert unit == "\u00b0"
+    with caplog.at_level(logging.WARNING):
+        stack = load_aris(file_path, "height_trace")
+    np.testing.assert_array_equal(stack.data[2], np.full((4, 4), 2.0))
+    assert "guessed" not in caplog.text
+
+
+def test_load_aris_missing_unit_is_guessed_with_warning(tmp_path, caplog):
+    """Without DataUnits the unit is guessed from the data range, with a warning."""
+    file_path = tmp_path / "nounit.aris"
+    create_aris_file_on_disk(file_path, data_units=None)
+    with h5py.File(file_path, "a") as f:  # values in metres
+        for i in range(3):
+            img = f[f"/DataSet/Resolution 0/Frame {i}/height_trace/Image"]
+            img[...] = np.full((4, 4), i * 1e-9)
+    with caplog.at_level(logging.WARNING):
+        stack = load_aris(file_path, "height_trace")
+    assert "guessed 'm'" in caplog.text
+    np.testing.assert_allclose(stack.data[2], np.full((4, 4), 2.0))
+
+
+def test_load_aris_real_file(resource_path):
+    """Real ARIS file (Zenodo 10670413, CC BY 4.0): heights in nm (#118)."""
+    from playnano.processing.pipeline import ProcessingPipeline
+
+    path = resource_path / "aris_sample_0.aris"
+    stack = load_aris(path, "HeightTrace")
+
+    assert stack.data.shape == (2, 256, 256)
+    assert stack.pixel_size_nm == pytest.approx(2e-6 / 256 * 1e9)
+    assert [m["frame_pixel_size_nm"] for m in stack.frame_metadata] == pytest.approx(
+        [stack.pixel_size_nm] * 2
+    )
+    assert stack.frame_metadata[0]["timestamp"] == 0.0
+    assert stack.frame_metadata[1]["timestamp"] > 0.0
+    assert stack.frame_metadata[0]["start_epoch_ms"] is not None
+
+    # Exactly the stored values (metres) in nm.
+    with h5py.File(path, "r") as f:
+        stored = np.stack(
+            [
+                f[f"/DataSet/Resolution 0/Frame {i}/HeightTrace/Image"][:]
+                for i in range(2)
+            ]
+        )
+    np.testing.assert_allclose(stack.data, stored * 1e9, rtol=1e-6)
+
+    # After levelling, DNA origami (2 to 5 nm high) stands a few nm above the
+    # surface; in metres this would be about 5e-9.
+    pipeline = ProcessingPipeline(stack)
+    pipeline.add_filter("row_median_align")
+    pipeline.add_filter("polynomial_flatten")
+    pipeline.run()
+    assert 2.0 < np.percentile(stack.data[0], 99) < 10.0
 
 
 # --- AFMReader 0.0.7 (tuple) and 0.0.8 (AFMScan) results ---
@@ -1481,3 +1586,35 @@ def test_readers_accept_both_afmreader_result_types(
     assert result.pixel_size_nm == expected.pixel_size_nm
     np.testing.assert_array_equal(result.data, expected.data)
     assert len(result.frame_metadata) == len(expected.frame_metadata)
+
+
+@pytest.mark.parametrize(
+    ("resource", "real_channel"),
+    [
+        ("sample_0.h5-jpk", "height_trace"),
+        ("jpk_folder_0", "height_trace"),
+        ("spm_folder_0", "Height Sensor"),
+        ("asd_sample_0.asd", "TP"),
+        ("aris_sample_0.aris", "HeightTrace"),
+    ],
+)
+def test_wrong_channel_error_lists_available_channels(
+    resource_path, resource, real_channel
+):
+    """Every reader names the channels a file has when asked for one it lacks."""
+    from playnano.io.loader import load_afm_stack
+
+    with pytest.raises(ValueError) as excinfo:
+        load_afm_stack(resource_path / resource, "not_a_channel")
+    message = str(excinfo.value)
+    assert "not_a_channel" in message
+    assert real_channel in message
+
+
+def test_process_load_error_keeps_the_reason(resource_path):
+    """process_stack's LoadError says why loading failed (#50)."""
+    from playnano.errors import LoadError
+    from playnano.processing.core import process_stack
+
+    with pytest.raises(LoadError, match="Available channels: .*height_trace"):
+        process_stack(resource_path / "sample_0.h5-jpk", "not_a_channel", [])

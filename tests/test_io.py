@@ -2295,3 +2295,115 @@ def test_validate_analysis_record_minimal():
         },
     }
     validate_analysis_record(record)
+
+
+# --- NPZ bundles must load without running pickled code ---
+
+
+class _MarkerPayload:
+    """Pickles to a call that creates a file, standing in for malicious code."""
+
+    def __init__(self, marker: Path):
+        self.marker = marker
+
+    def __reduce__(self):
+        return (Path.touch, (self.marker,))
+
+
+def _object_array(value):
+    """0-d object array, as save_npz_bundle wrote text before 0.5.4."""
+    arr = np.empty((), dtype=object)
+    arr[()] = value
+    return arr
+
+
+def _legacy_npz(path: Path, **overrides) -> Path:
+    """Write a bundle the way save_npz_bundle did before 0.5.4 (text as objects)."""
+    arrays = {
+        "data": np.zeros((2, 4, 4), dtype=np.float32),
+        "timestamps": np.array([0.0, 1.0]),
+        "pixel_size_nm": np.array(1.5, dtype=np.float32),
+        "channel": _object_array("height_trace"),
+        "frame_metadata_json": _object_array(
+            json.dumps([{"timestamp": 0.0}, {"timestamp": 1.0}])
+        ),
+        "provenance_json": _object_array(json.dumps({"processing": {}}).encode()),
+        "state_backups_json": _object_array(json.dumps({})),
+        "processed__raw": np.ones((2, 4, 4), dtype=np.float32),
+        "masks__m": np.ones((2, 4, 4), dtype=bool),
+    }
+    arrays.update(overrides)
+    np.savez_compressed(path, **arrays)
+    return path
+
+
+@pytest.mark.parametrize("key", ["channel", "provenance_json", "extra"])
+def test_load_npz_bundle_does_not_run_pickled_code(tmp_path, key):
+    """A crafted object array is refused and its payload never runs."""
+    marker = tmp_path / "payload_ran"
+    path = _legacy_npz(
+        tmp_path / "evil.npz", **{key: _object_array(_MarkerPayload(marker))}
+    )
+    with pytest.raises(ValueError, match="not plain text"):
+        load_npz_bundle(path)
+    assert not marker.exists()
+
+
+def test_load_npz_bundle_reads_pre_054_bundles(tmp_path):
+    """Bundles with text stored as object arrays (before 0.5.4) still load."""
+    stack = load_npz_bundle(_legacy_npz(tmp_path / "old.npz"))
+    assert stack.channel == "height_trace"
+    assert stack.pixel_size_nm == 1.5
+    assert [m["timestamp"] for m in stack.frame_metadata] == [0.0, 1.0]
+    assert stack.provenance["processing"] == {}
+    assert np.array_equal(stack.processed["raw"], np.ones((2, 4, 4)))
+    assert stack.masks["m"].all()
+
+
+def test_save_npz_bundle_writes_no_pickled_arrays(tmp_path):
+    """New bundles open with allow_pickle=False and round-trip their text."""
+    stack = AFMImageStack(
+        data=np.random.rand(2, 4, 4),
+        pixel_size_nm=2.0,
+        channel="height_trace",
+        file_path=tmp_path / "in.h5-jpk",
+        frame_metadata=[{"timestamp": 0.0}, {"timestamp": 0.5}],
+    )
+    stack.provenance["note"] = "µm and ° survive"
+    path = tmp_path / "new.npz"
+    save_npz_bundle(path, stack)
+
+    with np.load(path, allow_pickle=False) as npz:
+        for key in npz.files:
+            assert not npz[key].dtype.hasobject, key
+
+    loaded = load_npz_bundle(path)
+    assert loaded.channel == "height_trace"
+    assert loaded.provenance["note"] == "µm and ° survive"
+    assert [m["timestamp"] for m in loaded.frame_metadata] == [0.0, 0.5]
+    np.testing.assert_allclose(loaded.data, stack.data.astype(np.float32))
+
+
+def test_load_npz_bundle_reads_numpy1_text_arrays(tmp_path):
+    """Object arrays pickled by NumPy 1 (numpy.core.multiarray) also load."""
+    import io
+    import pickle
+    import zipfile
+
+    path = _legacy_npz(tmp_path / "np1.npz")
+    blob = pickle.dumps(_object_array("height_trace"), protocol=3)
+    blob = blob.replace(b"numpy._core.multiarray", b"numpy.core.multiarray")
+    assert b"numpy.core.multiarray" in blob
+    npy = io.BytesIO()
+    np.lib.format.write_array_header_1_0(
+        npy, {"descr": "|O", "fortran_order": False, "shape": ()}
+    )
+    npy.write(blob)
+
+    rewritten = tmp_path / "np1_rewritten.npz"
+    with zipfile.ZipFile(path) as src, zipfile.ZipFile(rewritten, "w") as dst:
+        for item in src.infolist():
+            data = npy.getvalue() if item.filename == "channel.npy" else src.read(item)
+            dst.writestr(item.filename, data)
+
+    assert load_npz_bundle(rewritten).channel == "height_trace"

@@ -31,3 +31,5 @@
 
 # Test data, including SPM files with numeric extensions such as .102
 tests/resources/** binary
+# ...except notes about the test data
+tests/resources/*.md text diff merge eol=lf
